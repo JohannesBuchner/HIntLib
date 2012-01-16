@@ -1,19 +1,52 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* function to use for abs(double) */
+#undef ABS_FOR_DOUBLE
+
+/* function to use for abs(float) */
+#undef ABS_FOR_FLOAT
+
+/* function to use for abs(int) */
+#undef ABS_FOR_INT
+
+/* function to use for abs(long double) */
+#undef ABS_FOR_LONG_DOUBLE
+
+/* function to use for abs(long int) */
+#undef ABS_FOR_LONG_INT
+
+/* strategy to get abs() right */
+#undef ABS_STRATEGY
+
+/* define whether std::pow(std::complex<long double>,int) is broken */
+#undef COMPLEX_POW_BUG
+
 /* The directory which holds our data files */
 #undef DATADIR
 
+/* define if STL has the equal()-bug */
+#undef EQUAL_BUG
+
 /* define if FLT_ROUNDS is constant */
 #undef FLT_ROUNDS_CONST
-
-/* define if ::abs(double) is available */
-#undef GLOBAL_ABS_AVAILABLE
 
 /* Define to 1 if you have the <algorithm> header file. */
 #undef HAVE_ALGORITHM
 
 /* Define to 1 if you have the <cmath> header file. */
 #undef HAVE_CMATH
+
+/* Define to 1 if you have the <complex> header file. */
+#undef HAVE_COMPLEX
+
+/* Define to 1 if you have the <cstddef> header file. */
+#undef HAVE_CSTDDEF
+
+/* Define to 1 if you have the <cstdlib> header file. */
+#undef HAVE_CSTDLIB
+
+/* Define to 1 if you have the <cstring> header file. */
+#undef HAVE_CSTRING
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
@@ -24,8 +57,8 @@
 /* Define to 1 if you have the <float.h> header file. */
 #undef HAVE_FLOAT_H
 
-/* Define to 1 if you have the `floor' function. */
-#undef HAVE_FLOOR
+/* Define to 1 if you have the <fstream> header file. */
+#undef HAVE_FSTREAM
 
 /* Define to 1 if you have the <functional> header file. */
 #undef HAVE_FUNCTIONAL
@@ -63,26 +96,17 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* Define to 1 if you have the `modf' function. */
-#undef HAVE_MODF
-
 /* Define to 1 if you have the <mpi.h> header file. */
 #undef HAVE_MPI_H
 
 /* Define to 1 if you have the <ostream> header file. */
 #undef HAVE_OSTREAM
 
-/* Define to 1 if you have the `pow' function. */
-#undef HAVE_POW
-
 /* Define to 1 if the system has the type `ptrdiff_t'. */
 #undef HAVE_PTRDIFF_T
 
 /* Define to 1 if you have the <queue> header file. */
 #undef HAVE_QUEUE
-
-/* Define to 1 if you have the `sqrt' function. */
-#undef HAVE_SQRT
 
 /* Define to 1 if you have the <sstream> header file. */
 #undef HAVE_SSTREAM
@@ -123,6 +147,9 @@
 /* Define to 1 if the system has the type `unsigned long long int'. */
 #undef HAVE_UNSIGNED_LONG_LONG_INT
 
+/* Define to 1 if you have the <utility> header file. */
+#undef HAVE_UTILITY
+
 /* Define to 1 if you have the <vector> header file. */
 #undef HAVE_VECTOR
 
@@ -131,6 +158,9 @@
 
 /* Size of Index data type. */
 #undef INDEX
+
+/* strategy to get math functions right */
+#undef MATH_FUN_STRATEGY
 
 /* define if namespace std::rel_ops exists */
 #undef NAMESPACE_REL_OPS
@@ -159,6 +189,24 @@
 /* Define if we are compiling with the SGI C++ compiler CC. */
 #undef SGI
 
+/* function to use for sin(double) */
+#undef SIN_FOR_DOUBLE
+
+/* function number to use for sin(double) */
+#undef SIN_FOR_DOUBLE_NUM
+
+/* function to use for sin(float) */
+#undef SIN_FOR_FLOAT
+
+/* function number to use for sin(float) */
+#undef SIN_FOR_FLOAT_NUM
+
+/* function to use for sin(long double) */
+#undef SIN_FOR_LONG_DOUBLE
+
+/* function number to use for sin(long double) */
+#undef SIN_FOR_LONG_DOUBLE_NUM
+
 /* The size of a `unsigned int', as computed by sizeof. */
 #undef SIZEOF_UNSIGNED_INT
 
@@ -173,9 +221,6 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
-
-/* define if std::abs(double) is available */
-#undef STD_ABS_AVAILABLE
 
 /* define if streams support local */
 #undef STREAMS_SUPPORT_LOCAL

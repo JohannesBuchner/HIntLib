@@ -1,6 +1,0 @@
-#! /bin/sh
-
-./test_polynomial -s -n 120000
-
-exit $?
-

@@ -4,7 +4,6 @@ COMMON_TESTS = \
    abs.test \
    partition.test \
    bitop.test \
-   polynomial.test \
    eratosthenes.test \
    prime.test \
    arithmetic.test \
@@ -49,7 +48,6 @@ check_PROGRAMS = \
    test_genmatrix \
    test_linearalgebra \
    test_partition \
-   test_polynomial \
    test_prng \
    test_prime \
    test_qrnsequence \
@@ -61,13 +59,19 @@ com = test.cpp
 
 numericdiff_SOURCES        = numericdiff.cpp
 test_abs_SOURCES           = test_abs.cpp $(com)
-test_arithmetic_SOURCES    = test_arithmetic.cpp $(com)
+test_arithmetic_SOURCES    = \
+   test_arithmetic.cpp \
+   test_arithmetic_real.cpp \
+   test_arithmetic_integer.cpp \
+   test_arithmetic_gf2.cpp \
+   test_arithmetic_poly2.cpp \
+   test_arithmetic_lookupfield.cpp \
+   test_arithmetic_modulararithmetic.cpp $(com)
 test_bitop_SOURCES         = test_bitop.cpp $(com)
 test_eratosthenes_SOURCES  = test_eratosthenes.cpp $(com)
 test_genmatrix_SOURCES     = test_genmatrix.cpp $(com)
 test_linearalgebra_SOURCES = test_linearalgebra.cpp $(com)
 test_partition_SOURCES     = test_partition.cpp $(com)
-test_polynomial_SOURCES    = test_polynomial.cpp $(com)
 test_prime_SOURCES         = test_prime.cpp $(com)
 test_prng_SOURCES          = test_prng.cpp $(com)
 test_qrnsequence_SOURCES   = test_qrnsequence.cpp $(com)
@@ -75,7 +79,7 @@ test_rule_SOURCES          = test_rule.cpp $(com)
 test_shiftnet_SOURCES      = test_shiftnet.cpp $(com)
 test_tparameter_SOURCES    = test_tparameter.cpp $(com)
 
-noinst_HEADERS = test.h
+noinst_HEADERS = test.h test_arithmetic_tests.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)/src
 AM_CXXFLAGS = @COMPILERWARNINGS@

@@ -24,7 +24,7 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HINTLIB_HAVE_OSTREM
+#ifdef HINTLIB_HAVE_OSTREAM
   #include <ostream>
 #else
   #include <iostream>
@@ -35,6 +35,7 @@
 #include <HIntLib/exception.h>
 #include <HIntLib/array.h>
 #include <HIntLib/linearalgebra.h>
+#include <HIntLib/hlmath.h>
 
 
 namespace L = HIntLib;
@@ -46,14 +47,14 @@ namespace L = HIntLib;
 
 template<typename B>
 L::GaloisField<B>::GaloisField (unsigned base, unsigned exponent, bool xPrim)
-   : FactorField<PolynomialRing<FactorField<B> > >
+   : FactorField<PolynomialRing<ModularArithmeticField<B> > >
       (Poly (Field (base)),
        findPoly (base, exponent, xPrim))
 {}
 
 template<typename B>
 L::GaloisField<B>::GaloisField (unsigned size, bool xPrim)
-   : FactorField<PolynomialRing<FactorField<B> > >
+   : FactorField<PolynomialRing<ModularArithmeticField<B> > >
       (Poly (Field (Prime::factorPrimePowerPrime (size))),
        findPoly (size, xPrim))
 {}
@@ -117,7 +118,7 @@ L::GaloisField<B>::findPoly (unsigned base, unsigned deg, bool xPrim)
    // onto
    //   1, prim, prim^2, prim^3,...,prim^(deg-1)
 
-   Array<B> matrix (sqr (deg), B());
+   Array<B> matrix (HIntLib::sqr (deg), B());
 
    T x = ef.one();
 

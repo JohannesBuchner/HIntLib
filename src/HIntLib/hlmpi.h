@@ -19,8 +19,8 @@
  */
 
 
-#ifndef HINTLIB_MYMPI_H
-#define HINTLIB_MYMPI_H 1
+#ifndef HINTLIB_HLMPI_H
+#define HINTLIB_HLMPI_H 1
 
 #include <mpi.h>
 

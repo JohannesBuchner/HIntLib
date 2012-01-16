@@ -18,41 +18,32 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-/**
- *  MPI
- */
+#include <HIntLib/polynomial_ring.tcc>
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
+#include <HIntLib/integerring.h>
+#include <HIntLib/lookupfield.h>
+#include <HIntLib/modulararithmetic.h>
 
-#include <HIntLib/mympi.h>
-
-#include <HIntLib/exception_MPI.h>
-
-namespace L = HIntLib;
-
-L::MPI::MPI(int *argc, char ***argv)
+namespace HIntLib
 {
-   int initialized;
-   int status = MPI_Initialized (&initialized);
-   if (status != MPI_SUCCESS || initialized)  throw MPIError(status);
+   // Polynomial<>
 
-   status = MPI_Init (argc, argv);
-   if (status != MPI_SUCCESS)  throw MPIError(status);
+   HINTLIB_INSTANTIATE_POLYNOMIAL (int)
 
-   status = MPI_Comm_rank (MPI_COMM_WORLD, &rank);
-   if (status != MPI_SUCCESS)
-   {
-      MPI_Finalize();
-      throw MPIError(status);
-   }
+   HINTLIB_INSTANTIATE_POLYNOMIAL (Polynomial<int>)
+   HINTLIB_INSTANTIATE_POLYNOMIAL (Polynomial<unsigned char>)
+
+   // PolynomialRing<>
+
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_UFD (PolynomialRing<IntegerRing<int> >)
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_UFD
+      (PolynomialRing<LookupField<unsigned char> > )
+
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_UFD (IntegerRing<int>)
+
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_RING
+      (ModularArithmeticRing<unsigned char>)
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_RING
+      (ModularArithmeticRing<unsigned short>)
 }
-
-L::MPI::~MPI ()
-{
-   int status = MPI_Finalize();
-   if (status != MPI_SUCCESS)  throw MPIError(status);
-}
-
 

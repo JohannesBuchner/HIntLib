@@ -18,14 +18,18 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <HIntLib/polynomial.tcc>
+#include <HIntLib/polynomial_field.tcc>
 
-#include <HIntLib/lookupfield.h>
+#include <HIntLib/modulararithmetic.h>
 
 namespace HIntLib
 {
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_GF (LookupField<unsigned char>)
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_GF (LookupFieldPow2<unsigned char>)
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_GF (LookupFieldPrime<unsigned char>)
+   HINTLIB_INSTANTIATE_POLYNOMIAL (unsigned char)
+   HINTLIB_INSTANTIATE_POLYNOMIAL (unsigned short)
+
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_GF
+      (ModularArithmeticField<unsigned char>)
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_GF
+      (ModularArithmeticField<unsigned short>)
 }
 

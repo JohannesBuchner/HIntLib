@@ -37,17 +37,22 @@ HIntLib::DigitalNet::DigitalNet (unsigned base, unsigned _m)
 
 
 #include <HIntLib/onedimvectorspace.h>
-#include <HIntLib/factorring.h>
+#include <HIntLib/modulararithmetic.h>
 #include <HIntLib/lookupfield.h>
-#include <HIntLib/polynomial2.h>
+#include <HIntLib/gf2vectorspace.h>
 
 namespace HIntLib
 {
-HINTLIB_INSTANTIATE_DIGITALNETGEN (OneDimVectorSpace<FactorField<unsigned char> >)
-HINTLIB_INSTANTIATE_DIGITALNETGEN (OneDimVectorSpace<LookupField<unsigned char> >)
-HINTLIB_INSTANTIATE_DIGITALNETGEN (OneDimVectorSpace<LookupFieldPow2<unsigned char> >)
-HINTLIB_INSTANTIATE_DIGITALNETGEN (OneDimVectorSpace<LookupFieldPrime<unsigned char> >)
-HINTLIB_INSTANTIATE_DIGITALNETGEN (OneDimVectorSpace<GF2>)
+HINTLIB_INSTANTIATE_DIGITALNETGEN
+   (OneDimVectorSpace<ModularArithmeticField<unsigned char> >)
+HINTLIB_INSTANTIATE_DIGITALNETGEN
+   (OneDimVectorSpace<LookupField<unsigned char> >)
+HINTLIB_INSTANTIATE_DIGITALNETGEN
+   (OneDimVectorSpace<LookupFieldPow2<unsigned char> >)
+HINTLIB_INSTANTIATE_DIGITALNETGEN
+   (OneDimVectorSpace<LookupFieldPrime<unsigned char> >)
+HINTLIB_INSTANTIATE_DIGITALNETGEN
+   (OneDimVectorSpace<GF2>)
 HINTLIB_INSTANTIATE_DIGITALNETGEN (GF2VectorSpace<u32>)
 typedef LookupVectorSpace    <unsigned char,unsigned char> X1;
 typedef LookupVectorSpacePow2<unsigned char,unsigned char> X2;

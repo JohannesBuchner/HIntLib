@@ -63,9 +63,9 @@ L::Rule2Ionescu::Rule2Ionescu (unsigned dim)
 
 namespace
 {
-   const real w1_12 = real (1.0) / real (12.0);
-   const real w7_12 = real (7.0) / real (12.0);
-   const real wm1_6 = real (-1.0) / real (6.0);
+   const real w1_12 = real( 1) / real(12);
+   const real w7_12 = real( 7) / real(12);
+   const real wm1_6 = real(-1) / real(6);
 }
 
 real L::Rule2Ionescu::eval (Integrand &f, const Hypercube &h)

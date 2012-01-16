@@ -63,7 +63,7 @@ L::DigitalNet2<T>::DigitalNet2 (
   x      (getDimension()),
   xStart (getDimension(), 0),
   trunc (_trunc),
-  trivialScale (powInt(.5, c.getTotalPrec())),
+  trivialScale (HINTLIB_MN pow(real(.5), int(c.getTotalPrec()))),
   ss (h.getDimension())
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
   , ssMagic (h.getDimension()),
@@ -135,12 +135,12 @@ void L::DigitalNet2<T>::setCube (const Hypercube &h)
 {
   double centerShift = trunc == CENTER ? -.5 : .0;
 
-  ss.set (h,                         centerShift, 
-     powInt(2.0, c.getTotalPrec()) + centerShift);
+  ss.set (h, centerShift, 
+             centerShift + HINTLIB_MN pow(real(2.0), int (c.getTotalPrec())));
 
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
   double centerShiftMagic = trunc == CENTER
-     ? -powInt (.5, c.getTotalPrec() + 1) : .0;
+     ? - HINTLIB_MN pow (real(.5), int (c.getTotalPrec()) + 1) : real(0);
 
   ssMagic.set (h, 1.0 + centerShiftMagic, 2.0 + centerShiftMagic);
 #endif

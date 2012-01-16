@@ -2,6 +2,56 @@
 Change Log
 ==========
 
+0.0.7	March 8, 2004		One Year Anniversary Edition
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     41625  139891 1028243 insgesamt
+
+Algebraic Structures:
+
++ class Private::Printer takes care of common I/O tasks
++ printShort() recognizes showpos and FIT_FOR_MUL flag
++ New methods: sqr(), square(), dlb(), times2(), reciprocal(), isDivisor(),
+  reduce(), quotient()
++ New algebra categories: ringfield_tag, ringdomain_tag, funfield_tag,
+  ratfunfield_tag, realcomplex_tag
++ char_category, zerodivisor_category
++ isUnit(), toUnit(), fromUnit() for all ringdomain_tag-structures
++ isNilpotent(), numNilpotents() for rings
++ div(), divBy() for domains
++ ct(), isConstant() for polynomials
++ isEven() for integer rings
++ factor() for IntegerRing<>
++ Faster algorithm for QuotientField::add(), sub(), mul(), and div() according
+  to TACP, vol II, Section 4.5.1.
++ PolynomialRing<> returns stub objects instead of type
++ FactorRing<> can handle polynomials over infinite fields
++ threadinf(), unthreadinf() used in index()/element() for PolynomialRing<>
+  (with infinite coefficient algebras) and QuotientField<>
++ RealField<> and ComplexField<> rewritten
++ Performance improvements in PolynomialRing<>::isPrime()
++ PolynomiaRing<>::power() uses the Left-to-Right binary algorithm
+- RealField<>::order() and ComplexField<>::order() fixed
++ Many optimizations in PolynomialRing<> for coeff algebras with special
+  char_category
++ Polynomial2Ring<>::isPrime() uses Berlekamp's algorithm
+- Bugfix in PolynomialRing<>::isSquareFree()
++ PolynomialRing<>::squarefreeFactor()
+- Methods in PolynomialRing<> are more aliasing aware
++ Tests from test_polynomial moved to test_arithmetic
+
+Miscellaneous:
+
+- Constants in some cubature rules (Rule7Philips, Rule9Stenger) were only
+  calculated with double instead of real precision
++ HIntLib header files include only cXXX instead of XXX.h versions of standard
+  C header files
+- calling abs() and other mathematical functions is handled correctly and
+  consistently on all systems we have access to.
+- Workaround for bug in equal() in the SGI STL
+- Workaround for bug in std::pow(std::complex<long double>) in GCC 3.x library
+
+
 0.0.6   December 30, 2003
 
    wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
@@ -72,7 +122,7 @@ Misc:
 + matrixRank(), matrixMul(), matrixInverse()
 
 
-0.0.5    November 1, 2003
+0.0.5    November 1, 2003	Helloween Edition
 
    wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
      31213  105251  776193 total

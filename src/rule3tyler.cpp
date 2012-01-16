@@ -55,14 +55,14 @@ using L::real;
  */
 
 L::Rule3Tyler::Rule3Tyler (unsigned dim)
-   : OrbitRule (dim), b0 ((real (3.0) - dim) / real (3.0))
+   : OrbitRule (dim), b0 (real (3 - int(dim)) / real(3))
 {
    checkDimensionNotZero (dim);
 }
 
 namespace
 {
-   const real b1 = real (1.0) / real (6.0);
+   const real b1 = real(1) / real(6);
 }
 
 

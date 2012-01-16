@@ -437,7 +437,7 @@ void L::GeneratorMatrix2Row<T>::makeShiftNet(unsigned b)
    for (unsigned d = 1; d < dim; ++d)
    {
       setPackedRowVector (d, b,
-            x = ((x << 1) & allDigits) | ((x & leadingDigit) != 0));
+            x = ((x << 1) & allDigits) | T((x & leadingDigit) != 0));
    }
 }
 

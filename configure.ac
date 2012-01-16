@@ -6,7 +6,7 @@
 
 # autoconf setup
 
-AC_INIT([HIntLib], 0.0.6, [rudolf.schuerer@sbg.ac.at], [HIntLib])
+AC_INIT([HIntLib], 0.0.7, [rudolf.schuerer@sbg.ac.at], [HIntLib])
 AC_CONFIG_SRCDIR([src/HIntLib/integrator.h])
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile src/Makefile src/HIntLib/Makefile share/Makefile tests/Makefile tests/toms659/Makefile tests/toms738/Makefile libtest/Makefile])
@@ -126,7 +126,7 @@ AC_SUBST(NOUNDEFINED)
 AC_MSG_CHECKING([compiler flags to turn on warnings])
 
 if test "$GXX" = yes; then
-   COMPILERWARNINGS="-ffor-scope -Wall -W -Wno-unused -Wctor-dtor-privacy -Wnon-virtual-dtor -Wreorder -Woverloaded-virtual -Wsign-promo"
+   COMPILERWARNINGS="-ffor-scope -ftemplate-depth-25 -Wall -W -Wno-unused -Wctor-dtor-privacy -Wnon-virtual-dtor -Wreorder -Woverloaded-virtual -Wsign-promo"
 # A number of GCC-options we do NOT use for various reasons
 # -malign-double    # breaks ifstream!!!
 # -Wold-style-cast  # Produces many warnings in the STL
@@ -140,7 +140,7 @@ else
 *-linux-*/icpc | *-linux-*/icpc\ * )
    # COMPILERWARNINGS="-w1"
    # COMPILERWARNINGS="-w2 -Wall -wd981,383,810,530,279,488"
-   COMPILERWARNINGS="-w2 -Wall -wd981,383,810,530,279,488,1418,1419"
+   COMPILERWARNINGS="-w2 -Wall -wd981,383,810,530,279,488,1418,1419,444"
    ;;
 *)
    COMPILERWARNINGS=""
@@ -162,43 +162,47 @@ AC_CHECK_LIB(m,sqrt)
 # Checks for header files.
 ###############################################################################
 
-# Mandatory header files
+AC_MSG_NOTICE([Checking for header files:])
 
-AC_CHECK_HEADERS([stddef.h stdlib.h string.h \
-                  string vector queue algorithm functional exception memory \
-                  iomanip iosfwd iostream],,
-   AC_MSG_WARN([Headerfile missig. Compilation will probably fail!!!]), [ ])
+# Mandatory C++ and Unix header files
 
-# Check for cmath or math.h
+dnl unistd.h:  getopt() and relatives
 
-AC_CHECK_HEADERS([cmath],,
-  AC_CHECK_HEADERS([math.h],,
-     AC_MSG_WARN([Headerfile missing: We need either cmath or math.h!!!])
-  , [ ])
-, [ ])
+AC_CHECK_HEADERS(
+   [string vector queue algorithm utility functional exception memory complex \
+    iomanip iosfwd iostream fstream unistd.h],,
+   AC_MSG_ERROR([Header file missig!!!]), [ ])
 
-# Check for limits. If it is missing, make sure we have limits.h and float.h
+# Mandatory C header files
+
+dnl  cmath:   sin(), cos(), sqrt(), floor(), ceil(), log(), modf()
+dnl  cstring: strcpy()
+dnl  cstddef: size_t, ptrdiff_t
+dnl  cstdlib: rand(), srand(), RAND_MAX
+
+HL_CHECK_C_OR_CPP_HEADER([math])
+HL_CHECK_C_OR_CPP_HEADER([string])
+HL_CHECK_C_OR_CPP_HEADER([stddef])
+HL_CHECK_C_OR_CPP_HEADER([stdlib])
+
+# limits
 
 AC_CHECK_HEADERS([limits],,
-  AC_CHECK_HEADERS([limits.h],,
-    AC_MSG_WARN([Headerfile mising:  We need either limits or limits.h!!!]),[ ])
-  AC_CHECK_HEADERS([float.h],,
-    AC_MSG_WARN([Headerfile mising:  We need either limits or float.h!!!]),[ ])
-, [ ])
-
-# ostream is optional
-
-AC_CHECK_HEADERS([ostream],,,[ ])
+  AC_CHECK_HEADERS([limits.h float.h],,
+    AC_MSG_ERROR([Header file mising:  We need either limits or limits.h and float.h!!!]),[ ]), [ ])
 
 # Check for sstream. If its missing, we need streambuf to replace it
    
-AC_CHECK_HEADERS([sstream],,
-  AC_CHECK_HEADERS([streambuf],,
-    AC_CHECK_HEADERS([streambuf.h],,
-      AC_MSG_WARN([Headerfile mising:  We need either sstream or streambuf or streambuf.h!!!])
-    ,[ ])
-  ,[ ])
-,[ ])
+hl_found=no
+AC_CHECK_HEADERS([sstream streambuf streambuf.h],hl_found=yes;break,,[ ])
+
+if test $hl_found = no; then
+   AC_MSG_ERROR([Header file mising:  We need either sstream or streambuf or streambuf.h!!!])
+fi
+
+# Optional header files: ostream
+
+AC_CHECK_HEADERS([ostream],,,[ ])
 
 # Do we have MPI?
 
@@ -220,7 +224,7 @@ AC_SUBST(LIB_HINTLIB_MPI)
 # Checks for functions
 ###############################################################################
 
-AC_CHECK_FUNCS([floor modf pow sqrt])
+dnl AC_CHECK_FUNCS([floor modf pow sqrt])
 
 ###############################################################################
 # Checks for types
@@ -303,22 +307,97 @@ AC_ARG_WITH([real],
 AC_DEFINE_UNQUOTED(REAL,$hl_real,[Type of real data type.])
 
 ###############################################################################
-# Do compile time checks
+# Do compile time and run time checks
 ###############################################################################
 
 HL_STREAMS_SUPPORT_LOCAL
 HL_FLT_ROUNDS_CONST
 HL_NAMESPACE_REL_OPS
 HL_UNREACHABLE_CALLS_REMOVED
-
-###############################################################################
-# Do runtime checks
-###############################################################################
-
+HL_EQUAL_BUG
+HL_COMPLEX_POW_BUG
 HL_IEEE_MAGIC_WORKS
 
-HL_ABS_AVAILABLE(std,std)
-HL_ABS_AVAILABLE(,global)
+# Which abs() do we use for floats?  Which one for ints?
+
+HL_WHICH_ABS(::std::abs ::abs ::std::fabsf ::fabsf,float)
+HL_WHICH_ABS(::std::abs ::abs ::std::fabs  ::fabs ,double)
+HL_WHICH_ABS(::std::abs ::abs ::std::fabsl ::fabsl,long double)
+HL_WHICH_ABS(::std::abs ::abs ::std::abs   ::abs,int)
+HL_WHICH_ABS(::std::abs ::abs ::std::labs  ::labs,long int)
+dnl if test "x$ac_cv_type_long_long_int" = xyes; then
+dnl HL_WHICH_ABS(::std::abs ::abs ::std::llabs ::llabs,long long int)
+dnl else
+dnl hl_cv_abs_for_long_long_int_num=${hl_cv_abs_for_long_int_num}
+dnl fi
+
+AC_MSG_CHECKING([which strategy to use to get abs() right])
+if test $hl_cv_abs_for_float_num -gt 2 \
+     -o $hl_cv_abs_for_double_num -gt 2 \
+     -o $hl_cv_abs_for_long_double_num -gt 2 \
+     -o $hl_cv_abs_for_int_num -gt 2 \
+     -o $hl_cv_abs_for_long_int_num -gt 2
+then
+   AC_MSG_RESULT([inline replacement])
+   hl_cv_abs_strategy=1
+else
+ if test $hl_cv_abs_for_float_num -eq 1 \
+      -a $hl_cv_abs_for_double_num -eq 1 \
+      -a $hl_cv_abs_for_long_double_num -eq 1 \
+      -a $hl_cv_abs_for_int_num -eq 1 \
+      -a $hl_cv_abs_for_long_int_num -eq 1
+ then
+    AC_MSG_RESULT([using ::std::abs])
+    hl_cv_abs_strategy=2
+ else
+  if test $hl_cv_abs_for_float_num -eq 2 \
+       -a $hl_cv_abs_for_double_num -eq 2 \
+       -a $hl_cv_abs_for_long_double_num -eq 2 \
+       -a $hl_cv_abs_for_int_num -eq 2 \
+       -a $hl_cv_abs_for_long_int_num -eq 2
+  then
+     AC_MSG_RESULT([using ::abs])
+     hl_cv_abs_strategy=3
+  else
+     AC_MSG_RESULT([using ::std::abs and ::abs])
+     hl_cv_abs_strategy=4
+  fi
+ fi
+fi
+
+AC_DEFINE_UNQUOTED(ABS_STRATEGY,$hl_cv_abs_strategy,
+   [strategy to get abs() right])
+
+# Which sin() do we use for floats?
+
+HL_WHICH_MATH_FUN(sin,::std::sin ::sin ::std::sinf ::sinf,float)
+HL_WHICH_MATH_FUN(sin,::std::sin ::sin ::std::sin  ::sin, double)
+HL_WHICH_MATH_FUN(sin,::std::sin ::sin ::std::sinl ::sinl,long double)
+
+AC_MSG_CHECKING([which strategy to use to get math functions right])
+if test $hl_cv_sin_for_float_num       -eq 1 \
+     -a $hl_cv_sin_for_double_num      -eq 1 \
+     -a $hl_cv_sin_for_long_double_num -eq 1
+then
+    AC_MSG_RESULT([using ::std::fname])
+    hl_cv_math_fun_strategy=2
+else
+ if test $hl_cv_sin_for_float_num       -eq 2 \
+      -a $hl_cv_sin_for_double_num      -eq 2 \
+      -a $hl_cv_sin_for_long_double_num -eq 2
+ then
+    AC_MSG_RESULT([using ::fname])
+    hl_cv_math_fun_strategy=3
+ else
+    AC_MSG_RESULT([inline replacement])
+    hl_cv_math_fun_strategy=1
+ fi
+fi
+
+AC_DEFINE_UNQUOTED(MATH_FUN_STRATEGY,$hl_cv_math_fun_strategy,
+   [strategy to get math functions right])
+
+# Directories
 
 if test "x$prefix" != xNONE; then   
    AC_DEFINE_UNQUOTED(DATADIR,"${prefix}/share/${PACKAGE}",[The directory which holds our data files])

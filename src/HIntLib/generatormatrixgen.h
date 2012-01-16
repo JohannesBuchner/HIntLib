@@ -28,7 +28,7 @@
 
 #include <HIntLib/generatormatrix.h>
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 
 
 namespace HIntLib

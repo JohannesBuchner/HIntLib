@@ -40,7 +40,7 @@
 #include <HIntLib/rule5hammer.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
 
@@ -51,10 +51,10 @@ using L::Index;
 
 namespace
 {
-   const real b2 = real (25.0) / real (324.0);
+   const real b2 = real(25) / real(324);
 
    #if HINTLIB_STATIC_WORKS == 1
-      const real r  = sqrt (real (3.0) / real (5.0));
+      const real r  = HINTLIB_MN sqrt (real(3) / real(5));
    #else
       real r;
    #endif
@@ -68,11 +68,11 @@ namespace
 L::Rule5Hammer::Rule5Hammer (unsigned d)
   : OrbitRule (d),
     lamda (d),
-    b0 ((real (25.0) * sqr(d) - real (115.0) * d + real(162.0)) / real(162.0)),
-    b1 ((real (70.0) - real (25.0) * d) / real (162.0))
+    b0 ((real(25) * sqr(d) - real(115) * d + real(162)) / real(162)),
+    b1 ((real(70) - real(25) * d) / real(162))
 {
    #if HINTLIB_STATIC_WORKS == 0
-      r  = sqrt (real (3.0) / real (5.0));
+      r  = HINTLIB_MN sqrt (real(3) / real(5));
    #endif
 
    checkDimensionNotZero (d);

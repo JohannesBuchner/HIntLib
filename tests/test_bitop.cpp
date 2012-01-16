@@ -20,7 +20,6 @@
 
 
 #include <iostream>
-#include <stdlib.h>
 
 #include <HIntLib/defaults.h>
 

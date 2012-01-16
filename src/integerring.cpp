@@ -22,15 +22,29 @@
 #pragma implementation
 #endif
 
+#ifdef HINTLIB_HAVE_OSTREAM
+  #include <ostream>
+#else
+  #include <iostream>
+#endif
+
 #include <HIntLib/integerring.h>
 
-#include <HIntLib/prime.h>
-
-
 namespace L = HIntLib;
+namespace P = HIntLib::Private;
 
 /**
- *  IntegerRing
+ *  opeator<<
+ */
+
+std::ostream& P::operator<< (std::ostream &o, const ZRing&)
+{
+   return o << "Z";
+}
+
+
+/**
+ *  element()
  */
 
 template<typename T>
@@ -39,35 +53,42 @@ T L::IntegerRing<T>::element (unsigned i)
    return odd(i)  ?  T(i/2 + 1)  :  -T(i/2);
 }
 
+
+/**
+ *  index()
+ */
+
 template<typename T>
-unsigned L::IntegerRing<T>::index (T x)
+unsigned L::IntegerRing<T>::index (const T& x)
 {
    return (x > 0)  ?  x*2 - 1  :  x * -2;
 }
 
-template<typename T>
-bool L::IntegerRing<T>::isPrime (T x)
-{
-   return Prime::test (unsigned (abs(x)));
-}
+
+/**
+ *  factor()
+ */
 
 template<typename T>
-bool L::IntegerRing<T>::isComposit (T x)
+int L::IntegerRing<T>::factor (Factorization& f, type n)
 {
-   unsigned xx = abs (x);
-   return xx > 3 && ! Prime::test (xx);
-}
+   unit_type u = makeCanonical (n);
+   PrimeDivisors pd (n);
 
-#include <HIntLib/gcd.tcc>
+   unsigned e;
+   while (unsigned prime = pd.next(e))
+   {
+      f.push_back (std::make_pair (type(prime), e));
+   }
+   return u;
+}
 
 namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) \
    template X IntegerRing<X>::element(unsigned); \
-   template unsigned IntegerRing<X>::index(X); \
-   template bool IntegerRing<X>::isPrime(X); \
-   template bool IntegerRing<X>::isComposit(X); \
-   HINTLIB_INSTANTIATE_GENGCD(IntegerRing<X >)
+   template unsigned IntegerRing<X>::index(const X&); \
+   template int IntegerRing<X>::factor(Factorization&, type);
 
    HINTLIB_INSTANTIATE(int)
 #undef HINTLIB_INSTANTIATE

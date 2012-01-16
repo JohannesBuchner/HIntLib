@@ -30,11 +30,11 @@
 
 #include <memory>
 
-#include <HIntLib/mympi.h>
+#include <HIntLib/hlmpi.h>
 
 #include <HIntLib/adaptintegratorlocallist.h>
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/regioncollection.h>
 #include <HIntLib/cubaturerule.h>
 #include <HIntLib/buffer.h>

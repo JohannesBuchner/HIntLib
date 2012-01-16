@@ -6,7 +6,7 @@ pkginclude_HEADERS = \
    adaptintegratorms.h \
    algebra.h \
    array.h \
-   bitop.h \
+   bitop.h bitop.tcc \
    buffer.h \
    builtinprng.h \
    compruleintegrator.h \
@@ -22,7 +22,7 @@ pkginclude_HEADERS = \
    esterr.h \
    exception.h \
    exception_MPI.h \
-   factorring.h \
+   factorring.h factorring.tcc \
    fallback_limits.h \
    fallback_sstream.h \
    faure.h \
@@ -34,7 +34,12 @@ pkginclude_HEADERS = \
    generatormatrix2row.h \
    generatormatrixgen.h \
    generatormatrixvec.h \
+   gf2.h \
+   gf2vectorspace.h \
    halton.h \
+   hlalgorithm.h \
+   hlmath.h \
+   hlmpi.h \
    hypercube.h \
    integerring.h \
    integrand.h \
@@ -51,16 +56,15 @@ pkginclude_HEADERS = \
    mersennetwister.h \
    minmaxfinder.h \
    miser.h \
-   myalgorithm.h \
-   mymath.h \
-   mympi.h \
+   modulararithmetic.h \
    niederreitermatrix.h \
    niederreitermatrixgen.h \
    old_bitop.h \
    onedimvectorspace.h \
    orbitrule.h \
+   output.h \
    pointset.h \
-   polynomial.h polynomial.tcc \
+   polynomial.h polynomial.tcc polynomial_field.tcc polynomial_ring.tcc \
    polynomial2.h \
    prime.h \
    prime_generated.h \
@@ -70,7 +74,8 @@ pkginclude_HEADERS = \
    qmcroutinesimp.h \
    qrnsequence.h \
    qrnsequencebase.h \
-   quotientfield.h \
+   quotientfield.h quotientfield.tcc \
+   realfield.h \
    region.h \
    regioncollection.h \
    rule1midpoint.h \

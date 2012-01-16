@@ -30,7 +30,7 @@
 
 #include <HIntLib/prime.h>
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 
 
 namespace L = HIntLib;
@@ -83,6 +83,7 @@ template L::u32   L::Prime::searchForNextPrime (u32);
 #ifdef HINTLIB_U32_NOT_EQUAL_U64
 template L::u64   L::Prime::searchForNextPrime (u64);
 #endif
+
 
 /**
  *  eulerPhi()
@@ -159,7 +160,7 @@ bool L::isPrimitiveRoot (unsigned a, unsigned p)
 
 
 /**
- *  factor Prime Power ()
+ *  factorPrimePower ()
  *
  *  Given a number  x = p^n , with  p  prime, factorPrimePower() determines
  *  p and n.
@@ -217,5 +218,87 @@ void L::Prime::throwPrimeNumberNth (unsigned n)
 }
 
 
+/**
+ *  gcd()  --  two multipliers
+ */
+
+template<typename T>
+T HIntLib::gcd (T v3, T u3, T& mv, T& mu)
+{
+   T u1 = 1;
+   T u2 = 0;
+
+   T v1 = 0;
+   T v2 = 1;
+
+   for (;;)
+   {
+      if (! v3)
+      {
+         mu = u1; mv = u2;
+         return u3;
+      }
+
+      T q = u3 / v3; u3 %= v3;
+      u1 -= q * v1;
+      u2 -= q * v2;
+
+      if (! u3)
+      {
+         mu = v1; mv = v2;
+         return v3;
+      }
+
+      q = v3 / u3; v3 %= u3;
+      v1 -= q * u1;
+      v2 -= q * u2;
+   }
+}
+
+
+/**
+ *  gcd()  --  one multiplier
+ */
+
+template<typename T>
+T HIntLib::gcd (T v3, T u3, T& mv)
+{
+   T u2 = 0;
+   T v2 = 1;
+
+   for (;;)
+   {
+      if (! v3)
+      {
+         mv = u2;
+         return u3;
+      }
+
+      u2 -= u3 / v3 * v2;
+      u3 %= v3;
+
+      if (! u3)
+      {
+         mv = v2;
+         return v3;
+      }
+
+      v2 -= v3 / u3 * u2;
+      v3 %= u3;
+   }
+}
+
+#define HINTLIB_INSTANTIATE_GCD(X) \
+   template X gcd (X, X, X&); \
+   template X gcd (X, X, X&, X&);
+
+namespace HIntLib
+{
+   HINTLIB_INSTANTIATE_GCD(int)
+   HINTLIB_INSTANTIATE_GCD(long)
+#ifdef HINTLIB_HAVE_LONG_LONG_INT
+   HINTLIB_INSTANTIATE_GCD (long long)
+#endif
+}
 
 

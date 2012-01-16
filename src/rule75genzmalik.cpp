@@ -33,7 +33,7 @@
 #include <HIntLib/rule75genzmalik.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
 
@@ -48,18 +48,18 @@ namespace
     */
 
 #if HINTLIB_STATIC_WORKS == 1
-   const real lamda2 = sqrt (real (9.0) / real (70.0));
-   const real lamda4 = sqrt (real (9.0) / real (10.0));
-   const real lamda5 = sqrt (real (9.0) / real (19.0));
+   const real lamda2 = HINTLIB_MN sqrt (real(9) / real(70));
+   const real lamda4 = HINTLIB_MN sqrt (real(9) / real(10));
+   const real lamda5 = HINTLIB_MN sqrt (real(9) / real(19));
 #else
    real lamda2, lamda4, lamda5;
 #endif
 
-   const real weight2 = real (980.0) / real (6561.0);
-   const real weight4 = real (200.0) / real(19683.0);
+   const real weight2  = real(980) / real (6561);
+   const real weight4  = real(200) / real(19683);
 
-   const real weightE2 = real(245.0) / real (486.0);
-   const real weightE4 = real (25.0) / real (729.0);
+   const real weightE2 = real(245) / real (486);
+   const real weightE4 = real (25) / real (729);
 }
 
 
@@ -71,20 +71,20 @@ namespace
 L::Rule75GenzMalik::Rule75GenzMalik (unsigned dim)
    : OrbitRule (dim),
      widthLamda (dim),
-     weight1 ((12824.0 - 9120.0 * dim + 400.0 * dim * dim) / real (19683.0)),
-     weight3 ((1820.0 - 400.0 * dim) / real (19683.0)),
-     weight5 (real (6859.0) / real (19683.0) / real(1ull << dim)),
-     weightE1 ((729.0 - 950.0 * dim + 50.0 * sqr (dim)) / real (729.0)),
-     weightE3 ((265.0 - 100.0 * dim) / real (1458.0))
+     weight1 (real(12824 - 9120*int(dim) + 400*sqr(int(dim))) / real(19683)),
+     weight3 (real( 1820 -  400*int(dim)) / real(19683)),
+     weight5 (real(6859) / real(19683) / real(Index(1) << dim)),
+     weightE1(real(  729 -  950*int(dim) +  50*sqr(int(dim))) / real(729)),
+     weightE3(real(  265 -  100*int(dim)) / real(1458))
 {
    checkDimensionNotZero (dim);
    checkDimensionGeq<2> (dim);
    checkDimensionLeq<std::numeric_limits<Index>::digits - 1> (dim);
 
 #if HINTLIB_STATIC_WORKS == 0
-   lamda2 = sqrt (real (9.0) / real (70.0));
-   lamda4 = sqrt (real (9.0) / real (10.0));
-   lamda5 = sqrt (real (9.0) / real (19.0));
+   lamda2 = HINTLIB_MN sqrt (real(9) / real(70));
+   lamda4 = HINTLIB_MN sqrt (real(9) / real(10));
+   lamda5 = HINTLIB_MN sqrt (real(9) / real(19));
 #endif
 }
 

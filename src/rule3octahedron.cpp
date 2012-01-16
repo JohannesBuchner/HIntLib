@@ -40,7 +40,7 @@
 #include <HIntLib/rule3octahedron.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 #include <HIntLib/integrand.h>
 
@@ -52,8 +52,8 @@ using L::real;
 namespace
 {
 #if HINTLIB_STATIC_WORKS == 1
-   const real sqrt2by3    = sqrt (real (2.0) / real (3.0));
-   const real oneDivSqrt3 = real (1.0) / sqrt (real (3.0));
+   const real sqrt2by3    = HINTLIB_MN sqrt (real(2) / real(3));
+   const real oneDivSqrt3 = real(1) / HINTLIB_MN sqrt (real(3));
 #else
    real sqrt2by3, oneDivSqrt3;
 #endif
@@ -71,8 +71,8 @@ L::Rule3Octahedron::Rule3Octahedron (unsigned d)
    checkDimensionNotZero (dim);
 
 #if HINTLIB_STATIC_WORKS == 0
-   sqrt2by3    = sqrt (real (2.0) / real (3.0));
-   oneDivSqrt3 = real (1.0) / sqrt (real (3.0));
+   sqrt2by3    = HINTLIB_MN sqrt (real(2) / real(3));
+   oneDivSqrt3 = real(1) / HINTLIB_MN sqrt (real(3));
 #endif
 
    // Initialze r
@@ -83,9 +83,9 @@ L::Rule3Octahedron::Rule3Octahedron (unsigned d)
       {
          real t = (2*k + 1) * (i+1) * M_PI / dim;
 
-         r [i*dim + 2*k] =     sqrt2by3 * cos (t);
+         r [i*dim + 2*k] =     sqrt2by3 * HINTLIB_MN cos (t);
 
-         r [i*dim + 2*k + 1] = sqrt2by3 * sin (t);
+         r [i*dim + 2*k + 1] = sqrt2by3 * HINTLIB_MN sin (t);
       }
 
       if (dim % 2)

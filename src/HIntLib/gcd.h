@@ -21,10 +21,28 @@
 #ifndef HINTLIB_GCD_H
 #define HINTLIB_GCD_H 1
 
-#include <HIntLib/integerring.h>
+#ifdef __GNUG__
+#pragma interface
+#endif
 
 namespace HIntLib
 {
+
+/**
+ *  powerMod()
+ */
+   
+template<class A>
+typename A::type
+powerMod (const A&, const typename A::type&, unsigned,
+                    const typename A::type&);
+
+template<class A>
+typename A::type
+powerMod
+   (const A&, const typename A::type&, unsigned, unsigned,
+              const typename A::type&);
+
 
 /**
  *  genGcd()
@@ -35,80 +53,42 @@ namespace HIntLib
  */
 
 template<class A>
-typename A::type genGcd (
-   const A&,
-   typename A::type    u, typename A::type    v,
-   typename A::type & mu, typename A::type & mv);
+typename A::type
+genGcd (const A&,
+   const typename A::type&  u, const typename A::type&  v,
+         typename A::type& mu,       typename A::type& mv);
  
 template<class A>
-typename A::type genGcd (
-   const A&,
-   typename A::type    u, typename A::type    v,
-   typename A::type & mu);
+typename A::type
+genGcd (const A&,
+   const typename A::type&  u, const typename A::type& v,
+         typename A::type& mu);
 
 template<class A>
-typename A::type genGcd (
-   const A&,
-   typename A::type    u, typename A::type    v);
+typename A::type
+genGcd (const A&, const typename A::type& u, const typename A::type& v);
 
 
 /**
- *  gen Lcm ()
+ *  genLcm ()
  */
 
 template<class A>
-typename A::type genLcm (const A&a, typename A::type u, typename A::type v)
+inline
+typename A::type
+genLcm (const A&a, const typename A::type& u, const typename A::type& v)
 {
-   return a.quot (a.mul (u, v), genGcd (a, u, v));
+   return a.mul (a.div (u, genGcd (a, u, v)), v);
 }
 
 
 /**
- *  gcd()
- *
- *  Calculates the greatest common divisor
- *
- *  Works for
- *     - integers
- *     - GenPolynomial2
- */
- 
-template<typename T> T gcd(T u, T v)  HINTLIB_GNU_CONST;
-template<typename T> T gcd(T u, T v)
-{
-   while (v)
-   {
-      T r = u % v;
-      u = v;
-      v = r;
-   }
-
-   return u;
-}
-
-template<typename T> inline T gcd (T a, T b, T &ma)
-{
-   IntegerRing<T> r;
-   return genGcd (r, a, b, ma);
-}
-
-template<typename T> inline T gcd (T a, T b, T &ma, T &mb)
-{
-   IntegerRing<T> r;
-   return genGcd (r, a, b, ma, mb);
-}
-
-
-/**
- *  lcm ()
+ *  genIsCoprime ()
  */
 
-template<typename T> T lcm(T u, T v)  HINTLIB_GNU_CONST;
-template<typename T> inline T lcm (T u, T v)
-{
-   return u * v / gcd (u,v);
-}
-
+template<class A>
+bool
+genIsCoprime (const A&, const typename A::type&, const typename A::type&);
 
 }  // namespace HIntLib
 

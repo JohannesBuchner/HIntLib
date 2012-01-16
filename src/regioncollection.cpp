@@ -28,7 +28,7 @@
 
 #include <HIntLib/fourthdiff.h>
 #include <HIntLib/bitop.h>
-#include <HIntLib/myalgorithm.h>
+#include <HIntLib/hlalgorithm.h>
 
 namespace L = HIntLib;
 

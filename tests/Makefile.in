@@ -144,7 +144,6 @@ COMMON_TESTS = \
    abs.test \
    partition.test \
    bitop.test \
-   polynomial.test \
    eratosthenes.test \
    prime.test \
    arithmetic.test \
@@ -185,7 +184,6 @@ check_PROGRAMS = \
    test_genmatrix \
    test_linearalgebra \
    test_partition \
-   test_polynomial \
    test_prng \
    test_prime \
    test_qrnsequence \
@@ -198,13 +196,20 @@ com = test.cpp
 
 numericdiff_SOURCES = numericdiff.cpp
 test_abs_SOURCES = test_abs.cpp $(com)
-test_arithmetic_SOURCES = test_arithmetic.cpp $(com)
+test_arithmetic_SOURCES = \
+   test_arithmetic.cpp \
+   test_arithmetic_real.cpp \
+   test_arithmetic_integer.cpp \
+   test_arithmetic_gf2.cpp \
+   test_arithmetic_poly2.cpp \
+   test_arithmetic_lookupfield.cpp \
+   test_arithmetic_modulararithmetic.cpp $(com)
+
 test_bitop_SOURCES = test_bitop.cpp $(com)
 test_eratosthenes_SOURCES = test_eratosthenes.cpp $(com)
 test_genmatrix_SOURCES = test_genmatrix.cpp $(com)
 test_linearalgebra_SOURCES = test_linearalgebra.cpp $(com)
 test_partition_SOURCES = test_partition.cpp $(com)
-test_polynomial_SOURCES = test_polynomial.cpp $(com)
 test_prime_SOURCES = test_prime.cpp $(com)
 test_prng_SOURCES = test_prng.cpp $(com)
 test_qrnsequence_SOURCES = test_qrnsequence.cpp $(com)
@@ -212,7 +217,7 @@ test_rule_SOURCES = test_rule.cpp $(com)
 test_shiftnet_SOURCES = test_shiftnet.cpp $(com)
 test_tparameter_SOURCES = test_tparameter.cpp $(com)
 
-noinst_HEADERS = test.h
+noinst_HEADERS = test.h test_arithmetic_tests.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)/src
 AM_CXXFLAGS = @COMPILERWARNINGS@
@@ -226,7 +231,7 @@ check_PROGRAMS = numericdiff$(EXEEXT) test_abs$(EXEEXT) \
 	test_arithmetic$(EXEEXT) test_bitop$(EXEEXT) \
 	test_eratosthenes$(EXEEXT) test_genmatrix$(EXEEXT) \
 	test_linearalgebra$(EXEEXT) test_partition$(EXEEXT) \
-	test_polynomial$(EXEEXT) test_prng$(EXEEXT) test_prime$(EXEEXT) \
+	test_prng$(EXEEXT) test_prime$(EXEEXT) \
 	test_qrnsequence$(EXEEXT) test_rule$(EXEEXT) \
 	test_shiftnet$(EXEEXT) test_tparameter$(EXEEXT)
 am_numericdiff_OBJECTS = numericdiff.$(OBJEXT)
@@ -240,7 +245,12 @@ test_abs_OBJECTS = $(am_test_abs_OBJECTS)
 test_abs_LDADD = $(LDADD)
 test_abs_DEPENDENCIES = ../src/libhintlib.la
 test_abs_LDFLAGS =
-am_test_arithmetic_OBJECTS = test_arithmetic.$(OBJEXT) $(am__objects_1)
+am_test_arithmetic_OBJECTS = test_arithmetic.$(OBJEXT) \
+	test_arithmetic_real.$(OBJEXT) \
+	test_arithmetic_integer.$(OBJEXT) test_arithmetic_gf2.$(OBJEXT) \
+	test_arithmetic_poly2.$(OBJEXT) \
+	test_arithmetic_lookupfield.$(OBJEXT) \
+	test_arithmetic_modulararithmetic.$(OBJEXT) $(am__objects_1)
 test_arithmetic_OBJECTS = $(am_test_arithmetic_OBJECTS)
 test_arithmetic_LDADD = $(LDADD)
 test_arithmetic_DEPENDENCIES = ../src/libhintlib.la
@@ -272,11 +282,6 @@ test_partition_OBJECTS = $(am_test_partition_OBJECTS)
 test_partition_LDADD = $(LDADD)
 test_partition_DEPENDENCIES = ../src/libhintlib.la
 test_partition_LDFLAGS =
-am_test_polynomial_OBJECTS = test_polynomial.$(OBJEXT) $(am__objects_1)
-test_polynomial_OBJECTS = $(am_test_polynomial_OBJECTS)
-test_polynomial_LDADD = $(LDADD)
-test_polynomial_DEPENDENCIES = ../src/libhintlib.la
-test_polynomial_LDFLAGS =
 am_test_prime_OBJECTS = test_prime.$(OBJEXT) $(am__objects_1)
 test_prime_OBJECTS = $(am_test_prime_OBJECTS)
 test_prime_LDADD = $(LDADD)
@@ -315,12 +320,17 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/numericdiff.Po ./$(DEPDIR)/test.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_abs.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_arithmetic.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/test_arithmetic_gf2.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/test_arithmetic_integer.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/test_arithmetic_lookupfield.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/test_arithmetic_modulararithmetic.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/test_arithmetic_poly2.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/test_arithmetic_real.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_bitop.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_eratosthenes.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_genmatrix.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_linearalgebra.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_partition.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/test_polynomial.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_prime.Po ./$(DEPDIR)/test_prng.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_qrnsequence.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_rule.Po \
@@ -338,10 +348,9 @@ DIST_SOURCES = $(numericdiff_SOURCES) $(test_abs_SOURCES) \
 	$(test_arithmetic_SOURCES) $(test_bitop_SOURCES) \
 	$(test_eratosthenes_SOURCES) $(test_genmatrix_SOURCES) \
 	$(test_linearalgebra_SOURCES) $(test_partition_SOURCES) \
-	$(test_polynomial_SOURCES) $(test_prime_SOURCES) \
-	$(test_prng_SOURCES) $(test_qrnsequence_SOURCES) \
-	$(test_rule_SOURCES) $(test_shiftnet_SOURCES) \
-	$(test_tparameter_SOURCES)
+	$(test_prime_SOURCES) $(test_prng_SOURCES) \
+	$(test_qrnsequence_SOURCES) $(test_rule_SOURCES) \
+	$(test_shiftnet_SOURCES) $(test_tparameter_SOURCES)
 HEADERS = $(noinst_HEADERS)
 
 
@@ -352,7 +361,7 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
 	check-recursive installcheck-recursive
 DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.in Makefile.am
 DIST_SUBDIRS = toms659 toms738
-SOURCES = $(numericdiff_SOURCES) $(test_abs_SOURCES) $(test_arithmetic_SOURCES) $(test_bitop_SOURCES) $(test_eratosthenes_SOURCES) $(test_genmatrix_SOURCES) $(test_linearalgebra_SOURCES) $(test_partition_SOURCES) $(test_polynomial_SOURCES) $(test_prime_SOURCES) $(test_prng_SOURCES) $(test_qrnsequence_SOURCES) $(test_rule_SOURCES) $(test_shiftnet_SOURCES) $(test_tparameter_SOURCES)
+SOURCES = $(numericdiff_SOURCES) $(test_abs_SOURCES) $(test_arithmetic_SOURCES) $(test_bitop_SOURCES) $(test_eratosthenes_SOURCES) $(test_genmatrix_SOURCES) $(test_linearalgebra_SOURCES) $(test_partition_SOURCES) $(test_prime_SOURCES) $(test_prng_SOURCES) $(test_qrnsequence_SOURCES) $(test_rule_SOURCES) $(test_shiftnet_SOURCES) $(test_tparameter_SOURCES)
 
 all: all-recursive
 
@@ -394,9 +403,6 @@ test_linearalgebra$(EXEEXT): $(test_linearalgebra_OBJECTS) $(test_linearalgebra_
 test_partition$(EXEEXT): $(test_partition_OBJECTS) $(test_partition_DEPENDENCIES) 
 	@rm -f test_partition$(EXEEXT)
 	$(CXXLINK) $(test_partition_LDFLAGS) $(test_partition_OBJECTS) $(test_partition_LDADD) $(LIBS)
-test_polynomial$(EXEEXT): $(test_polynomial_OBJECTS) $(test_polynomial_DEPENDENCIES) 
-	@rm -f test_polynomial$(EXEEXT)
-	$(CXXLINK) $(test_polynomial_LDFLAGS) $(test_polynomial_OBJECTS) $(test_polynomial_LDADD) $(LIBS)
 test_prime$(EXEEXT): $(test_prime_OBJECTS) $(test_prime_DEPENDENCIES) 
 	@rm -f test_prime$(EXEEXT)
 	$(CXXLINK) $(test_prime_LDFLAGS) $(test_prime_OBJECTS) $(test_prime_LDADD) $(LIBS)
@@ -426,12 +432,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_abs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arithmetic.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arithmetic_gf2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arithmetic_integer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arithmetic_lookupfield.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arithmetic_modulararithmetic.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arithmetic_poly2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arithmetic_real.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_bitop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_eratosthenes.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_genmatrix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_linearalgebra.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_partition.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_polynomial.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_prime.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_prng.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_qrnsequence.Po@am__quote@

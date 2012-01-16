@@ -36,7 +36,7 @@
 #include <HIntLib/rule5gauss.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
 
@@ -47,13 +47,13 @@ using L::real;
 namespace
 {
 #if HINTLIB_STATIC_WORKS == 1
-   const real r = sqrt (real (3.0) / real (5.0));
+   const real r = HINTLIB_MN sqrt (real(3) / real(5));
 #else
    real r;
 #endif
 
-   const real w0 = real (8.0) / real (9.0);
-   const real w1 = real (5.0) / real (9.0);
+   const real w0 = real(8) / real(9);
+   const real w1 = real(5) / real(9);
 }
 
 
@@ -63,7 +63,7 @@ namespace
  */
 
 L::Rule5Gauss::Rule5Gauss (unsigned dim)
-   : OrbitRule (dim), a (dim), oneDivTwoPowDim (1.0 / (Index(1) << dim))
+   : OrbitRule (dim), a (dim), oneDivTwoPowDim (real(1) / (Index(1) << dim))
 {
    checkDimensionNotZero (dim);
 
@@ -72,7 +72,7 @@ L::Rule5Gauss::Rule5Gauss (unsigned dim)
    if (dim > maxDim)  throw DimensionTooHigh (dim, maxDim);
 
    #if HINTLIB_STATIC_WORKS == 0
-      r  = sqrt (real (3.0) / real (5.0));
+      r  = HINTLIB_MN sqrt (real(3) / real(5));
    #endif
 }
 

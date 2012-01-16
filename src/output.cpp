@@ -22,84 +22,29 @@
 #pragma implementation
 #endif
 
-#include <HIntLib/defaults.h>
-
-#ifdef HINTLIB_HAVE_OSTREAM
-  #include <ostream>
-#else
-  #include <iostream>
-#endif
-
-#ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
-#else
-  #include <HIntLib/fallback_sstream.h>
-#endif
-
-#include <HIntLib/integerring.h>
-#include <HIntLib/factorring.h>
+#include <HIntLib/output.h>
 
 namespace L = HIntLib;
 
-using std::ostream;
-
 
 /**
- *  This file contains  operator<< (ostrem&, const X &)  implementations
- *  for various types.
+ *  Printer
  */
 
-/**
- *  ZRing
- *  RRing
- */
-
-ostream & L::operator<< (ostream &o, const ZRing &)
+L::Private::Printer::Printer (std::ostream &_o)
+   : o (_o)
 {
-   return o << "Z";
-}
-
-ostream & L::operator<< (ostream &o, const RRing &)
-{
-   return o << "R";
-}
-
-
-/**
- *  Modular Integer Ring Base
- */
-
-void L::Priv::ModularIntegerRingBase::prnSuffix (std::ostream &o) const
-{
-   std::ostringstream ss;
-   ss.flags (o.flags());
-   ss.precision (o.precision());
+   flags (o.flags());
+   precision (o.precision());
 #ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-   ss.imbue (o.getloc());
+   imbue (o.getloc());
 #endif
-
-   ss << '(' << m << ')';
-
-   o << ss.str().c_str();
 }
 
-void L::Priv::ModularIntegerRingBase::prnShort (std::ostream &o, unsigned a)
+L::Private::Printer::~Printer ()
 {
-   o << a;
-}
-
-void L::Priv::ModularIntegerRingBase::prn (std::ostream &o, unsigned a) const
-{
-   std::ostringstream ss;
-   ss.flags (o.flags());
-   ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-   ss.imbue (o.getloc());
-#endif
-
-   ss << a << " (" << m << ')';
-
-   o << ss.str().c_str();
+   // o << str();     // Does not handle width properly on GNU C++ 2.95.x
+   o << str().c_str();
 }
 
 

@@ -28,34 +28,71 @@
 namespace HIntLib
 {
    /**
-    *  Types for polynomial_tag
+    *  Tags used in algebraic structures
     */
 
-   struct nopolynomial_tag {};
-   struct polynomial_tag : public nopolynomial_tag {};
-
-   /**
-    *  Types for algebra_tag
-    */
+   // Tags for algebra_category
 
    struct group_tag {};
-   struct ring_tag : public group_tag      { typedef void* MAGIC;};
-   struct domain_tag : public ring_tag     { typedef void** MAGIC;};
+   struct ringfield_tag : public group_tag {};
 
-   struct ufd_tag : public domain_tag      {};
-   struct euclidean_tag : public ufd_tag   {};
+   struct ringdomain_tag : public ringfield_tag {};
+   struct ring_tag : public ringdomain_tag   { typedef ring_tag P; };
+   struct domain_tag : public ringdomain_tag  { typedef domain_tag P; };
+   struct ufd_tag : public domain_tag      { typedef ufd_tag P; };
+   struct euclidean_tag : public ufd_tag {};
    struct integer_tag : public euclidean_tag {};
 
-   struct field_tag : public domain_tag    { typedef void*** MAGIC;};
-   struct rational_tag : public field_tag  { typedef unsigned*** MAGIC; };
-   struct real_tag     : public field_tag  { typedef int *** MAGIC; };
-   struct complex_tag  : public field_tag  { typedef char*** MAGIC; };
-
-   struct gf_tag : public field_tag        { typedef void**** MAGIC;};
-   struct cyclic_tag : public gf_tag       { typedef void***** MAGIC;};
+   struct field_tag       : public ringfield_tag
+                        { typedef field_tag P; typedef P F; };
+   struct gf_tag          : public field_tag { typedef gf_tag P; typedef P F; };
+   struct cyclic_tag      : public gf_tag {};
+   struct realcomplex_tag : public field_tag { typedef realcomplex_tag F; };
+   struct real_tag        : public realcomplex_tag { typedef real_tag P; };
+   struct complex_tag     : public realcomplex_tag { typedef complex_tag P; };
+   struct numberfield_tag : public field_tag { typedef numberfield_tag F; };
+   struct rational_tag    : public numberfield_tag { typedef rational_tag P; };
+   struct funfield_tag    : public field_tag { typedef funfield_tag F; };
+   struct ratfunfield_tag : public funfield_tag {};
 
    struct vectorspace_tag : public group_tag {};
 
+   // Tags for polynomial_category
+
+   struct nopolynomial_tag {};
+   struct polynomial_tag {};
+
+   // Tags for char_category
+
+   struct char_any {};
+   struct char_non    : public char_any {}; 
+   struct char_exists : public char_any {};
+   struct char_zero  : public char_exists {};
+   struct char_prime : public char_exists {};
+   struct char_two   : public char_prime {};
+
+   // Tags for zerodivisor_cateogyr
+
+   struct zerodivisor_tag {};
+   struct nozerodivisor_tag {};
+
+   // Tags for size_category
+
+   struct finite_tag   { static const bool finite = true;  };
+   struct infinite_tag { static const bool finite = false; };
+
+   // Tags for primedetection_category
+
+   struct primedetection_tag {};
+   struct noprimedetection_tag {};
+
+   // flags for printShort()
+
+   enum PrintShortFlag
+   {
+      FIT_FOR_MUL = 1
+   };
+   
    /**
     *  Addition based on bit operations
     */
@@ -64,24 +101,43 @@ namespace HIntLib
    class BitOpBasedAddition
    {
    public:
+      typedef char_two char_category;
+
       static bool is0 (const T& a)  { return !a; }
 
       static T  add (const T& a, const T& b)  { return a ^ b; }
       static T  sub (const T& a, const T& b)  { return a ^ b; }
 
-      static T& addTo   (T& a, const T& b)  { return a ^= b; }
-      static T& subFrom (T& a, const T& b)  { return a ^= b; }
+      static void addTo   (T& a, const T& b)  { a ^= b; }
+      static void subFrom (T& a, const T& b)  { a ^= b; }
 
-      static T  neg    (const T& a)  { return a; }
-      static T& negate (      T& a)  { return a; }
+      static T  neg (const T& a)  { return a; }
+      static void negate  (T&)  {}
 
-      static T times (const T& a, unsigned k)  { return odd (k) ? a : T(); }
+      static T dbl (const T&)  { return 0; }
+      static void times2 (T& a)  { a = 0; }
+      static T times (const T& a, unsigned k)  { return odd (k) ? a : 0; }
+
       static unsigned additiveOrder (const T& a)  { return a ? 2 : 1; }
       static unsigned characteristic()  { return 2; }
 
    protected:
       BitOpBasedAddition () {}
    };
+
+   /**
+    *  destructiveAssign()
+    *
+    *  Assigns src to dst in the most efficient way, allowing even the
+    *  destruction of src.
+    *
+    *  The default action is normal assignment. However, specializations may be
+    *  provided using, e.g. swap() or similar routines.
+    */
+
+   template<typename T>
+   inline
+   void destructiveAssign (T& dst, T& src) { dst = src; }
 
 } // namespace HIntLib
 
@@ -91,7 +147,9 @@ namespace HIntLib
 
 #define HINTLIB_TRIVIAL_CYCLIC_MEMBERS \
    HINTLIB_TRIVIAL_DOMAIN_MEMBERS \
-   static unsigned extensionDegree()  { return 1; }
+   static unsigned extensionDegree()  { return 1; } \
+   const type& frobenius (const type& a) const  { return a; } \
+   const type& invFrobenius (const type& a) const  { return a; }
 
 #endif
 

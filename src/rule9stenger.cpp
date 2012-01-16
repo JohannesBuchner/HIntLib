@@ -38,7 +38,7 @@
 #include <HIntLib/rule9stenger.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
 
@@ -65,50 +65,55 @@ L::Rule9Stenger::Rule9Stenger (unsigned dim)
    checkDimensionLeq<60989> (dim);
 #endif
 
-   const real u2 = real (5.0) / real (9.0) + sqrt (real (40.0) / real (567.0));
-   const real v2 = real (5.0) / real (9.0) - sqrt (real (40.0) / real (567.0));
-   rU = sqrt (u2);
-   rV = sqrt (v2);
+   const real u2 = real(5) / real(9)
+                 + HINTLIB_MN sqrt (real(40) / real(567));
+   const real v2 = real(5) / real(9)
+                 - HINTLIB_MN sqrt (real(40) / real(567));
+   rU = HINTLIB_MN sqrt (u2);
+   rV = HINTLIB_MN sqrt (v2);
 
    const real u2MinV2 = u2 - v2;
    const real u2DivV2 = u2 / v2;
    const real u4 = sqr(u2); real v4 = sqr(v2);
    const real u8 = sqr(u4); real v8 = sqr(v4);
 
-   const real dimMin1 = int (dim) - 1;
-   const real dimMin2 = int (dim) - 2;
-   const real dimMin3 = int (dim) - 3;
+   const real dimMin1 = int(dim) - 1;
+   const real dimMin2 = int(dim) - 2;
+   const real dimMin3 = int(dim) - 3;
  
-   weightF = 1.0 / (525.0 * u2 * v2 * sqr(u2MinV2));
+   weightF = real(1) / (real(525) * u2 * v2 * sqr(u2MinV2));
  
-   weightH = (24 - 5 * int (dim)) / (3240.0 * v8);
+   weightH = (24 - 5 * int(dim)) / (real(3240) * v8);
  
-   weightI = (3.0 - 5.0 * v2) / (2160.0 * dimMin3 * u4 * u2 * u2MinV2);
+   weightI = (real(3) - real(5) * v2)
+           / (real(2160) * dimMin3 * u4 * u2 * u2MinV2);
  
-   weightJ = (1.0  - 1296.0 * u8 * weightI) / (1296.0 * v8);
+   weightJ = (real(1) - real(1296) * u8 * weightI) / (real(1296) * v8);
  
-   weightE =   (3.0 - 5.0 * u2) / (-180.0 * v4 * u2MinV2)
-             - weightF * u2DivV2
-             - 2.0 * dimMin2 * (weightH + dimMin3 * weightJ);
+   weightE = (real(3) - real(5) * u2) / (real(-180) * v4 * u2MinV2)
+           - weightF * u2DivV2
+           - real(2) * dimMin2 * (weightH + dimMin3 * weightJ);
  
-   weightD =   (3.0 - 5.0 * v2) / (180.0 * u4 * u2MinV2)
-             - weightF / u2DivV2 - 2.0 * dimMin2 * dimMin3 * weightI;
+   weightD = (real(3) - real(5) * v2) / (real(180) * u4 * u2MinV2)
+           - weightF / u2DivV2 - real(2) * dimMin2 * dimMin3 * weightI;
  
-   weightC =   (3.0 - 5.0 * u2) / (-30.0 * v2 * u2MinV2)
-             - 2 * dimMin1 * (weightE + weightF + dimMin2 *
-                                (weightH + 2.0 / 3.0 * dimMin3 * weightJ));
+   weightC = (real(3) - real(5) * u2) / (real(-30) * v2 * u2MinV2)
+           - real(2 * dimMin1)
+               * (weightE + weightF + dimMin2 *
+                      (weightH + real(2) / real(3) * dimMin3 * weightJ));
  
-   weightB =   (3.0 - 5.0 * v2) / (30.0 * u2 * u2MinV2)
-             - 2.0 * dimMin1 * (weightD + weightF
-                                  + 2.0 / 3.0 * dimMin2 * dimMin3 * weightI);
+   weightB = (real(3) - real(5) * v2) / (real(30) * u2 * u2MinV2)
+           - real(2) * dimMin1
+               * (weightD + weightF
+                          + real(2) / real(3) * dimMin2 * dimMin3 * weightI);
  
    weightA =
-        1.0
-      - 2.0 * dim * (  weightB + weightC
-                     + dimMin1 * (  weightD + weightE + 2.0 * weightF
-                                  +   1.0 / 3.0 * dimMin2
-                                    * (  2 * weightH
-                                       + dimMin3 * (weightI + weightJ)
+        real(1)
+      - real(2) * dim * (  weightB + weightC
+                         + dimMin1 * (  weightD + weightE + real(2) * weightF
+                                      +   real(1) / real(3) * dimMin2
+                                        * (  real(2) * weightH
+                                           + dimMin3 * (weightI + weightJ)
                                       )
                                  )
                     ); 

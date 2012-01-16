@@ -13,7 +13,7 @@
  *
  *  This is the type used for normal floating point operations.
  *
- *  By default, double is used.  float or long double can be used altermatively.
+ *  By default, double is used.  float or long double can be used alternatively.
  */
 
 #if HINTLIB_REAL == 1
@@ -48,7 +48,7 @@
    #define HINTLIB_UNSIGNED_NOT_EQUAL_U32 1
    typedef unsigned long u32;
 #else
-   error "unsigned long int does not have at least 32 bits!"
+   #error "unsigned long int does not have at least 32 bits!"
 #endif
 #endif
 
@@ -69,10 +69,10 @@
       #define HINTLIB_U32_NOT_EQUAL_U64 1
       typedef unsigned long long u64;
    #else
-   #error "Can not determine an unsigned integer type with at least 64 bits!"
+   #error "Cannot determine an unsigned integer type with at least 64 bits!"
    #endif
 #else
-   #error "Can not determine an unsigned integer type with at least 64 bits!"
+   #error "Cannot determine an unsigned integer type with at least 64 bits!"
 #endif
 #endif
 #endif
@@ -103,6 +103,11 @@
 #ifndef HINTLIB_PRIME_TABLE_SIZE
    #define HINTLIB_PRIME_TABLE_SIZE 5000
 #endif
+
+
+/**
+ *  PRECALCULATED_FIELD_SIZE
+ */
 
 #ifndef HINTLIB_PRECALCULATED_FIELD_MAX_SIZE
    #define HINTLIB_PRECALCULATED_FIELD_MAX_SIZE 32

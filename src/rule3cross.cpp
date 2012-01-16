@@ -40,7 +40,7 @@
 #include <HIntLib/rule3cross.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
 
@@ -54,8 +54,8 @@ namespace L = HIntLib;
 
 L::Rule3Cross::Rule3Cross (unsigned dim)
    : OrbitRule (dim),
-     r (sqrt (dim / real (3.0))),
-     oneOver2Dim (real (1.0) / (2 * dim))
+     r (HINTLIB_MN sqrt (real(dim) / real(3))),
+     oneOver2Dim (real(1) / real(2 * dim))
 {
    checkDimensionNotZero (dim);
 }

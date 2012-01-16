@@ -31,7 +31,7 @@
 
 #include <HIntLib/defaults.h>
 #include <HIntLib/minmaxfinder.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 
 
 namespace HIntLib
@@ -173,11 +173,11 @@ public:
              / real(getCount()-1);
    }
 
-   real getStdDev()       const  { return sqrt(getVariance()); }
-   real getStdDevSample() const  { return sqrt(getVarianceSample()); }
+   real getStdDev()       const { return HINTLIB_MN sqrt(getVariance()); }
+   real getStdDevSample() const { return HINTLIB_MN sqrt(getVarianceSample()); }
 
    Data getSumSquares()    const { return Data(squares); }
-   real getGeometricMean() const { return sqrt(real(squares)); }
+   real getGeometricMean() const { return HINTLIB_MN sqrt(real(squares)); }
 
    // assignment
 

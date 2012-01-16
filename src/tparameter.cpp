@@ -24,7 +24,7 @@
 
 #include <HIntLib/tparameter.h>
 
-#include <HIntLib/myalgorithm.h>
+#include <HIntLib/hlalgorithm.h>
 #include <HIntLib/exception.h>
 
 namespace L = HIntLib;

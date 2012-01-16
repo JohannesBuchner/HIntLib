@@ -85,7 +85,7 @@ L::Integrator::Status L::HINTLIB_NAME(MCIntegrator)::integrate (
    #endif
 
    ee.set (stat.getMean() * h.getVolume(),
-           stat.getStdDevSample() * h.getVolume() / sqrt(real(n)));
+           stat.getStdDevSample() * h.getVolume() / HINTLIB_MN sqrt(real(n)));
 
    Status status = checkRequestedError (ee, reqAbsError, reqRelError);
 

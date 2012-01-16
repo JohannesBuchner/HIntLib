@@ -22,7 +22,7 @@
 #include <iomanip>
 #include <memory>
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/array.h>
 #include <HIntLib/linearalgebra.h>
 #include <HIntLib/mersennetwister.h>

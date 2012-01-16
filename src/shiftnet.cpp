@@ -98,8 +98,9 @@ namespace
    cu64 sn2_27[] = {1,81366,1969322,164826, 5950,16630,2382, 604, 46,22,10,2};
    cu64 sn2_28[] = {1,81366,1350324,548382,17334, 1756,2222, 286,102,42, 6,2};
    cu64 sn2_29[] = {1,80630,1443834,449758,11678,16762, 686,1078, 78,26, 6,2};
+   cu64 sn2_30[] = {1,80630,1357544,196226,20448, 1758, 486, 122,526,22,10,2};
 
-   // We use the following vector (with  m - t = 10) for m = 29,...,39
+   // We use the following vector (with  m - t = 10) for m = 31,...,39
 
    cu64 sn2_x [] = {1,10094,  51322, 22822,  190,  626, 270,  22, 10, 2};
 
@@ -135,7 +136,7 @@ namespace
       { sizeof (sn2_27) / sizeof (u64), sn2_27 },
       { sizeof (sn2_28) / sizeof (u64), sn2_28 },
       { sizeof (sn2_29) / sizeof (u64), sn2_29 },
-      { sizeof (sn2_x)  / sizeof (u64), sn2_x  },  // m = 30
+      { sizeof (sn2_30) / sizeof (u64), sn2_30 },
       { sizeof (sn2_x)  / sizeof (u64), sn2_x  },  // m = 31
       { sizeof (sn2_x)  / sizeof (u64), sn2_x  },  // m = 32
       { sizeof (sn2_x)  / sizeof (u64), sn2_x  },  // m = 33

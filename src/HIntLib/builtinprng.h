@@ -31,9 +31,15 @@
 #pragma interface
 #endif
 
-#include <stdlib.h>
-
 #include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_CSTDLIB
+  #include <cstdlib>
+  #define HINTLIB_SLN std::
+#else
+  #include <stdlib.h>
+  #define HINTLIB_SLN
+#endif
 
 #ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
@@ -78,13 +84,13 @@ public:
 
    // Return a random number
 
-   u32 operator() ()  { return rand(); }  // {0,...,getMax()}
+   u32 operator() ()  { return HINTLIB_SLN rand(); }  // {0,...,getMax()}
    int operator() (int max);              // {0,...,max-1}
    real getReal();
 
    // Initialize Generator
 
-   void init (unsigned seed)  { srand (seed); }
+   void init (unsigned seed)  { HINTLIB_SLN srand (seed); }
 
    // Constructors
 
@@ -122,6 +128,8 @@ int BuiltInPRNG::operator() (int max)
 }
 
 } // namespace HIntLib
+
+#undef HINTLIB_SLN
 
 #endif
 

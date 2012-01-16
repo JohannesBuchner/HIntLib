@@ -30,7 +30,7 @@
 
 #include <memory>
 
-#include <HIntLib/mympi.h>
+#include <HIntLib/hlmpi.h>
 
 #include <HIntLib/adaptintegratorms.h>
 

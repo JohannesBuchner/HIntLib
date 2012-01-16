@@ -36,7 +36,7 @@
 #include <HIntLib/rule2thacher.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 #include <HIntLib/integrand.h>
 
@@ -48,8 +48,8 @@ using L::real;
 namespace
 {
 #if HINTLIB_STATIC_WORKS == 1
-   const real r  = sqrt (real (3.0)) / real (6.0);
-   const real r2 = sqrt (real (3.0)) / real (3.0);
+   const real r  = HINTLIB_MN sqrt (real(3)) / real(6);
+   const real r2 = HINTLIB_MN sqrt (real(3)) / real(3);
 #else
    real r, r2;
 #endif
@@ -65,8 +65,8 @@ L::Rule2Thacher::Rule2Thacher (unsigned _dim)
    checkDimensionNotZero (dim);
 
 #if HINTLIB_STATIC_WORKS != 1
-   r  = sqrt (real (3.0)) / real (6.0);
-   r2 = sqrt (real (3.0)) / real (3.0);
+   r  = HINTLIB_MN sqrt (real(3)) / real(6);
+   r2 = HINTLIB_MN sqrt (real(3)) / real(3);
 #endif
 }
 
@@ -104,7 +104,7 @@ real L::Rule2Thacher::eval (Integrand &f, const Hypercube &h)
 
 real L::Rule2Thacher::getSumAbsWeight() const
 {
-   return real (1.0) + real (dim) * r2;
+   return real(1) + real (dim) * r2;
 }
 
 

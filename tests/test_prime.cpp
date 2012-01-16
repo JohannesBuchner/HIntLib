@@ -22,6 +22,16 @@
 #include <iostream>
 #include <iomanip>
 
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_CSTDLIB
+  #include <cstdlib>
+  #define HINTLIB_SLN std::
+#else
+  #include <stdlib.h>
+  #define HINTLIB_SLN
+#endif
+
 #include <HIntLib/prime.h>
 #include <HIntLib/gcd.h>
 
@@ -43,7 +53,7 @@ bool opt (int c, const char* s)
 {
    switch (c)
    {
-   case 'n':  SIZE = atoi(s) + 1; return true;
+   case 'n':  SIZE = HINTLIB_SLN atoi(s) + 1; return true;
    }
 
    return false;
@@ -122,7 +132,7 @@ void test (int argc, char**)
             for (u32 j = 2; j < i; ++j)
             {
                if (i % j == 0)  ++numDivisor;
-               if (L::gcd (i, j) == 1)  ++numRelPrime;
+               if (L::isCoprime(j, i))  ++numRelPrime;
             }
 
             if (numDivisor == 0)  error ("No divisors found");

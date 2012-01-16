@@ -18,46 +18,31 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <HIntLib/polynomial.tcc>
+#include <HIntLib/polynomial_field.tcc>
 
-#include <HIntLib/factorring.h>
+#include <HIntLib/realfield.h>
+#include <HIntLib/gf2.h>
+#include <HIntLib/quotientfield.h>
+#include <HIntLib/integerring.h>
+#include <HIntLib/lookupfield.h>
 
 namespace HIntLib
 {
-   HINTLIB_INSTANTIATE_POLYNOMIAL (int)
-   HINTLIB_INSTANTIATE_POLYNOMIAL (unsigned char)
-   HINTLIB_INSTANTIATE_POLYNOMIAL (unsigned short)
+   // Polynomial<>
 
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_RING (FactorRing<unsigned char>)
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_RING (FactorRing<unsigned short>)
+   HINTLIB_INSTANTIATE_POLYNOMIAL_NO_EQUAL (Real<real>)
+   HINTLIB_INSTANTIATE_POLYNOMIAL_NO_EQUAL (Complex<real>)
+   HINTLIB_INSTANTIATE_POLYNOMIAL (Quotient<int>)
+   HINTLIB_INSTANTIATE_POLYNOMIAL (Quotient<Polynomial<unsigned char> >)
 
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_DOMAIN (IntegerRing<int>)
+   // PolynomialRing<>
 
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_GF (FactorField<unsigned char>)
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_GF (FactorField<unsigned short>)
-}
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_RATIONAL(QuotientField<IntegerRing<int> >)
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_REAL (RealField<real>)
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_COMPLEX (ComplexField<real>)
 
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_GF (GF2)
 
-/**
- *  funny Sum ()
- *
- *  Return the first  n+1  terms of the sum
- *
- *      1 + 1 + base + base^2 + base^3 + ...
- */
-
-unsigned HIntLib::Private::funnySum (int n, unsigned base)
-{
-   if (n < 0)  return 0;
-
-   unsigned res = 1;
-   unsigned k = 1;
-
-   for (int i = 0; i < n; ++i)
-   {
-      res += k;
-      k *= base;
-   }
-   return res;
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_FIELD(QuotientField<PolynomialRing<GF2> >)
 }
 

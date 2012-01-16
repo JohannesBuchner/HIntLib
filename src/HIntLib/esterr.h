@@ -30,7 +30,7 @@
 #include <algorithm>
 #include <iosfwd>
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #ifdef HINTLIB_PARALLEL
    #include <HIntLib/buffer.h>
 #endif

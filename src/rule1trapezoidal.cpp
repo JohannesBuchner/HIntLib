@@ -50,7 +50,7 @@ namespace L = HIntLib;
  */
 
 L::Rule1Trapezoidal::Rule1Trapezoidal (unsigned dim)
-: OrbitRule (dim), a (dim), oneDivTwoPowDim (1.0 / (Index(1) << dim))
+   : OrbitRule (dim), a (dim), oneDivTwoPowDim (real(1) / (Index(1) << dim))
 {
    checkDimensionNotZero (dim);
    checkDimensionLeq<std::numeric_limits<Index>::digits - 1> (dim);

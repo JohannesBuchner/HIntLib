@@ -27,7 +27,7 @@
 #pragma implementation
 #endif
 
-#include <HIntLib/mympi.h>
+#include <HIntLib/hlmpi.h>
 
 #include <HIntLib/buffer.h>
 

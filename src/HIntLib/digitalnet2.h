@@ -38,7 +38,7 @@
 #include <HIntLib/shiftscale.h>
 #include <HIntLib/pointset.h>
 #include <HIntLib/qmcintegration.h>
-#include <HIntLib/polynomial2.h>
+#include <HIntLib/gf2vectorspace.h>
 
 namespace HIntLib
 {

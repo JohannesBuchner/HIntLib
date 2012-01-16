@@ -23,10 +23,17 @@
 #pragma implementation
 #endif
 
-#include <string.h>
 #include <string>
 
 #include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_CSTRING
+  #include <cstring>
+  #define HINTLIB_SSN std::
+#else
+  #include <string.h>
+  #define HINTLIB_SSN
+#endif
 
 #ifdef HINTLIB_HAVE_SSTREAM
   #include <sstream>
@@ -34,7 +41,7 @@
   #include <HIntLib/fallback_sstream.h>
 #endif
 
-#include <HIntLib/mympi.h>
+#include <HIntLib/hlmpi.h>
 
 #include <HIntLib/exception_MPI.h>
 
@@ -49,7 +56,7 @@ namespace
       std::string s = ss.str();
 
       char* p = new char [s.length() + 1];
-      strcpy (p, s.c_str());
+      HINTLIB_SSN strcpy (p, s.c_str());
 
       return p;
    }
@@ -67,5 +74,8 @@ void L::MPIError::makeString() const
    ss << "MPI error number " << error << " encountered!";
    setString (ms(ss));
 }
+
+#undef HINTLIB_SSN
+
 
 

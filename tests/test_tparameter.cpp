@@ -21,12 +21,21 @@
 #include <iostream>
 #include <iomanip>
 #include <memory>
-#include <stdlib.h>
+
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_CSTDLIB
+  #include <cstdlib>
+  #define HINTLIB_SLN std::
+#else
+  #include <stdlib.h>
+  #define HINTLIB_SLN
+#endif
 
 #include <HIntLib/make.h>
 #include <HIntLib/tparameter.h>
 #include <HIntLib/array.h>
-#include <HIntLib/myalgorithm.h>
+#include <HIntLib/hlalgorithm.h>
 
 #include "test.h"
 
@@ -53,8 +62,8 @@ bool opt(int c, const char* s)
    case 'e':  ADD_EQUI = true; return true;
    case 'r':  RESTRICTED = true; return true;
    case 'b':  NO_BOUNDS = true; return true;
-   case 'm':  MAX_M = atoi (s) + 1; return true;
-   case 'd':  MAX_S = atoi (s) + 1; return true;
+   case 'm':  MAX_M = HINTLIB_SLN atoi (s) + 1; return true;
+   case 'd':  MAX_S = HINTLIB_SLN atoi (s) + 1; return true;
    case 't':  PRINT_THICKNESS = true; return true;
    }
 
@@ -179,7 +188,7 @@ void test (int argc, char** argv)
 {
    if (argc != 1)  usage();
 
-   int matrix = atoi (argv[0]);
+   int matrix = HINTLIB_SLN atoi (argv[0]);
 
    Array<Matrix*> matrices (MAX_S, 0);    // The fullsized matrix for each s
    Array<int> t_matrix (MAX_S * MAX_M, -1);

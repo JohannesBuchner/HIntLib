@@ -74,7 +74,8 @@ void L::initFaure (GeneratorMatrixGen<unsigned char> &gm)
 
       for (unsigned r = b; r < gm.getM(); ++r)
       {
-         gm.setd (1,r,b, a.addTo (x, gm (1, r-1, b-1)));
+         a.addTo (x, gm (1, r-1, b-1));
+         gm.setd (1,r,b, x);
       }
    }
    

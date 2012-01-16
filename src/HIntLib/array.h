@@ -37,7 +37,14 @@
 
 #include <HIntLib/defaults.h>
 
-#include <stddef.h>
+#ifdef HINTLIB_HAVE_CSTDDEF
+  #include <cstddef>
+  #define HINTLIB_SN std::
+#else
+  #include <stddef.h>
+  #define HINTLIB_SN
+#endif
+
 #include <algorithm>
 
 
@@ -52,8 +59,8 @@ public:
    // Types
 
    typedef T value_type;
-   typedef size_t size_type;
-   typedef ptrdiff_t differencey_type;
+   typedef HINTLIB_SN size_t size_type;
+   typedef HINTLIB_SN ptrdiff_t differencey_type;
 
    typedef T* iterator;
    typedef const T* const_iterator;
@@ -135,6 +142,8 @@ void HIntLib::Array<T, offset>::assign (const_pointer a, size_type n)
 
    delete[] oldArray;
 }                                                                               
+
+#undef HINTLIB_SN
 
 #endif
 

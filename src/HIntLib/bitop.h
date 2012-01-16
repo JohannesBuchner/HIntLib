@@ -208,6 +208,7 @@ inline T thread (T a, T b)
    return result;
 }
 
+
 /**
  *  unthread()
  *
@@ -228,6 +229,52 @@ inline void unthread (T both, T& a, T& b)
       mask <<= 1;
    }
 }
+
+
+/**
+ *  thread()
+ *  unthread()
+ *
+ *  threan()
+ *  unthreadn()
+ */
+
+template<class T>
+T thread (T a, T b, unsigned na, unsigned nb);
+
+template<class T>
+void unthread (T both, T& a, T& b, unsigned na, unsigned nb);
+
+template<class T>
+T threadn (T* indices, unsigned num);
+
+template<class T>
+void unthreadn (T all, T* indices, unsigned num);
+
+template<class T>
+T threadinf (T* indices, unsigned num);
+
+template<class T>
+unsigned unthreadinf (T all, T* indices);
+
+
+/**
+ *  BitRef
+ */
+
+template<typename T>
+class BitRef
+{
+public:
+   BitRef (T* _ptr, unsigned bit) : ptr (_ptr), mask (T(1) << bit) {}
+
+   operator unsigned char() const { return (*ptr & mask) != 0; }
+   BitRef<T>&  operator= (unsigned char x)
+      { if (x) *ptr |= mask; else *ptr &= ~mask; return *this; }
+private:
+   T* const ptr;
+   const T  mask;
+};
 
 }  // namespace HIntLib
 

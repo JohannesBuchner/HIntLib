@@ -53,9 +53,9 @@
 #include <HIntLib/shiftnet.h>
 #include <HIntLib/digitalnet2.h>
 #include <HIntLib/digitalnetgen.h>
-#include <HIntLib/factorring.h>
+#include <HIntLib/modulararithmetic.h>
 #include <HIntLib/lookupfield.h>
-#include <HIntLib/polynomial2.h>
+#include <HIntLib/gf2.h>
 #include <HIntLib/onedimvectorspace.h>
 #include <HIntLib/prime.h>
 #include <HIntLib/mersennetwister.h>
@@ -396,9 +396,9 @@ L::QRNSequence* L::Make::qrnSequence (int n, const Hypercube &h)
       {
          // Field types
 
-         typedef LookupField    <unsigned char> Fgen;
-         typedef LookupFieldPow2<unsigned char> Fpow2;
-         typedef FactorField    <unsigned char> Fprime;
+         typedef LookupField           <unsigned char> Fgen;
+         typedef LookupFieldPow2       <unsigned char> Fpow2;
+         typedef ModularArithmeticField<unsigned char> Fprime;
 
          // Field types used for Vector Space construction
 

@@ -258,6 +258,8 @@ namespace HIntLib
       virtual void makeString() const;
    };
 
+   void throwOverflow();
+
    class DivisionByZero : public ArithmeticException
    {
       virtual void makeString() const;

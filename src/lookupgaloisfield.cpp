@@ -24,7 +24,7 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HINTLIB_HAVE_OSTREM
+#ifdef HINTLIB_HAVE_OSTREAM
   #include <ostream>
 #else
   #include <iostream>
@@ -32,7 +32,6 @@
 
 #include <HIntLib/lookupfield.h>
 #include <HIntLib/galoisfield.h>
-#include <HIntLib/prime.h>
 
 namespace L = HIntLib;
 
@@ -47,7 +46,7 @@ void L::makeGaloisField
         if (exponent == 0)  throw GaloisFieldExponent ();
    else if (exponent == 1)
    {
-      FactorField<typename T::type> field (base);
+      ModularArithmeticField<typename T::type> field (base);
       L::copy (r, field);
    }
    else
@@ -83,7 +82,7 @@ L::LookupGaloisField<T>::LookupGaloisField (unsigned size)
 
 
 /**
- *  Lookup Galois Field 2
+ *  Lookup Galois Field Pow 2
  */
 
 template<class T>
@@ -159,16 +158,13 @@ void copyMulTable (L::LookupFieldBase<T> & dest, const A src)
    {
       AT a = src.element (i);
 
-      if (i > 0)  dest.setRecip (i, src.index (src.recip (a)));
       if (i > 0)  dest.setOrder (i, src.order (a));
+
+      dest.setFrobenius (i, src.index (src.frobenius (a)));
 
       for (unsigned j = 0; j <= i; ++j)
       {
-         AT b = src.element (j);
-
-         unsigned prod = src.index (src.mul (a, b));
-         dest.setMul (i, j, prod);
-         dest.setMul (j, i, prod);
+         dest.setMul (i, j, src.index (src.mul (a, src.element (j))));
       }
    }
 }
@@ -182,15 +178,9 @@ void copyAddTable (L::LookupField<T> & dest, const A src)
    {
       AT a = src.element (i);
 
-      dest.setNeg (i, src.index (src.neg (a)));
-
       for (unsigned j = 0; j <= i; ++j)
       {
-         AT b = src.element (j);
-
-         unsigned sum = src.index (src.add (a, b));
-         dest.setAdd (i, j, sum);
-         dest.setAdd (j, i, sum);
+         dest.setAdd (i, j, src.index (src.add (a, src.element (j))));
       }
    }
 }
@@ -213,9 +203,9 @@ namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) \
    template void copy (LookupField<X> &, const GaloisField<X>); \
-   template void copy (LookupField<X> &, const FactorField<X>);\
+   template void copy (LookupField<X> &, const ModularArithmeticField<X>);\
    template void copy (LookupFieldMulOnly<X> &, const GaloisField<X>); \
-   template void copy (LookupFieldMulOnly<X> &, const FactorField<X>);\
+   template void copy (LookupFieldMulOnly<X> &, const ModularArithmeticField<X>);\
    template void makeGaloisField(LookupGaloisField<X>&,unsigned,unsigned); \
    template void makeGaloisField(LookupGaloisFieldPow2<X>&,unsigned,unsigned);\
    template void makeGaloisField(LookupGaloisFieldPrime<X>&,unsigned,unsigned);\

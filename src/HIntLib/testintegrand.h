@@ -18,40 +18,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-/**
- *  TestIntegrand
- *
- *  (C) 2001 by Rudolf Schürer
- *
- *  Provides a number of specialized Integrands that are used for the evaluation
- *  of integration routines.
- *
- *  TestIntegrand
- *
- *     Calcualates the exact value of the integral for a given hypercube.
- *     The allows to compare the approximation from the integration routine
- *     with the correct result.
- *
- *  The following classes are all subclasses of TestIntegrand:
- *
- *  SimpleIntegrand
- *
- *     Allows the cration of a TestIntegrand based to a C-style function
- *
- *  EvalCounterIntegrand
- *
- *     Counts the number of evaluations
- *
- *  DomainCheckerIntegrand
- *
- *     Checks if all calls to operator() use points inside a specified
- *     Hypercube
- *
- *  NodeTrackerIntegrand
- *
- *     Writes all points passed in operator() into a stream
- */ 
-
 #ifndef HINTLIB_TESTFUNCTION_H
 #define HINTLIB_TESTFUNCTION_H 1
 

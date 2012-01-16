@@ -29,12 +29,21 @@
 #include <iostream>
 #include <iomanip>
 #include <memory>
-#include <stdlib.h>
+
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_CSTDLIB
+  #include <cstdlib>
+  #define HINTLIB_SLN std::
+#else
+  #include <stdlib.h>
+  #define HINTLIB_SLN
+#endif
 
 #include <HIntLib/cubaturerule.h>
 #include <HIntLib/make.h>
 #include <HIntLib/testintegrand.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/mersennetwister.h>
 #include <HIntLib/distribution.h>
 
@@ -65,10 +74,27 @@ const real     MAX_COEFF = 10.0;     // Maximal coefficient in each polynomial
  *  Returns  (1+epsilon)^power , with epsilong the accuracy of real.
  */
 
-inline
-real epsilonPower (unsigned power)
+real epsilonPowerMinusOne (int power)
 {
-   return powInt (1.0 + numeric_limits<real>::epsilon(), power);
+   const real e = numeric_limits<real>::epsilon();
+
+   switch (power)
+   {
+   case 0:  return 0;
+   case 1:  return e;
+   case 2:  return 2 * e;
+   default:
+      return
+         power * e
+       + (power * (power-1) / 2) * e * e
+       + (power * (power-1) * (power-2) / 6) * e * e *e;
+   }
+}
+
+inline
+real epsilonPower (int power)
+{
+   return epsilonPowerMinusOne (power) + real(1);
 }
 
 
@@ -396,22 +422,20 @@ TestPolynomial::TestPolynomial (unsigned dim, unsigned degree)
 
 real TestPolynomial::getExactResult (const Hypercube &h) const
 {
-   real sum = 0.0;
+   real sum = 0;
 
    for (unsigned i = 0; i < NUM_MON; ++i)
    {
-      real prod = coef [i];
+      real prod = coef[i];
 
       for (unsigned d = 0; d < dim; ++d)
       {
-         unsigned e = getExponent (i, d) + 1;
+         int e = getExponent (i, d) + 1;
 
-         if (e == 1)  prod *= h.getDiameter (d);
-         else
-         {
-            prod *= (  powInt(h.getUpperBound (d), e)
-                     - powInt(h.getLowerBound (d), e)) / real (e);
-         }
+         prod *= (e == 1)
+            ? h.getDiameter (d)
+            : (  HINTLIB_MN pow (h.getUpperBound (d), e)
+               - HINTLIB_MN pow (h.getLowerBound (d), e)) / real (e);
       }
 
       sum += prod;
@@ -429,7 +453,7 @@ real TestPolynomial::getExactResult (const Hypercube &h) const
 
 real TestPolynomial::getPartialResult (const Hypercube &h, unsigned deg) const
 {
-   real sum = 0.0;
+   real sum = 0;
 
    for (unsigned i = 0; i < NUM_MON; ++i)
    {
@@ -441,14 +465,12 @@ real TestPolynomial::getPartialResult (const Hypercube &h, unsigned deg) const
 
       for (unsigned d = 0; d < dim; ++d)
       {
-         unsigned e = getExponent (i, d) + 1;
+         int e = getExponent (i, d) + 1;
 
-         if (e == 1)  prod *= h.getDiameter (d);
-         else
-         {
-            prod *= (  powInt(h.getUpperBound (d), e)
-                     - powInt(h.getLowerBound (d), e)) / e;
-         }
+         prod *= (e == 1)
+            ? h.getDiameter (d)
+            : (  HINTLIB_MN pow (h.getUpperBound (d), e)
+               - HINTLIB_MN pow (h.getLowerBound (d), e)) / real (e);
       }
 
       sum += prod;
@@ -467,17 +489,17 @@ real TestPolynomial::getPartialResult (const Hypercube &h, unsigned deg) const
 real TestPolynomial::getErrorOfExactResult (const Hypercube &h) const
 {
    const real onePlusEpsilon = 1.0 + numeric_limits<real>::epsilon();
-   real sum = 0.0;
+   real sum = 0;
 
    for (unsigned i = 0; i < NUM_MON; ++i)
    {
-      real realProd = 1.0;
+      real realProd = 1;
       real prod     = onePlusEpsilon;
       real factor = coef [i];
 
       for (unsigned d = 0; d < dim; ++d)
       {
-         unsigned e = getExponent (i, d) + 1;
+         int e = getExponent (i, d) + 1;
 
          if (e == 1)
          {
@@ -486,8 +508,8 @@ real TestPolynomial::getErrorOfExactResult (const Hypercube &h) const
          }
          else
          {
-            real v1 = powInt(h.getUpperBound (d), e);
-            real v2 = powInt(h.getLowerBound (d), e);
+            real v1 = HINTLIB_MN pow (h.getUpperBound (d), e);
+            real v2 = HINTLIB_MN pow (h.getLowerBound (d), e);
 
             realProd *= v1 - v2;
 
@@ -510,7 +532,7 @@ real TestPolynomial::getErrorOfExactResult (const Hypercube &h) const
          }
       }
 
-      sum += abs (realProd - prod) * abs (factor);
+      sum += L::abs (realProd - prod) * L::abs (factor);
    }
 
    return sum;
@@ -523,7 +545,7 @@ real TestPolynomial::getErrorOfExactResult (const Hypercube &h) const
 
 real TestPolynomial::operator() (const real *x)
 {
-   real sum = 0.0;
+   real sum = 0;
 
    for (unsigned i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
    {
@@ -531,8 +553,8 @@ real TestPolynomial::operator() (const real *x)
 
       for (unsigned d = 0; d < dim; ++d)
       {
-         const unsigned exponent = getExponent (i,d);
-         if (exponent)  prod *= powInt (x[d], exponent);
+         const int exponent = getExponent (i,d);
+         if (exponent)  prod *= HINTLIB_MN pow (x[d], exponent);
       }
 
       sum += prod;
@@ -556,24 +578,24 @@ real TestPolynomial::getErrorOfEvaluation (const Hypercube &h) const
    for (unsigned i = 0; i < h.getDimension(); ++i)
    {
       maxCoordinate [i]
-         = max (abs (h.getLowerBound(i)), abs (h.getUpperBound(i)));
+         = max (L::abs (h.getLowerBound(i)), L::abs (h.getUpperBound(i)));
    }
 
    real sum = 0.0;
 
    for (unsigned i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
    {
-      real prod = abs (coef [i]);
+      real prod = L::abs (coef [i]);
 
       unsigned degreeOfMonomial = 0;
 
       for (unsigned d = 0; d < dim; ++d)
       {
          degreeOfMonomial += getExponent (i, d);
-         prod *= powInt (maxCoordinate [d], getExponent (i, d));
+         prod *= HINTLIB_MN pow (maxCoordinate [d], getExponent (i, d));
       }
 
-      sum += prod * (epsilonPower (degreeOfMonomial + 1) - 1.0);
+      sum += prod * (epsilonPowerMinusOne (degreeOfMonomial + 1));
    }
 
    return sum;
@@ -594,11 +616,11 @@ real TestPolynomial::derivative (const real *x, unsigned a)
          if (d == a)
          {
             prod = prod * getExponent (i, a)
-                        * powInt (x[d], getExponent (i,a) - 1);
+                        * HINTLIB_MN pow (x[d], getExponent (i,a) - 1);
          }
          else
          {
-            prod *= powInt (x[d], getExponent (i, d));
+            prod *= HINTLIB_MN pow (x[d], getExponent (i, d));
          }
       }
 
@@ -627,11 +649,11 @@ real TestPolynomial::derivative (const real *x, unsigned a, unsigned b)
             {
                unsigned exponent = getExponent (i, a);
                prod = exponent * (exponent - 1)
-                    * prod * powInt (x[d], exponent - 2);
+                    * prod * HINTLIB_MN pow (x[d], exponent - 2);
             }
             else
             {
-               prod *= powInt (x[d], getExponent (i, d));
+               prod *= HINTLIB_MN pow (x[d], getExponent (i, d));
             }
          }
 
@@ -652,11 +674,11 @@ real TestPolynomial::derivative (const real *x, unsigned a, unsigned b)
             if (d == a || d == b)
             {
                prod = prod * getExponent (i,d)
-                           * powInt (x[d], getExponent (i,d) - 1);
+                           * HINTLIB_MN pow (x[d], getExponent (i,d) - 1);
             }
             else
             {
-               prod *= powInt (x[d], getExponent (i, d));
+               prod *= HINTLIB_MN pow (x[d], getExponent (i, d));
             }
          }
 
@@ -673,7 +695,7 @@ ostream& operator<< (ostream& os, const TestPolynomial &p)
 {
    for (unsigned i = 0; i < NUM_MON; ++i)
    {
-      os << (p.coef [i] > 0.0 ? " + " : " - ") << abs (p.coef [i]);
+      os << (p.coef [i] > 0.0 ? " + " : " - ") << L::abs (p.coef [i]);
 
       for (unsigned d = 0; d < p.dim; ++d)
       {
@@ -753,7 +775,7 @@ bool checkDegree (
 
       // check Result()
 
-      const real error = abs (result - correct);
+      const real error = L::abs (result - correct);
 
       const real expectedExactError = p.getErrorOfExactResult (h);
       const real expectedApproxError
@@ -761,7 +783,7 @@ bool checkDegree (
          * epsilonPower (2 * h.getDimension()) * 2.0;
 
       const real threshold = expectedExactError + expectedApproxError;
-      const real problem = abs (p.getPartialResult (h, degree));
+      const real problem = L::abs (p.getPartialResult (h, degree));
 
       DEB2
       {
@@ -783,8 +805,8 @@ bool checkDegree (
 
       if (disproof && threshold > problem / 1000.0)
       {
-         DEB1 cout << "Can not determine degree "
-                      "due to numerical instabilities!" << endl;
+         DEB1 cout << "Cannot determine degree due to numerical instabilities!"
+                   << endl;
          if (verbose == 0)  cout << '-';
          return false;
       }
@@ -878,10 +900,10 @@ bool opt(int c, const char* s)
 {
    switch (c)
    {
-      case 'n':  NUM_TESTS      = atoi (s); return true;
-      case 'p':  MAX_NUM_POINTS = atoi (s); return true;
-      case 'd':  LAST_TEST_DIM  = atoi (s); return true;
-      case 'r':  LAST_RULE = FIRST_RULE = atoi (s); return true;
+      case 'n':  NUM_TESTS      = HINTLIB_SLN atoi (s); return true;
+      case 'p':  MAX_NUM_POINTS = HINTLIB_SLN atoi (s); return true;
+      case 'd':  LAST_TEST_DIM  = HINTLIB_SLN atoi (s); return true;
+      case 'r':  LAST_RULE = FIRST_RULE = HINTLIB_SLN atoi (s); return true;
    }
 
    return false;
@@ -938,7 +960,7 @@ void test(int argc, char**)
          }
          catch (InvalidDimension &e)
          {
-            NORMAL  cout << "Can not create rule in dimension "
+            NORMAL  cout << "Cannot create rule in dimension "
                          << e.getDimension() << "!" << endl;
          }
       }

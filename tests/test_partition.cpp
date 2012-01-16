@@ -22,8 +22,8 @@
 #include <iostream>
 #include <iomanip>
 
-#include <HIntLib/myalgorithm.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlalgorithm.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/array.h>
 
 #include "test.h"

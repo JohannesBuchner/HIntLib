@@ -36,7 +36,7 @@
 #include <HIntLib/rule3simpson.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
 
@@ -46,8 +46,8 @@ using L::real;
 
 namespace
 {
-   const real w0 = real (4.0) / real (3.0);
-   const real w1 = real (1.0) / real (3.0);
+   const real w0 = real(4) / real(3);
+   const real w1 = real(1) / real(3);
 }
 
 
@@ -57,7 +57,7 @@ namespace
  */
 
 L::Rule3Simpson::Rule3Simpson (unsigned dim)
-   : OrbitRule (dim), oneDivTwoPowDim (real (1.0) / (Index(1) << dim))
+   : OrbitRule (dim), oneDivTwoPowDim (real(1) / real(Index(1) << dim))
 {
    checkDimensionNotZero (dim);
 

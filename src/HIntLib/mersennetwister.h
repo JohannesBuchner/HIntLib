@@ -39,9 +39,15 @@
 #pragma interface
 #endif
 
-#include <stddef.h>
-
 #include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_CSTDDEF
+  #include <cstddef>
+  #define HINTLIB_SDN ::std::
+#else
+  #include <stddef.h>
+  #define HINTLIB_SDN ::
+#endif
 
 
 namespace HIntLib
@@ -51,7 +57,7 @@ class MersenneTwister
 {
 private:
 
-   static const size_t N = 624;
+   static const unsigned N = 624;
 
    u32 *next;
    u32 state [N];
@@ -78,8 +84,8 @@ public:
    static const real&      getRange() { return RANGE; }
    static const real& getResolution() { return RESOLUTION; }
 
-   static size_t getStateSize()
-      { return N * sizeof(u32) + sizeof(ptrdiff_t); }
+   static HINTLIB_SDN size_t getStateSize()
+      { return N * sizeof(u32) + sizeof(HINTLIB_SDN ptrdiff_t); }
 
    // Return a random number
 
@@ -148,6 +154,8 @@ real MersenneTwister::getReal()
 }
 
 } // namespace HIntLib
+
+#undef HINTLIB_SDN
 
 #endif
 

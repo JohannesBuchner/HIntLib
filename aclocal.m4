@@ -15,6 +15,17 @@ dnl ###########################################################################
 dnl HIntLib autoconf macro definitions
 dnl ###########################################################################
 
+# HL_CHECK_C_OR_CPP_HEADER(HEADER)
+# ------------------------
+# Checks if either header cHEADER or HEADER.h exists
+AC_DEFUN([HL_CHECK_C_OR_CPP_HEADER],
+[hl_found=no
+ AC_CHECK_HEADERS([c$1 $1.h],hl_found=yes;break,,[ ])
+ if test $hl_found = no; then
+   AC_MSG_WARN([Header file missing: We need either c$1 or $1.h!!!])
+ fi
+])
+
 # HL_UNREACHABLE_CALLS_REMOVED
 # ----------------------------
 # Check if unreachable calls are removed
@@ -68,37 +79,135 @@ fi
 ])
 
 
-# HL_ABS_AVAILABLE(PREFIX)
-# ------------------------
-# Check if PREFIX::abs (dobule) is available
-AC_DEFUN([HL_ABS_AVAILABLE],
-[AC_CACHE_CHECK([whether $1::abs(double) is available], hl_cv_$2_abs_available,
-[AC_RUN_IFELSE(AC_LANG_PROGRAM([[
-#include <stdlib.h>
+# HL_WHICH_ABS(FNAMES,TYPE)
+# -------------------------
+# Tries to use each entry in FNAMES to calculate the absolute value for TYPE.
+AC_DEFUN([HL_WHICH_ABS],
+[
+AC_CACHE_CHECK([which abs() should be used for $2],
+translit([hl_cv_abs_for_$2],[ ],[_]),
+[
+ translit([hl_cv_abs_for_$2_num],[ ],[_])=0
+ translit([hl_cv_abs_for_$2],[ ],[_])="???"
+ hl_counter=0
+ for hl_fname in $1
+ do
+  hl_counter=`expr ${hl_counter} + 1`
+AC_RUN_IFELSE(AC_LANG_PROGRAM([[
+#ifdef HAVE_CSTDLIB
+  #include <cstdlib>
+  #define STD std::
+#else
+  #include <stdlib.h>
+  #define STD
+#endif
+
 #ifdef HAVE_CMATH
 #include <cmath>
 #else
 #include <math.h>
 #endif
+
+int xfloat = 10; int xdouble = 11; int xlong_double = 12;
+int xint = 20; int xlong_int = 21; int xlong_long_int = 22;
+
+int detect (float)  { return xfloat; }
+int detect (double) { return xdouble; }
+int detect (long double) { return xlong_double; }
+
+int detect (int) { return xint; }
+int detect (long int) { return xlong_int; }
+#ifdef HAVE_LONG_LONG_INT
+int detect (long long int) { return xlong_long_int; }
+#endif
+
 ]],[[
-   if (   $1::abs (static_cast<float> (-3.75)) == static_cast<float> (3.75)
-       && $1::abs (static_cast<double> (-3.75)) == static_cast<double> (3.75)
-       && $1::abs (static_cast<long double> (-3.75)) == static_cast<long double> (3.75))
-   {
-      exit (0);
-   }
-
-   exit (1);
+   if (detect (${hl_fname} (static_cast<$2> (-1))) != translit([x$2],[ ],[_]))
+      STD exit (1);
+   if (${hl_fname} (static_cast<$2>(-17001) / static_cast<$2>(1000)) !=
+                static_cast<$2>( 17001) / static_cast<$2>(1000))
+      STD exit (1);
+   STD exit (0);
 ]]),
-hl_cv_$2_abs_available=yes,
-hl_cv_$2_abs_available=no,
-AC_MSG_ERROR([HL_ ABS_AVAILABLE can not be used when crosscompiling!]))])
-
-if test x"$hl_cv_$2_abs_available" = xyes; then
-   AC_DEFINE(translit([$2],[a-z],[A-Z])_ABS_AVAILABLE, 1,
-             [define if $1::abs(double) is available])
-fi
+[
+translit([hl_cv_abs_for_$2],[ ],[_])=${hl_fname}
+translit([hl_cv_abs_for_$2_num],[ ],[_])=${hl_counter}
+break
+],,
+AC_MSG_ERROR([HL_ WHICH_ABS cannot be used when crosscompiling!]))
+done
 ])
+if test translit([$hl_cv_abs_for_$2_num],[ ],[_]) -eq 0 ; then
+AC_MSG_ERROR([No appropriate function found!])
+fi
+AC_DEFINE_UNQUOTED(translit([ABS_FOR_$2],[ a-z],[_A-Z]),translit([$hl_cv_abs_for_$2],[ ],[_]),
+   [function to use for abs($2)])
+])dnl AC_DEFUN
+
+
+# HL_WHICH_MATH_FUN(FUNCTION,FNAMES,TYPE)
+# ---------------------------------------
+# Tries to use each entry in FNAMES to calculate FUNCTION for TYPE.
+AC_DEFUN([HL_WHICH_MATH_FUN],
+[
+AC_CACHE_CHECK([which function should be used for $1($3)],
+translit([hl_cv_$1_for_$3],[ ],[_]),
+[
+ translit([hl_cv_$1_for_$3_num],[ ],[_])=0
+ translit([hl_cv_$1_for_$3],[ ],[_])="???"
+ hl_counter=0
+ for hl_fname in $2
+ do
+  hl_counter=`expr ${hl_counter} + 1`
+AC_RUN_IFELSE(AC_LANG_PROGRAM([[
+#ifdef HAVE_CSTDLIB
+  #include <cstdlib>
+  #define STD std::
+#else
+  #include <stdlib.h>
+  #define STD
+#endif
+
+#ifdef HAVE_CMATH
+#include <cmath>
+#else
+#include <math.h>
+#endif
+
+int xfloat = 10; int xdouble = 11; int xlong_double = 12;
+int xint = 20; int xlong_int = 21; int xlong_long_int = 22;
+
+int detect (float)  { return xfloat; }
+int detect (double) { return xdouble; }
+int detect (long double) { return xlong_double; }
+
+int detect (int) { return xint; }
+int detect (long int) { return xlong_int; }
+#ifdef HAVE_LONG_LONG_INT
+int detect (long long int) { return xlong_long_int; }
+#endif
+
+]],[[
+   if (detect (${hl_fname} (static_cast<$3> (-1))) != translit([x$3],[ ],[_]))
+      STD exit (1);
+   STD exit (0);
+]]),
+[
+translit([hl_cv_$1_for_$3],[ ],[_])=${hl_fname}
+translit([hl_cv_$1_for_$3_num],[ ],[_])=${hl_counter}
+break
+],,
+AC_MSG_ERROR([HL_ WHICH_ABS cannot be used when crosscompiling!]))
+done
+])
+if test translit([$hl_cv_$1_for_$3_num],[ ],[_]) -eq 0 ; then
+AC_MSG_ERROR([No appropriate function found!])
+fi
+AC_DEFINE_UNQUOTED(translit([$1_FOR_$3],[ a-z],[_A-Z]),translit([$hl_cv_$1_for_$3],[ ],[_]),
+   [function to use for $1($3)])
+AC_DEFINE_UNQUOTED(translit([$1_FOR_$3_NUM],[ a-z],[_A-Z]),translit([$hl_cv_$1_for_$3_num],[ ],[_]),
+   [function number to use for $1($3)])
+])dnl AC_DEFUN
 
 
 # HL_FLT_ROUNDS_CONST
@@ -118,6 +227,54 @@ hl_cv_flt_rounds_const=yes, hl_cv_flt_rounds_const=no)])
 
 if test x"$hl_cv_flt_rounds_const" = xyes; then
    AC_DEFINE([FLT_ROUNDS_CONST],1,[define if FLT_ROUNDS is constant])
+fi
+])
+
+
+# HL_EQUAL_BUG
+# ------------
+# Check whether the Standard Template Library has the equal()-bug
+AC_DEFUN([HL_EQUAL_BUG],
+[AC_CACHE_CHECK([whether the STL has the equal()-bug], hl_cv_equal_bug,
+[AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[
+#include <vector>
+struct X { int a; X() : a(7) {} };
+inline bool operator==(const X& x1, const X& x2)  { return x1.a == x2.a; }
+]],[[
+std::vector<X> v1, v2;
+v1 == v2;
+]]),
+hl_cv_equal_bug=no, hl_cv_equal_bug=yes)])
+
+if test x"$hl_cv_equal_bug" = xyes; then
+   AC_DEFINE([EQUAL_BUG],1,[define if STL has the equal()-bug])
+fi
+])
+
+
+# HL_COMPLEX_POW_BUG
+# ------------------
+# Check whether std::pow(std::complex<long double>,int) is broken
+AC_DEFUN([HL_COMPLEX_POW_BUG],
+[AC_CACHE_CHECK([whether std::pow(std::complex<long double>,int) is broken],
+hl_cv_complex_pow_bug,
+[AC_RUN_IFELSE(AC_LANG_PROGRAM([[
+#ifdef HAVE_CSTDLIB
+  #include <cstdlib>
+  #define STD std::
+#else
+  #include <stdlib.h>
+  #define STD
+#endif
+#include <complex>
+]],[[
+std::complex<long double> x (0, 1);
+if (std::abs(std::pow (x, 1)) < .5)  STD exit (1);
+]]),
+hl_cv_complex_pow_bug=no, hl_cv_complex_pow_bug=yes)])
+
+if test x"$hl_cv_complex_pow_bug" = xyes; then
+   AC_DEFINE([COMPLEX_POW_BUG],1,[define whether std::pow(std::complex<long double>,int) is broken])
 fi
 ])
 
@@ -158,10 +315,10 @@ AC_DEFUN([HL_IEEE_MAGIC_WORKS],
       #define U32_NOT_EQUAL_U64 1
       typedef unsigned long long u64;
    #else
-      #error "Can not determine an unsigned integer type with at least 64 bits!"
+      #error "Cannot determine an unsigned integer type with at least 64 bits!"
    #endif
 #else
-   #error "Can not determine an unsigned integer type with at least 64 bits!"
+   #error "Cannot determine an unsigned integer type with at least 64 bits!"
 #endif
 #endif
 #endif

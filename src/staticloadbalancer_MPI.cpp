@@ -28,7 +28,7 @@
 #pragma implementation "staticloadbalancer.h"
 #endif
 
-#include <HIntLib/mympi.h>
+#include <HIntLib/hlmpi.h>
 
 #include <HIntLib/staticloadbalancer.h>
 

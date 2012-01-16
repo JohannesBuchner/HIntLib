@@ -22,7 +22,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 
 #include "test.h"
 
@@ -42,8 +42,6 @@ void usage()
 
    exit (1);
 }
-
-using namespace HIntLib;
 
 // Constants
 
@@ -83,57 +81,39 @@ void test(int argc, char**)
 
    NORMAL  cout << "Testing float..." << endl;
 
-   int t = type (abs (mFloat));
+   int t = type (L::abs (mFloat));
 
-   DEB1 cout << "x = " << mFloat << "   abs(x) = " << abs (mFloat)
+   DEB1 cout << "x = " << mFloat << "   abs(x) = " << L::abs (mFloat)
              << "   expected = " << pFloat
              << "   type is " << t << endl;
 
-   if (abs (mFloat) != pFloat)  error ("accuracy failed!");
+   if (L::abs (mFloat) != pFloat)  error ("accuracy failed!");
    if (t != 1)  error ("type failed!");
    
    // double
 
    NORMAL  cout << "Testing double..." << endl;
 
-   t = type (abs (mDouble));
+   t = type (L::abs (mDouble));
    
-   DEB1 cout << "x = " << mDouble << "   abs(x) = " << abs (mDouble)
+   DEB1 cout << "x = " << mDouble << "   abs(x) = " << L::abs (mDouble)
              << "   expected = " << pDouble
              << "   type is " << t << endl;
 
-   if (abs (mDouble) != pDouble)  error ("accuracy failed!");
+   if (L::abs (mDouble) != pDouble)  error ("accuracy failed!");
    if (t != 2)  error ("type failed!");
    
    // long double
 
    NORMAL  cout << "Testing long double..." << endl;
 
-   t = type (abs (mLong));
+   t = type (L::abs (mLong));
    
-   DEB1 cout << "x = " << mLong << "   abs(x) = " << abs (mLong)
+   DEB1 cout << "x = " << mLong << "   abs(x) = " << L::abs (mLong)
              << "   expected = " << pLong
              << "   type is " << t << endl;
 
-   if (abs (mLong) != pLong)
-   {
-      if (double (abs (mLong)) != double (pLong))  error ("accuracy failed!");
-      else
-      {
-         cout << "*** Warning: Accuracy of long double only like double!"
-              << endl;
-      }
-   }
+   if (L::abs (mLong) != pLong) error ("accuracy failed!");
    if (t != 3)  error ("type failed!");
-   
-   // real
-
-#if HINTLIB_REAL > 3
-   NORMAL  cout << "Testing real..." << endl;
-   DEB1 cout << "x = " << mReal << "   fabsl(x) = " << abs (mReal)
-             << "   expected = " << pReal << endl;
-
-   if (abs (mReal) != pReal)  error ("accuracy failed!");
-#endif
 }
 

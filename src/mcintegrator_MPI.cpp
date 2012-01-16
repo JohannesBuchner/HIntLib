@@ -22,7 +22,7 @@
 #pragma implementation "mcintegrator.h"
 #endif
 
-#include <HIntLib/mympi.h>
+#include <HIntLib/hlmpi.h>
 
 #include "mcintegrator.cpp"
 

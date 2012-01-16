@@ -18,12 +18,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-/**
- *  Prime
- *
- *  Basic functions for finding and checking for prime numbers
- */
-
 #ifndef HINTLIB_PRIME_H
 #define HINTLIB_PRIME_H 1
 
@@ -31,11 +25,24 @@
 #pragma interface
 #endif
 
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_LIMITS
+  #include <limits>
+#else
+  #include <HIntLib/fallback_limits.h>
+#endif
 
 #include <HIntLib/exception.h>
 
 namespace HIntLib
 {
+
+/**
+ *  Prime
+ *
+ *  Basic functions for finding and checking for prime numbers
+ */
 
 class Prime
 {
@@ -160,6 +167,7 @@ unsigned HIntLib::Prime::nth (unsigned n)
    return nthPrimeArray [n];
 }
 
+
 /**
  *  PrimeDivisors
  */
@@ -171,7 +179,14 @@ public:
 
    unsigned next()
    {
-      if (n <= prime)  return 0;
+      if (n <= prime)  return 0;  // done?
+
+      if (n < prime * prime)  // n is prime?
+      {
+         prime = n;
+         n = 1;
+         return prime;
+      }
 
       do { prime = Prime::next(prime + 1); } while (n % prime != 0);
 
@@ -180,10 +195,88 @@ public:
       return prime;
    }
 
+   unsigned next (unsigned& e)
+   {
+      if (n <= prime)  return 0;  // done?
+
+      if (n < prime * prime)  // n is prime?
+      {
+         e = 1;
+         prime = n;
+         n = 1;
+         return prime;
+      }
+
+      do { prime = Prime::next(prime + 1); } while (n % prime != 0);
+
+      e = 0;
+      do { n /= prime; ++e; } while (n % prime == 0);
+
+      return prime;
+   }
+
 private:
    unsigned n;
    unsigned prime;
 };
+
+
+/**
+ *  gcd()
+ *
+ *  Calculates the greatest common divisor
+ *
+ *  Works for
+ *     - integers
+ *     - GenPolynomial2
+ */
+
+template<typename T> T gcd(T u, T v)  HINTLIB_GNU_CONST;
+template<typename T> inline T gcd(T u, T v)
+{
+   for (;;)
+   {
+      if (!u)  return v;
+      v %= u;
+
+      if (!v)  return u;
+      u %= v;
+   }
+}
+
+template<typename T> T gcd (T, T, T&);
+template<typename T> T gcd (T, T, T&, T&);
+
+
+/**
+ *  isCoprime()
+ */
+
+template<typename T>        bool isCoprime(T u, T v)  HINTLIB_GNU_CONST;
+template<typename T> inline bool isCoprime(T u, T v)
+{
+   T g = gcd (u,v);
+
+   if (std::numeric_limits<T>::is_signed)
+   {
+      return g == T(1) || g == T(-1);
+   }
+   else  // T is not signed
+   {
+      return g == T(1);
+   }
+}
+
+
+/**
+ *  lcm ()
+ */
+
+template<typename T> T lcm(T u, T v)  HINTLIB_GNU_CONST;
+template<typename T> inline T lcm (T u, T v)
+{
+   return u / gcd(u,v) * v;
+}
 
 }  // namespace HIntLib;
 

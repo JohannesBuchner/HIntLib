@@ -32,7 +32,7 @@
 
 #include <HIntLib/hypercube.h>
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 
 namespace L = HIntLib;
 
@@ -110,7 +110,7 @@ L::Hypercube& L::Hypercube::operator= (const Hypercube &h)
  *  If the union is successful, the first cube contains the union,
  *  and true is returned.
  *
- *  If the union can not be performed, false is returned.
+ *  If the union cannot be performed, false is returned.
  */
 
 const L::real FACTOR = 10.0;

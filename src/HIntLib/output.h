@@ -18,13 +18,38 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <HIntLib/linearalgebra.tcc>
+#ifndef HINTLIB_OUTPUT_H
+#define HINTLIB_OUTPUT_H 1
 
-#include <HIntLib/factorring.h>
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_SSTREAM
+  #include <sstream>
+#else
+  #include <HIntLib/fallback_sstream.h>
+#endif
 
 namespace HIntLib
 {
-   HINTLIB_INSTANTIATE_LINEARALGEBRA (FactorField<unsigned short>)
-   HINTLIB_INSTANTIATE_LINEARALGEBRA (FactorField<unsigned char>)
-}
+namespace Private
+{
 
+class Printer : public std::ostringstream
+{
+public:
+   Printer (std::ostream &);
+   ~Printer ();
+
+private:
+   std::ostream& o;
+};
+
+   
+}  // namespace Private
+}  // namespace HIntLib
+
+#endif

@@ -36,7 +36,7 @@
 #include <HIntLib/rule3gauss.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
 
@@ -47,7 +47,7 @@ using L::real;
 namespace
 {
 #if HINTLIB_STATIC_WORKS == 1
-   const real r = real (1.0) / sqrt(real (3.0));
+   const real r = real(1) / HINTLIB_MN sqrt(real(3));
 #else
    real r;
 #endif
@@ -60,13 +60,13 @@ namespace
  */
 
 L::Rule3Gauss::Rule3Gauss (unsigned dim)
-   : OrbitRule (dim), a (dim), oneDivTwoPowDim (real(1.0) / (Index(1) << dim))
+   : OrbitRule (dim), a (dim), oneDivTwoPowDim (real(1) / (Index(1) << dim))
 {
    checkDimensionNotZero (dim);
    checkDimensionLeq<std::numeric_limits<Index>::digits - 1> (dim);
 
    #if HINTLIB_STATIC_WORKS == 0
-      r = real (1.0) / sqrt(real (3.0));
+      r = real(1) / HINTLIB_MN sqrt(real(3));
    #endif
 }
 

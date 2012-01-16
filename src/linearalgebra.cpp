@@ -25,8 +25,9 @@
 #include <HIntLib/linearalgebra.tcc>
 
 #include <HIntLib/lookupfield.h>
-#include <HIntLib/polynomial2.h>
+#include <HIntLib/gf2.h>
 #include <HIntLib/prime.h>
+#include <HIntLib/bitop.h>
 
 namespace L = HIntLib;
 

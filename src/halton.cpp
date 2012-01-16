@@ -27,7 +27,7 @@
 
 #include <HIntLib/qmcroutinesimp.h>
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/prime.h>
 
 namespace L = HIntLib;

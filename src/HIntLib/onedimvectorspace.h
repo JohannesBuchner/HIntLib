@@ -25,21 +25,8 @@
 #pragma interface
 #endif
 
-#include <HIntLib/defaults.h>
-
-#ifdef HINTLIB_HAVE_OSTREAM
-  #include <ostream>
-#else
-  #include <iostream>
-#endif
-
-#ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
-#else
-  #include <HIntLib/fallback_sstream.h>
-#endif
-
 #include <HIntLib/algebra.h>
+#include <HIntLib/output.h>
 
 namespace HIntLib
 {
@@ -48,16 +35,16 @@ namespace HIntLib
    {
    public:
       typedef vectorspace_tag algebra_category;
-      typedef nopolynomial_tag polynomial_category;
+      typedef typename A::size_category size_category;
 
-      typedef typename A::type type;
-      typedef typename A::type scalar_type;
       typedef A scalar_algebra;
+      typedef typename A::type type;
+      typedef type scalar_type;
       typedef type& scalar_reference;
 
       OneDimVectorSpace (const A& a) : A (a) {}
 
-      A getScalarAlgebra() const  { return *this; }
+      const A& getScalarAlgebra() const  { return *this; }
 
       unsigned dimension() const  { return 1; }
 
@@ -72,15 +59,19 @@ namespace HIntLib
       using A::subFrom;
       using A::neg;
       using A::negate;
+      using A::dbl;
+      using A::times2;
       using A::times;
       using A::mul;
       using A::additiveOrder;
 
-      void printShort (std::ostream&, const type& x) const;
-      void print      (std::ostream&, const type& x) const;
+      void printShort (std::ostream&,   const type&) const;
+      void printShort (std::ostream& o, const type& x, PrintShortFlag) const
+         { printShort (o, x); }
+      void print      (std::ostream&, const type&) const;
 
-      scalar_type coord (const type& x, unsigned) const { return x; }
-      scalar_reference coord  (type& x, unsigned) const { return x; }
+      scalar_type coord (const type& x, unsigned) const  { return x; }
+      scalar_reference coord  (type& x, unsigned) const  { return x; }
 
       template<typename I> void toCoord (const type& x, I p) const  {  *p = x; }
       template<typename I> void fromCoord (type& x, I p) const  { x = *p; }
@@ -91,49 +82,27 @@ namespace HIntLib
    template<typename A>
    void OneDimVectorSpace<A>::print (std::ostream &o, const type& x) const
    {
-      std::ostringstream ss;
-      ss.flags (o.flags());
-      ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-      ss.imbue (o.getloc());
-#endif
-
+      Private::Printer ss (o);
       ss << '(';
       A::print (ss, x);
       ss << ')';
-
-      o << ss.str().c_str();
    }
 
    template<typename A>
    void OneDimVectorSpace<A>::printShort (std::ostream &o, const type& x) const
    {
-      std::ostringstream ss;
-      ss.flags (o.flags());
-      ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-      ss.imbue (o.getloc());
-#endif
-
+      Private::Printer ss (o);
       ss << '(';
       A::printShort (ss, x);
       ss << ')';
-
-      o << ss.str().c_str();
    }
 
    template<typename A>
    std::ostream& operator<< (std::ostream &o, const OneDimVectorSpace<A> &v)
    {
-      std::ostringstream ss;
-      ss.flags (o.flags());
-      ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-      ss.imbue (o.getloc());
-#endif
-
+      Private::Printer ss (o);
       ss << v.getScalarAlgebra() << "^1";
-      return o << ss.str().c_str();
+      return o;
    } 
 
 } // namespace HIntLib

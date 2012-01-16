@@ -36,7 +36,7 @@
 #include <HIntLib/rule3ewing.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
 
@@ -50,7 +50,8 @@ using L::real;
  */
 
 L::Rule3Ewing::Rule3Ewing (unsigned dim)
-   : OrbitRule (dim), b1 (real (1.0) / (real (3.0) * powInt(real (2.0), dim)))
+   : OrbitRule (dim),
+     b1 (real(1) / (real(3) * real (Index(1) << dim)))
 {
    checkDimensionNotZero (dim);
    checkDimensionLeq<std::numeric_limits<Index>::digits - 1> (dim);
@@ -58,7 +59,7 @@ L::Rule3Ewing::Rule3Ewing (unsigned dim)
 
 namespace
 {
-   const real b0 = real (2.0) / real (3.0);
+   const real b0 = real(2) / real(3);
 }
 
 

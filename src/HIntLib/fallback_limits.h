@@ -44,11 +44,17 @@
 
 #ifdef __GNUG__
 #pragma interface
-// Implementation in mymath.cpp
+// Implementation in hlmath.cpp
 #endif
 
 #include <float.h>
 #include <limits.h>
+
+#ifdef HINTLIB_HAVE_CMATH
+  #include <cmath>
+#else
+  #include <math.h>
+#endif
 
 namespace std
 {
@@ -120,7 +126,7 @@ public:
  *****************************************************************************/
 
 
-namespace Priv
+namespace Private
 {
 
 /**
@@ -171,7 +177,7 @@ struct realT : public real
    inline static T quiet_NaN() throw()  { return T(sqrt(T(-1.0))); }
 };
 
-}  // namespace Priv
+}  // namespace Private
 
 
 /**
@@ -179,7 +185,7 @@ struct realT : public real
  */
 
 template<>
-class numeric_limits<float> : public Priv::realT<float>
+class numeric_limits<float> : public Private::realT<float>
 {
 public:
    static const int digits = FLT_MANT_DIG;
@@ -201,7 +207,7 @@ public:
 };
 
 template<>
-class numeric_limits<double> : public Priv::realT<double>
+class numeric_limits<double> : public Private::realT<double>
 {
 public:
    static const int digits = DBL_MANT_DIG;
@@ -222,7 +228,7 @@ public:
 };
 
 template<>
-class numeric_limits<long double> : public Priv::realT<long double>
+class numeric_limits<long double> : public Private::realT<long double>
 {
 public:
    static const int digits = LDBL_MANT_DIG;
@@ -249,7 +255,7 @@ public:
  *****************************************************************************/
 
 
-namespace Priv
+namespace Private
 {
 
    struct integer
@@ -296,42 +302,42 @@ namespace Priv
       inline static T min() throw()  { return T(0); }
    };
 
-} // namespace Priv
+} // namespace Private
 
 template<> class numeric_limits<unsigned char>
-   : public Priv::u_integerT<unsigned char>
+   : public Private::u_integerT<unsigned char>
 {
 public:
    inline static unsigned char max() throw()  { return UCHAR_MAX; }
 };
 #if CHAR_MIN == 0
-template<> class numeric_limits<char> : public Priv::u_integerT<char>
+template<> class numeric_limits<char> : public Private::u_integerT<char>
 {
 public:
    inline static char max() throw()  { return CHAR_MAX; }
 };
 #endif
 template<> class numeric_limits<unsigned short>
-   : public Priv::u_integerT<unsigned short>
+   : public Private::u_integerT<unsigned short>
 {
 public:
    inline static unsigned short max() throw()  { return USHRT_MAX; }
 };
 template<> class numeric_limits<unsigned int>
-   : public Priv::u_integerT<unsigned int>
+   : public Private::u_integerT<unsigned int>
 {
 public:
    inline static unsigned int max() throw()  { return UINT_MAX; }
 };
 template<> class numeric_limits<unsigned long>
-   : public Priv::u_integerT<unsigned long>
+   : public Private::u_integerT<unsigned long>
 {
 public:
    inline static unsigned long max() throw()  { return ULONG_MAX; }
 };
 #ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
 template<> class numeric_limits<unsigned long long>
-   : public Priv::u_integerT<unsigned long long>
+   : public Private::u_integerT<unsigned long long>
 {
 public:
    inline static unsigned long long max() throw()  { return
@@ -349,7 +355,7 @@ public:
 #endif
 
 
-namespace Priv
+namespace Private
 {
    struct s_integer
    {
@@ -363,18 +369,18 @@ namespace Priv
       static const int digits10
          = int (digits * 0.3010299956639811952137388947245);
    };
-}  // namespace Priv
+}  // namespace Private
 
 
 template<> class numeric_limits<signed char>
-   : public Priv::s_integerT<signed char>
+   : public Private::s_integerT<signed char>
 {
 public:
    inline static char min() throw()  { return SCHAR_MIN; }
    inline static char max() throw()  { return SCHAR_MAX; }
 };
 #if CHAR_MIN < 0
-template<> class numeric_limits<char> : public Priv::s_integerT<char>
+template<> class numeric_limits<char> : public Private::s_integerT<char>
 {
 public:
    inline static char min() throw()  { return CHAR_MIN; }
@@ -383,19 +389,19 @@ public:
 #else
   #error "Invalid macro CHAR_MIN: "##CHAR_MIN
 #endif
-template<> class numeric_limits<short> : public Priv::s_integerT<short>
+template<> class numeric_limits<short> : public Private::s_integerT<short>
 {
 public:
    inline static short min() throw()  { return SHRT_MIN; }
    inline static short max() throw()  { return SHRT_MAX; }
 };
-template<> class numeric_limits<int> : public Priv::s_integerT<int>
+template<> class numeric_limits<int> : public Private::s_integerT<int>
 {
 public:
    inline static int min() throw()  { return INT_MIN; }
    inline static int max() throw()  { return INT_MAX; }
 };
-template<> class numeric_limits<long> : public Priv::s_integerT<long>
+template<> class numeric_limits<long> : public Private::s_integerT<long>
 {
 public:
    inline static long min() throw()  { return LONG_MIN; }
@@ -403,7 +409,8 @@ public:
 };
 
 #ifdef HINTLIB_HAVE_LONG_LONG_INT
-template<> class numeric_limits<long long> : public Priv::s_integerT<long long>
+template<> class numeric_limits<long long>
+   : public Private::s_integerT<long long>
 {
 public:
    inline static long long min() throw()  { return

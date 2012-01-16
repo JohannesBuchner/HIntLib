@@ -27,7 +27,15 @@ namespace L = HIntLib;
 #include <algorithm>
 #include <iostream>
 #include <string>
-#include <stddef.h>
+
+#ifdef HINTLIB_HAVE_CSTDDEF
+  #include <cstddef>
+  #define HINTLIB_SN std::
+#else
+  #include <stddef.h>
+  #define HINTLIB_SN
+#endif
+
 #include <HIntLib/region.h>
 
 namespace std
@@ -61,10 +69,10 @@ template class vector<L::Region*>;
 template class priority_queue<L::Region*, vector<L::Region*>,
                                  L::RegionErrorLess>;
 
-template L::Region** fill_n<>(L::Region**,size_t,L::Region *const&);
-template unsigned char* fill_n<>(unsigned char*,size_t,const unsigned char&);
-template unsigned short* fill_n<>(unsigned short*,size_t,const unsigned short&);
-template int* fill_n<>(int*,size_t,const int&);
+template L::Region** fill_n<>(L::Region**,HINTLIB_SN size_t,L::Region *const&);
+template unsigned char* fill_n<>(unsigned char*,HINTLIB_SN size_t,const unsigned char&);
+template unsigned short* fill_n<>(unsigned short*,HINTLIB_SN size_t,const unsigned short&);
+template int* fill_n<>(int*,HINTLIB_SN size_t,const int&);
 
 #ifdef HINTLIB_SGI
 template void __push_heap<>(L::Region**,int,int,L::Region*,L::RegionErrorLess);
@@ -88,6 +96,8 @@ template ostream& ostream::_M_put_num<>(unsigned long long);
 template ostream& ostream::_M_put_num<>(const void*);
 template ostream& ostream::_M_put_num<>(L::real);
 #endif
+
+#undef HINTLIB_SN
 
 }  // namespace std
 

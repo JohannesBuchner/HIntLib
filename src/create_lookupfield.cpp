@@ -34,24 +34,22 @@ void indent (unsigned in)
    for (unsigned i = 0; i < in; ++i)  cout << ' ';
 }
 
-void CArrayDump (const L::GaloisField<unsigned char> field, unsigned in)
+void CArrayDump (const L::GaloisField<unsigned char> f, unsigned in)
 {
    typedef L::GaloisField<unsigned char>::type T;
 
    indent (in);
    cout << "// Multiplication\n";
 
-   for (unsigned i = 0; i < field.size(); ++i)
+   for (unsigned i = 0; i < f.size(); ++i)
    {
       indent (in);
-      T a = field.element (i);
+      T a = f.element (i);
 
-      for (unsigned j = 0; j < field.size(); ++j)
+      for (unsigned j = 0; j < f.size(); ++j)
       {
-         T b = field.element (j);
-
-         unsigned prod = field.index (field.mul (a, b));
-         cout << setw(2) << prod << ',';
+         cout << setw(2)
+              << unsigned (f.index (f.mul (a, f.element (j)))) << ',';
       }
       cout << '\n';
    }
@@ -61,10 +59,19 @@ void CArrayDump (const L::GaloisField<unsigned char> field, unsigned in)
    indent (in);
    cout << " 0,";
 
-   for (unsigned i = 1; i < field.size(); ++i)
+   for (unsigned i = 1; i < f.size(); ++i)
    {
-      unsigned recip = field.index (field.recip (field.element (i)));
-      cout << setw(2) << recip << ',';
+      cout << setw(2) << unsigned (f.index (f.recip (f.element (i)))) << ',';
+   }
+   cout << '\n';
+
+   indent (in);
+   cout << "// Squares\n";
+   indent (in);
+
+   for (unsigned i = 0; i < f.size(); ++i)
+   {
+      cout << setw(2) << unsigned (f.index (f.sqr (f.element (i)))) << ',';
    }
    cout << '\n';
 
@@ -73,27 +80,46 @@ void CArrayDump (const L::GaloisField<unsigned char> field, unsigned in)
    indent (in);
    cout << " 0,";
 
-   for (unsigned i = 1; i < field.size(); ++i)
+   for (unsigned i = 1; i < f.size(); ++i)
    {
-      unsigned order = field.order (field.element (i));
-      cout << setw(2) << order << ',';
+      cout << setw(2) << f.order (f.element (i)) << ',';
+   }
+   cout << '\n';
+
+   indent (in);
+   cout << "// Frobenius\n";
+   indent (in);
+
+   for (unsigned i = 0; i < f.size(); ++i)
+   {
+      cout << setw(2)
+           << unsigned (f.index (f.frobenius (f.element (i)))) << ',';
+   }
+   cout << '\n';
+
+   indent (in);
+   cout << "// Inverse Frobenius\n";
+   indent (in);
+
+   for (unsigned i = 0; i < f.size(); ++i)
+   {
+      cout << setw(2)
+           << unsigned (f.index (f.invFrobenius (f.element (i)))) << ',';
    }
    cout << '\n';
 
    indent (in);
    cout << "// Addition\n";
 
-   for (unsigned i = 0; i < field.size(); ++i)
+   for (unsigned i = 0; i < f.size(); ++i)
    {
       indent (in);
-      T a = field.element (i);
+      T a = f.element (i);
 
-      for (unsigned j = 0; j < field.size(); ++j)
+      for (unsigned j = 0; j < f.size(); ++j)
       {
-         T b = field.element (j);
-
-         unsigned sum = field.index (field.add (a, b));
-         cout << setw(2) << sum << ',';
+         cout << setw(2)
+              << unsigned (f.index (f.add (a, f.element (j)))) << ',';
       }
       cout << '\n';
    }
@@ -102,17 +128,26 @@ void CArrayDump (const L::GaloisField<unsigned char> field, unsigned in)
    cout << "// Negatives\n";
    indent (in);
 
-   for (unsigned i = 0; i < field.size(); ++i)
+   for (unsigned i = 0; i < f.size(); ++i)
    {
-      unsigned neg = field.index (field.neg (field.element (i)));
-      cout << setw(2) << neg << ',';
+      cout << setw(2) << unsigned (f.index (f.neg (f.element (i)))) << ',';
+   }
+   cout << "\n";
+
+   indent (in);
+   cout << "// Doubles\n";
+   indent (in);
+
+   for (unsigned i = 0; i < f.size(); ++i)
+   {
+      cout << setw(2) << unsigned (f.index (f.dbl (f.element (i)))) << ',';
    }
    cout << "\n";
 }
 
 unsigned arraySize (unsigned size)
 {
-   return 2 * size * size + 3 * size;
+   return 2 * size * size + 7 * size;
 }
 
 int main()
@@ -165,7 +200,7 @@ int main()
       "\n"
       "namespace HIntLib\n"
       "{\n"
-      "   namespace Priv\n"
+      "   namespace Private\n"
       "   {\n"
       "      const unsigned* lookupFields"
                " [HINTLIB_PRECALCULATED_FIELD_MAX_SIZE + 1] =\n"
@@ -186,7 +221,7 @@ int main()
 
    cout <<
       "      };\n"
-      "   }  // namespace Priv\n"
+      "   }  // namespace Private\n"
       "}  // namespace HIntLib\n\n";
 
    return 0;

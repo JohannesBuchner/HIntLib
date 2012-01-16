@@ -19,12 +19,11 @@
  */
 
 #include <algorithm>
-#include <iostream>
 
 #include <HIntLib/digitalnetgen.h>
 
 #include <HIntLib/exception.h>
-#include <HIntLib/myalgorithm.h>
+#include <HIntLib/hlalgorithm.h>
 
 namespace HIntLib
 {
@@ -45,7 +44,8 @@ DigitalNetGen<A,S>::DigitalNetGen (
   totalPrec (min3 (
      (_trunc == FULL) ? _c.getTotalPrec() : m,  // what we want
      digitsRepresentable (S(scalArith.size())), // what we can get for this S
-     unsigned (ceil(log(2.0) / log(double(scalArith.size()))
+     unsigned (HINTLIB_MN ceil (
+           HINTLIB_MN log(2.0) / HINTLIB_MN log(double(scalArith.size()))
                * double(std::numeric_limits<real>::digits - 1)))
                                                 // what can be stored in real
      )),
@@ -57,7 +57,7 @@ DigitalNetGen<A,S>::DigitalNetGen (
   xStart (getDimension() * prec, 0),
   trunc (_trunc),
   ss (h),
-  trivialScale (1.0 / powInt(real(base), totalPrec))
+  trivialScale (1.0 / HINTLIB_MN pow(real(base), int (totalPrec)))
 {
    if (arith.size() != c.getVecBase())  throw FIXME (__FILE__, __LINE__);
    if (arith.dimension() != c.getVectorization())
@@ -79,10 +79,6 @@ DigitalNetGen<A,S>::DigitalNetGen (
         << endl
         << " scalArith.size()=" << scalArith.size()
         << endl
-        << " 1 = " << ((_trunc == FULL) ? _c.getTotalPrec() : m)
-        << " 2 = " << digitsRepresentable (S(scalArith.size()))
-        << " 3 = " << unsigned (ceil(log(2.0) / log(double(scalArith.size()))
-                          * double(std::numeric_limits<real>::digits - 1)))
         << " trivalScale=" << trivialScale << " " << 1/trivialScale
         << endl;
 #endif
@@ -122,7 +118,7 @@ template<class A, typename S>
 void DigitalNetGen<A,S>::setCube (const Hypercube &h)
 {
    real shift = trunc==CENTER ? -1./base : .0;
-   ss.set (h, shift, powInt(real(base), totalPrec) + shift);
+   ss.set (h, shift, HINTLIB_MN pow(real(base), int (totalPrec)) + shift);
 }
 
 

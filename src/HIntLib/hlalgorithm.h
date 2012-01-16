@@ -25,8 +25,8 @@
  *   of the STL.
  */
 
-#ifndef HINTLIB_MYALGORITHM_H
-#define HINTLIB_MYALGORITHM_H 1
+#ifndef HINTLIB_HLALGORITHM_H
+#define HINTLIB_HLALGORITHM_H 1
 
 #include <algorithm>
 

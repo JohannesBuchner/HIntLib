@@ -27,7 +27,7 @@
 #include <algorithm>
 
 #include <HIntLib/generatormatrix.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
 namespace L = HIntLib;
@@ -122,7 +122,7 @@ L::GeneratorMatrix::GeneratorMatrix (const GeneratorMatrix &gm)
 unsigned L::GeneratorMatrix::getDefaultM (unsigned base)
 {
    const Index maxNetSize
-      = numeric_limits<Index>::digits <= 48
+      = numeric_limits<Index>::digits <= 49
       ? numeric_limits<Index>::max()
       : (Index(1) << 48) - 1;
 
@@ -135,8 +135,9 @@ unsigned L::GeneratorMatrix::getDefaultM (unsigned base)
 
 unsigned L::GeneratorMatrix::getDefaultTotalPrec (unsigned base)
 {
-   return unsigned (ceil(
-    log(2.0) / log(double(base)) * double(numeric_limits<real>::digits - 1)));
+   return unsigned (HINTLIB_MN ceil(
+      HINTLIB_MN log(2.0) / HINTLIB_MN log(double(base))
+                          * double(numeric_limits<real>::digits - 1)));
 }
 
 
@@ -144,7 +145,7 @@ unsigned L::GeneratorMatrix::getDefaultTotalPrec (unsigned base)
  *  setDigit()
  *  setVector()
  *
- *  By default, a Generator Matrix can not be written to.
+ *  By default, a Generator Matrix cannot be written to.
  *
  *  Non-dummy implementations are available in
  *     MutableGeneratorMatrixGen<T> and

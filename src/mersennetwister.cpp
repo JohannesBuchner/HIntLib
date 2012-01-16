@@ -36,10 +36,23 @@
 #pragma implementation
 #endif
 
-
-#include <string.h>
-
 #include <HIntLib/mersennetwister.h>
+
+#include <algorithm>
+
+#ifdef HINTLIB_HAVE_CSTDDEF
+  #define HINTLIB_SDN std::
+#else
+  #define HINTLIB_SDN
+#endif
+
+#ifdef HINTLIB_HAVE_CSTRING
+  #include <cstring>
+  #define HINTLIB_SSN std::
+#else
+  #include <string.h>
+  #define HINTLIB_SSN
+#endif
 
 #include <HIntLib/lcg_pow2.h>
 
@@ -150,11 +163,12 @@ void L::MersenneTwister::reload()
 
 void L::MersenneTwister::saveState (void *p) const
 {
-   memcpy (p, state, N * sizeof(u32));
+   HINTLIB_SSN memcpy (p, state, N * sizeof(u32));
 
-   ptrdiff_t left = (state + N) - next;
+   HINTLIB_SDN ptrdiff_t left = (state + N) - next;
 
-   memcpy (static_cast<char*>(p) + sizeof(state), &left, sizeof(ptrdiff_t));
+   HINTLIB_SSN memcpy (static_cast<char*>(p) + sizeof(state),
+                       &left, sizeof (HINTLIB_SDN ptrdiff_t));
 }
 
 
@@ -164,12 +178,12 @@ void L::MersenneTwister::saveState (void *p) const
 
 void L::MersenneTwister::restoreState (const void *p)
 {
-   memcpy (state, p, N * sizeof(u32));
+   HINTLIB_SSN memcpy (state, p, N * sizeof(u32));
 
-   ptrdiff_t left;
+   HINTLIB_SDN ptrdiff_t left;
 
-   memcpy (&left, static_cast<const char*>(p) + sizeof(state),
-           sizeof(ptrdiff_t));
+   HINTLIB_SSN memcpy (&left, static_cast<const char*>(p) + sizeof(state),
+                       sizeof(HINTLIB_SDN ptrdiff_t));
 
    next = (state + N) - left;
 }
@@ -200,7 +214,7 @@ L::MersenneTwister::MersenneTwister (const MersenneTwister &mt)
       RESOLUTION = real(1) / RANGE;
    #endif
 
-   memcpy (state, mt.state, N * sizeof(u32));
+   std::copy (mt.state, mt.state + N, state);
 }
 
 
@@ -212,11 +226,15 @@ L::MersenneTwister& L::MersenneTwister::operator= (const MersenneTwister &mt)
 {
    if (this != &mt)
    {
-      memcpy (state, mt.state, N * sizeof(u32));
+      std::copy (mt.state, mt.state + N, state);
 
       next = (state + N) - ((mt.state + N) - mt.next);
    }
 
    return *this;
 }
+
+#undef HINTLIB_SDN
+#undef HINTLIB_SSN
+
 

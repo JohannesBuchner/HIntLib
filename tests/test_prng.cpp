@@ -80,7 +80,10 @@ void doTest (const T*)
       error ("getRange() broken!");
    }
 
-   if (abs (1.0 / res - range) > .0001)  error ("getResolution() broken!");
+   if (L::abs (1.0 / res - range) > .0001)
+   {
+      error ("getResolution() broken!");
+   }
 
    real xx = 0;
    unsigned yy = 0;

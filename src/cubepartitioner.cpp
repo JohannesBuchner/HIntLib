@@ -29,25 +29,22 @@
 #pragma implementation
 #endif
 
-#include <stdlib.h>
-
 #include <HIntLib/cubepartitioner.h>
 
 #include <HIntLib/hypercube.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
+namespace L = HIntLib;
 
 namespace {
 
-using namespace HIntLib;
-
 inline
 int getNumSplits (
-   unsigned k,          // dimension
-   Index n,             // remaining points
-   Index avgNumSplits,  // approximated number of splits
-   const Array<Index>& splitThresholds)
+   unsigned k,             // dimension
+   L::Index n,             // remaining points
+   L::Index avgNumSplits,  // approximated number of splits
+   const L::Array<L::Index>& splitThresholds)
 {
    // By default, choose avgNumSplits
    // Usue avgNumSplits+1 only if using avgNumSplits is not enough to 
@@ -77,11 +74,13 @@ void L::CubePartitioner::operator() (
    // The average number of splits along each axis
    // We perform exactly avgNumSplits or avgNumSplits+1 splits
 
-   Index avgNumSplits = Index (floor (pow (double(numSections), 1.0 / dim)));
+   Index avgNumSplits = Index (HINTLIB_MN floor (
+         HINTLIB_MN pow (double (numSections), 1.0 / dim)));
 
    // do not underestimate this number due to rounding errors in pow()
 
-   if (powInt(double(avgNumSplits+1), dim) <= std::numeric_limits<Index>::max())
+   if (   HINTLIB_MN pow(double(avgNumSplits+1), dim)
+       <= std::numeric_limits<Index>::max())
    {
       if (powInt (avgNumSplits+1, dim) <= numSections)  avgNumSplits++;
    }

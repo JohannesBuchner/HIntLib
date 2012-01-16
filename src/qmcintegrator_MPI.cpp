@@ -22,7 +22,7 @@
 #pragma implementation "qmcintegrator.h"
 #endif
 
-#include <HIntLib/mympi.h>
+#include <HIntLib/hlmpi.h>
 
 #include "qmcintegrator.cpp"
 

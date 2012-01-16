@@ -26,22 +26,18 @@
 #endif
 #endif
 
-#include <HIntLib/mymath.h>
-
-#include <HIntLib/polynomial2.h>
-#include <HIntLib/polynomial.h>
+#include <HIntLib/hlmath.h>
+#include <HIntLib/exception.h>
 
 namespace L = HIntLib;
+
 
 /**
  *  powInt()
  *
  *  Arbitrary powers to an integer exponent
  *
- *  Works for
- *     - integers
- *     - floats
- *     - Polynomial2
+ *  A specialization is provided for Polynomial2<>
  */
 
 template<class T>
@@ -62,19 +58,11 @@ namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) template X powInt (X, unsigned);
 
-   HINTLIB_INSTANTIATE (double)
-#if HINTLIB_REAL != 2
-   HINTLIB_INSTANTIATE (real)
-#endif
    HINTLIB_INSTANTIATE (int)
    HINTLIB_INSTANTIATE (unsigned)
    HINTLIB_INSTANTIATE (unsigned long)
 #ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
    HINTLIB_INSTANTIATE (unsigned long long)
-#endif
-   HINTLIB_INSTANTIATE (Polynomial2<u32>)
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   HINTLIB_INSTANTIATE (Polynomial2<u64>)
 #endif
 #undef HINTLIB_INSTANTIATE
 }
@@ -88,13 +76,20 @@ template<class T>
 T L::powerMod (T x, unsigned exponent, T p)
 {
    if (! x)  return T();
+
+   const T mask = ~T() << (std::numeric_limits<T>::digits / 2);
    T result (1);
 
    for (;;)
    {
-      if (exponent & 1)  result = (result * x) % p;
-      if ((exponent >>= 1) == 0)  return result;
-      x = (x*x) % p;
+      if (exponent & 1)
+      {
+         result *= x;
+         if (result & mask)  result %= p;
+      }
+      if ((exponent >>= 1) == 0)  return result >= p ? result % p : result;
+      x *= x;
+      if (x & mask)  x %= p;
    }
 }
 
@@ -104,10 +99,6 @@ namespace HIntLib
 
    HINTLIB_INSTANTIATE (unsigned)
    HINTLIB_INSTANTIATE (unsigned long)
-   HINTLIB_INSTANTIATE (Polynomial2<u32>)
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   HINTLIB_INSTANTIATE (Polynomial2<u64>)
-#endif
 #undef HINTLIB_INSTANTIATE
 }
 
@@ -121,13 +112,20 @@ T L::powerModReduce (T x, unsigned exponent, T p)
 {
    if (! x)  return T();
    if (exponent >= p - 1)  exponent %= (p - 1);
+
+   const T mask = ~T() << (std::numeric_limits<T>::digits / 2);
    T result (1);
 
    for (;;)
    {
-      if (exponent & 1)  result = (result * x) % p;
-      if ((exponent >>= 1) == 0)  return result;
-      x = (x*x) % p;
+      if (exponent & 1)
+      {
+         result *= x;
+         if (result & mask)  x %= p;
+      }
+      if ((exponent >>= 1) == 0)  return result >= p ? result % p : result;
+      x *= x;
+      if (x & mask)  x %= p;
    }
 }
 
@@ -153,13 +151,14 @@ template<class T> int L::logInt (T x, T base)
 {
    if (base < 2)  throw InvalidLogBase (base);
    if (x == 0)  return -1;
-   
-   unsigned result = 0;
    x /= base;
+   
+   int result = 0;
+   T test = 1;
 
-   while (x)
+   while (test <= x)
    {
-      x /= base;
+      test *= base;
       ++ result;
    }
 
@@ -217,5 +216,26 @@ L::real L::radicalInverseFunction2 (Index n)
 
    return x;
 }
+
+#include <HIntLib/bitop.tcc>
+
+namespace HIntLib
+{
+#define HINTLIB_INSTANTIATE(X) \
+   template X thread (X, X, unsigned, unsigned); \
+   template void unthread (X, X&, X&, unsigned, unsigned); \
+   template X threadn (X*, unsigned); \
+   template void unthreadn (X, X*, unsigned); \
+   template X threadinf (X*, unsigned); \
+   template unsigned unthreadinf (X, X*);
+   
+   HINTLIB_INSTANTIATE (unsigned)
+   HINTLIB_INSTANTIATE (unsigned long)
+#ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
+   HINTLIB_INSTANTIATE (unsigned long long)
+#endif
+#undef HINTLIB_INSTANTIATE
+}
+
 
 

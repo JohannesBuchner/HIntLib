@@ -31,7 +31,7 @@
 #pragma interface
 #endif
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/integrand.h>
 #include <HIntLib/array.h>
 #include <HIntLib/minmaxfinder.h>

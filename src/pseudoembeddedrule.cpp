@@ -27,7 +27,7 @@
 
 #include <HIntLib/pseudoembeddedrule.h>
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
 namespace L = HIntLib;

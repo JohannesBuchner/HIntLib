@@ -2,6 +2,41 @@
 
 SUBDIRS = HIntLib
 
+noinst_LTLIBRARIES = libcreatelookupfield.la libcreatematrix.la
+lib_LTLIBRARIES = libhintlib.la @LIB_HINTLIB_MPI@
+EXTRA_LTLIBRARIES = libhintlibmpi.la
+
+libcreatelookupfield_la_LIBADD = @STL_OBJECT@
+libcreatelookupfield_la_DEPENDENCIES = @STL_OBJECT@
+libcreatelookupfield_la_SOURCES = \
+   bitop.cpp \
+   exception.cpp \
+   factorring_lf.cpp \
+   galoisfield.cpp \
+   linearalgebra_lf.cpp \
+   modulararithmetic.cpp \
+   hlmath.cpp \
+   output.cpp \
+   polynomial.cpp \
+   polynomial_lf.cpp \
+   prime.cpp \
+   prime_generated.cpp
+EXTRA_libcreatelookupfield_la_SOURCES = stl.cpp
+
+libcreatematrix_la_LDFLAGS = -lm
+libcreatematrix_la_LIBADD = libcreatelookupfield.la
+libcreatematrix_la_SOURCES = \
+   generatormatrix.cpp \
+   generatormatrix2.cpp \
+   generatormatrixgen.cpp \
+   linearalgebra.cpp \
+   lookupfield.cpp \
+   lookupfield_generated.cpp \
+   lookupgaloisfield.cpp \
+   niederreitermatrixgen.cpp \
+   polynomial_gm.cpp \
+   polynomial2.cpp
+
 ALLSRC= \
    adaptintegrator.cpp \
    builtinprng.cpp \
@@ -10,11 +45,13 @@ ALLSRC= \
    cubepartitioner.cpp \
    digitalnet2.cpp \
    digitalnetgen.cpp \
+   factorring_x.cpp \
    faure.cpp \
    generatormatrix2row.cpp \
    generatormatrixvec.cpp \
    halton.cpp \
    hypercube.cpp \
+   integerring.cpp \
    integrator.cpp \
    kahanadd.cpp \
    loadlibseq.cpp \
@@ -28,7 +65,8 @@ ALLSRC= \
    niederreitermatrix.cpp \
    orbitrule.cpp \
    pointset.cpp \
-   polynomial.cpp \
+   polynomial_field.cpp \
+   polynomial_ring.cpp \
    pseudoembeddedrule.cpp \
    qmcintegrator.cpp \
    qrnsequencebase.cpp \
@@ -73,44 +111,10 @@ ALLSRCMPI=$(ALLSRC) \
    exception_MPI.cpp \
    hypercube_MPI.cpp \
    mcintegrator_MPI.cpp \
-   mympi.cpp \
+   hlmpi.cpp \
    qmcintegrator_MPI.cpp \
    region_MPI.cpp \
    staticloadbalancer_MPI.cpp
-
-noinst_LTLIBRARIES = libcreatelookupfield.la libcreatematrix.la
-lib_LTLIBRARIES = libhintlib.la @LIB_HINTLIB_MPI@
-EXTRA_LTLIBRARIES = libhintlibmpi.la
-
-libcreatelookupfield_la_LIBADD = @STL_OBJECT@
-libcreatelookupfield_la_DEPENDENCIES = @STL_OBJECT@
-libcreatelookupfield_la_SOURCES = \
-   bitop.cpp \
-   exception.cpp \
-   factorring.cpp \
-   galoisfield.cpp \
-   integerring.cpp \
-   linearalgebra_ma.cpp \
-   mymath.cpp \
-   output.cpp \
-   polynomial_ma.cpp \
-   polynomial2.cpp \
-   prime.cpp \
-   prime_generated.cpp
-EXTRA_libcreatelookupfield_la_SOURCES = stl.cpp
-
-libcreatematrix_la_LDFLAGS = -lm
-libcreatematrix_la_LIBADD = libcreatelookupfield.la
-libcreatematrix_la_SOURCES = \
-   generatormatrix.cpp \
-   generatormatrix2.cpp \
-   generatormatrixgen.cpp \
-   linearalgebra.cpp \
-   lookupfield.cpp \
-   lookupfield_generated.cpp \
-   lookupgaloisfield.cpp \
-   niederreitermatrixgen.cpp \
-   polynomial_lf.cpp
 
 libhintlib_la_SOURCES = $(ALLSRCSEQ)
 libhintlib_la_LDFLAGS = @NOUNDEFINED@

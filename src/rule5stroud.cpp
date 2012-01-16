@@ -40,7 +40,7 @@
 #include <HIntLib/rule5stroud.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
 
@@ -50,13 +50,15 @@ using L::Index;
 
 namespace
 {
-   const real b1 = real (25.0) / real (168.0);
-   const real b3 = real  (5.0) / real  (48.0);
+   const real b1 = real(25) / real(168);
+   const real b3 = real (5) / real (48);
 
 #if HINTLIB_STATIC_WORKS == 1
-   const real r = sqrt ( real (7.0)                       / real (15.0));
-   const real s = sqrt ((real (7.0) + sqrt (real (24.0))) / real (15.0));
-   const real t = sqrt ((real (7.0) - sqrt (real (24.0))) / real (15.0));
+   const real r = HINTLIB_MN sqrt ( real(7) / real(15));
+   const real s = HINTLIB_MN sqrt ((real(7) + HINTLIB_MN sqrt (real(24)))
+                                  / real(15));
+   const real t = HINTLIB_MN sqrt ((real(7) - HINTLIB_MN sqrt (real(24)))
+                                  / real(15));
 #else
    real r,s,t;
 #endif
@@ -77,17 +79,17 @@ L::Rule5Stroud::Rule5Stroud (unsigned dim)
      aT      (dim),
      aMinusT (dim),
 
-     b0 ((5 * sqr(dim) - 15 * dim + 14) / real (14.0)),
-     b2 ((50 - 25 * int (dim)) / real (168.0)),
-     b4 ((10 -  5 * int (dim)) / real  (48.0))
+     b0 (real(5 * sqr(dim) - 15 * dim + 14) / real(14)),
+     b2 (real(50 - 25 * int (dim)) / real(168)),
+     b4 (real(10 -  5 * int (dim)) / real (48))
 {
    checkDimensionNotZero (dim);
    checkDimensionGeq<2> (dim);
 
 #if HINTLIB_STATIC_WORKS == 0
-   r = sqrt ( real (7.0)                       / real (15.0));
-   s = sqrt ((real (7.0) + sqrt (real (24.0))) / real (15.0));
-   t = sqrt ((real (7.0) - sqrt (real (24.0))) / real (15.0));
+   r = HINTLIB_MN sqrt (real(7) / real(15));
+   s = HINTLIB_MN sqrt ((real(7) + HINTLIB_MN sqrt (real(24))) / real(15));
+   t = HINTLIB_MN sqrt ((real(7) - HINTLIB_MN sqrt (real(24))) / real(15));
 #endif
 }
 
@@ -104,10 +106,10 @@ real L::Rule5Stroud::getSumAbsWeight() const
    // Don't forget to take the absolute value for weights that meight be
    // negative
  
-   return     num0_0    () * abs (b0)
-      + 2.0 * numRR0_0s () * b1
-      +       numR0_0fs () * (abs (b2) + 2.0 * abs (b4))
-      + 2.0 * numRS0_0s () * b3;
+   return   num0_0    () * abs (b0)
+      + 2 * numRR0_0s () * b1
+      +     numR0_0fs () * (abs (b2) + 2 * abs (b4))
+      + 2 * numRS0_0s () * b3;
 }
  
 

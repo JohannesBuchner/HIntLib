@@ -43,7 +43,7 @@
 
 #include <HIntLib/vegas.h>
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/kahanadd.h>
 #include <HIntLib/hypercube.h>
 #include <HIntLib/shiftscale.h>
@@ -256,8 +256,10 @@ namespace
          {
             const real x = std::max (minimum, sectionSqrSum (d,j));
 
-            rSum +=
-               r[j] = pow ((real(1.0) - x/sum) / (log(sum) - log(x)), ALPHA); 
+            rSum += r[j] =
+               HINTLIB_MN pow (  (real(1.0) - x/sum)
+                               / (HINTLIB_MN log(sum) - HINTLIB_MN log(x)),
+                               ALPHA); 
          } 
 
          // Apply these corrections to the section upper bounds
@@ -355,7 +357,7 @@ L::Vegas::Status L::Vegas::integrate (
    const unsigned numPointsFinal = maxEval - numPointsPre * numIter;
 
    const unsigned numSections = std::max(MIN_SECTIONS, min(MAX_SECTIONS,
-                                    unsigned(sqrt(real(numPointsPre)))));
+                              unsigned(HINTLIB_MN sqrt(real(numPointsPre)))));
 
 #if 0
 cerr << "\n  Sections: " << numSections << "  Iterations: " << numIter << endl
@@ -403,7 +405,7 @@ cerr << "\n  Sections: " << numSections << "  Iterations: " << numIter << endl
       const real dv2g = sqr(numPoints * h.getVolume())
                    / sqr(real(numPoints)) / (numPoints-1.0);
 
-      real variance = sqrt(vegasJob.getSumSquares() * numPoints);
+      real variance = HINTLIB_MN sqrt(vegasJob.getSumSquares() * numPoints);
            variance = (variance - sum) * (variance + sum) * dv2g;
 
       if (combineResults && variance > 0.0)
@@ -415,12 +417,12 @@ cerr << "\n  Sections: " << numSections << "  Iterations: " << numIter << endl
          sumVarianceRecip += varianceRecip;
 
          integral = sumIntegral / sumVarianceRecip;
-         stddev   = sqrt (1.0 / sumVarianceRecip);
+         stddev   = HINTLIB_MN sqrt (1.0 / sumVarianceRecip);
       }
       else
       {
          integral = sum;
-         stddev   = sqrt (variance);
+         stddev   = HINTLIB_MN sqrt (variance);
       }
 
       // Do chi^2 test to check consistency
@@ -432,7 +434,7 @@ cerr << "\n  Sections: " << numSections << "  Iterations: " << numIter << endl
       }
    
 #if 0
-      cout << "Iteration " << iter << ": " << sum << " +/- " << sqrt(variance) << endl
+      cout << "Iteration " << iter << ": " << sum << " +/- " << HINTLIB_MN sqrt(variance) << endl
            << "      Total: " << integral << " +/- " << stddev
            << "  chi = " << chi2a << endl;
 #endif

@@ -20,7 +20,16 @@
 
 #include <iostream>
 #include <iomanip>
-#include <stdlib.h>
+
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_CSTDLIB
+  #include <cstdlib>
+  #define HINTLIB_SLN std::
+#else
+  #include <stdlib.h>
+  #define HINTLIB_SLN
+#endif
 
 #include <HIntLib/tparameter.h>
 #include <HIntLib/shiftnet.h>
@@ -45,7 +54,7 @@ bool opt(int c, const char* s)
 {
    switch (c)
    {
-   case 'm':  MAX_M =atoi (s); return true;
+   case 'm':  MAX_M = HINTLIB_SLN atoi (s); return true;
    }
 
    return false;
@@ -81,8 +90,8 @@ void test (int argc, char** argv)
    DEB1
    {
       cout << setw (3) << "m"
-           << setw (6) << "exp t"
-           << setw (6) << "act t" << endl;
+           << setw (11) << "expected t"
+           << setw (11) << "actual t" << endl;
    }
 
    for (int m = 1; m <= MAX_M; ++m)
@@ -94,11 +103,11 @@ void test (int argc, char** argv)
 
       unsigned expected = optimalShiftNetT (base, m);
 
-      DEB1  cout << setw(6) << expected << flush;
+      DEB1  cout << setw(11) << expected << flush;
 
       unsigned actual = tParameter (gm);
 
-      DEB1  cout << setw(6) << actual << endl;
+      DEB1  cout << setw(11) << actual << endl;
 
       if (actual != expected)
       {

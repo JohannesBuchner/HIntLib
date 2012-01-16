@@ -28,10 +28,17 @@
 #pragma implementation
 #endif
 
-#include <string.h>
 #include <string>
 
 #include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_CSTRING
+  #include <cstring>
+  #define HINTLIB_SSN std::
+#else
+  #include <string.h>
+  #define HINTLIB_SSN
+#endif
 
 #ifdef HINTLIB_HAVE_SSTREAM
   #include <sstream>
@@ -54,7 +61,7 @@ namespace
       std::string s = ss.str();
 
       char* p = new char [s.length() + 1];
-      strcpy (p, s.c_str());
+      HINTLIB_SSN strcpy (p, s.c_str());
 
       return p;
    }
@@ -81,7 +88,7 @@ void L::Exception::setStringCopy (const char*ss) const
 {
    delete[] s;
    s = new char [strlen(ss) + 1];
-   strcpy (s, ss);
+   HINTLIB_SSN strcpy (s, ss);
 }
 
 
@@ -160,7 +167,7 @@ void L::throwDimensionMismatch (unsigned dim1, unsigned dim2)
 void L::NoEvaluationsPossible::makeString() const
 {
    ostringstream ss;
-   ss << "Can not apply this Integrator with only " << n << " abscissas!";
+   ss << "Cannot apply this Integrator with only " << n << " abscissas!";
    setString (ms(ss));
 }
 
@@ -174,7 +181,7 @@ void L::MaxEvaluationsRequired::makeString() const
 void L::GM_PrecTooHigh::makeString() const
 {
    ostringstream ss;
-   ss << "Can not create Generator Matrix with " << prec << " base-" << b
+   ss << "Cannot create Generator Matrix with " << prec << " base-" << b
       << " digits precision! Maximum are " << max << " digits.";
    setString (ms(ss));
 }
@@ -182,7 +189,7 @@ void L::GM_PrecTooHigh::makeString() const
 void L::GM_BaseTooLarge::makeString() const
 {
    ostringstream ss;
-   ss << "Can not create Generator Matrix with base " << base
+   ss << "Cannot create Generator Matrix with base " << base
       << ". Maxium is " << max << "!";
    setString (ms(ss));
 }
@@ -225,7 +232,7 @@ void L::GM_CopyBase::makeString() const
 void L::DigitalNetTooLarge::makeString() const
 {
    ostringstream ss;
-   ss << "Can not create Digital Net with " << b << '^' << m << " points! " 
+   ss << "Cannot create Digital Net with " << b << '^' << m << " points! " 
          "Maximum is " << b << '^' << max << '.';
    setString (ms(ss));
 }
@@ -251,6 +258,11 @@ void L::Overflow::makeString() const
    setStringCopy ("Arithmetic Overflow!");
 }
 
+void L::throwOverflow()
+{
+   throw Overflow();
+}
+
 void L::DivisionByZero::makeString() const
 {
    setStringCopy ("Division by Zero!");
@@ -264,7 +276,7 @@ void L::throwDivisionByZero()
 void L::InvalidLogBase::makeString() const
 {
    ostringstream ss;
-   ss << "Can not determine base " << n << " logarithm!";
+   ss << "Cannot determine base " << n << " logarithm!";
    setString (ms(ss));
 }
 
@@ -304,7 +316,7 @@ void L::LookupFieldSet::makeString() const
 void L::PrimeNumberNth::makeString() const
 {
    ostringstream ss;
-   ss << "Can not determine the " << getN() << "th prime number!";
+   ss << "Cannot determine the " << getN() << "th prime number!";
    setString (ms(ss));
 }
 
@@ -391,8 +403,8 @@ L::LineReaderException::LineReaderException
      line (new char [strlen(_line) + 1]),
      msg (new char [strlen(_msg ? _msg : "Error") + 1])
 {
-   strcpy (line, _line);
-   strcpy (msg, _msg ? _msg : "Error");
+   HINTLIB_SSN strcpy (line, _line);
+   HINTLIB_SSN strcpy (msg, _msg ? _msg : "Error");
 }
 
 L::LineReaderException::LineReaderException (const LineReaderException &lr)
@@ -401,8 +413,8 @@ L::LineReaderException::LineReaderException (const LineReaderException &lr)
      line (new char [strlen(lr.line) + 1]),
      msg  (new char [strlen(lr.msg)  + 1])
 {
-   strcpy (line, lr.line);
-   strcpy (msg, lr.msg);
+   HINTLIB_SSN strcpy (line, lr.line);
+   HINTLIB_SSN strcpy (msg, lr.msg);
 }
 
 L::LineReaderException::~LineReaderException () throw ()
@@ -417,4 +429,7 @@ void L::LineReaderException::makeString() const
    ss << msg << " in line " << ln << ", " << pos+1 << ": " << line;
    setString (ms(ss));
 }
+
+#undef HINTLIB_SSN
+
 

@@ -26,10 +26,15 @@
 #pragma interface
 #endif
 
-#include <stdlib.h>
-
 #include <HIntLib/defaults.h>
 
+#ifdef HINTLIB_HAVE_CSTDDEF
+  #include <cstddef>
+  #define HINTLIB_SDN ::std::
+#else
+  #include <stddef.h>
+  #define HINTLIB_SDN ::
+#endif
 
 namespace HIntLib
 {
@@ -60,7 +65,7 @@ public:
  
    // Save and restore state
  
-   virtual size_t getStateSize() const = 0;
+   virtual HINTLIB_SDN size_t getStateSize() const = 0;
    virtual void saveState (void *) const = 0;
    virtual void restoreState (const void *) = 0;
 };
@@ -91,7 +96,7 @@ public:
    virtual int operator() (int max)          { return T::operator()(max); }
    virtual real getReal()                    { return T::getReal(); }
 
-   virtual size_t getStateSize () const      { return T::getStateSize(); }
+   virtual HINTLIB_SDN size_t getStateSize () const{ return T::getStateSize(); }
    virtual void saveState (void *p) const    { T::saveState (p); }
    virtual void restoreState (const void *p) { T::restoreState (p); }
 
@@ -123,7 +128,7 @@ public:
    virtual int  operator() (int max)    { return p->operator()(max); }
    virtual real getReal()               { return p->getReal(); }
 
-   virtual size_t getStateSize () const      { return p->getStateSize(); }
+   virtual HINTLIB_SDN size_t getStateSize () const{ return p->getStateSize(); }
    virtual void saveState (void *b) const    { p->saveState (b); }
    virtual void restoreState (const void *b) { p->restoreState (b); }
 
@@ -135,6 +140,8 @@ private:
 };
 
 }  // namespace HIntLib
+
+#undef HINTLIB_SDN
 
 #endif
 

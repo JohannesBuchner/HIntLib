@@ -37,7 +37,7 @@
 
 #include <HIntLib/miser.h>
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/statistic.h>
 #include <HIntLib/hypercube.h>
 #include <HIntLib/integrand.h>
@@ -172,8 +172,10 @@ void MiserImp::recur (
           && (   leftStatistic [d].getRange() > 0
               || rightStatistic [d].getRange() > 0))
       {
-         real left  = pow ( leftStatistic [d].getRange(), real (2.0 / 3.0));
-         real right = pow (rightStatistic [d].getRange(), real (2.0 / 3.0));
+         real left  = HINTLIB_MN pow ( leftStatistic [d].getRange(),
+                                      real(2.0) / real(3.0));
+         real right = HINTLIB_MN pow (rightStatistic [d].getRange(),
+                                      real(2.0) / real(3.0));
          real sum = left + right;
 
          if (m << sum)
@@ -299,7 +301,7 @@ L::Miser::Status L::Miser::integrate (
    imp.recur (hh, maxEval, ee);
 
    ee.set (ee.getEstimate() * h.getVolume(),
-           sqrt(ee.getError()) * h.getVolume());
+           HINTLIB_MN sqrt(ee.getError()) * h.getVolume());
 
    Status status = checkRequestedError (ee, reqAbsError, reqRelError);
 

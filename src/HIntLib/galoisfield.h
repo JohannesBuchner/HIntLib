@@ -25,6 +25,7 @@
 #pragma interface
 #endif
 
+#include <HIntLib/modulararithmetic.h>
 #include <HIntLib/polynomial.h>
 #include <HIntLib/factorring.h>
 
@@ -37,14 +38,15 @@ namespace HIntLib
  */
 
 template <typename B>
-class GaloisField : public FactorField<PolynomialRing<FactorField<B> > >
+class GaloisField
+   : public FactorField<PolynomialRing<ModularArithmeticField<B> > >
 {
 public:
    GaloisField (unsigned base, unsigned exponent, bool xPrim = false);
    GaloisField (unsigned size, bool xPrim = false);
 
 private:
-   typedef FactorField<B> Field;
+   typedef ModularArithmeticField<B> Field;
    typedef PolynomialRing<Field> Poly;
    typedef FactorField<Poly> ExtensionField;
    typedef typename Poly::type T;

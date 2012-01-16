@@ -6,7 +6,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <math.h>
+#include <HIntLib/hlmath.h>
 
 using std::cerr;
 using std::endl;
@@ -23,13 +23,13 @@ int main (int argc, char** argv)
    std::ifstream f1 (argv[1]);
    if (! f1)
    {
-      cerr << "Can not open '" << argv[1] << "'!\n\n";
+      cerr << "Cannot open '" << argv[1] << "'!\n\n";
       return 2;
    }
    std::ifstream f2 (argv[2]);
    if (! f2)
    {
-      cerr << "Can not open '" << argv[2] << "'!\n\n";
+      cerr << "Cannot open '" << argv[2] << "'!\n\n";
       return 2;
    }
 
@@ -54,7 +54,7 @@ int main (int argc, char** argv)
          return 3;
       }
 
-      if (fabs (x1 - x2) > 0.000001)
+      if (HIntLib::abs (x1 - x2) > 0.000001)
       {
          cerr << "Files differ! Position: " << n << ", "
               << x1 << " != " << x2 << endl;

@@ -20,25 +20,16 @@
 
 #ifdef __GNUG__
 #pragma implementation
-#endif
-
-#include <HIntLib/defaults.h>
-
-#ifdef HINTLIB_HAVE_OSTREM
-  #include <ostream>
-#else
-  #include <iostream>
-#endif
-
-#ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
-#else
-  #include <HIntLib/fallback_sstream.h>
+#pragma implementation "gf2.h"
+#pragma implementation "gf2vectorspace.h"
 #endif
 
 #include <HIntLib/polynomial2.h>
+#include <HIntLib/gf2vectorspace.h>
 
 #include <HIntLib/integerring.h>
+#include <HIntLib/output.h>
+#include <HIntLib/linearalgebra.h>
 
 namespace L = HIntLib;
 
@@ -54,16 +45,8 @@ L::operator<< (std::ostream &o, const GF2 &)
 void
 L::GF2::print (std::ostream& o, type x)
 {
-   std::ostringstream ss;
-   ss.flags (o.flags());
-   ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-   ss.imbue (o.getloc());
-#endif
-
+   Private::Printer ss (o);
    ss << unsigned (x) << " (2)";
-
-   o << ss.str().c_str();
 }
 
 void
@@ -84,28 +67,16 @@ L::GF2::printSuffix (std::ostream& o)
 std::ostream &
 L::operator<< (std::ostream &o, const GF2VectorSpaceBase &v)
 {
-   std::ostringstream ss;
-   ss.flags (o.flags());
-   ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-   ss.imbue (o.getloc());
-#endif
-
+   Private::Printer ss (o);
    ss << "GF2^" << v.dimension();
-
-   return o << ss.str().c_str();
+   return o;
 }
 
 template<typename T>
 void
 L::GF2VectorSpace<T>::printShort (std::ostream& o, const type& v) const
 {
-   std::ostringstream ss;
-   ss.flags (o.flags());
-   ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-   ss.imbue (o.getloc());
-#endif
+   Private::Printer ss (o);
 
    ss << '(';
    for (unsigned i = 0; i < dim; ++i)
@@ -114,25 +85,16 @@ L::GF2VectorSpace<T>::printShort (std::ostream& o, const type& v) const
       ss << unsigned (coord(v, i));
    }
    ss << ')';
-
-   o << ss.str().c_str();
 }
 
 template<typename T>
 void
 L::GF2VectorSpace<T>::print (std::ostream& o, const type& v) const
 {
-   std::ostringstream ss;
-   ss.flags (o.flags());
-   ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-   ss.imbue (o.getloc());
-#endif
+   Private::Printer ss (o);
 
-   printShort (o, v);
+   printShort (ss, v);
    ss << " (2)";
-
-   o << ss.str().c_str();
 }
 
 
@@ -144,22 +106,47 @@ L::GF2VectorSpace<T>::print (std::ostream& o, const type& v) const
  */
 
 template<typename T>
-void L::Polynomial2<T>::printShort (std::ostream& o, char var) const
+void L::Polynomial2<T>::printShort (
+      std::ostream& o, char var, PrintShortFlag f) const
 {
-   std::ostringstream ss;
-   ss.flags (o.flags());
-   ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-   ss.imbue (o.getloc());
-#endif
+   // The zero-polynomial is a special case
 
-   bool output = false;
+   if (is0())
+   {
+      o << "0";
+      return;
+   }
+   
+   // count non-zero terms
+   
+   int nonZeroTerms = 0;
+   T dd = d;
 
-   for (int i = std::numeric_limits<T>::digits - 1; i >= 0; --i)
+   while (dd && nonZeroTerms < 2)
+   {
+      if (dd & 1)  ++nonZeroTerms;
+      dd >>= 1;
+   }
+
+   Private::Printer ss (o);
+
+   bool needPlus = o.flags() & o.showpos;
+
+   if ((f & FIT_FOR_MUL) && nonZeroTerms >= 2)
+   {
+      if (needPlus)
+      {
+         ss << '+';
+         needPlus = false;
+      }
+      ss << '(';
+   }
+
+   for (int i = degree(); i >= 0; --i)
    {
       if ((*this)[i])
       {
-         if (output) ss << '+';
+         if (needPlus) ss << '+';
 
          switch (i)
          {
@@ -167,16 +154,14 @@ void L::Polynomial2<T>::printShort (std::ostream& o, char var) const
          case 1:  ss << var; break;
          case 2:  ss << var << '\262'; break;
          case 3:  ss << var << '\263'; break;
-         default: ss << var << '^' << i;
+         default: ss << var << '^' << unsigned(i);  // avoid sign from showpos
          }
 
-         output = true;
+         needPlus = true;
       }
    }
 
-   if (! output)  ss << '0';
-
-   o << ss.str().c_str();
+   if ((f & FIT_FOR_MUL) && nonZeroTerms >= 2)  ss << ')';
 }
 
 /**
@@ -223,6 +208,31 @@ L::Polynomial2<T> L::Polynomial2<T>::operator* (const P p) const
 
 
 /**
+ *  sqr()
+ */
+
+template<typename T>
+L::Polynomial2<T> L::sqr (Polynomial2<T> p)
+{
+   T d = T(p);
+
+   if (d & (~T(0) << std::numeric_limits<T>::digits / 2))  throwOverflow();
+
+   T result = 0;
+   T mask = 1;
+
+   while (d)
+   {
+      if (d & 1)  result |= mask;
+      d >>= 1;
+      mask <<= 2;
+   }
+
+   return Polynomial2<T>(result);
+}
+
+
+/**
  *  div
  *
  *  Division of polynomials
@@ -262,14 +272,13 @@ void L::Polynomial2<T>::div (P u, const P v, P &q, P &r)
 
    // SGI and CRAY seem to require a copy...   FIXME
    P uu (u);
-   #define u uu
 
    for ( ; loops >= 0; --loops)
    {
       // If the current highest coefficient of u is set, v can be subtracted
       //   at this position
 
-      if (u.d & u_mask)  u += divisor;
+      if (uu.d & u_mask)  uu += divisor;
 
       // Try divisor v at next position
 
@@ -279,11 +288,9 @@ void L::Polynomial2<T>::div (P u, const P v, P &q, P &r)
 
    const T mask = ~T() << n;  // Mask for separating quotient from remainder
 
-   q.d = (u.d & mask) >> n;
+   q.d = (uu.d & mask) >> n;
 
-   r.d = u.d & ~mask;
-
-   #undef u
+   r.d = uu.d & ~mask;
 }
 
 
@@ -325,19 +332,72 @@ bool L::Polynomial2<T>::isPrimitive () const
    return true;
 }
 
+
+/**
+ *  isPrime()
+ */
+
 template<typename T>
 bool L::Polynomial2<T>::isPrime() const
 {
-   if (d == 2) return true;   // x
-   if (! (d & 1) || d < 2)  return false;  //  x_n+...+0  or  0 or 1
+   // handle the basic cases
 
-   const unsigned ub = 2 << (degree() / 2);
-   for (unsigned i = 3; i < ub; i += 2)
+   if (d < 4)  return d & 2;  // degree 0 and 1
+
+   if (! (d & 1))  return false;  // check for ...+0
+
+   if (d < 256)
+   {
+      int deg = this->degree();
+
+      for (unsigned i = 3; ; i += 2)
+      {
+         if (2 * P(i).degree() > deg)  return true;
+         if ((*this % P(i)).is0())  return false;
+      }
+   }
+
+   // check for divisors up to degree 3
+
+   for (unsigned i = 3; i < 16; i += 2)
    {
       if ((*this % P(i)).is0())  return false;
    }
-   return true;
+
+   // Make sure it is square free
+
+   if (! isSquarefree())  return false;
+
+   // Berlekamp's algorithm
+
+   P q (1);
+   const int numRows = degree() - 1;
+   const T overflow = T(1) << numRows + 1;
+   T matrix [std::numeric_limits<T>::digits];
+
+   for (int row = 0; row < numRows; ++row)
+   {
+      // multiply  q  by  x  and reduce (2 times)
+
+      q.d <<= 1;
+      if (q.d & overflow)  q -= *this;
+      q.d <<= 1;
+      if (q.d & overflow)  q -= *this;
+
+      // subtract I
+
+      matrix[row] = q ^ (2 << row);
+   }
+
+   // degree - rank (of the untruncated matrix) gives the number of factors
+
+   return isLinearlyIndependent (matrix, matrix + numRows);
 }
+
+
+/**
+ * evaluate()
+ */
 
 template<typename T>
 unsigned char L::Polynomial2<T>::evaluate (unsigned char x) const
@@ -354,25 +414,69 @@ unsigned char L::Polynomial2<T>::evaluate (unsigned char x) const
    return res;
 }
 
+
+/**
+ * powInt()
+ */
+
+template<typename T>
+L::Polynomial2<T> L::powInt (Polynomial2<T> x, unsigned exponent)
+{
+   Polynomial2<T> result (1);
+
+   for(;;)
+   {
+      if (exponent & 1)  result *= x;
+      if ((exponent >>= 1) == 0)  return result;
+      x = sqr(x);
+   }
+}
+
+
+/**
+ * powerMod()
+ */
+
+template<class T>
+L::Polynomial2<T>
+L::powerMod (Polynomial2<T> x, unsigned exponent, Polynomial2<T> m)
+{
+   if (x.is0())  return Polynomial2<T>();
+   Polynomial2<T> result(1);
+
+   for(;;)
+   {
+      if (exponent & 1)  result = (result * x) % m;
+      if ((exponent >>= 1) == 0)  return result;
+      x = sqr(x) % m;
+   }
+}
+
+
 /**********************  Polynomial 2 Ring Base  *****************************/
+
 
 std::ostream & L::operator<< (std::ostream &o, const Polynomial2RingBase &r)
 {
-   std::ostringstream ss;
-   ss.flags (o.flags());
-   ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-   ss.imbue (o.getloc());
-#endif
+   Private::Printer ss (o);
 
-   ss << "GF2[" << r.getVar() << ']';
-   return o << ss.str().c_str();
+   ss << "GF2[";
+   r.printVariable (ss);
+   ss << ']';
+
+   return o;
 }
 
 void
 L::Polynomial2RingBase::printSuffix (std::ostream& o)
 {
    o << "(2)";
+}
+
+void
+L::Polynomial2RingBase::printVariable (std::ostream& o) const
+{
+   o << var;
 }
 
 
@@ -382,17 +486,10 @@ template<typename T>
 void
 L::Polynomial2Ring<T>::print (std::ostream& o, const type& p) const
 {
-   std::ostringstream ss;
-   ss.flags (o.flags());
-   ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-   ss.imbue (o.getloc());
-#endif
+   Private::Printer ss (o);
 
    printShort (ss, p);
    ss << x << " (2)";
-
-   o << ss.str().c_str();
 }
 
 /**
@@ -410,20 +507,104 @@ L::Polynomial2Ring<T>::PrimeGenerator::next()
    }
 }
 
+
+/**
+ *  squarefreeFactor()
+ */
+
+template<typename T>
+L::Polynomial2RingBase::unit_type
+L::Polynomial2Ring<T>::squarefreeFactor (Factorization& f, type p) const
+{
+   if (p.is0())  throwDivisionByZero();
+   if (p.isConstant())  return unit_type();
+
+   // Step 1  --  Initialize
+
+   unsigned e = 0;
+   unsigned k = 0;
+
+   // v ... each factor appears here once (module char problem)
+   // t ... the remaining factors
+   // v * t ... the polynomial to be factored
+
+   type t = genGcd (*this, derivative (p), p);
+   type v = p / t;
+
+   for(;;)
+   {
+      if (v.isConstant())
+      {
+         if (t.isConstant())  break;
+
+         T t0d = 0;
+         T mask = 1;
+         T td = T(t);
+
+         while (td)
+         {
+            if (td & 1)  t0d |= mask;
+            mask <<= 1;
+            td >>= 2; 
+         }
+         type t0 (t0d);
+
+         t = genGcd (*this, derivative (t0), t0);
+         v = t0 / t;
+         ++e;
+         k = 0;
+      }
+      else
+      {
+         // Step 4  -- Special case
+
+         ++k;
+         if (k & 1 == 0)  // Special treatment for  k  a multiple of char
+         {
+            t /= v;
+            ++k;
+         }
+
+         // Step 5  --  Compute factor
+
+         // w = product of factors apearing more than once
+
+         type w = genGcd (*this, t, v);
+
+         if (v.degree() > w.degree())
+         {
+            f.push_back (std::make_pair (v / w, k << e));
+         }
+         v = w;
+         t /= v;
+      }
+   }
+
+   return unit_type();
+}
+
 /********************  Instantiations  ***************************************/
 
+#include <HIntLib/gcd.tcc>
 
 namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) \
    template Polynomial2<X> Polynomial2<X>::operator* \
-     (const Polynomial2<X>) const; \
+      (const Polynomial2<X>) const; \
+   template Polynomial2<X> sqr(Polynomial2<X>); \
    template void Polynomial2<X>::div \
-     (Polynomial2<X>,const Polynomial2<X>,Polynomial2<X> &,Polynomial2<X> &); \
+      (Polynomial2<X>,const Polynomial2<X>,Polynomial2<X> &,Polynomial2<X> &); \
    template bool Polynomial2<X>::isPrimitive () const; \
    template bool Polynomial2<X>::isPrime() const; \
    template unsigned char Polynomial2<X>::evaluate (unsigned char) const; \
-   template void Polynomial2<X>::printShort (std::ostream &, char) const; \
+   template void Polynomial2<X>::printShort \
+      (std::ostream &, char, PrintShortFlag) const; \
+   HINTLIB_INSTANTIATE_GENGCD(Polynomial2Ring<X>) \
+   template Polynomial2<X> powInt (Polynomial2<X>, unsigned); \
+   template Polynomial2<X> powerMod (Polynomial2<X>, unsigned, Polynomial2<X>); \
+   template Polynomial2RingBase::unit_type \
+      Polynomial2Ring<X>::squarefreeFactor (Factorization&, type) const; \
    template void Polynomial2Ring<X>::print (std::ostream&, const type&) const; \
    template Polynomial2<X> Polynomial2Ring<X>::PrimeGenerator::next(); \
    template void GF2VectorSpace<X>::print (std::ostream&, const type&) const; \

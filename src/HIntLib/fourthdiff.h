@@ -33,7 +33,7 @@
 #include <algorithm>
 
 #include <HIntLib/array.h>
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/integrand.h>
 #include <HIntLib/hypercube.h>
 #include <HIntLib/minmaxfinder.h>

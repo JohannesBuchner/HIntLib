@@ -27,232 +27,56 @@
 
 #include <iosfwd>
 
-#include <HIntLib/defaults.h>
 #include <HIntLib/algebra.h>
-#include <HIntLib/prime.h>
-
-#ifdef HINTLIB_HAVE_LIMITS
-  #include <limits>
-#else
-  #include <HIntLib/fallback_limits.h>
-#endif
+#include <HIntLib/gcd.h>
 
 namespace HIntLib
 {
-namespace Priv
+namespace Private
 {
 
-/**
- * Modular Integer Ring Base
- */
-
-class ModularIntegerRingBase
-{
-public:
-   unsigned size() const     { return m; }
-   unsigned modulus() const  { return m; }
-
-
-protected:
-   ModularIntegerRingBase (unsigned _m) : m(_m) {}
-   void checkField() const;
-
-   unsigned fieldRecip (unsigned) const;
-   unsigned fieldOrder (unsigned) const;
-   unsigned ringAdditiveOrder (unsigned) const;
-
-   const unsigned m;
-
-          void prnSuffix (std::ostream &) const;
-   static void prnShort (std::ostream &, unsigned);
-          void prn (std::ostream &, unsigned) const;
-};
-
-std::ostream& operator<< (std::ostream &, const ModularIntegerRingBase &);
+/*************  Factor Base  ***************************************************/
 
 
 /**
- * Modular Integer Ring
- */
-
-template <class T>
-class ModularIntegerRing : public ModularIntegerRingBase
-{
-protected:
-
-   ModularIntegerRing(const T _m)
-      : ModularIntegerRingBase (unsigned (_m))
-   {
-      if (   std::numeric_limits<T>::is_signed
-          || ! std::numeric_limits<T>::is_integer
-          || 2 * std::numeric_limits<T>::digits
-               > std::numeric_limits<unsigned>::digits)
-      {
-         throw 1;
-      }
-   } 
-
-public:
-
-   typedef T type;
-   typedef ring_tag algebra_category;
-   typedef nopolynomial_tag polynomial_category;
-
-   T one()  const  { return T(1); }
-
-   bool is0 (T a) const  { return a == 0; }
-   bool is1 (T a) const  { return a == 1; }
-
-   T element(unsigned i) const  { return T(i); }
-   unsigned index (T x) const   { return x; }
-
-   T add (const T& a, const T& b) const
-      { unsigned t = unsigned(a) + unsigned(b); return     (t>=m) ? t - m : t; }
-   T& addTo (T& a,    const T& b) const
-      { unsigned t = unsigned(a) + unsigned(b); return a = (t>=m) ? t - m : t; }
-
-   T neg (const T& a) const  { return a != 0  ?  m - a  :  0; }
-   T& negate (T& a) const    { if (a != 0) a = m - a;  return a; }
-
-   T sub (const T& a, const T& b) const
-      { int t = int(a) - int(b); return     (t<0) ? t+m : t; }
-   T& subFrom (T& a,  const T& b) const
-      { int t = int(a) - int(b); return a = (t<0) ? t+m : t; }
-
-   T mul (const T& a, const T& b) const
-      { return (unsigned(a) * unsigned(b)) % m; }
-   T& mulBy (T& a,    const T& b) const
-      { return a = (unsigned(a) * unsigned(b)) % m; }
-
-   T times (const T& a, unsigned k) const
-      { if (k >= m) k %= m;  return (a * k) % m; }
-   T power (const T& a, unsigned k) const
-      { return powerMod (unsigned(a), k, unsigned(m)); }
-
-   unsigned additiveOrder (T a) const  { return ringAdditiveOrder (a); }
-
-   void printSuffix (std::ostream &o) const  {  prnSuffix (o); }
-   void printShort (std::ostream &o, const T& a) const  { prnShort (o, a); }
-   void print (std::ostream &o, const T& a) const  { prn (o, a); }
-};
-
-}  // namespace Priv
-
-
-/**
- *  Modular Arith
+ *  Factor BB
  */
 
 template <class A>
-class FactorRing
+class FactorBB : protected A
 {
 public:
    typedef typename A::type type;
-   typedef ring_tag algebra_category;
    typedef nopolynomial_tag polynomial_category;
 
 protected:
-   const A a;
+   FactorBB (const A& a, const type& modulus) : A(a), m(modulus) {}
+   void throwIfZero (const type& u) const;
+
    const type m;
 
 public:
-   FactorRing (const A& _a, const type& _m) : a(_a), m(_m) {}
+   const type& modulus() const  { return m; }
+   const A& arithmetic() const  { return *this; }
+   unsigned size() const  { return numOfRemainders (m); }
 
-   type modulus() const  { return m; }
-   A arithmetic() const  { return a; }
-   unsigned size() const  { return a.numOfRemainders(m); }
-
-   type one()  const  { return a.one(); }
-
-   bool is0 (const type& u) const  { return a.is0(u); }
-   bool is1 (const type& u) const  { return a.is1(u); }
-
-   type element(unsigned i) const  { return a.rem (a.element(i), m); }
-   unsigned index (const type& u) const   { return a.index (u); }
-
-protected:
-   typedef typename A::polynomial_category PC;
-
-   // non-polynomials
-
-   type  add (const type& u, const type& v, nopolynomial_tag) const
-      { return     a.rem (a.add (u, v), m); }
-   type& addTo (    type& u, const type& v, nopolynomial_tag) const
-      { return u = a.rem (a.add (u, v), m); }
-
-   type  neg (const type& u, nopolynomial_tag) const
-      { return     a.rem (a.neg (u), m); }
-   type& negate    (type& u, nopolynomial_tag) const
-      { return u = a.rem (a.neg (u), m); }
-
-   type  sub (const type& u, const type& v, nopolynomial_tag) const
-      { return     a.rem (a.sub (u, v), m); }
-   type& subFrom   (type& u, const type& v, nopolynomial_tag) const
-      { return u = a.rem (a.sub (u, v), m); }
-
-   type times (const type& u, unsigned k, nopolynomial_tag) const
-      { return a.rem (a.times (u, k), m); }
-
-   // polynomials
-
-   type  add (const type& u, const type& v, polynomial_tag) const
-      { return a.add   (u, v); }
-   type& addTo (    type& u, const type& v, polynomial_tag) const
-      { return a.addTo (u, v); }
-
-   type  neg (const type& u, polynomial_tag) const  { return a.neg (u); }
-   type& negate    (type& u, polynomial_tag) const  { return a.negate (u); }
-
-   type  sub (const type& u, const type& v, polynomial_tag) const
-      { return a.sub     (u, v); }
-   type& subFrom   (type& u, const type& v, polynomial_tag) const
-      { return a.subFrom (u, v); }
-
-   type times (const type& u, unsigned k, polynomial_tag) const
-      { return a.times (u, k); }
-
-public:
-   type  add (const type& u, const type& v) const { return add   (u,v, PC()); }
-   type& addTo (    type& u, const type& v) const { return addTo (u,v, PC()); }
-
-   type  neg (const type& u) const  { return neg    (u, PC()); }
-   type& negate    (type& u) const  { return negate (u, PC()); }
-
-   type  sub (const type& u, const type& v) const { return sub    (u,v, PC()); }
-   type& subFrom   (type& u, const type& v) const { return subFrom(u,v, PC()); }
+   using A::one;
+   using A::is0;
+   using A::is1;
 
    type  mul (const type& u, const type& v) const
-      { return     a.rem (a.mul (u, v), m); }
-   type& mulBy     (type& u, const type& v) const
-      { return u = a.rem (a.mul (u, v), m); }
+      { return     A::rem (A::mul (u, v), m); }
+   void mulBy     (type& u, const type& v) const
+      { A::mulBy (u, v); A::reduce (u, m); }
 
-   type times (const type& u, unsigned k) const  { return times (u,k, PC()); }
+   type sqr (const type& u) const  { return A::rem (A::sqr (u), m); }
+   void square (type& u) const    { A::square (u); A::reduce(u, m); }
    type power (const type& u, unsigned k) const
-      { return powerMod (a, u, k, m); }
+      { return powerMod (arithmetic(), u, k, m); }
 
-   unsigned additiveOrder (const type& u) const;
-
+   using A::printShort;
    void print (std::ostream &, const type&) const;
-   void printShort (std::ostream &, const type&) const;
    void printSuffix (std::ostream &) const;
-};
-
-template <>
-class FactorRing<unsigned char>
-   : public Priv::ModularIntegerRing<unsigned char>
-{
-public:
-   FactorRing(unsigned char m)
-      : Priv::ModularIntegerRing<unsigned char> (m) {}
-};
-
-template <>
-class FactorRing<unsigned short>
-   : public Priv::ModularIntegerRing<unsigned short>
-{
-public:
-   FactorRing(unsigned short m)
-      : Priv::ModularIntegerRing<unsigned short> (m) {}
 };
 
 
@@ -260,111 +84,300 @@ public:
  *  operator<<
  */
 
-template<class A>
-std::ostream& operator<< (std::ostream &, const FactorRing<A> &);
-
-template<>
-inline
-std::ostream& operator<< (
-      std::ostream &o, const FactorRing<unsigned char> &a)
-{
-   return o << static_cast<const Priv::ModularIntegerRingBase&> (a);
-}
-
-template<>
-inline
-std::ostream& operator<< (
-      std::ostream &o, const FactorRing<unsigned short> &a)
-{
-   return o << static_cast<const Priv::ModularIntegerRingBase&> (a);
-}
+template<typename A>
+std::ostream& operator<< (std::ostream &, const FactorBB<A> &);
 
 
 /**
- *  Modular Integer Field
+ *  Factor Poly B
  */
 
-namespace Priv
-{
-template<typename T>
-class ModularIntegerField : public ModularIntegerRing<T>
-{
-protected:
+template<class A, typename SC> class FactorPolyB;
 
-   ModularIntegerField (const T _m) : ModularIntegerRing<T> (_m)
-      { checkField(); }
+// finite base field
 
+template<class A>
+class FactorPolyB<A,finite_tag> : public FactorBB<A>
+{
 public:
+   typedef finite_tag size_category;
+
+   using A::element;
+   using A::index;
+
+protected:
+   FactorPolyB (const A& a, const typename A::type& modulus)
+      : FactorBB<A> (a, modulus) {}
+};
+
+// infinite base field
+
+template<class A>
+class FactorPolyB<A,infinite_tag> : public FactorBB<A>
+{
+public:
+   typedef typename FactorBB<A>::type type;
+   typedef infinite_tag size_category;
+
+   type element (unsigned i) const;
+   unsigned index (const type& u) const;
+
+protected:
+   FactorPolyB (const A& a, const type& modulus) : FactorBB<A> (a, modulus) {}
+};
+
+
+/**
+ *  Factor B <A,AC,PC>
+ */
+
+template<class A, class AC, class PC> class FactorB;
+
+// for polynomials
+
+template<class A>
+class FactorB<A,euclidean_tag,polynomial_tag>
+   : public FactorPolyB<A,typename A::coeff_algebra::size_category>
+{
+public:
+   typedef typename A::type type;
+   typedef typename A::char_category char_category;
+
+   using A::add;
+   using A::addTo;
+   using A::neg;
+   using A::negate;
+   using A::sub;
+   using A::subFrom;
+   using A::dbl;
+   using A::times2;
+   using A::times;
+   using A::additiveOrder;
+   using A::characteristic;
+
+protected:
+   FactorB (const A& a, const type& modulus)
+      : FactorPolyB<A,typename A::coeff_algebra::size_category> (a, modulus) {}
+
+   void recipImp (const type& x, type& r) const;
+};
+
+// for integers
+
+template<class A>
+class FactorB<A,integer_tag,nopolynomial_tag> : public FactorBB<A>
+{
+public:
+   typedef typename A::type type;
+   typedef finite_tag size_category;
+
+   type element (unsigned i) const  { return int (i); }
+   unsigned index (const type& u) const  { return int (u); }
+
+   type  add (const type& u, const type& v) const
+      { type t = A::add(u,v); return (t>=m) ? A::sub(t,m) : t; }
+   void addTo (    type& u, const type& v) const
+      { A::addTo (u,v); if (u >= m) A::subFrom (u,m); }
+
+   type  neg (const type& u) const  { return ! is0(u) ? A::sub(m,u) : type(); }
+   void negate    (type& u) const  { if (! is0(u)) u = A::sub(m,u); }
+
+   type  sub (const type& u, const type& v) const
+      { type t = A::sub(u,v); return (t<0) ? A::add(t,m) : t; }
+   void subFrom   (type& u, const type& v) const
+      { A::subFrom (u,v); if (u < 0)  A::addTo (u,m); }
+
+   type dbl (const type& u) const
+      { type t = A::dbl(u); return t >= m ? A::sub (t,m) : t; } 
+   void times2 (type& u) const
+      { A::times2 (u); if (u >= m) A::subFrom (u,m); }
+   type times (const type& u, unsigned k) const
+      { return A::rem (A::times (u, k), m); }
+
+protected:
+   FactorB (const A& a, const type& modulus) : FactorBB<A> (a, modulus) {}
+
+   void recipImp (const type& x, type& r) const;
+};
+
+
+/*************  Factor Ring  *************************************************/
+
+
+/**
+ *  Factor Ring B <A,AC,PC>
+ */
+
+template<class A, typename AC, typename PC> class FactorRingB;
+
+// polynomial
+
+template<class A>
+class FactorRingB<A,euclidean_tag,polynomial_tag>
+ : public FactorB<A,euclidean_tag,polynomial_tag>
+{
+public:
+   unsigned numNilpotents() const;
+
+protected:
+   FactorRingB (const A&, const typename A::type&);
+
+   typename A::type nilradical;
+};
+
+// integers
+
+template<class A>
+class FactorRingB<A,integer_tag,nopolynomial_tag>
+ : public FactorB<A,integer_tag,nopolynomial_tag>
+{
+public:
+   typedef char_non char_category;
+
+   unsigned additiveOrder (const typename A::type& u) const;
+   unsigned numNilpotents () const
+      { return int (A::div (m, nilradical)); }
+
+
+protected:
+   FactorRingB (const A&, const typename A::type&);
+
+   typename A::type nilradical;
+};
+
+}  // namespace Private
+
+
+/**
+ *  Factor Ring
+ */
+
+template<class A>
+class FactorRing
+   : public Private::FactorRingB<A,typename A::algebra_category,
+                                   typename A::polynomial_category>
+{
+public:
+   typedef typename A::type type;
+   typedef type unit_type;
+   typedef ring_tag algebra_category;
+   typedef zerodivisor_tag zerodivisor_category;
+   
+   FactorRing (const A& a, const type& modulus)
+      : Private::FactorRingB<A,typename A::algebra_category,
+                               typename A::polynomial_category> (a, modulus) {}
+
+   bool isUnit (const type& u) const
+      { return genIsCoprime (arithmetic(), u, m); }
+   bool isZerodivisor (const type& u) const
+      { return ! genIsCoprime (arithmetic(), u, m); }
+   bool isNilpotent (const type& u) const
+      { return A::isDivisor (u, nilradical); }
+
+   type unitRecip (const type& u) const  { type r; recipImp (u,r); return r; }
+
+   type mulUnit (const type& v, const unit_type& u) const { return mul  (v,u); }
+   void mulByUnit     (type& v, const unit_type& u) const { mulBy(v,u); }
+
+   const      type& fromUnit (const unit_type& unit) const  { return unit; }
+   const unit_type&   toUnit (const      type& unit) const  { return unit; }
+};
+
+
+/*************  Factor Field  ************************************************/
+
+
+namespace Private
+{
+
+/**
+ *  Factor Field B <A,AC,PC>
+ */
+
+template<class A, typename AC, typename PC> class FactorFieldB;
+
+// polynomial
+
+template<class A>
+class FactorFieldB<A,euclidean_tag,polynomial_tag>
+  : public FactorB<A,euclidean_tag,polynomial_tag>
+{
+public:
+   typedef typename A::type type;
+   typedef typename A::coeff_algebra::algebra_category::F algebra_category;
+
+   FactorFieldB (const A& a, const type& modulus)
+      : FactorB<A,euclidean_tag,polynomial_tag> (a, modulus) {}
+
+   unsigned extensionDegree() const
+      { return getCoeffAlgebra().extensionDegree() * m.degree(); }
+
+   type frobenius (const type& u) const  { return power (u, characteristic()); }
+   type invFrobenius (const type& u) const
+      { return power (u, powInt (characteristic(), extensionDegree() - 1)); }
+};
+
+// integers
+
+template<class A>
+class FactorFieldB<A,integer_tag,nopolynomial_tag>
+  : public FactorB<A,integer_tag,nopolynomial_tag>
+{
+public:
+   typedef typename A::type type;
    typedef cyclic_tag algebra_category;
-   typedef nopolynomial_tag polynomial_category;
-   typedef T type;
+   typedef char_prime char_category;
 
-   unsigned characteristic() const  { return m; }
+   FactorFieldB (const A& a, const type& modulus)
+      : FactorB<A,integer_tag,nopolynomial_tag> (a, modulus) {}
 
-   T recip (const T& x) const { return T (fieldRecip (x)); }
-
-   T div  (const T& a, const T& b) const  { return mul (a, recip(b)); }
-   T& divBy (T& a,  const T& b) const  { return mulBy (a, recip(b)); }
-
-   unsigned order (T a) const    { return fieldOrder (a); }
-   bool isPrimitiveElement (T a) const  { return isPrimitiveRoot (a, m); }
-   T power (const T& a, unsigned k) const
-      { return powerModReduce (unsigned(a), k, unsigned(m)); }
+   unsigned characteristic() const  { return int (m); }
 
    HINTLIB_TRIVIAL_CYCLIC_MEMBERS
 };
 
-}  // namespace Priv
+}  // namespace Private
 
 
 /**
- *  Modular Arith Field
+ *  Factor Field
+ *
+ *  Based on A::algebra_categoyr and A::polynomial_category, the proper base
+ *  class is included.
  */
 
-template <class A>
-class FactorField : public FactorRing<A>
+template<class A>
+class FactorField
+   : public Private::FactorFieldB<A,typename A::algebra_category,
+                                    typename A::polynomial_category>
 {
 public:
-   typedef gf_tag algebra_category;
-   typedef nopolynomial_tag polynomial_category;
+   typedef typename Private::FactorFieldB<A,
+      typename A::algebra_category,
+      typename A::polynomial_category>::algebra_category algebra_category;
    typedef typename A::type type;
+   typedef nozerodivisor_tag zerodivisor_category;
 
-   FactorField (const A &_a, const type &_m) : FactorRing<A> (_a, _m) {}
+   FactorField (const A& a, const type& modulus)
+      : Private::FactorFieldB<A,typename A::algebra_category,
+                                typename A::polynomial_category> (a, modulus) {}
 
-   unsigned characteristic() const  { return a.characteristic(); }
+   type recip (const type& u) const  { type r; recipImp (u,r); return r; }
+   void reciprocal (type& u) const  { recipImp (u, u); }
 
-   type recip (const type&) const;
+   type div (const type& u, const type& v) const
+      { type r; recipImp (v, r); return mul (u, r); }
+   void divBy (type& u,  const type& v) const
+      { type r; recipImp (v, r); mulBy (u, r); }
 
-   type div (const type& u, const type& v) const  { return mul (u, recip(v)); }
-   type& divBy (type& u,  const type& v) const  { return mulBy (u, recip(v)); }
-
-   unsigned order (const type& u) const;
    bool isPrimitiveElement (const type& u) const;
-   unsigned extensionDegree() const
-      { return Prime::factorPrimePowerPower (size()); }
-
-   HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 
 private:
-   void throwIfZero (const type& u) const;
-};
-
-template<>
-class FactorField<unsigned char>
-      : public Priv::ModularIntegerField<unsigned char>
-{
+   unsigned orderImp (const type&, field_tag) const;
+   unsigned orderImp (const type&, gf_tag) const;
 public:
-   FactorField (unsigned char m)
-      : Priv::ModularIntegerField<unsigned char> (m) {}
-};
-
-template<>
-class FactorField<unsigned short>
-      : public Priv::ModularIntegerField<unsigned short>
-{
-public:
-   FactorField (unsigned short m)
-      : Priv::ModularIntegerField<unsigned short> (m) {}
+   unsigned order (const type& u) const
+      { return orderImp (u, algebra_category()); }
 };
 
 }  // namespace HIntLib

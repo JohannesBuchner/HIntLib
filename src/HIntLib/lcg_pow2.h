@@ -71,7 +71,7 @@
 #pragma interface
 #endif
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
 
