@@ -62,8 +62,8 @@ void purge (In first, In last)
 
 
 /**
- *  min (x1,x2,x3)
- *  max (x1,x3,x3)
+ *  min3 (x1,x2,x3)
+ *  max3 (x1,x3,x3)
  */
 
 template<typename T>
@@ -96,6 +96,7 @@ const T& min3 (const T& x1, const T& x2, const T& x3)
 
 
 /**
+ *  initial_partition()
  *  next_partition ()
  *
  *  Generates the next partion.
@@ -108,7 +109,6 @@ const T& min3 (const T& x1, const T& x2, const T& x3)
  */
 
 template<class Bi>
-inline
 void initial_partition
    (Bi first, Bi last, typename std::iterator_traits<Bi>::value_type num)
 {
@@ -117,7 +117,6 @@ void initial_partition
 }
 
 template<class Bi>
-inline
 bool next_partition (Bi first, Bi last)
 {
    // make sure there are at least two stacks
@@ -154,9 +153,10 @@ bool next_partition (Bi first, Bi last)
 
 
 /**
+ *  initial_partition()
  *  next_partition ()
  *
- *  Generates the next partion.
+ *  Generates the next partion, restricting the size of the subsets
  *
  *  We search for the first stack that is not empty.
  *  All elements but one return to the first stack. The remaining elements move
@@ -166,7 +166,6 @@ bool next_partition (Bi first, Bi last)
  */
 
 template<class Bi>
-inline
 void initial_partition
    (Bi first, Bi last, typename std::iterator_traits<Bi>::value_type max,
     typename std::iterator_traits<Bi>::value_type num)
@@ -185,13 +184,23 @@ void initial_partition
 }
 
 template<class Bi>
-inline
 bool next_partition
    (Bi first, Bi last, typename std::iterator_traits<Bi>::value_type max)
 {
    // make sure there are at least two stacks
 
    if (first + 1 >= last)  return false;
+
+   // Skip leading full stacks
+
+   if (*first == max)
+   {
+      for (Bi i = first + 1; i < last - 1; ++i)
+      {
+         if (*i < max) break;
+         ++first;
+      }
+   }
    
    // search for the first non-empty stack
 

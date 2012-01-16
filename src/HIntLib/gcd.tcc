@@ -18,17 +18,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #include <HIntLib/gcd.h>
-
-#include <HIntLib/polynomial2.h>
-#include <HIntLib/modulararithmetic.h>
-#include <HIntLib/polynomial.h>
-
-namespace L = HIntLib;
 
 template<class A>
 typename A::type HIntLib::genGcd (
@@ -39,9 +29,9 @@ typename A::type HIntLib::genGcd (
    typedef typename A::type T;
    
    T u1 = a.one();
-   T u2 = a.zero();
+   T u2 = T();
 
-   T v1 = a.zero();
+   T v1 = T();
    T v2 = a.one();
 
    while (! a.is0 (v3))
@@ -68,7 +58,7 @@ typename A::type HIntLib::genGcd (
    typedef typename A::type T;
    
    T u1 = a.one();
-   T v1 = a.zero();
+   T v1 = T();
 
    while (! a.is0 (v3))
    {
@@ -99,16 +89,8 @@ typename A::type HIntLib::genGcd (
    return u;
 }
 
-namespace HIntLib
-{
-#define HINTLIB_INSTANTIATE(X) \
+#define HINTLIB_INSTANTIATE_GENGCD(X) \
    template X::type genGcd (X const &, X::type, X::type); \
    template X::type genGcd (X const &, X::type, X::type, X::type &); \
    template X::type genGcd (X const &, X::type, X::type, X::type &, X::type &);
-
-   HINTLIB_INSTANTIATE (HIntLib::IntegerRing<int>)
-   HINTLIB_INSTANTIATE (HIntLib::PolynomialRing<HIntLib::ModularArithField<unsigned char> >)
-   HINTLIB_INSTANTIATE (HIntLib::PolynomialRing<HIntLib::ModularArithField<unsigned short> >)
-#undef HINTLIB_INSTANTIATE
-}
 

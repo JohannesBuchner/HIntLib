@@ -25,28 +25,11 @@
 #pragma interface
 #endif
 
-#include <HIntLib/generatormatrixgen.h>
-
 namespace HIntLib
 {
-   class Faure
-      : public HeapAllocatedGeneratorMatrixGen<unsigned char>
-   {
-   public:
-      static void init (MutableGeneratorMatrixGen<unsigned char> &);
-      
-      Faure (unsigned _dim);
-      Faure (unsigned _dim, unsigned _m, unsigned _prec);
+   template<typename T> class GeneratorMatrixGen;
 
-      Faure (unsigned _dim, unsigned _base)
-      : HeapAllocatedGeneratorMatrixGen<unsigned char> (_base, _dim)
-      { init (*this); }
-
-      Faure (unsigned _dim, unsigned _m, unsigned _prec, unsigned _base)
-         : HeapAllocatedGeneratorMatrixGen<unsigned char>
-            (_base, _dim, _m, _prec)
-      { init (*this); }
-   };
+   void initFaure (GeneratorMatrixGen<unsigned char>&);
 
 }   // namespace HIntLib
 

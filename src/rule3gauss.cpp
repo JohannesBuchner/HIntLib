@@ -42,12 +42,14 @@
 
 namespace L = HIntLib;
 
+using L::real;
+
 namespace
 {
 #if HINTLIB_STATIC_WORKS == 1
-   const L::real r = 1.0 / sqrt(3.0);
+   const real r = real (1.0) / sqrt(real (3.0));
 #else
-   L::real r;
+   real r;
 #endif
 }
 
@@ -58,13 +60,13 @@ namespace
  */
 
 L::Rule3Gauss::Rule3Gauss (unsigned dim)
-: OrbitRule (dim), a (dim), oneDivTwoPowDim (1.0 / (Index(1) << dim))
+   : OrbitRule (dim), a (dim), oneDivTwoPowDim (real(1.0) / (Index(1) << dim))
 {
    checkDimensionNotZero (dim);
    checkDimensionLeq<std::numeric_limits<Index>::digits - 1> (dim);
 
    #if HINTLIB_STATIC_WORKS == 0
-      r = 1.0 / sqrt(3.0);
+      r = real (1.0) / sqrt(real (3.0));
    #endif
 }
 
@@ -73,9 +75,9 @@ L::Rule3Gauss::Rule3Gauss (unsigned dim)
  *  Do the actual function evaluation
  */
 
-L::real L::Rule3Gauss::eval (Integrand &f, const Hypercube &h)
+real L::Rule3Gauss::eval (Integrand &f, const Hypercube &h)
 {
-   const real * width = h.getWidth();
+   const real* width = h.getWidth();
    
    for (unsigned i = 0; i < dim; ++i)  a [i] = width [i] * r;
 

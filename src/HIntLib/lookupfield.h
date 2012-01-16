@@ -111,15 +111,13 @@ class LookupFieldBB : public RefCountingAlgebra
 {
 public:
    unsigned size() const  { return s; }
-   unsigned characteristic() const
-      { return *static_cast<unsigned*> (getDataPtr()); }
-   void setCharacteristic(unsigned);
+   void setCharacteristic(unsigned, unsigned);
 
    void printSuffix (std::ostream &o) const  { Priv::printSuffix (o, s); }
 
 protected:
    LookupFieldBB (unsigned _s, size_t memory)
-      : RefCountingAlgebra (memory), s (_s)  { setCharacteristic (s); }
+      : RefCountingAlgebra (memory), s (_s)  { setCharacteristic (s, 1); }
    LookupFieldBB (unsigned _s, size_t memory, unsigned* data)
       : RefCountingAlgebra (memory, data), s (_s)  {}
    LookupFieldBB (const LookupFieldBB &f)
@@ -128,6 +126,11 @@ protected:
    LookupFieldBB& operator=(const LookupFieldBB&);
    
    bool operator== (const LookupFieldBB &)  const;
+
+   unsigned getCharacteristic() const
+      { return static_cast<unsigned*> (getDataPtr())[0]; }
+   unsigned getExtensionDegree() const
+      { return static_cast<unsigned*> (getDataPtr())[1]; }
 
 private:
    unsigned s;
@@ -142,8 +145,7 @@ inline std::ostream& operator<< (std::ostream &o, const LookupFieldBB &f)
  */
 
 template <typename T>
-class LookupFieldBase : public LookupFieldBB,
-                        public TrivialFieldMembers<T>
+class LookupFieldBase : public LookupFieldBB
 {
 private:
    void privSetPointers();
@@ -151,6 +153,7 @@ private:
 protected:
    T* mulTable;
    T* recTable;
+   T* orderTable;
 
    LookupFieldBase (unsigned _s, unsigned numData);
    LookupFieldBase (const LookupFieldBase<T> &r) : LookupFieldBB (r)
@@ -161,13 +164,12 @@ protected:
    void setPointers()  { privSetPointers(); }
 
 public:
-   typedef field_tag algebra_category;
    typedef nopolynomial_tag polynomial_category;
    typedef T type;
 
-   T one()  const  { return T(1); }
+   T one()  const  { return 1; }
 
-   bool is1 (T a) const  { return a == T(1); }
+   bool is1 (T a) const  { return a == 1; }
 
    T element(unsigned i) const  { return T(i); }
    unsigned index (T x) const   { return unsigned (x); }
@@ -178,17 +180,12 @@ public:
    T  recip (T  a) const  { return recTable [a]; }
 
    T  div   (T  a, T b) const  { return mul   (a, recip (b)); }
-   T  quot  (T  a, T b) const  { return mul   (a, recip (b)); }
    T& divBy (T& a, T b) const  { return mulBy (a, recip (b)); }
 
    T power (T a, unsigned k) const;
 
-   bool isUnit (T a) const  { return a != 0; }
-   
-   T unitRecip (const T& a) const  { return recip (a); }
-   void div (T a, T b, T& q, T& r) const  { q = div (a,b); r = T(0); }
-
-   unsigned norm (T a) const  { return a != 0; }
+   unsigned order (T a) const  { return orderTable [a]; }
+   bool isPrimitiveElement (T a) const  { return order (a) == size() - 1; }
 
    void print (std::ostream &o, const type& x) const
       { Priv::printNumberSuffix (o, x, size()); }
@@ -201,6 +198,7 @@ public:
 
    void setMul (T, T, T);
    void setRecip (T, T);
+   void setOrder (T, unsigned);
 };
 
 
@@ -221,6 +219,9 @@ protected:
    void setPointers();
 
 public:
+   typedef gf_tag algebra_category;
+   typedef T type;
+
    explicit LookupField (unsigned);
    LookupField (const LookupField<T> &r) : LookupFieldBase<T> (r)
       { privSetPointers(); }
@@ -228,7 +229,6 @@ public:
       { LookupFieldBase<T>::operator=(r); privSetPointers(); return *this; }
 
    bool is0 (T a) const  { return a == T(0); }
-   T zero() const  { return T(0); }
 
    T  add   (T  a, T b) const  { return addTable [a + size() * b]; }
    T& addTo (T& a, T b) const  { return a = add (a,b); }
@@ -247,6 +247,11 @@ public:
 
    void setAdd (T, T, T);
    void setNeg (T, T);
+
+   unsigned characteristic() const  { return getCharacteristic(); }
+   unsigned extensionDegree() const  { return getExtensionDegree(); }
+
+   HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };
 
 
@@ -259,7 +264,7 @@ class LookupFieldMulOnly : public LookupFieldBase<T>
 {
 protected:
    explicit LookupFieldMulOnly (unsigned _s)
-      : LookupFieldBase<T> (_s,  _s * (_s + 1)) {}
+      : LookupFieldBase<T> (_s,  (_s*_s) + 2*_s) {}
    LookupFieldMulOnly (const LookupFieldMulOnly<T> &r)
       : LookupFieldBase<T> (r) {}
 };
@@ -274,11 +279,20 @@ class LookupFieldPow2 : public LookupFieldMulOnly<T>,
                         public BitOpBasedAddition<T>
 {
 public:
+   typedef gf_tag algebra_category;
+   typedef T type;
+
    explicit LookupFieldPow2 (unsigned _s) : LookupFieldMulOnly<T> (_s) {}
-   LookupFieldPow2 (const LookupFieldPow2<T> &r) : LookupFieldMulOnly<T>(r) {}
+   LookupFieldPow2 (const LookupFieldPow2<T> &r)
+      : LookupFieldMulOnly<T>(r),
+        BitOpBasedAddition<T>() {}
 
    LookupFieldPow2 & operator= (const LookupFieldPow2<T> &r)
       { LookupFieldBase<T>::operator=(r); return *this; }
+
+   unsigned extensionDegree() const  { return getExtensionDegree(); }
+
+   HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };
 
 
@@ -290,6 +304,7 @@ template <typename T>
 class LookupFieldPrime : public LookupFieldMulOnly<T>
 {
 public:
+   typedef cyclic_tag algebra_category;
    typedef T type;
 
    explicit LookupFieldPrime (unsigned _s) : LookupFieldMulOnly<T> (_s) {}
@@ -298,7 +313,6 @@ public:
    LookupFieldPrime & operator= (const LookupFieldPrime<T> &r)
       { LookupFieldBase<T>::operator=(r); return *this; }
 
-   T zero () const  { return T(0); }
    bool is0(const T& a) const  { return !a; }
 
    T add (const T& a, const T& b) const
@@ -314,7 +328,11 @@ public:
    T& subFrom (T& a,  const T& b) const  { return a = sub (a, b); }
 
    T times (const T& a, unsigned k) const
-      { return (a * (k % size())) % size(); }
+      { if (k >= size()) k %= size();  return (a * k) % size(); }
+
+   unsigned characteristic () const  { return size(); }
+
+   HINTLIB_TRIVIAL_CYCLIC_MEMBERS
 };
 
 
@@ -482,7 +500,6 @@ public:
    scalar_reference coord (T& a, unsigned k) const
       { return scalar_reference (&a, powInt (unsigned (shift), k), shift); }
 
-   T zero() const  { return T(0); }
    bool is0 (T a) const  { return !a; }
 
    T  add   (T  a, T b) const  { return addTable [a + size() * b]; }
@@ -501,6 +518,9 @@ public:
    void printShort (std::ostream &, T) const;
    void printSuffix (std::ostream &o) const
       { Priv::printSuffix (o, algebra.size()); }
+
+   unsigned additiveOrder (const T& a) const
+      { return a ? algebra.characteristic() : 1; }
 };
 
 template<typename T, typename C>
@@ -669,6 +689,8 @@ public:
    void printShort (std::ostream &, const T&) const;
    void printSuffix (std::ostream &o) const
       { Priv::printSuffix (o, algebra.size()); }
+
+   HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };
 
 template<typename T>

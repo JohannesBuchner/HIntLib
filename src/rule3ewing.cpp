@@ -42,6 +42,7 @@
 
 namespace L = HIntLib;
 
+using L::real;
 
 /**
  *  The constructor is used primarily to initialize all the dimension dependent
@@ -49,10 +50,15 @@ namespace L = HIntLib;
  */
 
 L::Rule3Ewing::Rule3Ewing (unsigned dim)
-: OrbitRule (dim), b0 (2.0 / 3.0), b1 (1.0 / (3.0 * powInt(2.0, dim)))
+   : OrbitRule (dim), b1 (real (1.0) / (real (3.0) * powInt(real (2.0), dim)))
 {
    checkDimensionNotZero (dim);
    checkDimensionLeq<std::numeric_limits<Index>::digits - 1> (dim);
+}
+
+namespace
+{
+   const real b0 = real (2.0) / real (3.0);
 }
 
 

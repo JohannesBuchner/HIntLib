@@ -8,7 +8,9 @@ COMMON_TESTS = \
    eratosthenes.test \
    prime.test \
    arithmetic.test \
+   linearalgebra.test \
    genmatrix.test \
+   shiftnet.test \
    tparameter.test \
    prng.test \
    rule.test
@@ -39,31 +41,45 @@ endif
 TESTS = $(COMMON_TESTS) $(USED_FORTRAN_TESTS) $(USED_TAIL_SORT_TESTS)
 
 check_PROGRAMS = \
-   test_bitop test_polynomial test_eratosthenes test_prime test_arithmetic \
-   test_rule test_genmatrix test_qrnsequence numericdiff test_tparameter \
-   test_abs test_partition test_prng
+   numericdiff \
+   test_abs \
+   test_arithmetic \
+   test_bitop \
+   test_eratosthenes \
+   test_genmatrix \
+   test_linearalgebra \
+   test_partition \
+   test_polynomial \
+   test_prng \
+   test_prime \
+   test_qrnsequence \
+   test_rule \
+   test_shiftnet \
+   test_tparameter
 
 com = test.cpp
 
-test_bitop_SOURCES = test_bitop.cpp $(com)
-test_rule_SOURCES  = test_rule.cpp $(com)
-test_genmatrix_SOURCES = test_genmatrix.cpp $(com)
-test_polynomial_SOURCES = test_polynomial.cpp $(com)
-test_eratosthenes_SOURCES = test_eratosthenes.cpp $(com)
-test_prime_SOURCES = test_prime.cpp $(com)
-test_arithmetic_SOURCES = test_arithmetic.cpp $(com)
-test_qrnsequence_SOURCES = test_qrnsequence.cpp $(com)
-test_tparameter_SOURCES = test_tparameter.cpp $(com)
-test_abs_SOURCES = test_abs.cpp $(com)
-test_partition_SOURCES = test_partition.cpp $(com)
-test_prng_SOURCES = test_prng.cpp $(com)
-numericdiff_SOURCES = numericdiff.cpp
+numericdiff_SOURCES        = numericdiff.cpp
+test_abs_SOURCES           = test_abs.cpp $(com)
+test_arithmetic_SOURCES    = test_arithmetic.cpp $(com)
+test_bitop_SOURCES         = test_bitop.cpp $(com)
+test_eratosthenes_SOURCES  = test_eratosthenes.cpp $(com)
+test_genmatrix_SOURCES     = test_genmatrix.cpp $(com)
+test_linearalgebra_SOURCES = test_linearalgebra.cpp $(com)
+test_partition_SOURCES     = test_partition.cpp $(com)
+test_polynomial_SOURCES    = test_polynomial.cpp $(com)
+test_prime_SOURCES         = test_prime.cpp $(com)
+test_prng_SOURCES          = test_prng.cpp $(com)
+test_qrnsequence_SOURCES   = test_qrnsequence.cpp $(com)
+test_rule_SOURCES          = test_rule.cpp $(com)
+test_shiftnet_SOURCES      = test_shiftnet.cpp $(com)
+test_tparameter_SOURCES    = test_tparameter.cpp $(com)
 
 noinst_HEADERS = test.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)/src
 AM_CXXFLAGS = @COMPILERWARNINGS@
-LDADD = ../src/libhintlib.la -lm
+LDADD = ../src/libhintlib.la
 
 clean-local:
 	-rm -rf ii_files

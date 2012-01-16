@@ -65,23 +65,23 @@ L::Rule9Stenger::Rule9Stenger (unsigned dim)
    checkDimensionLeq<60989> (dim);
 #endif
 
-   real u2 = 5.0 / 9.0 + sqrt (40.0 / 567.0);
-   real v2 = 5.0 / 9.0 - sqrt (40.0 / 567.0);
+   const real u2 = real (5.0) / real (9.0) + sqrt (real (40.0) / real (567.0));
+   const real v2 = real (5.0) / real (9.0) - sqrt (real (40.0) / real (567.0));
    rU = sqrt (u2);
    rV = sqrt (v2);
 
-   real u2MinV2 = u2 - v2;
-   real u2DivV2 = u2 / v2;
-   real u4 = sqr(u2); real v4 = sqr(v2);
-   real u8 = sqr(u4); real v8 = sqr(v4);
+   const real u2MinV2 = u2 - v2;
+   const real u2DivV2 = u2 / v2;
+   const real u4 = sqr(u2); real v4 = sqr(v2);
+   const real u8 = sqr(u4); real v8 = sqr(v4);
 
-   real dimMin1 = dim - 1.0;
-   real dimMin2 = dim - 2.0;
-   real dimMin3 = dim - 3.0;
+   const real dimMin1 = int (dim) - 1;
+   const real dimMin2 = int (dim) - 2;
+   const real dimMin3 = int (dim) - 3;
  
    weightF = 1.0 / (525.0 * u2 * v2 * sqr(u2MinV2));
  
-   weightH = (24.0 - 5.0 * dim) / (3240.0 * v8);
+   weightH = (24 - 5 * int (dim)) / (3240.0 * v8);
  
    weightI = (3.0 - 5.0 * v2) / (2160.0 * dimMin3 * u4 * u2 * u2MinV2);
  

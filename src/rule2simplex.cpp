@@ -43,18 +43,33 @@
 
 namespace L = HIntLib;
 
+using L::real;
+
+namespace
+{
+#if HINTLIB_STATIC_WORKS == 1
+   const real sqrt2by3    = sqrt (real (2.0) / real (3.0));
+   const real oneDivSqrt3 = real (1.0) / sqrt (real (3.0));
+#else
+   real sqrt2by3, oneDivSqrt3;
+#endif
+}
+
+
 /**
  *  The constructor is used primarily to initialize all the dimension dependent
  *  constatns and to allocate (dimension dependent) memory
  */
 
 L::Rule2Simplex::Rule2Simplex (unsigned d)
-: dim(d), oneOverDimPlusOne (1.0 / (d + 1.0)), r(d * (d+1)), p(d)
+   : dim(d), oneOverDimPlusOne (real (1.0) / real(d + 1)), r(d * (d+1)), p(d)
 {
    checkDimensionNotZero (dim);
 
-   const real sqrt2by3    = sqrt (2.0 / 3.0);
-   const real oneDivSqrt3 = 1.0 / sqrt (3.0);
+#if HINTLIB_STATIC_WORKS == 0
+   sqrt2by3    = sqrt (real (2.0) / real (3.0));
+   oneDivSqrt3 = real (1.0) / sqrt (real (3.0));
+#endif
 
    // Initialze r
 
@@ -63,10 +78,8 @@ L::Rule2Simplex::Rule2Simplex (unsigned d)
       for (unsigned k = 0; k < dim/2; ++k)
       {
          real t = 2 * (i+1) * (k+1) * M_PI / (dim + 1);
-                 //  (2*k + 1) * (i+1) * M_PI / dim;
 
          r [i*dim + 2*k] =     sqrt2by3 * cos (t);
-
          r [i*dim + 2*k + 1] = sqrt2by3 * sin (t);
       }
 
@@ -77,12 +90,11 @@ L::Rule2Simplex::Rule2Simplex (unsigned d)
    }
 }
 
-
 /**
  *  Do the actual function evaluation
  */
 
-L::real L::Rule2Simplex::eval (Integrand &f, const Hypercube &h)
+real L::Rule2Simplex::eval (Integrand &f, const Hypercube &h)
 {
    // Sample all points
 
@@ -93,7 +105,9 @@ L::real L::Rule2Simplex::eval (Integrand &f, const Hypercube &h)
    for (unsigned i = 0; i <= dim; i++)
    {
       for (unsigned k = 0; k < dim; k++)
+      {
          p [k] = center [k] + r [i * dim + k] * width [k];
+      }
 
       sum += f(p);
    }

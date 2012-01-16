@@ -190,7 +190,7 @@ void L::GM_BaseTooLarge::makeString() const
 void L::GM_CopyPrec::makeString() const
 {
    ostringstream ss;
-   ss << "Trying to create Generator Matrix with precisioin " << n
+   ss << "Trying to create Generator Matrix with precision " << n
       << " from matrix with precision " << o << '!';
    setString (ms(ss));
 }
@@ -254,6 +254,11 @@ void L::Overflow::makeString() const
 void L::DivisionByZero::makeString() const
 {
    setStringCopy ("Division by Zero!");
+}
+
+void L::throwDivisionByZero()
+{
+   throw DivisionByZero();
 }
 
 void L::InvalidLogBase::makeString() const

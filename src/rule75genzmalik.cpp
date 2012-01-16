@@ -47,19 +47,19 @@ namespace
     *  Various dimension independent constants
     */
 
-   #if HINTLIB_STATIC_WORKS == 1
-   const real lamda2 = sqrt (9.0 / 70.0);
-   const real lamda4 = sqrt (9.0 / 10.0);
-   const real lamda5 = sqrt (9.0 / 19.0);
-   #else
+#if HINTLIB_STATIC_WORKS == 1
+   const real lamda2 = sqrt (real (9.0) / real (70.0));
+   const real lamda4 = sqrt (real (9.0) / real (10.0));
+   const real lamda5 = sqrt (real (9.0) / real (19.0));
+#else
    real lamda2, lamda4, lamda5;
-   #endif
+#endif
 
-   const real weight2 = 980.0 / 6561.0;
-   const real weight4 = 200.0 / 19683.0;
+   const real weight2 = real (980.0) / real (6561.0);
+   const real weight4 = real (200.0) / real(19683.0);
 
-   const real weightE2 = 245.0 / 486.0;
-   const real weightE4 = 25.0 / 729.0;
+   const real weightE2 = real(245.0) / real (486.0);
+   const real weightE4 = real (25.0) / real (729.0);
 }
 
 
@@ -69,23 +69,23 @@ namespace
  */
 
 L::Rule75GenzMalik::Rule75GenzMalik (unsigned dim)
-: OrbitRule (dim),
-  widthLamda (dim),
-  weight1 ((12824.0 - 9120.0 * dim + 400.0 * dim * dim) / 19683.0),
-  weight3 ((1820.0 - 400.0 * dim) / 19683.0),
-  weight5 (6859.0 / 19683.0 / (1ull << dim)),
-  weightE1 ((729.0 - 950.0 * dim + 50.0 * dim * dim) / 729.0),
-  weightE3 ((265.0 - 100.0 * dim) / 1458.0)
+   : OrbitRule (dim),
+     widthLamda (dim),
+     weight1 ((12824.0 - 9120.0 * dim + 400.0 * dim * dim) / real (19683.0)),
+     weight3 ((1820.0 - 400.0 * dim) / real (19683.0)),
+     weight5 (real (6859.0) / real (19683.0) / real(1ull << dim)),
+     weightE1 ((729.0 - 950.0 * dim + 50.0 * sqr (dim)) / real (729.0)),
+     weightE3 ((265.0 - 100.0 * dim) / real (1458.0))
 {
    checkDimensionNotZero (dim);
    checkDimensionGeq<2> (dim);
    checkDimensionLeq<std::numeric_limits<Index>::digits - 1> (dim);
 
-   #if HINTLIB_STATIC_WORKS == 0
-      lamda2 = sqrt (9.0 / 70.0);
-      lamda4 = sqrt (9.0 / 10.0);
-      lamda5 = sqrt (9.0 / 19.0);
-   #endif
+#if HINTLIB_STATIC_WORKS == 0
+   lamda2 = sqrt (real (9.0) / real (70.0));
+   lamda4 = sqrt (real (9.0) / real (10.0));
+   lamda5 = sqrt (real (9.0) / real (19.0));
+#endif
 }
 
 

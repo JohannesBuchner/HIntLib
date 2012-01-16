@@ -153,7 +153,7 @@ const u64 vinit [SobolMatrix::MAX_DIM][MAX_DEGREE] =
 
 // Prototypes
 
-class SobolM : public  HeapAllocatedGeneratorMatrix2<u64>
+class SobolM : public  GeneratorMatrix2<u64>
 {
 public:
    SobolM (unsigned _dim, unsigned _m, unsigned _vec);
@@ -169,8 +169,8 @@ int main (void)
    try
    {
       SobolM m (SobolMatrix::MAX_DIM,
-                SobolMatrix::MAX_LOG_N,
-                SobolMatrix::TOTAL_PREC);
+                GeneratorMatrix::DEFAULT_M_BASE2,
+                GeneratorMatrix2<u64>::CORR_DEFAULT_TOTALPREC_BASE2);
 
       cout << "/*******************************************************/\n"
               "/***   This file is program-generated!               ***/\n"
@@ -188,7 +188,8 @@ int main (void)
               "\n"
               "namespace L = HIntLib;\n"
               "\n"
-              "const L::u64 L::SobolMatrix::v_mem [MAX_LOG_N][MAX_DIM] =\n";
+              "const L::u64 "
+                 "L::SobolMatrix::v_mem [DEFAULT_M_BASE2][MAX_DIM] =\n";
 
       m.CArrayDump (cout);
 
@@ -223,7 +224,7 @@ int main (void)
  */
 
 SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _totalPrec)
-   : HeapAllocatedGeneratorMatrix2<u64> (_dim, _m, _totalPrec)
+   : GeneratorMatrix2<u64> (_dim, _m, _totalPrec)
 {
    // Initialize v for all possible dimensions
 

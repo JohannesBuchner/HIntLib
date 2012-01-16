@@ -218,7 +218,7 @@ template<class T>
 inline
 void test (const T &)
 {
-   if (numeric_limits<T>::digits < 20)
+   if (numeric_limits<T>::digits < 22)
    {
       T i = T();
 
@@ -232,22 +232,18 @@ void test (const T &)
    }
    else
    {
-      for (T i = 0; i < 0x133333ull; ++i)
+      for (L::u32 i = 0; i < 0x133333ull; ++i)
       {
-         test_ms1 (i);
-         test_ls0 (i);
-         test_ls1 (i);
+         T ii (i);
+         test_ms1 (ii);
+         test_ls0 (ii);
+         test_ls1 (ii);
+   
+         ii = numeric_limits<T>::max() - i;
+         test_ms1 (ii);
+         test_ls0 (ii);
+         test_ls1 (ii);
       }
-   
-      T i = numeric_limits<T>::max() - 0x133333;
-   
-      do
-      {
-         test_ms1 (i);
-         test_ls0 (i);
-         test_ls1 (i);
-    
-      } while (++i);
    }
 }
 

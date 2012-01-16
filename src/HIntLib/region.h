@@ -29,8 +29,7 @@
 #include <functional>
 #include <iosfwd>
 
-#include <HIntLib/esterr.h>
-#include <HIntLib/embeddedrule.h>
+#include <HIntLib/cubaturerule.h>
 #include <HIntLib/hypercube.h>
 #ifdef HINTLIB_PARALLEL
    #include <HIntLib/buffer.h>

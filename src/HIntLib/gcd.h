@@ -53,6 +53,17 @@ typename A::type genGcd (
 
 
 /**
+ *  gen Lcm ()
+ */
+
+template<class A>
+typename A::type genLcm (const A&a, typename A::type u, typename A::type v)
+{
+   return a.quot (a.mul (u, v), genGcd (a, u, v));
+}
+
+
+/**
  *  gcd()
  *
  *  Calculates the greatest common divisor
@@ -62,8 +73,8 @@ typename A::type genGcd (
  *     - GenPolynomial2
  */
  
-template<class T> T gcd(T u, T v)  HINTLIB_GNU_CONST;
-template<class T> T gcd(T u, T v)
+template<typename T> T gcd(T u, T v)  HINTLIB_GNU_CONST;
+template<typename T> T gcd(T u, T v)
 {
    while (v)
    {
@@ -75,16 +86,27 @@ template<class T> T gcd(T u, T v)
    return u;
 }
 
-template<class T> inline T gcd (T a, T b, T &ma)
+template<typename T> inline T gcd (T a, T b, T &ma)
 {
    IntegerRing<T> r;
    return genGcd (r, a, b, ma);
 }
 
-template<class T> inline T gcd (T a, T b, T &ma, T &mb)
+template<typename T> inline T gcd (T a, T b, T &ma, T &mb)
 {
    IntegerRing<T> r;
    return genGcd (r, a, b, ma, mb);
+}
+
+
+/**
+ *  lcm ()
+ */
+
+template<typename T> T lcm(T u, T v)  HINTLIB_GNU_CONST;
+template<typename T> inline T lcm (T u, T v)
+{
+   return u * v / gcd (u,v);
 }
 
 

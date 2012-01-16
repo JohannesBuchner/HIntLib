@@ -1,9 +1,0 @@
-
-Make configure.ac determine the correct values for
-        - INSTANTIATE_STL
-        - NO_EXCEPTIONS
-        - HAVE_REAL_INFINITY
-
-
-DOCUMENTATION
-

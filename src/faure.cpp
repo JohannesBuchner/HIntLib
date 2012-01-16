@@ -26,15 +26,15 @@
 
 #include <HIntLib/faure.h>
 
-#include <HIntLib/modulararithmetic.h>
-#include <HIntLib/prime.h>
+#include <HIntLib/generatormatrixgen.h>
+#include <HIntLib/lookupfield.h>
 
 namespace L = HIntLib;
 
 /**
  *  Faure
  *
- *  A  Heap Allocated Generator Matrix  initialized according to Faure.
+ *  A Generator Matrix  initialized according to Faure.
  *
  *  For details, see
  *
@@ -43,41 +43,24 @@ namespace L = HIntLib;
  *  [2] Bennett L. Fox.  Algorithm 647: Implementation and Relative Efficiency
  *      of Quasirandom Sequence Generators.  ACM TOMS, 12(4):362-376, 1986.
  *
- *  The algorithm used here is quite different from [2], becuase we calculate
+ *  The algorithm used here is quite different from [2], because we calculate
  *  the full Generator Matrix apriori, instead of delaying some calculations
- *  until the sequence is actually generated.
+ *  until the sequence is generated.
  */
-
-/**
- *  Consturctor
- */
-
-L::Faure::Faure (unsigned _dim)
-   : HeapAllocatedGeneratorMatrixGen<unsigned char> (Prime::next(_dim), _dim)
-{
-   init (*this);
-}
-
-L::Faure::Faure (unsigned _dim, unsigned _m, unsigned _prec)
-   : HeapAllocatedGeneratorMatrixGen<unsigned char>
-       (Prime::next (_dim), _dim, _m, _prec)
-{
-   init (*this);
-}
 
 
 /**
- *  init()
+ *  init Faure ()
  */
 
-void L::Faure::init (MutableGeneratorMatrixGen<unsigned char> &gm)
+void L::initFaure (GeneratorMatrixGen<unsigned char> &gm)
 {
    // Matrix d=0 ist the identity matrix
 
    if (gm.getDimension() < 1)  return;
    gm.makeIdentityMatrix (0);
 
-   ModularArith<unsigned char> a (gm.getBase());
+   LookupGaloisFieldPrime<unsigned char> a (gm.getBase());
 
    if (gm.getDimension() < 2)  return;
 
@@ -87,7 +70,7 @@ void L::Faure::init (MutableGeneratorMatrixGen<unsigned char> &gm)
 
    for (unsigned b = 1; b < gm.getPrec(); ++b)
    {
-      unsigned char x = a.zero();
+      unsigned char x = 0;
 
       for (unsigned r = b; r < gm.getM(); ++r)
       {

@@ -83,7 +83,6 @@ void usage()
 // Other global names
 
 typedef GeneratorMatrixGen<unsigned char> Matrix;
-typedef GeneratorMatrixGenCopy<unsigned char> MatrixCopy;
 
 
 /**
@@ -107,11 +106,12 @@ void determineT (
 
    // Do we know t for a lower-dimensional sub-matrix?
 
-   if (lowDimMatrix)
+   if (lowDimMatrix && lowDimMatrix->getM() >= m
+                    && lowDimMatrix->getTotalPrec() >=m)
    {
       GMCopy copy; copy.dim(s-1).m(m).totalPrec(m).equi(ADD_EQUI);
-      MatrixCopy g1 (*lowDimMatrix, copy);
-      MatrixCopy g2 (matrix,        copy);
+      Matrix g1 (*lowDimMatrix, copy);
+      Matrix g2 (matrix,        copy);
       if (g1 == g2)
       {
          // t cannot decrease compared to s-1
@@ -124,7 +124,7 @@ void determineT (
    GMCopy copy;
    copy.dim(s).m(m).totalPrec(m).equi(ADD_EQUI);
 
-   GeneratorMatrixGenCopy<unsigned char> g (matrix, copy);
+   Matrix g (matrix, copy);
 
    int t = t_matrix [m * MAX_S + s] = tParameter (g, lb, ub, opts);
 

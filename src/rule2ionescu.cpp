@@ -42,6 +42,8 @@
 
 namespace L = HIntLib;
 
+using L::real;
+
 
 /**
  *  Constructor
@@ -59,28 +61,35 @@ L::Rule2Ionescu::Rule2Ionescu (unsigned dim)
  *  Do the actual function evaluation
  */
 
-L::real L::Rule2Ionescu::eval (Integrand &f, const Hypercube &h)
+namespace
+{
+   const real w1_12 = real (1.0) / real (12.0);
+   const real w7_12 = real (7.0) / real (12.0);
+   const real wm1_6 = real (-1.0) / real (6.0);
+}
+
+real L::Rule2Ionescu::eval (Integrand &f, const Hypercube &h)
 {
    real sum = 0.0;
    real p [2];
 
    p[0] = h.getUpperBound (0);
    p[1] = h.getLowerBound (1);
-   sum += (1.0 / 12.0) * f(p);
+   sum += w1_12 * f(p);
    
    p[0] = h.getLowerBound (0);
    sum += 0.25 * f(p);
    
    p[1] = h.getUpperBound (1);
-   sum += (1.0 / 12.0) * f(p);
+   sum += w1_12 * f(p);
    
    p[0] = h.getUpperBound (0);
-   sum = sum + (7.0 / 12.0) * f(p)
+   sum = sum + w7_12 * f(p)
 
    // evaluate first derivative
    // Scale by  getDiameter() / 2.0  to normalize  h  to [-1, 1]
-             + (-1.0 / 6.0) * (  f.derivative (p, 0) * h.getDiameter (0)
-                               + f.derivative (p, 1) * h.getDiameter (1));
+             + wm1_6 * (  f.derivative (p, 0) * h.getDiameter (0)
+                        + f.derivative (p, 1) * h.getDiameter (1));
 
    return h.getVolume() * sum;
 }

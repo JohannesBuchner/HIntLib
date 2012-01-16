@@ -32,7 +32,7 @@
 #pragma interface
 #endif
 
-#include <HIntLib/embeddedrule.h>
+#include <HIntLib/cubaturerule.h>
 #include <HIntLib/orbitrule.h>
 
 

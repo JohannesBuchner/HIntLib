@@ -45,23 +45,19 @@ namespace HIntLib
 class NiederreiterMatrix : public GeneratorMatrix2<u64>
 {
 public:
-   NiederreiterMatrix()
-      : GeneratorMatrix2<u64> (MAX_DIM, MAX_LOG_N, PRECISION, v_mem[0])  {}
-
-   unsigned getT (unsigned d) const  { return t_s [d]; }
+   NiederreiterMatrix() : GeneratorMatrix2<u64> (MAX_DIM)
+   {
+      setMatrix (v_mem[0]);
+   }
 
    static const unsigned MAX_DIM = 200;
-   static const unsigned PRECISION = std::numeric_limits<real>::digits - 1;
-   static const unsigned MAX_LOG_N =
-      std::numeric_limits<Index>::digits > 48 ? 48 :
-      std::numeric_limits<Index>::digits - 1;
 
 private:
 
    // Vectors used to calculate the sequence
 
-   static const u64 v_mem [MAX_LOG_N][MAX_DIM];
-   static const unsigned t_s [MAX_DIM];
+   static const u64 v_mem [DEFAULT_M_BASE2][MAX_DIM];
+   // static const unsigned t_s [MAX_DIM];
 };
 
 }  // namespace HIntLib

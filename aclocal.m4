@@ -209,6 +209,30 @@ if test x"$hl_cv_streams_support_local" = xyes; then
 fi
 ])
 
+# HL_NAMEPSPACE_REL_OPS
+# ---------------------
+# Check if the namespace std::rel_ops exists
+AC_DEFUN([HL_NAMESPACE_REL_OPS],
+[
+AC_CACHE_CHECK([whether the namespace std::rel_ops exists],
+hl_cv_namespace_rel_ops,
+[AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[
+#include <utility>
+using namespace std::rel_ops;      
+struct A { A (int aa) : a(aa) {} int a;};
+bool operator==(const A& x1, const A& x2)  { return x1.a == x2.a; }
+]],[[
+   A s1 (3);
+   A s2 (4);
+   s1 != s2;
+]]),
+hl_cv_namespace_rel_ops=yes, hl_cv_namespace_rel_ops=no)])
+
+if test x"$hl_cv_namespace_rel_ops" = xyes; then
+   AC_DEFINE(NAMESPACE_REL_OPS,1,[define if namespace std::rel_ops exists])
+fi
+])
+
 # HL_PROG_F77_REALLY_WORKS
 # ------------------------
 #

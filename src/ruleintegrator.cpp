@@ -33,7 +33,7 @@
 
 #include <HIntLib/ruleintegrator.h>
 
-#include <HIntLib/embeddedrule.h>
+#include <HIntLib/cubaturerule.h>
 #include <HIntLib/exception.h>
 
 namespace L = HIntLib;

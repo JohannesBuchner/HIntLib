@@ -28,12 +28,6 @@
 
 #include <HIntLib/generatormatrix.h>
 
-#ifdef HINTLIB_HAVE_LIMITS
-  #include <limits>
-#else
-  #include <HIntLib/fallback_limits.h>
-#endif
-
 
 namespace HIntLib
 {
@@ -44,7 +38,7 @@ namespace HIntLib
  *  The non-template base class for GeneratorMatrix2
  *
  *  A special implementation for base-2 is provided that uses bits to store
- *  the matrix elements and packs a full matrix-colum into a single work.
+ *  the matrix elements and packs a full matrix-colum into a single word.
  */
 
 class GeneratorMatrix2Base : public GeneratorMatrix
@@ -52,8 +46,8 @@ class GeneratorMatrix2Base : public GeneratorMatrix
 public:
    void CArrayDump (std::ostream &) const;
 
-   unsigned getPrec() const  { return 1; }
    unsigned getBase() const  { return 2; }
+   unsigned getPrec() const  { return 1; }
    unsigned getNumOfLeadingDigits() const { return totalPrec; }
    unsigned getNumOfMissingDigits() const { return vec - totalPrec; }
 
@@ -71,159 +65,131 @@ protected:
  *  Generator Matrix 2
  *
  *  A base-2 Generator Matrix.  It proviedes all access functions to the table.
- *
- *  However, there is no constructor for actually creating the matrices.
  */
 
-template<class T>
+template<typename T>
 class GeneratorMatrix2 : public GeneratorMatrix2Base
 {
 public:
    typedef T BaseType;
 
-   // no public constructor!
-
-   // geting matrix entries
+   static const unsigned MAX_TOTALPREC = std::numeric_limits<T>::digits;
+   static const unsigned CORR_DEFAULT_TOTALPREC_BASE2 =
+        MAX_TOTALPREC < DEFAULT_TOTALPREC_BASE2 
+      ? MAX_TOTALPREC : DEFAULT_TOTALPREC_BASE2;
    
+   // Constructors
+
+   explicit GeneratorMatrix2 (unsigned _dim);
+   GeneratorMatrix2 (unsigned _dim, unsigned _m);
+   GeneratorMatrix2 (unsigned _dim, unsigned _m, unsigned _totalPrec);
+
+   // Copy constructors
+
+   GeneratorMatrix2 (const GeneratorMatrix2<T> &);
+   GeneratorMatrix2 (const GeneratorMatrix &);
+
+   // Truncate a given matrix
+
+   GeneratorMatrix2 (const GeneratorMatrix &, const GMCopy &);
+
+   ~GeneratorMatrix2 () { delete[] c; }
+
+   // get (parts of) Matrix
+
    const T* getMatrix() const  { return c; }
    const T* operator() (unsigned r) const  { return &c[r*dim]; }
-   T operator() (unsigned d, unsigned r) const  { return c[r*dim + d]; }
+         T* operator() (unsigned r)        { return &c[r*dim]; }
+
+   // get/set column vectors
+
+   T  operator() (unsigned d, unsigned r) const  { return c[r*dim + d]; }
+   T& operator() (unsigned d, unsigned r)        { return c[r*dim + d]; }
+   void setv (unsigned d, unsigned r,           T x)  { c[r*dim + d] = x; }
+   void setv (unsigned d, unsigned r, unsigned, T x)  { setv (d,r,x); }
+   void makeZeroColumnVector (unsigned d, unsigned r) { setv (d,r,0); }
+
+   // get/set row vectors
+
+   u64  getPackedRowVector (unsigned d, unsigned b) const;
+   void setPackedRowVector (unsigned d, unsigned b, u64 x);
+   void makeZeroRowVector (unsigned d, unsigned b);
+
+   // get/set digits
+
+private:
+   T mask (unsigned b) const  { return T(1) << (totalPrec - b - 1); }
+
+   unsigned char getdMask (unsigned d, unsigned r, T ma) const
+      { return (operator()(d,r) & ma) != 0; }
+
+   void setd0Mask (unsigned d, unsigned r, T ma)
+      { c[r*dim + d] &= ~ma; }
+   void setd1Mask (unsigned d, unsigned r, T ma)
+      { c[r*dim + d] |=  ma; }
+   void setdiMask (unsigned d, unsigned r, T ma)
+      { c[r*dim + d] ^=  ma; }
+   void setdMask (unsigned d, unsigned r, T ma, unsigned char x)
+      { if (x) setd1Mask (d, r, ma); else setd0Mask (d, r, ma); }
+
+public:
    unsigned char operator() (unsigned d, unsigned r, unsigned b) const
-      { return (operator()(d,r) >> (totalPrec - b - 1)) & T(1); }
+      { return getdMask (d, r, mask (b)); }
+   void setd0 (unsigned d, unsigned r, unsigned b) { setd0Mask (d,r,mask(b)); }
+   void setd1 (unsigned d, unsigned r, unsigned b) { setd1Mask (d,r,mask(b)); }
+   void setdi (unsigned d, unsigned r, unsigned b) { setdiMask (d,r,mask(b)); }
+   void setd (unsigned d, unsigned r, unsigned b, unsigned char x)
+      { setdMask (d, r, mask(b), x); }
+
+   // virtual get/set
 
    virtual unsigned getDigit (unsigned d, unsigned r, unsigned b) const;
    virtual u64 getVector (unsigned d, unsigned r, unsigned) const;
-
-   // Comparison
-   
-   bool operator== (const GeneratorMatrix2<T> &) const;
-   bool operator!= (const GeneratorMatrix2<T> &gm) const
-      { return ! operator==(gm); }
-
-protected:
-
-   GeneratorMatrix2 (
-          unsigned _dim, unsigned _m, unsigned _totalPrec,
-          const T* _c = 0)
-      : GeneratorMatrix2Base
-           (std::numeric_limits<T>::digits, _dim, _m, _totalPrec),
-        c (const_cast<T*>(_c))
-      { checkTotalPrec(); }
-   GeneratorMatrix2 (const GeneratorMatrix2<T> &gm, const T* p)
-      : GeneratorMatrix2Base (gm),
-        c(const_cast<T*>(p)) {}
-
-   void checkTotalPrec() const;
-
-   T* c; 
-
-private:
-   GeneratorMatrix2 (const GeneratorMatrix2<T> &);   // no copy
-};
-
-
-/**
- *  Mutable Matrix 2
- */
-
-template<class T>
-class MutableGeneratorMatrix2 : public GeneratorMatrix2<T>
-{
-public:
-   ~MutableGeneratorMatrix2 () {}   // make GCC 3.2 happy
-
-   void setv (unsigned d, unsigned r, T x)  { c[r*dim + d] = x; }
-   void setv (unsigned d, unsigned r, unsigned, T x)  { setv (d,r,x); }
-   void setd (unsigned d, unsigned r, unsigned b, unsigned char x);
-
    virtual void setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
    virtual void setVector (unsigned d, unsigned r, unsigned b, u64 x);
 
+   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
+   virtual void vSetPackedRowVector (unsigned d, unsigned b, u64 x);
+
+   // Manipulations
+
    void adjustTotalPrec (unsigned);
-   void makeEquidistributedCoordinate (unsigned);
-   void makeIdentityMatrix (unsigned);
-   void makeZeroMatrix (unsigned);
+   void makeEquidistributedCoordinate (unsigned d);
+   void makeIdentityMatrix (unsigned d);
+   void makeZeroMatrix (unsigned d);
    void makeZeroMatrix ();
    void prepareForGrayCode ();
    void restoreFromGrayCode ();
+   void makeShiftNet ();
+   void makeShiftNet (unsigned b);
 
 protected:
-   MutableGeneratorMatrix2 (unsigned _dim, unsigned _m, unsigned _totalPrec)
-      : GeneratorMatrix2<T> (_dim, _m, _totalPrec, 0)  {}
-   MutableGeneratorMatrix2 (const GeneratorMatrix2<T> &gm, const T* p)
-      : GeneratorMatrix2<T> (gm, p)  {}
-};
+   void setMatrix (const T*);
 
-
-/**
- *  Heap Allocated Generator Matrix 2
- *
- *  A Mutable Generator Matrix with *c allocated on the heap
- */
-
-template<class T>
-class HeapAllocatedGeneratorMatrix2: public MutableGeneratorMatrix2<T>
-{
-public:
-   HeapAllocatedGeneratorMatrix2 (unsigned _dim);
-   HeapAllocatedGeneratorMatrix2 (unsigned _dim, unsigned _m);
-   HeapAllocatedGeneratorMatrix2 (
-         unsigned _dim, unsigned _m, unsigned _totalPrec)
-   : MutableGeneratorMatrix2<T> (_dim, _m, _totalPrec)
-   { allocate(); makeZeroMatrix(); }
-
-   ~HeapAllocatedGeneratorMatrix2 () { delete[] c; }
-
-protected:
-   HeapAllocatedGeneratorMatrix2 (
-      unsigned _dim, unsigned _m, unsigned _totalPrec, bool alloc)
-   : MutableGeneratorMatrix2<T> (_dim, _m, _totalPrec)
-      { if (alloc)  allocate(); }
-
-   HeapAllocatedGeneratorMatrix2 (const GeneratorMatrix2<T> &gm,  bool alloc)
-      : MutableGeneratorMatrix2<T> (gm, 0)  { if (alloc)  allocate(); }
-
+private:
+   void checkTotalPrec() const;
    void allocate();
+
+   T* c; 
 };
 
+
+// Comparison
+
+template<typename T>
+bool operator== (const GeneratorMatrix2<T> &, const GeneratorMatrix2<T> &);
 
 /**
  *  assign()
  */
 
-template<class T>
-void assign (const GeneratorMatrix &, unsigned,
-                   MutableGeneratorMatrix2<T> &, unsigned);
-template<class T>
-void assign (const GeneratorMatrix &, MutableGeneratorMatrix2<T> &);
-
-
-/**
- *  Generator Matrix 2 Copy
- *
- *  Creates a Generator Matrix from a given Generator Matrix.
- *
- *  Memory for the new matrix is automatically allocated from free store
- */
-
-template<class T>
-class GeneratorMatrix2Copy : public HeapAllocatedGeneratorMatrix2<T>
-{
-public:
-
-   // Normal copy
-   GeneratorMatrix2Copy (const GeneratorMatrix2<T> &);
-   GeneratorMatrix2Copy (const GeneratorMatrix2Copy<T> &);
-
-   // Copy from arbitrary GeneratorMatrix
-   GeneratorMatrix2Copy (const GeneratorMatrix &);
-
-   // Truncate a given matrix
-   GeneratorMatrix2Copy (const GeneratorMatrix &, const GMCopy &);
-};
+template<typename T>
+void assign (
+      const GeneratorMatrix &, unsigned, GeneratorMatrix2<T> &, unsigned);
+template<typename T>
+void assign (const GeneratorMatrix &, GeneratorMatrix2<T> &);
 
 }  // namespace HIntLib
-
 
 #endif
 

@@ -32,7 +32,7 @@
 
 #include <HIntLib/niederreitermatrix.h>
 #include <HIntLib/niederreitermatrixgen.h>
-#include <HIntLib/modulararithmetic.h>
+#include <HIntLib/generatormatrixgen.h>
 
 using std::cout;
 using std::setw;
@@ -45,15 +45,20 @@ using namespace HIntLib;
  *
  */
 
-int main (void)
+int main()
 {
-   ModularArithField<unsigned char> field (2);
-   NiederreiterMatrixGen<ModularArithField<unsigned char> >
-      matrix (field, NiederreiterMatrix::MAX_DIM,
-                     NiederreiterMatrix::MAX_LOG_N,
-                     NiederreiterMatrix::PRECISION);
+   // Create matrix using the general base algorithm
 
-   GeneratorMatrix2Copy<u64> matrixBase2 (matrix);
+   GeneratorMatrixGen<unsigned char> matrix (
+         2,
+         NiederreiterMatrix::MAX_DIM,
+         GeneratorMatrix::DEFAULT_M_BASE2,
+         GeneratorMatrix2<u64>::CORR_DEFAULT_TOTALPREC_BASE2);
+   initNiederreiter (matrix);
+
+   // Convert to base 2
+
+   GeneratorMatrix2<u64> matrixBase2 (matrix);
 
    // Generate output file
  
@@ -73,10 +78,12 @@ int main (void)
            "\n"
            "namespace L = HIntLib;\n"
            "\n"
-           "const L::u64 L::NiederreiterMatrix::v_mem [MAX_LOG_N][MAX_DIM] =\n";
+           "const L::u64 "
+              "L::NiederreiterMatrix::v_mem [DEFAULT_M_BASE2][MAX_DIM] =\n";
  
    matrixBase2.CArrayDump (cout);
 
+#if 0
    cout << "\n" 
            "const unsigned L::NiederreiterMatrix::t_s [MAX_DIM] =\n"
            "{\n";
@@ -90,7 +97,10 @@ int main (void)
       cout << setw(6) << sum << ",   // t_s [" << i + 1 << "]\n";
    }
  
-   cout << "};\n\n";
+   cout << "};"
+#endif
+
+   cout << "\n\n";
 
    return 0;
 }

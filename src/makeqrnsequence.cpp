@@ -43,15 +43,17 @@
 
 #include <HIntLib/make.h>
 
+#include <HIntLib/generatormatrixgen.h>
 #include <HIntLib/qrnsequence.h>
 #include <HIntLib/sobolmatrix.h>
 #include <HIntLib/niederreitermatrix.h>
 #include <HIntLib/niederreitermatrixgen.h>
 #include <HIntLib/faure.h>
 #include <HIntLib/halton.h>
+#include <HIntLib/shiftnet.h>
 #include <HIntLib/digitalnet2.h>
 #include <HIntLib/digitalnetgen.h>
-#include <HIntLib/modulararithmetic.h>
+#include <HIntLib/factorring.h>
 #include <HIntLib/lookupfield.h>
 #include <HIntLib/polynomial2.h>
 #include <HIntLib/onedimvectorspace.h>
@@ -69,10 +71,10 @@ namespace
 {
    using namespace L;
 
-   typedef MutableGeneratorMatrix2<u64> GM64;
-   typedef MutableGeneratorMatrixGen<unsigned char> GMGen8;
+   typedef GeneratorMatrix2<u64> GM2;
+   typedef GeneratorMatrixGen<unsigned char> GMGen;
 
-   const GeneratorMatrix2<u64>* gm64 [2];
+   const GM2* gm64 [2];
    PRNG *mt;
 
    /**
@@ -96,12 +98,13 @@ namespace
       "Sobol",
       "Niederreiter",
       "NiederreiterXing",
-      "Random" };
+      "Random",
+      "ShiftNet" };
 
 }  // end anomymous namespace
 
 
-GM64* L::Make::generatorMatrix2 (int n, unsigned dim)
+GM2* L::Make::generatorMatrix2 (int n, unsigned dim)
 {
    init();
 
@@ -112,36 +115,47 @@ GM64* L::Make::generatorMatrix2 (int n, unsigned dim)
     *  1 - Niederreiter
     *  2 - Niederreiter / Xing
     *  3 - Random
+    *  4 - ShiftNet
     */
 
    GMCopy copy;
    copy.dim(dim);
 
-   if (n >= 0 && n <= 1)
+   switch (n)
    {
-      if (dim > gm64[n]->getDimension())  throw InvalidDimension(dim);
-      return new GeneratorMatrix2Copy<u64> (*gm64 [n], copy);
-   }
-   else if (n == 2)
-   {
-      if (dim == 0)  return new HeapAllocatedGeneratorMatrix2<u64> (2, 0);
-
-      std::auto_ptr<GeneratorMatrixGen<unsigned char> > m 
-         (loadNiederreiterXing (dim < 4 ? 4 : dim));
-
-      return new GeneratorMatrix2Copy<u64> (*m, copy);
-   }
-   else if (n == 3)
-   {
-      GM64* m = new HeapAllocatedGeneratorMatrix2<u64> (2, dim);
-
-      for (unsigned d = 0; d < m->getDimension(); ++d)
+   case 0:
+   case 1:
       {
-         for (unsigned r = 0; r < m->getM(); ++r)
-            for (unsigned b = 0; b < m->getPrec(); ++b)
-               m->setd(d, r, b, mt->equidist (2));
+         if (dim > gm64[n]->getDimension())  throw InvalidDimension(dim);
+         return new GM2 (*gm64 [n], copy);
       }
-      return m;
+   case 2:
+      {
+         if (dim == 0)  return new GM2 (0);
+
+         std::auto_ptr<GMGen> m (loadNiederreiterXing (dim < 4 ? 4 : dim));
+
+         return new GM2 (*m, copy);
+      }
+   case 3:
+      {
+         GM2* m = new GM2 (dim);
+
+         for (unsigned d = 0; d < m->getDimension(); ++d)
+         {
+            for (unsigned r = 0; r < m->getM(); ++r)
+               for (unsigned b = 0; b < m->getPrec(); ++b)
+                  m->setd(d, r, b, mt->equidist (2));
+         }
+         return m;
+      }
+   case 4:
+      {
+         if (dim > 39)  throw InvalidDimension(dim);
+         GM2* m = new GM2 (dim, dim);
+         initShiftNet (*m);
+         return m;
+      }
    }
 
    throw GeneratorMatrixDoesNotExist (n);
@@ -158,6 +172,7 @@ const char* L::Make::getGeneratorMatrix2Name (int n)
     *  1 - Niederreiter
     *  2 - Niederreiter / Xing
     *  3 - Random
+    *  4 - ShiftNet
     */
 
    if (n >= 0 && n < int (sizeof (generatorNames) / sizeof (generatorNames[0])))
@@ -174,7 +189,7 @@ const char* L::Make::getGeneratorMatrix2Name (int n)
 /*****************************************************************************/
 
 
-GMGen8* L::Make::generatorMatrixGen (int n, unsigned dim)
+GMGen* L::Make::generatorMatrixGen (int n, unsigned dim)
 {
    init();
 
@@ -186,27 +201,35 @@ GMGen8* L::Make::generatorMatrixGen (int n, unsigned dim)
     *  \____ 00 Faure (base >= dim)
     *        01 Sobol (base = 2)
     *        06 Niederreiter / Xing
+    *        10 ShiftNet
     *        xx base of Niederreiter Matrix
     */
 
+   GMCopy copy;
+   copy.dim(dim);
+
    if (n == 0)
    {
-      return new Faure (dim);
+      GMGen* p = new GMGen (Prime::next (dim), dim);
+      initFaure (*p);
+      return p;
    }
    if (n == 1)
    {
       if (dim > gm64[0]->getDimension())  throw InvalidDimension(dim);
 
-      GMCopy copy;
-      copy.dim(dim);
-      return new GeneratorMatrixGenCopy<unsigned char> (*gm64 [0], copy);
+      return new GMGen (*gm64 [0], copy);
    }
    if (n == 6)
    {
-      if (dim == 0)
-         return new HeapAllocatedGeneratorMatrixGen<unsigned char> (2, 0);
+      if (dim == 0) return new GMGen (2, 0);
 
       return loadNiederreiterXing (dim < 4 ? 4 : dim);
+   }
+   if (n == 10)
+   {
+      std::auto_ptr<GM2> p (generatorMatrix2 (4, dim));
+      return new GMGen (*p, copy);
    }
    else if (n >= 1 && n < 100)
    {
@@ -214,11 +237,9 @@ GMGen8* L::Make::generatorMatrixGen (int n, unsigned dim)
 
       if (Prime::isPrimePower (n, prime, power))
       {
-         return new NiederreiterMatrixPP (dim, prime, power);
-      }
-      else 
-      {
-         throw GeneratorMatrixDoesNotExist (n);
+         GMGen* p = new GMGen (n, dim);
+         initNiederreiter (*p);
+         return p;
       }
    }
 
@@ -234,14 +255,20 @@ const char* L::Make::getGeneratorMatrixGenName (int n)
     *  |
     *  \____ 00 Faure (base >= dim)
     *        01 Sobol (base = 2)
+    *        06 Niederreiter / Xing
+    *        10 ShiftNet
     *        xx base of Niederreiter Matrix
     */
 
    static char s[100];
 
-   if (n == 0)  return "Faure";
-   if (n == 1)  return "Sobol";
-   if (n == 6)  return "NiederreiterXing";
+   switch (n)
+   {
+   case  0:  return "Faure";
+   case  1:  return "Sobol";
+   case  6:  return "NiederreiterXing";
+   case 10:  return "ShiftNet";
+   }
 
    if (n >= 1 && n < 100)
    {
@@ -300,7 +327,7 @@ L::QRNSequence* L::Make::qrnSequence (int n, const Hypercube &h)
       int nn = n;
       int gen = nn % 100; nn /= 100;
 
-      GM64* gm;
+      GM2* gm;
       try
       {
          gm = generatorMatrix2 (gen, h.getDimension());
@@ -344,7 +371,7 @@ L::QRNSequence* L::Make::qrnSequence (int n, const Hypercube &h)
       int nn = n;
       int gen = nn % 100; nn /= 100;
 
-      GMGen8* gm;
+      GMGen* gm;
       try
       {
          gm = generatorMatrixGen (gen, h.getDimension());
@@ -369,9 +396,9 @@ L::QRNSequence* L::Make::qrnSequence (int n, const Hypercube &h)
       {
          // Field types
 
-         typedef LookupField      <unsigned char> Fgen;
-         typedef LookupFieldPow2  <unsigned char> Fpow2;
-         typedef ModularArithField<unsigned char> Fprime;
+         typedef LookupField    <unsigned char> Fgen;
+         typedef LookupFieldPow2<unsigned char> Fpow2;
+         typedef FactorField    <unsigned char> Fprime;
 
          // Field types used for Vector Space construction
 
@@ -648,7 +675,7 @@ L::QRNSequence* L::Make::qrnNet (int n, const Hypercube &h, Index size)
       int nn = n;
       int gen = nn % 10; nn /= 10;
 
-      GM64* gm;
+      GM2* gm;
       try
       {
          gm = generatorMatrix2 (gen, h.getDimension());
@@ -691,7 +718,7 @@ L::QRNSequence* L::Make::qrnNet (int n, const Hypercube &h, Index size)
       int nn = n;
       int gen = nn % 100; nn /= 100;
 
-      GMGen8* gm;
+      GMGen* gm;
       try
       {
          gm = generatorMatrixGen (gen);

@@ -64,7 +64,6 @@ namespace HIntLib
  
    private:
       const real b0;
-      const real b1;
    };
 
 }  // namespace HIntLib

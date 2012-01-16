@@ -27,7 +27,7 @@ convert_matrix_SOURCES = convert_matrix.cpp
 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)/src
 AM_CXXFLAGS = @COMPILERWARNINGS@
-LDADD = ../src/libhintlib.la -lm
+LDADD = ../src/libhintlib.la
 
 clean-local:
 	-rm -rf ii_files

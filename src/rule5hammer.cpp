@@ -51,10 +51,10 @@ using L::Index;
 
 namespace
 {
-   const real b2 = 25.0 / 324.0;
+   const real b2 = real (25.0) / real (324.0);
 
    #if HINTLIB_STATIC_WORKS == 1
-      const real r  = sqrt (3.0 / 5.0);
+      const real r  = sqrt (real (3.0) / real (5.0));
    #else
       real r;
    #endif
@@ -68,11 +68,11 @@ namespace
 L::Rule5Hammer::Rule5Hammer (unsigned d)
   : OrbitRule (d),
     lamda (d),
-    b0 ((25.0 * sqr(d) - 115.0 * d + 162.0) / 162.0),
-    b1 ((70.0 - 25.0 * d) / 162.0)
+    b0 ((real (25.0) * sqr(d) - real (115.0) * d + real(162.0)) / real(162.0)),
+    b1 ((real (70.0) - real (25.0) * d) / real (162.0))
 {
    #if HINTLIB_STATIC_WORKS == 0
-      r  = sqrt (3.0 / 5.0);
+      r  = sqrt (real (3.0) / real (5.0));
    #endif
 
    checkDimensionNotZero (d);

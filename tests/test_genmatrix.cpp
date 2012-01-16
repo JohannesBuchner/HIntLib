@@ -59,21 +59,14 @@ void usage()
 }
 
 
-typedef MutableGeneratorMatrixGen<unsigned char> MGen;
-typedef MutableGeneratorMatrixVec<unsigned char> MVec;
-typedef MutableGeneratorMatrix2<u64> M2;
-
-typedef HeapAllocatedGeneratorMatrixGen<unsigned char> HMGen;
-typedef HeapAllocatedGeneratorMatrixVec<unsigned char> HMVec;
-typedef HeapAllocatedGeneratorMatrix2<u64> HM2;
-
-typedef GeneratorMatrixGenCopy<unsigned char> CMGen;
-typedef GeneratorMatrixVecCopy<unsigned char> CMVec;
-typedef GeneratorMatrix2Copy<u64> CM2;
+typedef GeneratorMatrix M;
+typedef GeneratorMatrixGen<unsigned char> MGen;
+typedef GeneratorMatrixVec<unsigned char> MVec;
+typedef GeneratorMatrix2<u64> M2;
 
 MersenneTwister mt;
 
-void initMatrix (GeneratorMatrix &m)
+void initMatrix (M &m)
 {
    mt.init (42);
 
@@ -89,7 +82,7 @@ void initMatrix (GeneratorMatrix &m)
    }
 }
 
-bool verifyMatrix (GeneratorMatrix &m)
+bool verifyMatrix (M &m)
 {
    mt.init (42);
 
@@ -110,7 +103,7 @@ bool verifyMatrix (GeneratorMatrix &m)
    return true;
 }
 
-void testOneMatrix (GeneratorMatrix &m)
+void testOneMatrix (M &m)
 {
    initMatrix (m);
 
@@ -120,7 +113,7 @@ void testOneMatrix (GeneratorMatrix &m)
 }
 
 template<class T>
-void testTwoMatrices (GeneratorMatrix& m1, T& m2)
+void testTwoMatrices (M& m1, T& m2)
 {
    initMatrix (m1);
 
@@ -163,34 +156,34 @@ void doTests (unsigned base)
       + (base == 2);
    DEB1 cout << "  Number of matrices: " << numMatrices << endl;
 
-   Array<GeneratorMatrix*> matrices (numMatrices);
+   Array<M*> matrices (numMatrices);
 
    for (unsigned vec = 0;
         vec < digitsRepresentable(static_cast<unsigned char>(base)); ++vec)
    {
-      matrices [vec] = new HMVec (base, vec + 1, DIM);
+      matrices [vec] = new MVec (base, vec + 1, DIM);
    }
 
    if (base == 2)
    {
-      matrices [numMatrices - 2] = new HMGen (base, DIM);
-      matrices [numMatrices - 1] = new HM2 (DIM);
+      matrices [numMatrices - 2] = new MGen (base, DIM);
+      matrices [numMatrices - 1] = new M2 (DIM);
    }
    else
    {
-      matrices [numMatrices - 1] = new HMGen (base, DIM);
+      matrices [numMatrices - 1] = new MGen (base, DIM);
    }
 
    NORMAL cout << "Testing Gen, base=" << base << endl;
    
-   HMGen mgen (base, DIM);
+   MGen mgen (base, DIM);
    testOneMatrix (mgen);
 
    for (unsigned i = 0; i < numMatrices; ++i)
    {
       DEB1 cout << "  ...in combination with matrix " << i << endl;
       testTwoMatrices (*matrices[i], mgen);
-      testTwoMatrices (*matrices[i], static_cast<GeneratorMatrix&>(mgen));
+      testTwoMatrices (*matrices[i], static_cast<M&>(mgen));
    }
 
    for (unsigned vec = 1;
@@ -198,14 +191,14 @@ void doTests (unsigned base)
    {
       NORMAL cout << "Testing Vec, vec=" << vec << ", base=" << base << endl;
    
-      HMVec mvec (base, vec, DIM);
+      MVec mvec (base, vec, DIM);
       testOneMatrix (mvec);
 
       for (unsigned i = 0; i < numMatrices; ++i)
       {
          DEB1 cout << "  ...in combination with matrix " << i << endl;
          testTwoMatrices (*matrices[i], mvec);
-         testTwoMatrices (*matrices[i], static_cast<GeneratorMatrix&>(mvec));
+         testTwoMatrices (*matrices[i], static_cast<M&>(mvec));
       }
    }
 
@@ -213,7 +206,7 @@ void doTests (unsigned base)
    {
       NORMAL cout << "Testing 2, base=" << base << endl;
    
-      HM2 m2 (DIM);
+      M2 m2 (DIM);
       testOneMatrix (m2);
 
       for (unsigned i = 0; i < numMatrices; ++i)
@@ -221,7 +214,7 @@ void doTests (unsigned base)
          DEB1 cout << "  ...in combination with matrix " << i << endl;
 
          testTwoMatrices (*matrices[i], m2);
-         testTwoMatrices (*matrices[i], static_cast<GeneratorMatrix&>(m2));
+         testTwoMatrices (*matrices[i], static_cast<M&>(m2));
       }
    }
 }
@@ -229,18 +222,16 @@ void doTests (unsigned base)
 
 void oldTests ()
 {
+   NORMAL cout << "Creating original matrix..." << endl;
    SobolMatrix sobol;
+   DEB2 sobol.dump (cout);
    
-   typedef GeneratorMatrixGenCopy8 GMGen;
-   typedef GeneratorMatrixVecCopy8 GMVec;
-   typedef GeneratorMatrix2Copy<u32> GM2;
-
    NORMAL  cout << "Creating Gen copy..." << endl;
-   GMGen sobolGen (sobol);
+   MGen sobolGen (sobol);
    DEB2  sobolGen.dump (cout);
 
    NORMAL  cout << "Creatin base-2 copy..." << endl;
-   GeneratorMatrix2Copy<u64> sobol2 (sobolGen);
+   M2 sobol2 (sobolGen);
    DEB2  sobol2.dump (cout);
 
    NORMAL  cout << "Testing: Equal in base 2" << endl;
@@ -250,7 +241,7 @@ void oldTests ()
       error ("Testing: Equal in base 2      failed!");
    }
 
-   GMGen sobolGenAgain (sobol2);
+   MGen sobolGenAgain (sobol2);
 
    NORMAL  cout << "Testing: Equal in gen-base" << endl;
 
@@ -260,7 +251,7 @@ void oldTests ()
    }
 
    NORMAL  cout << "Creating 32-bit copy of sobol..." << endl;
-   GM2   sobol32 (sobol);
+   M2   sobol32 (sobol);
    DEB2  sobol32.dump(cout);
 
    // m < prec
@@ -269,11 +260,11 @@ void oldTests ()
    copy1.dim(10).m(13).totalPrec(20).vec(5);
 
    NORMAL  cout << "Creating truncated base-2   matrix, m < prec..." << endl;
-   GM2   sobol2truncatedA (sobol32, copy1);
+   M2   sobol2truncatedA (sobol32, copy1);
    DEB2  sobol2truncatedA.dump (cout);
    
    NORMAL  cout << "Creating truncated gen-base matrix, m < prec..." << endl;
-   GMGen sobolGenTruncatedA (sobolGen, copy1);
+   MGen sobolGenTruncatedA (sobolGen, copy1);
    DEB2  sobolGenTruncatedA.dump (cout);
 
    DEB1 cout << "Comparing..." << endl;
@@ -283,7 +274,7 @@ void oldTests ()
    }
 
    NORMAL  cout << "Creating truncated vec-base matrix, m < prec..." << endl;
-   GMVec sobolVecTruncatedA (sobolGen, copy1);
+   MVec sobolVecTruncatedA (sobolGen, copy1);
    DEB2  sobolVecTruncatedA.dump (cout);
 
    DEB1 cout << "Comparing..." << endl;
@@ -298,11 +289,11 @@ void oldTests ()
    copy2.dim(10).m(20).totalPrec(13).vec(5);
 
    NORMAL  cout << "Creating truncated base-2   matrix, m > prec..." << endl;
-   GM2 sobol2truncatedB (sobol32, copy2);
+   M2 sobol2truncatedB (sobol32, copy2);
    DEB2  sobol2truncatedB.dump (cout);
    
    NORMAL  cout << "Creating truncated gen-base matrix, m > prec..." << endl;
-   GMGen sobolGenTruncatedB (sobolGen, copy2);
+   MGen sobolGenTruncatedB (sobolGen, copy2);
    DEB2  sobolGenTruncatedB.dump (cout);
 
    DEB1  cout << "Comparing..." << endl;
@@ -312,7 +303,7 @@ void oldTests ()
    }
 
    NORMAL  cout << "Creating truncated vec-base matrix, m > prec..." << endl;
-   GMVec sobolVecTruncatedB (sobolGen, copy2);
+   MVec sobolVecTruncatedB (sobolGen, copy2);
    DEB2  sobolVecTruncatedB.dump (cout);
 
    DEB1  cout << "Comparing..." << endl;
@@ -327,12 +318,12 @@ void oldTests ()
    
    NORMAL
       cout << "Creating truncated base-2   matrix, m < prec, equi..." << endl;
-   GM2 sobol2truncatedEquiA (sobol32, copy1);
+   M2 sobol2truncatedEquiA (sobol32, copy1);
    DEB2  sobol2truncatedEquiA.dump (cout);
 
    NORMAL
       cout << "Creating truncated gen-base matrix, m < prec, equi..." << endl;
-   GMGen sobolGenTruncatedEquiA (sobolGen, copy1);
+   MGen sobolGenTruncatedEquiA (sobolGen, copy1);
    DEB2  sobolGenTruncatedEquiA.dump (cout);
 
    DEB1  cout << "Comparing..." << endl;
@@ -343,7 +334,7 @@ void oldTests ()
 
    NORMAL
       cout << "Creating truncated vec-base matrix, m < prec, equi..." << endl;
-   GMVec sobolVecTruncatedEquiA (sobolGen, copy1);
+   MVec sobolVecTruncatedEquiA (sobolGen, copy1);
    DEB2  sobolVecTruncatedEquiA.dump (cout);
 
    DEB1  cout << "Comparing..." << endl;
@@ -358,12 +349,12 @@ void oldTests ()
 
    NORMAL
       cout << "Creating truncated base-2   matrix, m > prec, equi..." << endl;
-   GM2   sobol2truncatedEquiB (sobol32, copy2);
+   M2   sobol2truncatedEquiB (sobol32, copy2);
    DEB2  sobol2truncatedEquiB.dump (cout);
 
    NORMAL
       cout << "Creating truncated gen-base matrix, m > prec, equi..." << endl;
-   GMGen sobolGenTruncatedEquiB (sobolGen, copy2);
+   MGen sobolGenTruncatedEquiB (sobolGen, copy2);
    DEB2  sobolGenTruncatedEquiB.dump (cout);
 
    DEB1 cout << "Comparing..." << endl;
@@ -374,7 +365,7 @@ void oldTests ()
 
    NORMAL
       cout << "Creating truncated vec-base matrix, m > prec, equi..." << endl;
-   GMVec sobolVecTruncatedEquiB (sobolGen, copy2);
+   MVec sobolVecTruncatedEquiB (sobolGen, copy2);
    DEB2  sobolVecTruncatedEquiB.dump (cout);
 
    DEB1 cout << "Comparing..." << endl;
@@ -387,7 +378,7 @@ void oldTests ()
 
    NORMAL cout << "Testing prepareForGrayCode() ..." << endl;
 
-   GM2 grayCodeA (sobol2truncatedA);
+   M2 grayCodeA (sobol2truncatedA);
    grayCodeA.prepareForGrayCode();
 
    if (grayCodeA == sobol2truncatedA)
@@ -399,7 +390,7 @@ void oldTests ()
 
    grayCodeA.restoreFromGrayCode();
 
-   if (grayCodeA != sobol2truncatedA)
+   if (! (grayCodeA == sobol2truncatedA))
    {
       error ("restoreFromGrayCode() does not undo prepareForGrayCode()");
    }

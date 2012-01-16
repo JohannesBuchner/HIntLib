@@ -110,7 +110,7 @@ int main (int argc, char** argv)
    }
    catch (L::Exception &e)
    {
-      cerr << "\n\nException caught: " << e.what() << "\n\n";
+      cerr << "\n\nHIntLib exception caught: " << e.what() << "\n\n";
 
       exit (20);
    }

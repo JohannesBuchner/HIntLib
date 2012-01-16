@@ -76,6 +76,8 @@ protected:
    real evalRS0_0s   (Integrand &f, const real* c,
                                    const real* r, const real* s);
    real evalR_Rfs    (Integrand &f, const real* c, const real* r);
+   real eval3powS    (Integrand &f, const real* c, const real* r,
+                                    real w0, real w1);
 
    void setCenter (const real* center);
 
@@ -97,6 +99,7 @@ protected:
                         : Index(dim / 2) * (dim-1); }
    Index numRS0_0s   () const { return Index(dim) * (dim-1); }
    Index numR_Rfs    () const { return Index(1) << dim; }
+   Index num3powS    () const { return powInt (3, dim); }
 
 protected:
 

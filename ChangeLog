@@ -2,6 +2,76 @@
 Change Log
 ==========
 
+0.0.6   December 30, 2003
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     35887  121744  891775 total
+
+Generator Matrices:
+
+/ HeapAllocatedGeneratorMatrix*, MutableGeneratorMatrix*, and
+  GeneratorMatrix*Copy are gone. Everything is included in GeneratorMatrix*
++ Many new memberfunctions in GeneratorMatrix*:
+  setPackedRowVector(), getPackedRowVector(), makeShiftNet(),
+  makeZeroRowVector(), makeZeroColumnVector(),...
+  dumpDimension(), dumpRowVector(), dumpColumnVector().
+/ initNiederreiter() instead of class NiederreiterMatrixGen
+/ initFaure() instead of class Faure
++ initShifNet() creats ShiftNets with optimal t-parameter for a wide range of
+  bases b and sizes m.
++ test_shiftnet
++ New type of GeneratorMatrix introduced: GeneratorMatrix2Row stores row
+  vectors of base-2 generator matrices in bits of a computer word.
++ Unified methods for determining default values for m and totalPrec
+
+Cubature Rules:
+
++ Rule3Simpson and Rule5Gauss (C_n:3-6 and C_n:5-9 in Stroud) implemented.
+/ embeddedrule.h included in cubaturerule.h
+
+Algebraic structures:
+
++ New algebra_category gf_tag for finite fields, real_tag for fields of real
+  numbers, complex_tag for fields of complex numbers, rational_tag for fields
+  of rationals and integer_tag for rings of integers.
++ additiveOrder() for all groups, characteristic() and order() for all
+  integrity domains, isPrimitiveElement() and extensionDegree() for finite
+  fields.
++ unit_type, mulUnit(), mulByUnit(), fromUnit(), toUnit(), makeCanonical(),
+  isCanonical(), numUnits(), unitElement(), unitIndex() for UFDs.
+/ isIrreducible() for Euclidean rings is not available anymore.  Use isPrime()!
+/ zero() is not available anymore. Use type()!
++ LookupField*<>::order() and ...::isPrimitiveElement() use precalculated values
+  for determining the order of an element. Extension degree is also stored in
+  the precalculated tables.
++ GaloisField can be forced to use a primitive instead of an irreducible
+  polynomial, making  x  a primitive element.
+/ ModularArithmetic* renamed to FactorRing/FactorField.
++ Revised RealField<> to model the field of real numbers: comparision takes
+  rounding errors into account
++ QuotientField<>.
+
+PolynomialRing<> and Polynomial2Ring<>:
+
++ Completely revised. All public methods documented in the manual and exercised
+  in test_arithmetic.
++ PolynomialRing<> has a new optimized multiplication if coefficients are from
+  an integrity domain.
++ In addition to identifying irreducible polynomials over finite fields,
+  PolynomialRing<> knows how to do this over real_tag-, complex_tag-, and 
+  rational_tag-fields.
++ isPrime() for polynomials over finite fields uses Berlekamp's algorithm.
++ isPrimitive() for polynomials over arbitrary finite fields
++ PolynomailRing<> and Polynomial2Ring<> allow specification of the name of the
+  variable (not necessarily "x").
++ New method derivative() for polynomials.
+
+Misc:
+
++ radicalInverseFunction(), radicalInverseFunction2()
++ matrixRank(), matrixMul(), matrixInverse()
+
+
 0.0.5    November 1, 2003
 
    wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
@@ -148,5 +218,5 @@ Key:
 
 - Bug fix
 + New feature
-/ Inteface cleanup
+/ Inteface change/cleanup
 

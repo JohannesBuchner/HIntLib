@@ -147,11 +147,6 @@ private:
 // Comparing two cubes
 
 bool operator== (const Hypercube &, const Hypercube &);
-inline
-bool operator!= (const Hypercube &h1, const Hypercube &h2)
-{
-   return ! (h1 == h2);
-}
 
 // Some other tests
 

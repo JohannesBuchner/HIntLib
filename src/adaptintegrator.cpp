@@ -39,7 +39,7 @@
 
 #include <HIntLib/adaptintegrator.h>
 
-#include <HIntLib/embeddedrule.h>
+#include <HIntLib/cubaturerule.h>
 #include <HIntLib/regioncollection.h>
 #include <HIntLib/exception.h>
 

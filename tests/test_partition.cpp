@@ -118,6 +118,8 @@ void test(int argc, char** argv)
    {
       error ("Number of partitions is wrong!");
    }
+   DEB1 cout << "# restricted partitions = "
+             << restrictedPartitionCount << endl;
 
    // Create restricted partitions
 

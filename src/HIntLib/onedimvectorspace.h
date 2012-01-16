@@ -25,7 +25,21 @@
 #pragma interface
 #endif
 
-#include <iosfwd>
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_OSTREAM
+  #include <ostream>
+#else
+  #include <iostream>
+#endif
+
+#ifdef HINTLIB_HAVE_SSTREAM
+  #include <sstream>
+#else
+  #include <HIntLib/fallback_sstream.h>
+#endif
+
+#include <HIntLib/algebra.h>
 
 namespace HIntLib
 {
@@ -50,10 +64,7 @@ namespace HIntLib
       using A::size;
       using A::element;
       using A::index;
-      using A::print;
-      using A::printShort;
       using A::printSuffix;
-      using A::zero;
       using A::is0;
       using A::add;
       using A::addTo;
@@ -63,6 +74,10 @@ namespace HIntLib
       using A::negate;
       using A::times;
       using A::mul;
+      using A::additiveOrder;
+
+      void printShort (std::ostream&, const type& x) const;
+      void print      (std::ostream&, const type& x) const;
 
       scalar_type coord (const type& x, unsigned) const { return x; }
       scalar_reference coord  (type& x, unsigned) const { return x; }
@@ -74,9 +89,52 @@ namespace HIntLib
    };
 
    template<typename A>
-   std::ostream&
-   operator<< (std::ostream &o, const OneDimVectorSpace<A> &v)
-      { return o << v.getScalarAlgebra() << "^1"; } 
+   void OneDimVectorSpace<A>::print (std::ostream &o, const type& x) const
+   {
+      std::ostringstream ss;
+      ss.flags (o.flags());
+      ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+      ss.imbue (o.getloc());
+#endif
+
+      ss << '(';
+      A::print (ss, x);
+      ss << ')';
+
+      o << ss.str().c_str();
+   }
+
+   template<typename A>
+   void OneDimVectorSpace<A>::printShort (std::ostream &o, const type& x) const
+   {
+      std::ostringstream ss;
+      ss.flags (o.flags());
+      ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+      ss.imbue (o.getloc());
+#endif
+
+      ss << '(';
+      A::printShort (ss, x);
+      ss << ')';
+
+      o << ss.str().c_str();
+   }
+
+   template<typename A>
+   std::ostream& operator<< (std::ostream &o, const OneDimVectorSpace<A> &v)
+   {
+      std::ostringstream ss;
+      ss.flags (o.flags());
+      ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+      ss.imbue (o.getloc());
+#endif
+
+      ss << v.getScalarAlgebra() << "^1";
+      return o << ss.str().c_str();
+   } 
 
 } // namespace HIntLib
 

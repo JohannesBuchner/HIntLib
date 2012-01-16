@@ -29,6 +29,7 @@
 #endif
 
 #include <HIntLib/orbitrule.h>
+#include <HIntLib/counter.h>
 
 namespace L = HIntLib;
 using L::real;
@@ -175,4 +176,59 @@ real L::OrbitRule::evalR_Rfs (Integrand &f, const real* c, const real* r)
  
    return sum;
 }
+
+
+/**
+ *  eval3powS ()
+ *
+ *
+ *  Evaluate  f  at the 3^dim points  (r_i_1,...,r_i_dim) with
+ *
+ *     r_0 = -r
+ *     r_1 = 0
+ *     r_2 = +r
+ *
+ *  and i_1,...,i_dim ranging independently over the integers 0, 1, and 2.
+ *
+ *  The implementation using Counter is not necessarily the most efficient;
+ *  enumerating the abscissas in base-3 Gray-code order would be faster.
+ */
+
+real L::OrbitRule::eval3powS (
+      Integrand &f, const real* c, const real* r, real w0, real w1)
+{
+   real sum = 0;
+   Counter counter (dim, 3);
+
+   do
+   {
+      real weight = 1.0;
+
+      for (unsigned d = 0; d < dim; ++d)
+      {
+         switch (counter[d])
+         {
+         case 0:
+            p[d] = c[d] - r[d];
+            weight *= w1;
+            break;
+         case 1:
+            p[d] = c[d];
+            weight *= w0;
+            break;
+         case 2:
+            p[d] = c[d] + r[d];
+            weight *= w1;
+            break;
+         }
+      }
+
+      sum += weight * f(p);
+   }
+   while (counter.next());
+
+   return sum;
+}
+
+
 

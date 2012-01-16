@@ -46,24 +46,22 @@ namespace HIntLib
 class SobolMatrix : public GeneratorMatrix2<u64>
 {
 public:
-   SobolMatrix()
-      : GeneratorMatrix2<u64> (MAX_DIM, MAX_LOG_N, TOTAL_PREC, v_mem[0])  {}
+   SobolMatrix() : GeneratorMatrix2<u64> (MAX_DIM)
+   {
+      setMatrix (v_mem[0]);
+   }
 
    unsigned getT (unsigned d) const  { return t_s [d]; }
 
    // We don't have data for creating the v array for dimension larger than 40
 
    static const unsigned MAX_DIM = 40;
-   static const unsigned TOTAL_PREC = std::numeric_limits<real>::digits - 1;
-   static const unsigned MAX_LOG_N =
-      std::numeric_limits<Index>::digits > 48 ? 48 :
-      std::numeric_limits<Index>::digits - 1;
 
 private:
 
    // Vectors used to calculate the sequence
 
-   static const u64 v_mem [MAX_LOG_N][MAX_DIM];
+   static const u64 v_mem [DEFAULT_M_BASE2][MAX_DIM];
    static const unsigned t_s [MAX_DIM];
 };
 

@@ -31,7 +31,10 @@
 #endif
 
 #include <HIntLib/galoisfield.h>
+#include <HIntLib/prime.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/array.h>
+#include <HIntLib/linearalgebra.h>
 
 
 namespace L = HIntLib;
@@ -42,39 +45,121 @@ namespace L = HIntLib;
  */
 
 template<typename B>
-L::GaloisField<B>::GaloisField (unsigned base, unsigned exponent)
-   : ModularArithField<PolynomialRing<ModularArithField<B> > >
+L::GaloisField<B>::GaloisField (unsigned base, unsigned exponent, bool xPrim)
+   : FactorField<PolynomialRing<FactorField<B> > >
       (Poly (Field (base)),
-       findPoly (base, exponent))
+       findPoly (base, exponent, xPrim))
 {}
 
 template<typename B>
+L::GaloisField<B>::GaloisField (unsigned size, bool xPrim)
+   : FactorField<PolynomialRing<FactorField<B> > >
+      (Poly (Field (Prime::factorPrimePowerPrime (size))),
+       findPoly (size, xPrim))
+{}
+
+
+/**
+ *  find Poly ()
+ *
+ *  We find a primitive polynomials of degree _deg_+1, such that the polynomial
+ *  p = x  becomes a primive root in the resulting modular arithmetic.
+ *
+ *  The algorithm is based on the what is done in the  Mathematica Package
+ *  Algebra`FiniteFields` (IrreduciblePolynomial[] and TransformIrreducible[]).
+ */
+
+template<typename B>
 typename L::GaloisField<B>::T
-L::GaloisField<B>::findPoly (unsigned base, unsigned exponent)
+L::GaloisField<B>::findPoly (unsigned base, unsigned deg, bool xPrim)
 {
-   if (exponent == 0)  throw GaloisFieldExponent ();
+   if (deg == 0)  throw GaloisFieldExponent ();
 
    Field field (base);
    Poly poly (field);
-   T p (exponent + 1);
 
-   p.mulAndAdd (1);
+   if (deg == 1)  return poly.x();
 
-   for (unsigned i = 0; i < exponent; ++i)  p.mulAndAdd (0);
+   // Find an irreducible polynomial
+   
+   typename Poly::PrimeGenerator ig (poly, deg);
+   T p = ig.next();
 
-   for (unsigned nn = 0; ; ++nn) 
+   if (! xPrim)  return p;
+
+   // Construct the extension field
+
+   ExtensionField ef (poly, p);
+
+   // search for a primitive root
+
+   T prim;
+
+   for (unsigned n = base; ; ++n)
    {
-      unsigned n = nn;
-      unsigned k = 0;
+      prim = poly.element (n);
 
-      while (n)
+      if (ef.isPrimitiveElement (prim))
       {
-         p[k++] = n % base;
-         n /= base;
+         // We want the polynomial x to be a primitive root of the extension
+         // field.  If this is is the case already, we are done
+
+         if (n == base)  return p;
+         
+         break;
+      }
+   }
+
+   // prim is a primitive element, therefore  1, prim, prim^2, prim^3,...  is a
+   // base of the field-vector space.
+   // We construct the matrix for the linear transformation mapping
+   //   1, x, x^2, x^3,...,x^(deg-1)
+   // onto
+   //   1, prim, prim^2, prim^3,...,prim^(deg-1)
+
+   Array<B> matrix (sqr (deg), B());
+
+   T x = ef.one();
+
+   for (unsigned col = 0; col < deg; ++col)
+   {
+      for (int row = 0; row <= x.degree(); ++row)
+      {
+         matrix[row * deg + col] = x[row];
       }
 
-      if (poly.isPrime (p))  return p;
+      ef.mulBy (x, prim);
    }
+  
+   // we need the inverse mapping, so we invert the matrix
+
+   matrixInverse (field, matrix.begin(), deg);
+
+   // our primitive polynomial is  x^deg - mapping^(-1)(prim^deg).
+   // prim^deg is exactly what x contains right now.
+
+   p[deg] = field.one();
+
+   for (unsigned row = 0; row < deg; ++row)
+   {
+      B y = B();
+      for (unsigned col = 0; col < deg; ++ col)
+      {
+         field.addTo (y, field.mul (matrix[row * deg + col], x[col]));
+      }
+      p[row] = field.neg (y);
+   }
+
+   return p;
+}
+
+template<typename B>
+typename L::GaloisField<B>::T
+L::GaloisField<B>::findPoly (unsigned size, bool xPrim)
+{
+   unsigned base, exponent;
+   Prime::factorPrimePower (size, base, exponent);
+   return findPoly (base, exponent, xPrim);
 }
 
 

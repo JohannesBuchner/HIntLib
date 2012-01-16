@@ -37,7 +37,7 @@
 #endif
 
 #include <HIntLib/integerring.h>
-#include <HIntLib/modulararithmetic.h>
+#include <HIntLib/factorring.h>
 
 namespace L = HIntLib;
 
@@ -56,12 +56,12 @@ using std::ostream;
 
 ostream & L::operator<< (ostream &o, const ZRing &)
 {
-   return o << 'Z';
+   return o << "Z";
 }
 
 ostream & L::operator<< (ostream &o, const RRing &)
 {
-   return o << 'R';
+   return o << "R";
 }
 
 

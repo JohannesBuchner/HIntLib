@@ -34,32 +34,6 @@ typedef L::Polynomial2<L::u32> P;
 
 unsigned SIZE = 1000;
 
-void powers()
-{
-   DEB1   cout << "\n\n";
-   NORMAL cout << "Checking powers...\n";
-   DEB1   cout << "\n";
-
-   const int S = 100;
-
-   for (int i = 0; i < S; i++)
-   {
-      P x (i);
-      DEB1 cout << "  Checking: " << x << endl;
-
-      for (int j = 0; j < 5; ++j)
-      {
-         P xx = L::powInt (x, j);
-         DEB2 cout << "    (" << x << ") ^ " << j << " = " << xx << endl;
-
-         P y (1);
-         for (int k = 0; k < j; ++k)  y *= x;
-
-         if (xx != y)  error("x^k wrong");
-      }
-   }
-}
-
 
 void primitive()
 {
@@ -90,7 +64,7 @@ void primitive()
             expected = HIntLib::Prime::eulerPhi ((1u << deg) - 1) / deg;
 
             DEB1  cout << "  Degree " << deg
-                       << "    expected number = " << expected << endl;
+                       << ", expected number = " << expected << endl;
          }
 
          ++ found;
@@ -128,7 +102,6 @@ void test (int argc, char**)
 {
    if (argc)  usage();
 
-   powers();
    primitive();
 }
 

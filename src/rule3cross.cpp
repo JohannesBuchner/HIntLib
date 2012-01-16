@@ -53,7 +53,9 @@ namespace L = HIntLib;
  */
 
 L::Rule3Cross::Rule3Cross (unsigned dim)
-: OrbitRule (dim), r (sqrt (dim / 3.0)), oneOver2Dim (1.0 / (2.0 * dim))
+   : OrbitRule (dim),
+     r (sqrt (dim / real (3.0))),
+     oneOver2Dim (real (1.0) / (2 * dim))
 {
    checkDimensionNotZero (dim);
 }

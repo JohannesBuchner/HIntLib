@@ -148,7 +148,9 @@ COMMON_TESTS = \
    eratosthenes.test \
    prime.test \
    arithmetic.test \
+   linearalgebra.test \
    genmatrix.test \
+   shiftnet.test \
    tparameter.test \
    prng.test \
    rule.test
@@ -175,43 +177,58 @@ EXTRA_DIST = $(TESTS) $(TAIL_SORT_TESTS) $(FORTRAN_TESTS)
 TESTS = $(COMMON_TESTS) $(USED_FORTRAN_TESTS) $(USED_TAIL_SORT_TESTS)
 
 check_PROGRAMS = \
-   test_bitop test_polynomial test_eratosthenes test_prime test_arithmetic \
-   test_rule test_genmatrix test_qrnsequence numericdiff test_tparameter \
-   test_abs test_partition test_prng
+   numericdiff \
+   test_abs \
+   test_arithmetic \
+   test_bitop \
+   test_eratosthenes \
+   test_genmatrix \
+   test_linearalgebra \
+   test_partition \
+   test_polynomial \
+   test_prng \
+   test_prime \
+   test_qrnsequence \
+   test_rule \
+   test_shiftnet \
+   test_tparameter
 
 
 com = test.cpp
 
-test_bitop_SOURCES = test_bitop.cpp $(com)
-test_rule_SOURCES = test_rule.cpp $(com)
-test_genmatrix_SOURCES = test_genmatrix.cpp $(com)
-test_polynomial_SOURCES = test_polynomial.cpp $(com)
-test_eratosthenes_SOURCES = test_eratosthenes.cpp $(com)
-test_prime_SOURCES = test_prime.cpp $(com)
-test_arithmetic_SOURCES = test_arithmetic.cpp $(com)
-test_qrnsequence_SOURCES = test_qrnsequence.cpp $(com)
-test_tparameter_SOURCES = test_tparameter.cpp $(com)
-test_abs_SOURCES = test_abs.cpp $(com)
-test_partition_SOURCES = test_partition.cpp $(com)
-test_prng_SOURCES = test_prng.cpp $(com)
 numericdiff_SOURCES = numericdiff.cpp
+test_abs_SOURCES = test_abs.cpp $(com)
+test_arithmetic_SOURCES = test_arithmetic.cpp $(com)
+test_bitop_SOURCES = test_bitop.cpp $(com)
+test_eratosthenes_SOURCES = test_eratosthenes.cpp $(com)
+test_genmatrix_SOURCES = test_genmatrix.cpp $(com)
+test_linearalgebra_SOURCES = test_linearalgebra.cpp $(com)
+test_partition_SOURCES = test_partition.cpp $(com)
+test_polynomial_SOURCES = test_polynomial.cpp $(com)
+test_prime_SOURCES = test_prime.cpp $(com)
+test_prng_SOURCES = test_prng.cpp $(com)
+test_qrnsequence_SOURCES = test_qrnsequence.cpp $(com)
+test_rule_SOURCES = test_rule.cpp $(com)
+test_shiftnet_SOURCES = test_shiftnet.cpp $(com)
+test_tparameter_SOURCES = test_tparameter.cpp $(com)
 
 noinst_HEADERS = test.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)/src
 AM_CXXFLAGS = @COMPILERWARNINGS@
-LDADD = ../src/libhintlib.la -lm
+LDADD = ../src/libhintlib.la
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
-check_PROGRAMS = test_bitop$(EXEEXT) test_polynomial$(EXEEXT) \
-	test_eratosthenes$(EXEEXT) test_prime$(EXEEXT) \
-	test_arithmetic$(EXEEXT) test_rule$(EXEEXT) \
-	test_genmatrix$(EXEEXT) test_qrnsequence$(EXEEXT) \
-	numericdiff$(EXEEXT) test_tparameter$(EXEEXT) test_abs$(EXEEXT) \
-	test_partition$(EXEEXT) test_prng$(EXEEXT)
+check_PROGRAMS = numericdiff$(EXEEXT) test_abs$(EXEEXT) \
+	test_arithmetic$(EXEEXT) test_bitop$(EXEEXT) \
+	test_eratosthenes$(EXEEXT) test_genmatrix$(EXEEXT) \
+	test_linearalgebra$(EXEEXT) test_partition$(EXEEXT) \
+	test_polynomial$(EXEEXT) test_prng$(EXEEXT) test_prime$(EXEEXT) \
+	test_qrnsequence$(EXEEXT) test_rule$(EXEEXT) \
+	test_shiftnet$(EXEEXT) test_tparameter$(EXEEXT)
 am_numericdiff_OBJECTS = numericdiff.$(OBJEXT)
 numericdiff_OBJECTS = $(am_numericdiff_OBJECTS)
 numericdiff_LDADD = $(LDADD)
@@ -244,6 +261,12 @@ test_genmatrix_OBJECTS = $(am_test_genmatrix_OBJECTS)
 test_genmatrix_LDADD = $(LDADD)
 test_genmatrix_DEPENDENCIES = ../src/libhintlib.la
 test_genmatrix_LDFLAGS =
+am_test_linearalgebra_OBJECTS = test_linearalgebra.$(OBJEXT) \
+	$(am__objects_1)
+test_linearalgebra_OBJECTS = $(am_test_linearalgebra_OBJECTS)
+test_linearalgebra_LDADD = $(LDADD)
+test_linearalgebra_DEPENDENCIES = ../src/libhintlib.la
+test_linearalgebra_LDFLAGS =
 am_test_partition_OBJECTS = test_partition.$(OBJEXT) $(am__objects_1)
 test_partition_OBJECTS = $(am_test_partition_OBJECTS)
 test_partition_LDADD = $(LDADD)
@@ -275,6 +298,11 @@ test_rule_OBJECTS = $(am_test_rule_OBJECTS)
 test_rule_LDADD = $(LDADD)
 test_rule_DEPENDENCIES = ../src/libhintlib.la
 test_rule_LDFLAGS =
+am_test_shiftnet_OBJECTS = test_shiftnet.$(OBJEXT) $(am__objects_1)
+test_shiftnet_OBJECTS = $(am_test_shiftnet_OBJECTS)
+test_shiftnet_LDADD = $(LDADD)
+test_shiftnet_DEPENDENCIES = ../src/libhintlib.la
+test_shiftnet_LDFLAGS =
 am_test_tparameter_OBJECTS = test_tparameter.$(OBJEXT) $(am__objects_1)
 test_tparameter_OBJECTS = $(am_test_tparameter_OBJECTS)
 test_tparameter_LDADD = $(LDADD)
@@ -290,11 +318,13 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/test_bitop.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_eratosthenes.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_genmatrix.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/test_linearalgebra.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_partition.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_polynomial.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_prime.Po ./$(DEPDIR)/test_prng.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_qrnsequence.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_rule.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/test_shiftnet.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test_tparameter.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -307,9 +337,10 @@ CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 DIST_SOURCES = $(numericdiff_SOURCES) $(test_abs_SOURCES) \
 	$(test_arithmetic_SOURCES) $(test_bitop_SOURCES) \
 	$(test_eratosthenes_SOURCES) $(test_genmatrix_SOURCES) \
-	$(test_partition_SOURCES) $(test_polynomial_SOURCES) \
-	$(test_prime_SOURCES) $(test_prng_SOURCES) \
-	$(test_qrnsequence_SOURCES) $(test_rule_SOURCES) \
+	$(test_linearalgebra_SOURCES) $(test_partition_SOURCES) \
+	$(test_polynomial_SOURCES) $(test_prime_SOURCES) \
+	$(test_prng_SOURCES) $(test_qrnsequence_SOURCES) \
+	$(test_rule_SOURCES) $(test_shiftnet_SOURCES) \
 	$(test_tparameter_SOURCES)
 HEADERS = $(noinst_HEADERS)
 
@@ -321,7 +352,7 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
 	check-recursive installcheck-recursive
 DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.in Makefile.am
 DIST_SUBDIRS = toms659 toms738
-SOURCES = $(numericdiff_SOURCES) $(test_abs_SOURCES) $(test_arithmetic_SOURCES) $(test_bitop_SOURCES) $(test_eratosthenes_SOURCES) $(test_genmatrix_SOURCES) $(test_partition_SOURCES) $(test_polynomial_SOURCES) $(test_prime_SOURCES) $(test_prng_SOURCES) $(test_qrnsequence_SOURCES) $(test_rule_SOURCES) $(test_tparameter_SOURCES)
+SOURCES = $(numericdiff_SOURCES) $(test_abs_SOURCES) $(test_arithmetic_SOURCES) $(test_bitop_SOURCES) $(test_eratosthenes_SOURCES) $(test_genmatrix_SOURCES) $(test_linearalgebra_SOURCES) $(test_partition_SOURCES) $(test_polynomial_SOURCES) $(test_prime_SOURCES) $(test_prng_SOURCES) $(test_qrnsequence_SOURCES) $(test_rule_SOURCES) $(test_shiftnet_SOURCES) $(test_tparameter_SOURCES)
 
 all: all-recursive
 
@@ -357,6 +388,9 @@ test_eratosthenes$(EXEEXT): $(test_eratosthenes_OBJECTS) $(test_eratosthenes_DEP
 test_genmatrix$(EXEEXT): $(test_genmatrix_OBJECTS) $(test_genmatrix_DEPENDENCIES) 
 	@rm -f test_genmatrix$(EXEEXT)
 	$(CXXLINK) $(test_genmatrix_LDFLAGS) $(test_genmatrix_OBJECTS) $(test_genmatrix_LDADD) $(LIBS)
+test_linearalgebra$(EXEEXT): $(test_linearalgebra_OBJECTS) $(test_linearalgebra_DEPENDENCIES) 
+	@rm -f test_linearalgebra$(EXEEXT)
+	$(CXXLINK) $(test_linearalgebra_LDFLAGS) $(test_linearalgebra_OBJECTS) $(test_linearalgebra_LDADD) $(LIBS)
 test_partition$(EXEEXT): $(test_partition_OBJECTS) $(test_partition_DEPENDENCIES) 
 	@rm -f test_partition$(EXEEXT)
 	$(CXXLINK) $(test_partition_LDFLAGS) $(test_partition_OBJECTS) $(test_partition_LDADD) $(LIBS)
@@ -375,6 +409,9 @@ test_qrnsequence$(EXEEXT): $(test_qrnsequence_OBJECTS) $(test_qrnsequence_DEPEND
 test_rule$(EXEEXT): $(test_rule_OBJECTS) $(test_rule_DEPENDENCIES) 
 	@rm -f test_rule$(EXEEXT)
 	$(CXXLINK) $(test_rule_LDFLAGS) $(test_rule_OBJECTS) $(test_rule_LDADD) $(LIBS)
+test_shiftnet$(EXEEXT): $(test_shiftnet_OBJECTS) $(test_shiftnet_DEPENDENCIES) 
+	@rm -f test_shiftnet$(EXEEXT)
+	$(CXXLINK) $(test_shiftnet_LDFLAGS) $(test_shiftnet_OBJECTS) $(test_shiftnet_LDADD) $(LIBS)
 test_tparameter$(EXEEXT): $(test_tparameter_OBJECTS) $(test_tparameter_DEPENDENCIES) 
 	@rm -f test_tparameter$(EXEEXT)
 	$(CXXLINK) $(test_tparameter_LDFLAGS) $(test_tparameter_OBJECTS) $(test_tparameter_LDADD) $(LIBS)
@@ -392,12 +429,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_bitop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_eratosthenes.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_genmatrix.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_linearalgebra.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_partition.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_polynomial.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_prime.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_prng.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_qrnsequence.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_rule.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_shiftnet.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_tparameter.Po@am__quote@
 
 .cpp.o:

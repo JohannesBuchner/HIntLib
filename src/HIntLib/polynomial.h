@@ -32,7 +32,9 @@
 #include <vector>
 #include <iosfwd>
 
+#include <HIntLib/defaults.h>
 #include <HIntLib/algebra.h>
+#include <HIntLib/integerring.h>
 
 namespace HIntLib
 {
@@ -43,7 +45,7 @@ namespace HIntLib
  *  Polynomial with an arbitrary number of terms, coefficients of type T
  */
 
-template <class T>
+template <typename T>
 class Polynomial
 {
 private:
@@ -56,8 +58,6 @@ public:
    typedef T coeff_type;
    typedef typename V::reference coeff_reference;
    typedef typename V::const_reference coeff_const_reference;
-
-   enum Consts { ZERO, ONE };
 
    explicit Polynomial (unsigned size = 10) { c.reserve (size); }
    template<typename I> Polynomial (I a0, I an)
@@ -74,27 +74,41 @@ public:
    coeff_const_reference lc() const  { return c[0]; }
    coeff_reference       lc()        { return c[0]; }
 
+   template<typename I>
+   void toCoeff (I a0) const  { std::copy (c.rbegin(), c.rend(), a0); }
+
    // Comparation
 
-   bool operator== (const P& p) const { return c == p.c; }
-   bool operator!= (const P& p) const { return ! operator==(p); }
+   template<typename TT>
+   friend
+   bool operator== (const Polynomial<TT>&, const Polynomial<TT>&);
 
    P& divByX () { if (degree() >= 0)  c.pop_back(); return *this; }
-   P& mulByX () { c.push_back(0); return *this; }
-   P& divByXPow (unsigned);
-   P& mulByXPow (unsigned);
+   P& mulByX () { if (degree() >= 0)  c.push_back(coeff_type()); return *this; }
+   P& divByX (unsigned);
+   P& mulByX (unsigned);
+
    P& mulAndAdd (const T& x)  { c.push_back (x); return *this; }
 };
 
-template<class A>
-std::ostream& operator<< (std::ostream &, const Polynomial<A> &);
+// Comparision
+
+template<typename T>
+inline
+bool operator== (const Polynomial<T>& p1, const Polynomial<T>& p2)
+{
+   return p1.c == p2.c;
+}
+
+template<typename T>
+bool operator== (const Polynomial<Real<T> >&, const Polynomial<Real<T> >&);
 
 
 /**
  *  Polynomial Ring Base Base
  */
 
-template <typename A>
+template <class A>
 class PolynomialRingBB
 {
 public:
@@ -103,47 +117,47 @@ public:
    typedef Polynomial<coeff_type> type;
    typedef typename type::coeff_reference coeff_reference;
 
-   PolynomialRingBB (const A& _a) : a(_a) {}
+   PolynomialRingBB (const A& _a, char _var) : a(_a), var(_var) {}
 
-   unsigned size() const  { return 0; }
    coeff_algebra getCoeffAlgebra() const  { return a; }
    
-   type zero() const  { return type(0);}
-   type one()  const;
+   unsigned size() const  { return 0; }
+
+   type x (unsigned k = 1) const;
+   type one() const  { return x (0); }
 
    bool is0 (const type &p) const  { return p.degree() == -1; }
    bool is1 (const type &)  const;
+   bool isCanonical (const type& p) const;
 
-   type element(unsigned i) const;
-   unsigned index (const type &p) const;
+   type element(unsigned) const;
+   type elementMonic (unsigned) const;
+   unsigned index (const type&) const;
    
    type& negate (type&)     const;
    type neg (const type& p) const;
 
    type  add (const type&, const type&) const;
-   type& addTo (type& p1,  const type& p2) const
-      { p1 = add (p1, p2); return p1; }
+   type& addTo (type& p1,  const type& p2) const  { return p1 = add (p1, p2); }
 
    type  sub (const type& p1, const type& p2) const
       { return add (p1, neg (p2)); }
    type& subFrom (  type& p1, const type& p2) const
       { return addTo (p1, neg (p2)); }
 
-   type mul (const type&, const type&) const;
-   type& mulBy (type& p1, const type& p2) const  { return p1 = mul (p1, p2); }
-
    type times (const type& p, unsigned k) const;
-   type power (const type& p, unsigned k) const { return powInt (*this, p, k); }
+   type derivative (const type& p) const;
 
-   bool isMonic (const type&) const;
    coeff_type evaluate (const type&, const coeff_type&) const;
 
+   char getVar() const  { return var; }
    void print (std::ostream &, const type&) const;
    void printShort (std::ostream &, const type&) const;
    void printSuffix (std::ostream &o) const  { a.printSuffix(o); }
 
 protected:
    const A a;
+   const char var;
 };
 
 template<class A>
@@ -154,75 +168,243 @@ std::ostream& operator<< (std::ostream &, const PolynomialRingBB<A> &);
  *  Polynomial Ring Base
  */
 
-template <typename A, typename TAG> class PolynomialRingBase {};
+// Basis case
 
-template <typename A>
+template <class A, typename TAG> class PolynomialRingBase {};
+
+
+// ring_tag
+
+template <class A>
 class PolynomialRingBase<A,ring_tag> : public PolynomialRingBB<A>
 {
 public:
    typedef ring_tag algebra_category;
    typedef polynomial_tag polynomial_category;
-   PolynomialRingBase (const A& _a) : PolynomialRingBB<A> (_a) {}
+   typedef typename A::type coeff_type;
+   typedef Polynomial<coeff_type> type;
+
+   PolynomialRingBase (const A& _a, char _var)
+      : PolynomialRingBB<A> (_a, _var) {}
+
+   type mul (const type&, const type&) const;
+   type& mulBy (type& p1, const type& p2) const  { return p1 = mul (p1, p2); }
+   type power (const type& p, unsigned k) const { return powInt (*this, p, k); }
+
+   unsigned additiveOrder (const type& a) const;
 };
 
-template <typename A>
+
+// domain_tag
+
+template <class A>
 class PolynomialRingBase<A,domain_tag> : public PolynomialRingBB<A>
 {
 public:
    typedef domain_tag algebra_category;
    typedef polynomial_tag polynomial_category;
-   PolynomialRingBase (const A& _a) : PolynomialRingBB<A> (_a) {}
+   typedef typename A::type coeff_type;
+   typedef Polynomial<coeff_type> type;
+
+   PolynomialRingBase (const A& _a, char _var)
+      : PolynomialRingBB<A> (_a, _var) {}
+
+   type mul (const type&, const type&) const;
+   type& mulBy (type& p1, const type& p2) const  { return p1 = mul (p1, p2); }
+   type power (const type& p, unsigned k) const { return powInt (*this, p, k); }
+
+   unsigned order(const type&) const;
+   unsigned characteristic() const  { return a.characteristic(); }
+
+   HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };
 
-template <typename A>
-class PolynomialRingBase<A,ufd_tag> : public PolynomialRingBB<A>
+
+// field_tag
+
+template<class A>
+class PolynomialRingBase<A,field_tag> : public  PolynomialRingBase<A,domain_tag>
 {
 public:
-   //typedef ufd_tag algebra_category;
    typedef domain_tag algebra_category;
-   typedef polynomial_tag polynomial_category;
-
    typedef typename A::type coeff_type;
+   typedef coeff_type unit_type;
    typedef Polynomial<coeff_type> type;
 
-   PolynomialRingBase (const A& _a) : PolynomialRingBB<A> (_a) {}
+   PolynomialRingBase (const A& _a, char _var)
+      : PolynomialRingBase<A,domain_tag> (_a, _var) {}
 
-   bool isUnit  (const type&p) const  { return p.degree() == 0;}
-   type unitRecip (const type& p) const
-      { type q (1); q.mulAndAdd (a.recip (p[0])); return q; }
-
-#if 0
-   // This could be implemented (sse TACP, 4.6.1)
-
-   bool isPrime (const type&)  const;
-   bool isIrreducible (const type &p) const  { return isPrime (p); }
-   bool isComposit (const type& p) const
-      { return p.degree () > 1 && ! isPrime(p); }
-#endif
-};
-
-template <typename A>
-class PolynomialRingBase<A,field_tag> : public  PolynomialRingBase<A,ufd_tag>
-{
-public:
-   typedef euclidean_tag algebra_category;
-   typedef polynomial_tag polynomial_category;
-
-   typedef typename A::type coeff_type;
-   typedef Polynomial<coeff_type> type;
-
-   PolynomialRingBase (const A& _a) :  PolynomialRingBase<A,ufd_tag> (_a) {}
+   unit_type unitRecip (const unit_type& u) const  { return a.recip (u); }
    void div (const type&, const type&, type&, type&) const;
    type quot (const type&, const type&) const;
    type rem  (const type&, const type&) const;
    unsigned numOfRemainders (const type&) const;
    unsigned norm (const type& p) const  { return p.degree() + 1; }
 
-   // The following should be in the UFD case...
-   bool isPrime (const type&)  const;
-   bool isIrreducible (const type &p) const  { return isPrime (p); }
+   unit_type makeCanonical (type &) const;
+
+   // units
+
+   bool isUnit  (const type&p) const  { return p.degree() == 0;}
+   unsigned numUnits() const  { return a.size() ? a.size() - 1 : 0; }
+   unit_type unitElement (unsigned i) const  { return a.element(i + 1); }
+   unsigned unitIndex (const unit_type& u) const  { return a.index (u) - 1; }
+
+   type    fromUnit (const unit_type& u) const { return type().mulAndAdd(u); }
+   unit_type toUnit (const type& p)      const { return p[0]; }
+
+   type  mulUnit   (const type&, const unit_type&) const;
+   type& mulByUnit (      type&, const unit_type&) const;
+
+   unit_type  mulUnit   (const unit_type& u1, const unit_type& u2) const
+      { return a.mul (u1, u2); }
+   unit_type& mulByUnit (      unit_type& u1, const unit_type& u2) const
+      { return a.mulBy (u1, u2); }
+};
+
+
+// rational_tag
+
+template<class A>
+class PolynomialRingBase<A,rational_tag> : public PolynomialRingBase<A,field_tag>
+{
+public:
+   typedef typename A::type coeff_type;
+   typedef Polynomial<coeff_type> type;
+
+   PolynomialRingBase (const A& _a, char _var)
+      : PolynomialRingBase<A,field_tag> (_a, _var) {}
+
+   bool isPrime    (const type& p) const;
    bool isComposit (const type& p) const
-      { return p.degree () > 1 && ! isPrime(p); }
+      { return p.degree() > 1 && ! isPrime (p); }
+
+   class PrimeGenerator;
+};
+
+template<class A>
+class PolynomialRingBase<A,rational_tag>::PrimeGenerator
+{
+public:
+   PrimeGenerator(const PolynomialRingBase<A,rational_tag> &_alg)
+      : alg (_alg), n(2) {}
+   type next();
+private:
+   PrimeGenerator ();
+   PrimeGenerator& operator= (const PrimeGenerator&);
+   const PolynomialRingBase<A,rational_tag> alg;
+   unsigned n;
+};
+
+
+// real_tag
+
+template<class A>
+class PolynomialRingBase<A,real_tag> : public PolynomialRingBase<A,field_tag>
+{
+public:
+   typedef typename A::type coeff_type;
+   typedef Polynomial<coeff_type> type;
+
+   PolynomialRingBase (const A& _a, char _var)
+      : PolynomialRingBase<A,field_tag> (_a, _var) {}
+
+   bool isPrime    (const type& p) const;
+   bool isComposit (const type& p) const
+      { return p.degree() > 1 && ! isPrime (p); }
+
+   class PrimeGenerator;
+};
+
+template<class A>
+class PolynomialRingBase<A,real_tag>::PrimeGenerator
+{
+public:
+   PrimeGenerator(const PolynomialRingBase<A,real_tag> &_alg)
+      : alg (_alg.getCoeffAlgebra()), n(0) {}
+   type next();
+private:
+   PrimeGenerator ();
+   PrimeGenerator& operator= (const PrimeGenerator&);
+   const A alg;
+   unsigned n;
+};
+
+
+// complex_tag
+
+template<class A>
+class PolynomialRingBase<A,complex_tag> : public PolynomialRingBase<A,field_tag>
+{
+public:
+   typedef typename A::type coeff_type;
+   typedef Polynomial<coeff_type> type;
+
+   PolynomialRingBase (const A& _a, char _var)
+      : PolynomialRingBase<A,field_tag> (_a, _var) {}
+
+   bool isPrime    (const type& p) const  { return p.degree() == 1; };
+   bool isComposit (const type& p) const  { return p.degree() >  1; };
+
+   class PrimeGenerator;
+};
+
+template<class A>
+class PolynomialRingBase<A,complex_tag>::PrimeGenerator
+{
+public:
+   PrimeGenerator(const PolynomialRingBase<A,complex_tag> &_alg)
+      : alg (_alg.getCoeffAlgebra()), n(0) {}
+   type next();
+private:
+   PrimeGenerator ();
+   PrimeGenerator& operator= (const PrimeGenerator&);
+   const A alg;
+   unsigned n;
+};
+
+
+// gf_tag
+
+namespace Private
+{
+   unsigned funnySum (int, unsigned);
+}
+
+template<class A>
+class PolynomialRingBase<A,gf_tag> : public  PolynomialRingBase<A,field_tag>
+{
+public:
+   typedef typename A::type coeff_type;
+   typedef Polynomial<coeff_type> type;
+
+   PolynomialRingBase (const A& _a, char _var)
+      : PolynomialRingBase<A,field_tag> (_a, _var) {}
+
+   bool isPrimitive (const type&) const;
+   bool isPrime (const type&) const;
+   bool isComposit (const type& p) const
+      { return p.degree() > 1 && ! isPrime (p); }
+
+   class PrimeGenerator;
+};
+
+template<class A>
+class PolynomialRingBase<A,gf_tag>::PrimeGenerator
+{
+public:
+   PrimeGenerator(const PolynomialRingBase<A,gf_tag> &_alg)
+      : alg (_alg), n(2) {}
+   PrimeGenerator(const PolynomialRingBase<A,gf_tag> &_alg, int deg)
+      : alg (_alg), n(Private::funnySum (deg, alg.getCoeffAlgebra().size()))
+      {}
+
+   type next();
+private:
+   const PolynomialRingBase<A,gf_tag> alg;
+   unsigned n;
+   PrimeGenerator ();
+   PrimeGenerator& operator= (const PrimeGenerator&);
 };
 
 
@@ -231,24 +413,30 @@ public:
  */
 
 template<typename T> struct RingId {};
-template<typename T> struct RingId<T*>
+template<typename T> struct RingId<T*>    // Ring 
    { typedef ring_tag algebra_category; };
-template<typename T> struct RingId<T**>
+template<typename T> struct RingId<T**>   // Domain
    { typedef domain_tag algebra_category; };
-template<typename T> struct RingId<T***>
-   { typedef ufd_tag algebra_category; };
-template<typename T> struct RingId<T*****>
+template<typename T> struct RingId<T***>  // Field
    { typedef field_tag algebra_category; };
+template<> struct RingId<unsigned***>     // Rational Field
+   { typedef rational_tag algebra_category; };
+template<> struct RingId<int***>          // Real Field
+   { typedef real_tag algebra_category; };
+template<> struct RingId<char***>         // Complex Field
+   { typedef complex_tag algebra_category; };
+template<typename T> struct RingId<T****> // Finite field
+   { typedef gf_tag algebra_category; };
 
-template <typename A>
+template<class A>
 class PolynomialRing : public PolynomialRingBase<A,
         typename RingId<typename A::algebra_category::MAGIC>::algebra_category>
 {
 public:
-   PolynomialRing (const A& _a)
+   PolynomialRing (const A& _a, char _var = 'x')
       : PolynomialRingBase<A,
         typename RingId<typename A::algebra_category::MAGIC>::algebra_category>
-        (_a) {}
+        (_a, _var) {}
 };
 
 } // namespace HIntLib

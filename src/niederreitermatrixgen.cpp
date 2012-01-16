@@ -24,78 +24,72 @@
 
 #include <HIntLib/niederreitermatrixgen.h>
 
-#include <HIntLib/modulararithmetic.h>
+#include <HIntLib/generatormatrixgen.h>
+#include <HIntLib/polynomial.h>
 #include <HIntLib/lookupfield.h>
 #include <HIntLib/prime.h>
-#include <HIntLib/exception.h>
+#include <HIntLib/array.h>
 
 namespace L = HIntLib;
 
+
 /**
- *   Constructor
+ *  init Niederreiter ()
  *
- *   For each dimension, determine an irreducible, monic polynomial and call
- *   init() to initialize the initialize the corresponding matrix.
+ *  Initialize whole matrix, given a certain arithmetic
  */
 
 template<class A>
-L::NiederreiterMatrixGen<A>::NiederreiterMatrixGen
-   (const A& a, unsigned _dim, unsigned _m, unsigned _prec)
-   : HeapAllocatedGeneratorMatrixGen<typename A::type>
-      (a.size(), _dim, _m, _prec)
+void L::initNiederreiter (GeneratorMatrixGen<typename A::type> &gm, A a)
 {
-   init (*this, a);
-}
-
-
-/**
- *  init()  -  whole matrix
- */
-
-template<class A>
-void L::NiederreiterMatrixGen<A>::init
-   (MutableGeneratorMatrixGen<typename A::type> &gm, A a)
-{
+   typedef typename A::type T;
+   typedef PolynomialRing<A> PolyRing;
+   typedef typename PolyRing::type Poly;
+                     
    // Find _dim_ monic, irreducible polynomials
 
    PolyRing poly (a);
-   Poly p;
-   unsigned i = 0;
+   typename PolyRing::PrimeGenerator ig (poly);
 
    for (unsigned d = 0; d < gm.getDimension(); ++d)
    {
-      do
-      {
-         p = poly.element (i++);
-      } while (! (poly.isMonic (p) && poly.isPrime (p)));
-
-      init (gm, a, d, p);
+      initNiederreiter (gm, a, d, ig.next());
    }
 }
 
 
 /**
- *   Calculation of vectors v according to Bratley-Fox based on a given
- *   polynomial.
+ *  init Niederreiter () 
+ *   
+ *  Initialized a single coordiante with a certain irreducible polynomial
+ *  over a given arithmetic.
  */
 
 template<class A>
-void L::NiederreiterMatrixGen<A>::init
-   (MutableGeneratorMatrixGen<typename A::type> &gm,
-    A a, unsigned d, const Poly &irred)
+void L::initNiederreiter
+  (GeneratorMatrixGen<typename A::type> &gm, A a, unsigned d,
+   const typename PolynomialRing<A>::type &irred)
 {
-   T v [100];
+   typedef typename A::type T;
+   typedef PolynomialRing<A> PolyRing;
+   typedef typename PolyRing::type Poly;
+
+   const int degree = irred.degree ();
+
+   const unsigned vSize
+      = std::max (gm.getM() + degree - 1,   // these elements are copied to gm
+                  (gm.getTotalPrec() + degree + 1));  // used in the loop
+                  
+   Array<T> v (vSize);
    PolyRing poly (a);
 
    // cout << "Using " << irred << " for d=" << d << endl;
-
-   const int degree = irred.degree ();
 
    Poly newPoly = poly.one();
 
    int u = 0;
 
-   for (unsigned j = 0; j < gm.getPrec(); j++)
+   for (unsigned j = 0; j < gm.getTotalPrec(); j++)
    {
       // cout << "  j=" << j << endl;
       // Do we need a new v?
@@ -119,7 +113,7 @@ void L::NiederreiterMatrixGen<A>::init
                              // (newDegree > 3) ? 3 : oldDegree 
          ;
 
-         std::fill (&v[0], &v[kj], a.zero());  // Set leading v's to 0
+         std::fill (&v[0], &v[kj], T());  // Set leading v's to 0
 
          v[kj] = a.one();                     // the next one is 1
 
@@ -148,9 +142,9 @@ void L::NiederreiterMatrixGen<A>::init
          // All other elements are calculated by a recursion parameterized
          // by polyK
 
-         for (unsigned r = 0; r < 100u - newDegree; ++r)
+         for (unsigned r = 0; r < vSize - newDegree; ++r)
          {
-            T term = a.zero();
+            T term = T();
 
             for (int i = 0; i < newDegree; ++i)
             {
@@ -162,13 +156,7 @@ void L::NiederreiterMatrixGen<A>::init
 
       // Set data in ci
 
-      // cout << "v =";
-      for (unsigned r = 0; r < gm.getM(); ++r)
-      {
-         // cout << " " << v[r+u];
-         gm.setd (d,r,j, v[r+u]);
-      }
-      // cout << endl;
+      for (unsigned r = 0; r < gm.getM(); ++r)  gm.setd (d,r,j, v[r+u]);
 
       if (++u == degree) u = 0;
    } 
@@ -176,43 +164,81 @@ void L::NiederreiterMatrixGen<A>::init
 
 
 /**
- *  Niederreiter Matirx PP
+ *  init Niederreiter ()
+ *
+ *  Figures out the proper arithmetic to initialize the Niederreiter Matrix
  */
 
-/**
- *  init ()
- */
-
-void L::NiederreiterMatrixPP::init (unsigned char prime, unsigned power)
+void L::initNiederreiter (GeneratorMatrixGen<unsigned char> &gm)
 {
-   if (power == 0)  throw GaloisFieldExponent();
-   else if (power == 1)
-   {
-      ModularArithField<unsigned char> a (prime);
-      NiederreiterMatrixGen<ModularArithField<unsigned char> >::init (*this, a);
-   }
-   else  // general case (power > 1)
-   {
-      LookupGaloisField<unsigned char> field (prime, power);
-      NiederreiterMatrixGen<LookupField<unsigned char> >
-         ::init (*this, field);
-   }
-}
+   const unsigned base = gm.getBase();
 
-void L::NiederreiterMatrixPP::init (unsigned char size)
-{
-   if (Prime::test (size))  init (size, 1);
+   if (Prime::test (base))
+   {
+      LookupGaloisFieldPrime<unsigned char> field (base);
+      initNiederreiter (
+            gm, static_cast<LookupFieldPrime<unsigned char>&> (field));
+   }
    else
    {
-      LookupGaloisField<unsigned char> field (size);
-      NiederreiterMatrixGen<LookupField<unsigned char> >
-         ::init (*this, field);
+      LookupGaloisField<unsigned char> field (base);
+      initNiederreiter (gm, static_cast<LookupField<unsigned char>&> (field));
    }
 }
 
-namespace HIntLib
+
+#if 0
+/**
+ *  This function fills the passed array of polynomials with the first MAX_DIM
+ *  irreducible polynomials.
+ *
+ *  No primitive polynomials are required, so a simple sieve can be used.
+ */
+
+void createIrredPolys (Poly* irredPolys)
 {
-   template class NiederreiterMatrixGen<ModularArithField<unsigned char> >;
-   template class NiederreiterMatrixGen<LookupField<unsigned char> >;
+   // Use the following map for Eratosthenes' sieve
+
+   unsigned mapSize = 100;
+   bool* map = 0;
+
+   unsigned int count;
+
+   do
+   {
+      mapSize *= 2;
+
+      // dump old table and create a new one
+
+      delete[] map;
+      map = new bool [mapSize];
+
+      // find irreducible polynomials
+
+      eratosthenes (map, mapSize, Poly (0));
+
+      // Count irreducible polynomials in this map 
+
+      count = 0;
+
+      for (unsigned i = 0; i < mapSize; i++) if (map [i]) count++;
+
+   } while (count < NiederreiterMatrix::MAX_DIM);  // do we have enough?
+
+   // Copy the first MAX_DIM irreducible polynomials to irredPolys
+
+   bool* p = map;
+
+   for (unsigned i = 0; i < NiederreiterMatrix::MAX_DIM; i++)
+   {
+      while (! *p) p++;
+
+      irredPolys [i] = Poly (p++ - map);
+   }
+
+   // Free the memory used for the map
+
+   delete[] map;
 }
+#endif
 

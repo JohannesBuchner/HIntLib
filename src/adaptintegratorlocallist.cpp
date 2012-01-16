@@ -36,7 +36,7 @@
 
 #include <HIntLib/mymath.h>
 #include <HIntLib/regioncollection.h>
-#include <HIntLib/embeddedrule.h>
+#include <HIntLib/cubaturerule.h>
 #include <HIntLib/buffer.h>
 #include <HIntLib/exception.h>
 

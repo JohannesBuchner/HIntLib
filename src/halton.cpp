@@ -27,6 +27,7 @@
 
 #include <HIntLib/qmcroutinesimp.h>
 
+#include <HIntLib/mymath.h>
 #include <HIntLib/prime.h>
 
 namespace L = HIntLib;
@@ -41,28 +42,6 @@ using L::Index;
 L::Halton::Halton (const Hypercube &h)
    : QRNSequenceBase (h), ss(h)
 {}
-
-namespace
-{
-   inline
-   real radicalInverseFunction (L::Index n, const unsigned base)
-   {
-      const real realBase = real (1.0 / base);
-
-      real x = 0.0;
-
-      real b = realBase;
-
-      while (n)
-      {
-         x += b * (n % base);
-         n /= base;
-         b *= realBase;
-      }
-
-      return x;
-   }
-}
 
 /**
  *  Create next point

@@ -32,8 +32,10 @@
 #include <HIntLib/rule3tyler.h>
 #include <HIntLib/rule3gauss.h>
 #include <HIntLib/rule3ewing.h>
+#include <HIntLib/rule3simpson.h>
 #include <HIntLib/rule5hammer.h>
 #include <HIntLib/rule5stroud.h>
+#include <HIntLib/rule5gauss.h>
 #include <HIntLib/rule7phillips.h>
 #include <HIntLib/rule75genzmalik.h>
 #include <HIntLib/rule9stenger.h>
@@ -64,8 +66,10 @@ const RuleRecord factories [] =
    { 33, "3-Tyler",       L::Rule3Tyler::getFactory },
    { 34, "3-Gauss",       L::Rule3Gauss::getFactory },
    { 35, "3-Ewing",       L::Rule3Ewing::getFactory },
+   { 36, "3-Simpson",     L::Rule3Simpson::getFactory },
    { 51, "5-Hammer",      L::Rule5Hammer::getFactory },
    { 52, "5-Stroud",      L::Rule5Stroud::getFactory },
+   { 53, "5-Gauss",       L::Rule5Gauss::getFactory },
    { 71, "7-GenzMalik",   (CubatureRuleFactory* (*)())
                                 L::Rule75GenzMalik::getFactory },
    { 72, "7-Phillips",    L::Rule7Phillips::getFactory },

@@ -39,7 +39,6 @@
 #include <HIntLib/polynomial2.h>
 
 #include <HIntLib/integerring.h>
-#include <HIntLib/modulararithmetic.h>
 
 namespace L = HIntLib;
 
@@ -53,7 +52,7 @@ L::operator<< (std::ostream &o, const GF2 &)
 }
 
 void
-L::GF2::print (std::ostream& o, type x) const
+L::GF2::print (std::ostream& o, type x)
 {
    std::ostringstream ss;
    ss.flags (o.flags());
@@ -68,13 +67,13 @@ L::GF2::print (std::ostream& o, type x) const
 }
 
 void
-L::GF2::printShort (std::ostream& o, type x) const
+L::GF2::printShort (std::ostream& o, type x)
 {
    o << unsigned (x);
 }
 
 void
-L::GF2::printSuffix (std::ostream& o) const
+L::GF2::printSuffix (std::ostream& o)
 {
    o << "(2)";
 }
@@ -145,7 +144,7 @@ L::GF2VectorSpace<T>::print (std::ostream& o, const type& v) const
  */
 
 template<typename T>
-std::ostream& L::operator<< (std::ostream& o, const L::Polynomial2<T> p)
+void L::Polynomial2<T>::printShort (std::ostream& o, char var) const
 {
    std::ostringstream ss;
    ss.flags (o.flags());
@@ -158,17 +157,17 @@ std::ostream& L::operator<< (std::ostream& o, const L::Polynomial2<T> p)
 
    for (int i = std::numeric_limits<T>::digits - 1; i >= 0; --i)
    {
-      if (p[i])
+      if ((*this)[i])
       {
          if (output) ss << '+';
 
          switch (i)
          {
          case 0:  ss << '1'; break;
-         case 1:  ss << 'x'; break;
-         case 2:  ss << "x\262"; break;
-         case 3:  ss << "x\263"; break;
-         default: ss << "x^" << i;
+         case 1:  ss << var; break;
+         case 2:  ss << var << '\262'; break;
+         case 3:  ss << var << '\263'; break;
+         default: ss << var << '^' << i;
          }
 
          output = true;
@@ -177,7 +176,7 @@ std::ostream& L::operator<< (std::ostream& o, const L::Polynomial2<T> p)
 
    if (! output)  ss << '0';
 
-   return o << ss.str().c_str();
+   o << ss.str().c_str();
 }
 
 /**
@@ -237,14 +236,14 @@ void L::Polynomial2<T>::div (P u, const P v, P &q, P &r)
    const int m = u.degree();
    const int n = v.degree();
 
-   if (n == -1)  throw DivisionByZero();
+   if (n == -1)  throwDivisionByZero();
 
    int loops = m - n;
 
    if (loops < 0)
    {
       r = u;
-      q = zero();
+      q = P();
 
       return;
    }
@@ -255,7 +254,7 @@ void L::Polynomial2<T>::div (P u, const P v, P &q, P &r)
 
    // align with dividend
 
-   divisor.mulByXPow (loops);
+   divisor.mulByX (loops);
 
    T u_mask = T(1) << m;
 
@@ -288,41 +287,46 @@ void L::Polynomial2<T>::div (P u, const P v, P &q, P &r)
 }
 
 
+/**
+ *  isPrimitive()
+ *
+ *  Determine if  p  is primitive, i.e.  x^m = 1 mod p  implies m >= 2^deg - 1
+ *
+ *  See Lidl/Niederreiter, Finite Fields, Theorem 3.18, and
+ *      Knuth, TACP, vol 2, 3.2.2, p.30.
+ */
+
 template<typename T>
 bool L::Polynomial2<T>::isPrimitive () const
 {
    const int deg = degree();
 
-   if (deg < 1)  return false;
+   if (deg <= 0)  return false;
+
+   // i)  (-1)^r p[0]  must be a primitive element
+
+   if (! d & 1)  return false;
 
    const unsigned r = (1 << degree()) - 1;
+   PrimeDivisors pd (r);
+   const Polynomial2<T> polyx = x();
 
-   const Polynomial2<T> p = x();
+   // ii)  x^r mod p  must be 1
 
-   if (! powerMod (p, r, *this).is1())  return false;
+   if (! powerMod (polyx, r, *this).is1())  return false;
 
-   unsigned rr = r;
+   // iii)  For all divisors rr of r, x^rr mod p  must have positive degree
 
-   for (unsigned prime = 2; ; prime = Prime::next(prime+1))
+   while (unsigned prime = pd.next())
    {
-      if (prime > rr)  break;
-
-      if (rr % prime != 0)  continue;
-
-      do
-      {
-         rr /= prime;
-      }
-      while (rr % prime == 0);
-
-      if (powerMod (p, r / prime, *this).degree() <= 0)  return false;
+      if (powerMod (polyx, r / prime, *this).degree() <= 0)  return false;
    }
 
    return true;
 }
 
 template<typename T>
-bool L::Polynomial2<T>::isIrreducible() const
+bool L::Polynomial2<T>::isPrime() const
 {
    if (d == 2) return true;   // x
    if (! (d & 1) || d < 2)  return false;  //  x_n+...+0  or  0 or 1
@@ -338,32 +342,35 @@ bool L::Polynomial2<T>::isIrreducible() const
 template<typename T>
 unsigned char L::Polynomial2<T>::evaluate (unsigned char x) const
 {
-   if (x)
+   if (x == 0)  return d & 1;
+
+   unsigned char res = 0;
+   T dd = d;
+   while (dd)
    {
-      unsigned char res = 0;
-      T dd = d;
-      while (dd)
-      {
-         if (dd & 1)  res ^= 1;
-         dd >>= 1;
-      }
-      return res;
+      res ^= (dd & 1);
+      dd >>= 1;
    }
-   else
-   {
-      return d & 1;
-   }
+   return res;
 }
 
 /**********************  Polynomial 2 Ring Base  *****************************/
 
-std::ostream & L::operator<< (std::ostream &o, const Polynomial2RingBase &)
+std::ostream & L::operator<< (std::ostream &o, const Polynomial2RingBase &r)
 {
-   return o << "GF2[x]";
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << "GF2[" << r.getVar() << ']';
+   return o << ss.str().c_str();
 }
 
 void
-L::Polynomial2RingBase::printSuffix (std::ostream& o) const
+L::Polynomial2RingBase::printSuffix (std::ostream& o)
 {
    o << "(2)";
 }
@@ -373,7 +380,7 @@ L::Polynomial2RingBase::printSuffix (std::ostream& o) const
 
 template<typename T>
 void
-L::Polynomial2Ring<T>::print (std::ostream& o, const type& x) const
+L::Polynomial2Ring<T>::print (std::ostream& o, const type& p) const
 {
    std::ostringstream ss;
    ss.flags (o.flags());
@@ -382,10 +389,26 @@ L::Polynomial2Ring<T>::print (std::ostream& o, const type& x) const
    ss.imbue (o.getloc());
 #endif
 
+   printShort (ss, p);
    ss << x << " (2)";
+
    o << ss.str().c_str();
 }
 
+/**
+ *  next()
+ */
+
+template<typename T>
+typename L::Polynomial2Ring<T>::type
+L::Polynomial2Ring<T>::PrimeGenerator::next()
+{
+   for (;;)
+   {
+      type p (n++);
+      if (p.isPrime())  return p;
+   }
+}
 
 /********************  Instantiations  ***************************************/
 
@@ -393,16 +416,16 @@ L::Polynomial2Ring<T>::print (std::ostream& o, const type& x) const
 namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) \
-   template \
-   std::ostream& operator<< (std::ostream &, const Polynomial2<X>); \
    template Polynomial2<X> Polynomial2<X>::operator* \
      (const Polynomial2<X>) const; \
    template void Polynomial2<X>::div \
      (Polynomial2<X>,const Polynomial2<X>,Polynomial2<X> &,Polynomial2<X> &); \
    template bool Polynomial2<X>::isPrimitive () const; \
-   template bool Polynomial2<X>::isIrreducible() const; \
+   template bool Polynomial2<X>::isPrime() const; \
    template unsigned char Polynomial2<X>::evaluate (unsigned char) const; \
+   template void Polynomial2<X>::printShort (std::ostream &, char) const; \
    template void Polynomial2Ring<X>::print (std::ostream&, const type&) const; \
+   template Polynomial2<X> Polynomial2Ring<X>::PrimeGenerator::next(); \
    template void GF2VectorSpace<X>::print (std::ostream&, const type&) const; \
    template void GF2VectorSpace<X>::printShort (std::ostream&, const type&) const;
 

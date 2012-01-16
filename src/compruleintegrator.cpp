@@ -36,7 +36,7 @@
 
 #include <HIntLib/compruleintegrator.h>
 
-#include <HIntLib/embeddedrule.h>
+#include <HIntLib/cubaturerule.h>
 #include <HIntLib/cubepartitioner.h>
 #include <HIntLib/kahanadd.h>
 #include <HIntLib/exception.h>

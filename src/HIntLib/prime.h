@@ -48,10 +48,29 @@ public:
    template<class T> static bool  test (T n)  HINTLIB_GNU_CONST;
    template<class T> static T     next (T n)  HINTLIB_GNU_CONST;
    template<class T> static T eulerPhi (T n)  HINTLIB_GNU_CONST;
-   static void factorPrimePower (unsigned x, unsigned &_p, unsigned &_exp);
-   static bool isPrimePower (unsigned x, unsigned &_p, unsigned &_exp);
-   static bool isPrimePower (unsigned x)  HINTLIB_GNU_CONST;
    static unsigned nth (unsigned n);
+
+   // isPrimePower and relatives
+
+   static void factorPrimePower (unsigned n, unsigned &_p, unsigned &_exp);
+   static unsigned factorPrimePowerPrime (unsigned n)
+   {
+      unsigned prime, power;
+      factorPrimePower (n, prime, power);
+      return prime;
+   }
+   static unsigned factorPrimePowerPower (unsigned n)
+   {
+      unsigned prime, power;
+      factorPrimePower (n, prime, power);
+      return power;
+   }
+   static bool isPrimePower (unsigned n, unsigned &_p, unsigned &_exp);
+   static bool isPrimePower (unsigned n)
+   {
+      unsigned prime, power;
+      return isPrimePower (n, prime, power);
+   }
 
 private:
 
@@ -63,6 +82,15 @@ private:
 
    static void throwPrimeNumberNth (unsigned)  HINTLIB_GNU_NORETURN;
 };
+
+
+/**
+ *  isPrimitiveRoot()
+ *
+ *  Deterime if  a  is a primitive element modulo the prime number p
+ */
+
+bool isPrimitiveRoot (unsigned a, unsigned p);
 
 
 /**
@@ -131,6 +159,31 @@ unsigned HIntLib::Prime::nth (unsigned n)
 
    return nthPrimeArray [n];
 }
+
+/**
+ *  PrimeDivisors
+ */
+
+class PrimeDivisors
+{
+public:
+   PrimeDivisors (unsigned _n) : n (_n), prime (1) {}
+
+   unsigned next()
+   {
+      if (n <= prime)  return 0;
+
+      do { prime = Prime::next(prime + 1); } while (n % prime != 0);
+
+      do { n /= prime; } while (n % prime == 0);
+
+      return prime;
+   }
+
+private:
+   unsigned n;
+   unsigned prime;
+};
 
 }  // namespace HIntLib;
 

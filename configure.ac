@@ -6,10 +6,11 @@
 
 # autoconf setup
 
-AC_INIT([HIntLib], 0.0.5, [rudolf.schuerer@sbg.ac.at], [HIntLib])
+AC_INIT([HIntLib], 0.0.6, [rudolf.schuerer@sbg.ac.at], [HIntLib])
 AC_CONFIG_SRCDIR([src/HIntLib/integrator.h])
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile src/Makefile src/HIntLib/Makefile share/Makefile tests/Makefile tests/toms659/Makefile tests/toms738/Makefile libtest/Makefile])
+dnl AC_CONFIG_FILES([Makefile src/Makefile src/HIntLib/Makefile share/Makefile tests/Makefile tests/toms659/Makefile tests/toms738/Makefile libtest/Makefile development/Makefile])
 AC_LANG(C++)
 
 # automake setup
@@ -134,7 +135,7 @@ if test "$GXX" = yes; then
 else
   case $host/$CXX in
 *-sgi-irix*/CC | *-sgi-irix*/CC\ * )
-   COMPILERWARNINGS="-fullwarn -woff 3649,3625,1424,1468,1209,3626,1375,1210,1174,1506"
+   COMPILERWARNINGS="-fullwarn -woff 3439,3626,3649,3625,1424,1468,1209,1375,1210,1174,1506"
    ;;
 *-linux-*/icpc | *-linux-*/icpc\ * )
    # COMPILERWARNINGS="-w1"
@@ -214,6 +215,12 @@ AC_CHECK_HEADERS([mpi.h],
 fi
 
 AC_SUBST(LIB_HINTLIB_MPI)
+
+###############################################################################
+# Checks for functions
+###############################################################################
+
+AC_CHECK_FUNCS([floor modf pow sqrt])
 
 ###############################################################################
 # Checks for types
@@ -301,7 +308,7 @@ AC_DEFINE_UNQUOTED(REAL,$hl_real,[Type of real data type.])
 
 HL_STREAMS_SUPPORT_LOCAL
 HL_FLT_ROUNDS_CONST
-
+HL_NAMESPACE_REL_OPS
 HL_UNREACHABLE_CALLS_REMOVED
 
 ###############################################################################
@@ -313,8 +320,13 @@ HL_IEEE_MAGIC_WORKS
 HL_ABS_AVAILABLE(std,std)
 HL_ABS_AVAILABLE(,global)
 
-AC_CHECK_FUNCS([floor pow sqrt])
+if test "x$prefix" != xNONE; then   
+   AC_DEFINE_UNQUOTED(DATADIR,"${prefix}/share/${PACKAGE}",[The directory which holds our data files])
+else
+   AC_DEFINE_UNQUOTED(DATADIR,"${ac_default_prefix}/share/${PACKAGE}",[The directory which holds our data files])
+fi
 
-AC_DEFINE_UNQUOTED(DATADIR,"${prefix}/share/${PACKAGE}",[The directory which holds our data files])
+AC_DEFINE_UNQUOTED(SRCDATADIR,"`pwd`/share",[The directory which holds the uninstalled data files])
+
 AC_OUTPUT
 

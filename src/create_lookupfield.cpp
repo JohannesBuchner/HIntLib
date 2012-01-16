@@ -29,15 +29,6 @@ using std::setw;
 
 namespace L = HIntLib;
 
-namespace HIntLib
-{
-   namespace Priv
-   {
-      const unsigned* lookupFields [HINTLIB_PRECALCULATED_FIELD_MAX_SIZE + 1] =
-      {};
-   }
-}
-
 void indent (unsigned in)
 {
    for (unsigned i = 0; i < in; ++i)  cout << ' ';
@@ -59,8 +50,8 @@ void CArrayDump (const L::GaloisField<unsigned char> field, unsigned in)
       {
          T b = field.element (j);
 
-         unsigned char prod = field.index (field.mul (a, b));
-         cout << setw(2) << int (prod) << ',';
+         unsigned prod = field.index (field.mul (a, b));
+         cout << setw(2) << prod << ',';
       }
       cout << '\n';
    }
@@ -72,10 +63,20 @@ void CArrayDump (const L::GaloisField<unsigned char> field, unsigned in)
 
    for (unsigned i = 1; i < field.size(); ++i)
    {
-      T a = field.element (i);
+      unsigned recip = field.index (field.recip (field.element (i)));
+      cout << setw(2) << recip << ',';
+   }
+   cout << '\n';
 
-      unsigned char recip = field.index (field.recip (a));
-      cout << setw(2) << int (recip) << ',';
+   indent (in);
+   cout << "// Multiplicative order\n";
+   indent (in);
+   cout << " 0,";
+
+   for (unsigned i = 1; i < field.size(); ++i)
+   {
+      unsigned order = field.order (field.element (i));
+      cout << setw(2) << order << ',';
    }
    cout << '\n';
 
@@ -91,8 +92,8 @@ void CArrayDump (const L::GaloisField<unsigned char> field, unsigned in)
       {
          T b = field.element (j);
 
-         unsigned char sum = field.index (field.add (a, b));
-         cout << setw(2) << int (sum) << ',';
+         unsigned sum = field.index (field.add (a, b));
+         cout << setw(2) << sum << ',';
       }
       cout << '\n';
    }
@@ -103,17 +104,15 @@ void CArrayDump (const L::GaloisField<unsigned char> field, unsigned in)
 
    for (unsigned i = 0; i < field.size(); ++i)
    {
-      T a = field.element (i);
-
-      unsigned char neg = field.index (field.neg (a));
-      cout << setw(2) << int (neg) << ',';
+      unsigned neg = field.index (field.neg (field.element (i)));
+      cout << setw(2) << neg << ',';
    }
    cout << "\n";
 }
 
 unsigned arraySize (unsigned size)
 {
-   return 2 * size * (size + 1);
+   return 2 * size * size + 3 * size;
 }
 
 int main()
@@ -137,6 +136,7 @@ int main()
       "{\n"
       "   unsigned count;\n"
       "   unsigned characteristic;\n"
+      "   unsigned degree;\n"
       "   unsigned char data [size];\n"
       "};\n"
       "\n";
@@ -150,7 +150,8 @@ int main()
          cout <<
             "const Data<" << arraySize(size) << ">"
                " precalculatedLookupField" << gf.size() << " = \n"
-            "{ 0, " << gf.characteristic() << ",\n"
+            "{ 0, " << gf.characteristic() << ", "
+                    << gf.extensionDegree() << ",\n"
             "   {\n";
          CArrayDump (gf, 6);
          cout <<

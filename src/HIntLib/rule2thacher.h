@@ -55,15 +55,13 @@ namespace HIntLib
       virtual Index getNumPoints()     const  { return 2 * dim + 1; }
       virtual unsigned getDegree()     const  { return 2; }
       virtual bool isAllPointsInside() const  { return true; }
-      virtual real getSumAbsWeight()   const  { return 1.0 + dim * r2; }
+      virtual real getSumAbsWeight()   const;
 
       static CubatureRuleFactory* getFactory();
 
    private:
       const unsigned dim;
       Point p;
-
-      static real r, r2;
    };
 
 }  // namespace HIntLib

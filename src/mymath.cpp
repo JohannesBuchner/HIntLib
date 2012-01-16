@@ -29,7 +29,6 @@
 #include <HIntLib/mymath.h>
 
 #include <HIntLib/polynomial2.h>
-#include <HIntLib/modulararithmetic.h>
 #include <HIntLib/polynomial.h>
 
 namespace L = HIntLib;
@@ -88,6 +87,7 @@ namespace HIntLib
 template<class T>
 T L::powerMod (T x, unsigned exponent, T p)
 {
+   if (! x)  return T();
    T result (1);
 
    for (;;)
@@ -108,6 +108,35 @@ namespace HIntLib
 #ifdef HINTLIB_U32_NOT_EQUAL_U64
    HINTLIB_INSTANTIATE (Polynomial2<u64>)
 #endif
+#undef HINTLIB_INSTANTIATE
+}
+
+
+/**
+ *  powerModReduce()
+ */
+
+template<class T>
+T L::powerModReduce (T x, unsigned exponent, T p)
+{
+   if (! x)  return T();
+   if (exponent >= p - 1)  exponent %= (p - 1);
+   T result (1);
+
+   for (;;)
+   {
+      if (exponent & 1)  result = (result * x) % p;
+      if ((exponent >>= 1) == 0)  return result;
+      x = (x*x) % p;
+   }
+}
+
+namespace HIntLib
+{
+#define HINTLIB_INSTANTIATE(X) template X powerModReduce (X, unsigned, X);
+
+   HINTLIB_INSTANTIATE (unsigned)
+   HINTLIB_INSTANTIATE (unsigned long)
 #undef HINTLIB_INSTANTIATE
 }
 
@@ -147,6 +176,46 @@ namespace HIntLib
    HINTLIB_INSTANTIATE (unsigned long long)
 #endif
 #undef HINTLIB_INSTANTIATE
+}
+
+
+/**
+ *  radicalInverseFunction  ()
+ *  radicalInverseFunction2 ()
+ */
+
+L::real L::radicalInverseFunction (Index n, unsigned base)
+{
+   const real realBase = real (1.0) / real (base);
+
+   real x = 0.0;
+   real b = realBase;
+
+   while (n)
+   {
+      x += b * (n % base);
+      n /= base;
+      b *= realBase;
+   }
+
+   return x;
+}
+
+L::real L::radicalInverseFunction2 (Index n)
+{
+   const real realBase = 0.5;
+
+   real x = 0.0;
+   real b = realBase;
+
+   while (n)
+   {
+      if (n & 1)  x += b;
+      n >>= 1;
+      b *= realBase;
+   }
+
+   return x;
 }
 
 

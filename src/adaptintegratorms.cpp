@@ -34,7 +34,7 @@
 
 #include <HIntLib/adaptintegratorms.h>
 
-#include <HIntLib/embeddedrule.h>
+#include <HIntLib/cubaturerule.h>
 #include <HIntLib/regioncollection.h>
 #include <HIntLib/buffer.h>
 #include <HIntLib/array.h>
@@ -206,7 +206,7 @@ Integrator::Status L::AdaptIntegratorMSAsync::master (
 
    // Main loop
 
-   Status status;
+   Status status = ERROR;
 
    while (numActiveWorkers)
    {

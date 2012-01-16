@@ -43,6 +43,7 @@
 
 #include <HIntLib/exception.h>
 #include <HIntLib/bitop.h>
+#include <HIntLib/prime.h>
 
 namespace L = HIntLib;
 
@@ -83,6 +84,7 @@ L::RefCountingAlgebra::operator= (const RefCountingAlgebra &r)
    {
       destroy();
       refCount = r.refCount;
+      size = r.size;
       setPointers();
       copy();
    }
@@ -241,10 +243,11 @@ bool L::LookupFieldBB::operator== (const LookupFieldBB &r) const
  *  setCharacteristic()
  */
 
-void L::LookupFieldBB::setCharacteristic (unsigned c)
+void L::LookupFieldBB::setCharacteristic (unsigned c, unsigned deg)
 {
    write();
-   *static_cast<unsigned*> (getDataPtr()) = c;
+   static_cast<unsigned*> (getDataPtr())[0] = c;
+   static_cast<unsigned*> (getDataPtr())[1] = deg;
 }
 
 
@@ -284,8 +287,9 @@ namespace
 template<typename T>
 void L::LookupFieldBase<T>::privSetPointers ()
 {
-   mulTable = reinterpret_cast<T*> (static_cast<unsigned*> (getDataPtr()) + 1);
+   mulTable = reinterpret_cast<T*> (static_cast<unsigned*> (getDataPtr()) + 2);
    recTable = mulTable + sqr(size());
+   orderTable = recTable + size();
 }
 
 
@@ -295,7 +299,7 @@ void L::LookupFieldBase<T>::privSetPointers ()
 
 template<typename T>
 L::LookupFieldBase<T>::LookupFieldBase (unsigned _s, unsigned numData)
-   : LookupFieldBB (_s, numData * sizeof (T) + sizeof (unsigned),
+   : LookupFieldBB (_s, numData * sizeof (T) + 2 * sizeof (unsigned),
                     getPrecalculatedFieldData<T> (_s))
 {
    if (     std::numeric_limits<T>::is_signed
@@ -343,11 +347,12 @@ void L::LookupFieldBase<T>::dump (std::ostream &o) const
 template<typename T>
 T  L::LookupFieldBase<T>::power (T x, unsigned k) const
 {
-   if (! x)  return T(0);
+   if (! x)  return T();
+
+   const unsigned o = order (x);
+   if (k >= o)  k %= o;
 
    T result = one();
-   k %= size() - 1;
-
    for(;;)
    {
       if (k & 1)  mulBy (result, x);
@@ -360,6 +365,7 @@ T  L::LookupFieldBase<T>::power (T x, unsigned k) const
 /**
  *  setMul ()
  *  setRecip ()
+ *  setOrder ()
  */
 
 template<typename T>
@@ -381,6 +387,15 @@ void L::LookupFieldBase<T>::setRecip (T a, T r)
    recTable [a] = r;
 }
 
+template<typename T>
+void L::LookupFieldBase<T>::setOrder (T a, unsigned o)
+{
+   if (a >= size())  throw LookupFieldSet (a, size());
+   if (o >= size() || o == 0)  throw LookupFieldSet (o, size());
+   write();
+   orderTable [a] = o;
+}
+
 
 /******************  Lookup Field /Pow2 /Prime *******************************/
 
@@ -392,7 +407,7 @@ void L::LookupFieldBase<T>::setRecip (T a, T r)
 template<typename T>
 void L::LookupField<T>::privSetPointers ()
 {
-   addTable = recTable + size();
+   addTable = orderTable + size();
    negTable = addTable + sqr(size());
 }
 
@@ -409,7 +424,7 @@ void L::LookupField<T>::setPointers ()
 
 template<typename T>
 L::LookupField<T>::LookupField (unsigned _s)
-   : LookupFieldBase<T> (_s, 2 * _s * (_s + 1))
+   : LookupFieldBase<T> (_s, 2*_s*_s + 3*_s)
 {
    privSetPointers();
 }
@@ -421,8 +436,10 @@ L::LookupField<T>::LookupField (unsigned _s)
 template<typename T>
 T  L::LookupField<T>::times (T x, unsigned k) const
 {
-   T result = zero();
-   k %= characteristic();
+   const unsigned c = characteristic();
+   if (k >= c)  k %= c;
+
+   T result = T();
 
    for(;;)
    {
@@ -692,6 +709,7 @@ template<typename T, typename C>
 L::LookupVectorSpacePow2<T,C>::LookupVectorSpacePow2
    (const LookupVectorSpacePow2<T,C> &r)
    : LookupVectorSpaceBase<T,C>(r),
+     BitOpBasedAddition<T> (),
      algebra (r.algebra),
      shift (r.shift),
      mask (r.mask)
@@ -733,8 +751,8 @@ L::LookupVectorSpacePow2<T,C>::operator= (const LookupVectorSpacePow2<T,C> &r)
 template<typename T, typename C>
 T  L::LookupVectorSpace<T,C>::times (T x, unsigned k) const
 {
-   T result = zero();
-   k %= algebra.characteristic();
+   T result = T();
+   if (k > algebra.characteristic())  k %= algebra.characteristic();
 
    for(;;)
    {
@@ -899,7 +917,11 @@ L::VectorSpacePow2<T>::size () const
 {
    return unsigned (std::numeric_limits<unsigned>::digits) > dim * baseBits
         ? 1u << (dim * baseBits)
+#if 0
         : std::numeric_limits<unsigned>::max();
+#else
+        : 0;
+#endif
 }
 
 
@@ -980,6 +1002,7 @@ namespace HIntLib
    template X    LookupFieldBase<X>::power (X, unsigned) const; \
    template void LookupFieldBase<X>::setMul (X, X, X); \
    template void LookupFieldBase<X>::setRecip (X, X); \
+   template void LookupFieldBase<X>::setOrder (X, unsigned); \
    template void LookupFieldBase<X>::privSetPointers (); \
    template void LookupField<X>::setPointers (); \
    template void LookupField<X>::privSetPointers (); \
@@ -987,7 +1010,7 @@ namespace HIntLib
    template X    LookupField<X>::times (X, unsigned) const; \
    template void LookupField<X>::dump (std::ostream &) const; \
    template void LookupField<X>::setAdd (X, X, X); \
-   template void LookupField<X>::setNeg (X, X); \
+   template void LookupField<X>::setNeg (X, X);
 
    HINTLIB_INSTANTIATE (unsigned char)
 #undef HINTLIB_INSTANTIATE

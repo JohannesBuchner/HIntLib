@@ -24,10 +24,6 @@
 #include <HIntLib/digitalnetgen.h>
 
 #include <HIntLib/exception.h>
-#include <HIntLib/modulararithmetic.h>
-#include <HIntLib/lookupfield.h>
-#include <HIntLib/polynomial2.h>
-#include <HIntLib/onedimvectorspace.h>
 #include <HIntLib/myalgorithm.h>
 
 namespace HIntLib
@@ -340,6 +336,12 @@ void HIntLib::DigitalNetGenCyclicGray<A,S>::updateX ()
       }
    }
 } 
+
+#define HINTLIB_INSTANTIATE_DIGITALNETGEN(X) \
+   template class DigitalNetGen<X,Index>; \
+   template void DigitalNetGenNormal<X,Index>::updateX (); \
+   template void DigitalNetGenGray<X,Index>::updateX (); \
+   template void DigitalNetGenCyclicGray<X,Index>::updateX ();
 
 
 #if 0

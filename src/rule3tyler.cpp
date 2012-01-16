@@ -39,11 +39,11 @@
 #include <HIntLib/rule3tyler.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/mymath.h>
 #include <HIntLib/exception.h>
 
 
 namespace L = HIntLib;
+
 using L::real;
 
 
@@ -55,9 +55,14 @@ using L::real;
  */
 
 L::Rule3Tyler::Rule3Tyler (unsigned dim)
-: OrbitRule (dim), b0 ((3.0 - dim) / 3.0), b1 (1.0 / 6.0)
+   : OrbitRule (dim), b0 ((real (3.0) - dim) / real (3.0))
 {
    checkDimensionNotZero (dim);
+}
+
+namespace
+{
+   const real b1 = real (1.0) / real (6.0);
 }
 
 
@@ -84,12 +89,11 @@ real L::Rule3Tyler::eval (Integrand &f, const Hypercube &h)
 {
    const real* center = h.getCenter();
 
-   Scaler scaler (h.getWidth(), 1.0);
    setCenter (center);
 
    return h.getVolume() *
    (   b0 * eval0_0    (f)
-     + b1 * evalR0_0fs (f, center, scaler)
+     + b1 * evalR0_0fs (f, center, h.getWidth())
    );
 }
 

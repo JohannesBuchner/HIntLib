@@ -205,8 +205,8 @@ bool L::isUnitCube (const Hypercube &h)
 {
    for (unsigned i = 0; i < h.getDimension(); ++i)
    {
-      if (! approx (h.getCenter(i), .5) || ! approx (h.getWidth(i), .5))
-         return false;
+      if (! approx (h.getCenter(i), real(.5))
+       || ! approx (h.getWidth(i),  real(.5)))  return false;
    }
 
    return true;

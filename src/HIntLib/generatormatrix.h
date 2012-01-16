@@ -30,6 +30,12 @@
 
 #include <HIntLib/defaults.h>
 
+#ifdef HINTLIB_HAVE_LIMITS
+  #include <limits>
+#else
+  #include <HIntLib/fallback_limits.h>
+#endif
+
 
 namespace HIntLib
 {
@@ -53,6 +59,38 @@ class GeneratorMatrix
 {
 public:
 
+   /**
+    * Default for M
+    *
+    * The defualt value for  m  is such that b^m is less than 2^48 and
+    * representable in Index.
+    *
+    * The only exception is GeneratorMatrix2Row<T>, where the default value may
+    * be smaller due to the size of T.
+    */
+     
+   static const unsigned DEFAULT_M_BASE2
+      = std::numeric_limits<Index>::digits - 1 < 47
+      ? std::numeric_limits<Index>::digits - 1 : 47;
+
+   static unsigned getDefaultM (unsigned base) HINTLIB_GNU_CONST;
+
+   /**
+     * Default for totalPrec
+     *
+     * The default value for  totalPrec  is the smallest value yielding the
+     * the same precision as or a higher precision than real.
+     *
+     * The only exception is GeneratorMatrix2<T>, where the default value may
+     * be smaller due to the size of T.
+     */
+
+   static const unsigned DEFAULT_TOTALPREC_BASE2
+      = std::numeric_limits<real>::digits - 1;
+
+   static unsigned getDefaultTotalPrec (unsigned base) HINTLIB_GNU_CONST;
+
+   
    // no public constructor!
    virtual ~GeneratorMatrix() {};
 
@@ -67,12 +105,25 @@ public:
       { return totalPrec - (vec * (prec - 1)); }
    unsigned getNumOfMissingDigits() const { return prec * vec - totalPrec; }
 
+   // virtual get/set
+
    virtual void     setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
    virtual void     setVector (unsigned d, unsigned r, unsigned b, u64 x);
    virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const = 0;
    virtual u64      getVector (unsigned d, unsigned r, unsigned b) const = 0;
 
-   void dump       (std::ostream &) const;
+   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const = 0;
+   virtual void vSetPackedRowVector (unsigned d, unsigned b, u64 x) = 0;
+
+   // Print (parts of) the matrices
+
+   void dump (std::ostream &) const;
+   void dumpDimension    (std::ostream &, unsigned d) const;
+   void dumpRowVector    (std::ostream &, unsigned d, unsigned b) const;
+   void dumpColumnVector (std::ostream &, unsigned d, unsigned r) const;
+
+   // Print in special formats
+
    void vectorDump (std::ostream &) const;
    void libSeqDump (std::ostream &) const;
    void libSeqDump (const char *) const;

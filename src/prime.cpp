@@ -30,6 +30,8 @@
 
 #include <HIntLib/prime.h>
 
+#include <HIntLib/mymath.h>
+
 
 namespace L = HIntLib;
 
@@ -136,6 +138,27 @@ template L::u64   L::Prime::eulerPhi (u64);
 
 
 /**
+ *  isPrimitiveRoot()
+ *
+ *  See TACP, vol 2, 3.2.1.2
+ */
+
+bool L::isPrimitiveRoot (unsigned a, unsigned p)
+{
+   const unsigned q = p - 1;
+
+   PrimeDivisors pd (q);
+
+   while (unsigned prime = pd.next())
+   {
+      if (powerMod (a, q / prime, p) == 1)  return false;
+   }
+
+   return true;
+}
+
+
+/**
  *  factor Prime Power ()
  *
  *  Given a number  x = p^n , with  p  prime, factorPrimePower() determines
@@ -144,26 +167,26 @@ template L::u64   L::Prime::eulerPhi (u64);
  *  If  x  is not a prime power, NotAPrimePower is thrown.
  */
 
-bool L::Prime::isPrimePower (unsigned x, unsigned &_prime, unsigned &_power)
+bool L::Prime::isPrimePower (unsigned n, unsigned &_prime, unsigned &_power)
 {
-   if (Prime::test (x))
+   if (Prime::test (n))
    {
-      _prime = x; _power = 1;
+      _prime = n; _power = 1;
    }
    else
    {
-      if (x < 2)  return false;
+      if (n < 2)  return false;
 
       unsigned prime = 2;
 
-      while (x % prime != 0)
+      while (n % prime != 0)
       {
-         if (prime * prime > x)  return false;
+         if (prime * prime > n)  return false;
          prime = Prime::next (prime + 1);
       }
 
       unsigned power = 0;
-      unsigned s = x;
+      unsigned s = n;
 
       do
       {
@@ -179,18 +202,10 @@ bool L::Prime::isPrimePower (unsigned x, unsigned &_prime, unsigned &_power)
    return true;
 }
 
-bool L::Prime::isPrimePower (unsigned x)
+void L::Prime::factorPrimePower (unsigned n, unsigned &prime, unsigned &power)
 {
-   unsigned prime;
-   unsigned power;
-   return isPrimePower (x, prime, power);
+   if (! isPrimePower (n, prime, power))  throw NotAPrimePower (n);
 }
-
-void L::Prime::factorPrimePower (unsigned x, unsigned &prime, unsigned &power)
-{
-   if (! isPrimePower (x, prime, power))  throw NotAPrimePower (x);
-}
-
 
 /**
  *  throwPrimeNumberNth ()
@@ -200,4 +215,7 @@ void L::Prime::throwPrimeNumberNth (unsigned n)
 {
   throw PrimeNumberNth (n);
 }
+
+
+
 

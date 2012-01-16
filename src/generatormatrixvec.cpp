@@ -38,10 +38,10 @@ using std::numeric_limits;
  *  Assigns a submatrix of a Generator Matrix to another Generator Matrix
  */
 
-template<class T>
+template<typename T>
 void L::assign (
    const GeneratorMatrix & src, unsigned srcDim,
-         MutableGeneratorMatrixVec<T> & dst, unsigned dstDim)
+         GeneratorMatrixVec<T> & dst, unsigned dstDim)
 {
 #if 0
    cerr <<"A3" <<endl;
@@ -121,9 +121,9 @@ void L::assign (
    }
 }
 
-template<class T>
+template<typename T>
 void L::assign (
-      const GeneratorMatrix &src, MutableGeneratorMatrixVec<T> &dst)
+      const GeneratorMatrix &src, GeneratorMatrixVec<T> &dst)
 {
    for (unsigned d = 0; d < dst.getDimension(); ++d)  assign (src, d, dst, d);
 }
@@ -134,10 +134,142 @@ void L::assign (
 /*****************************************************************************/
 
 /**
+ *  Constructor
+ */
+
+template<typename T>
+L::GeneratorMatrixVec<T>::GeneratorMatrixVec
+      (unsigned _base, unsigned _vec, unsigned _dim)
+   : GeneratorMatrixVecBase (
+         _base, _vec, _dim, getDefaultM (_base), getDefaultTotalPrec (_base))
+{
+   checkVecBase();
+   allocate();
+}
+
+template<typename T>
+L::GeneratorMatrixVec<T>::GeneratorMatrixVec
+      (unsigned _base, unsigned _vec, unsigned _dim, unsigned _m)
+   : GeneratorMatrixVecBase (
+         _base, _vec, _dim, _m, std::min (_m, getDefaultTotalPrec (_base)))
+{
+   checkVecBase();
+   allocate();
+}
+
+
+/**
+ *  Copy constructor
+ */
+
+template<typename T>
+L::GeneratorMatrixVec<T>::GeneratorMatrixVec (const GeneratorMatrixVec<T> &gm)
+   : GeneratorMatrixVecBase (gm)
+{
+   allocate();
+   std::copy (gm.getMatrix(), gm.getMatrix() + m*dimPrec, c);
+}
+
+
+/**
+ *  Copy from arbitrary Generator Matrix
+ */
+
+template<typename T>
+L::GeneratorMatrixVec<T>::GeneratorMatrixVec (const GeneratorMatrix &gm)
+   : GeneratorMatrixVecBase (
+      gm.getBase(),
+      digitsRepresentable (T(gm.getBase())),
+      gm.getDimension(),
+      gm.getM(),
+      gm.getTotalPrec())
+{
+   checkVecBase();
+   allocate();
+   for (unsigned d = 0; d < dim; ++d)  assign (gm, d, *this, d);
+}
+
+
+/**
+ *  Constructor  (truncating a given Generator Matrix)
+ */
+
+template<typename T>
+L::GeneratorMatrixVec<T>::GeneratorMatrixVec (
+   const GeneratorMatrixVec<T> &gm, const GMCopy &c)
+: GeneratorMatrixVecBase
+   (gm.getBase(),
+    c.getVectorization (gm, std::numeric_limits<T>::digits),
+    c.getDimension (gm),
+    c.getM (gm),
+    c.getTotalPrec (gm))
+{
+   checkVecBase();
+
+   const int dd = c.getEqui();
+   checkCopyDim (gm, *this, dd);
+
+   allocate();
+
+   for (unsigned d = 0; d < dim - dd; ++d)  assign (gm, d, *this, d + dd);
+
+   if (dd && dim)  makeEquidistributedCoordinate (0);
+}
+
+template<typename T>
+L::GeneratorMatrixVec<T>::GeneratorMatrixVec (
+   const GeneratorMatrix &gm, const GMCopy& c)
+: GeneratorMatrixVecBase
+   (gm.getBase(),
+    c.getVectorization(gm, std::numeric_limits<T>::digits),
+    c.getDimension (gm),
+    c.getM (gm),
+    c.getTotalPrec (gm))
+{
+   checkVecBase();
+
+   const int dd = c.getEqui();
+   checkCopyDim (gm, *this, dd);
+
+   allocate();
+
+   for (unsigned d = 0; d < dim - dd; ++d)  assign (gm, d, *this, d + dd);
+
+   if (dd && dim)  makeEquidistributedCoordinate (0);
+}
+
+
+/**
+ *  allocate()
+ */
+
+template<typename T>
+void L::GeneratorMatrixVec<T>::allocate()
+{
+   c = new T [dimPrec * m];
+   makeZeroMatrix();
+}
+
+
+/**
+ *  checkVecBase()
+ */
+
+template<typename T>
+void L::GeneratorMatrixVec<T>::checkVecBase() const
+{
+   if (getVecBase()-1 > numeric_limits<T>::max())
+   {
+      throw GM_BaseTooLarge (getVecBase(), unsigned (numeric_limits<T>::max()));
+   }
+}
+
+
+/**
  *  getd()
  */
 
-template<class T>
+template<typename T>
 typename L::GeneratorMatrixVec<T>::D
 L::GeneratorMatrixVec<T>::getd (unsigned d, unsigned r, unsigned b) const
 {
@@ -149,81 +281,11 @@ L::GeneratorMatrixVec<T>::getd (unsigned d, unsigned r, unsigned b) const
 
 
 /**
- *  getDigit ()
- */
-
-template<class T>
-unsigned
-L::GeneratorMatrixVec<T>::getDigit (unsigned d, unsigned r, unsigned b) const
-{
-   if (numeric_limits<D>::digits > numeric_limits<unsigned>::digits)
-   {
-      throw InternalError (__FILE__, __LINE__);
-   }
-
-   return unsigned(getd(d, r, b));
-}
-
-
-/**
- *  getVector ()
- */
-
-template<class T>
-L::u64
-L::GeneratorMatrixVec<T>::getVector (unsigned d, unsigned r, unsigned b) const
-{
-   if (numeric_limits<T>::digits > numeric_limits<u64>::digits)
-   {
-      throw InternalError (__FILE__, __LINE__);
-   }
-
-   return u64(operator() (d, r, b));
-}
-
-
-/**
- *  operator==
- */
-
-template<class T>
-bool L::GeneratorMatrixVec<T>::operator==
-   (const L::GeneratorMatrixVec<T> &gm) const
-{
-   if (dim != gm.dim || m != gm.m || totalPrec != gm.totalPrec)  return false;
-
-   if (vec == gm.vec)  return std::equal(c, c + dimPrec*m , gm.c);
-
-   return static_cast<const GeneratorMatrix&>(*this)
-       == static_cast<const GeneratorMatrix&>(gm);
-}
-
-
-/**
- *  checkVecBase()
- */
-
-template<class T>
-void L::GeneratorMatrixVec<T>::checkVecBase() const
-{
-   if (getVecBase()-1 > numeric_limits<T>::max())
-   {
-      throw GM_BaseTooLarge (getVecBase(), unsigned (numeric_limits<T>::max()));
-   }
-}
-
-
-/*****************************************************************************/
-/***     Mutable Generator Matrix Vec <T>                                  ***/
-/*****************************************************************************/
-
-
-/**
  *  setd ()
  */
 
-template<class T>
-void L::MutableGeneratorMatrixVec<T>::setd
+template<typename T>
+void L::GeneratorMatrixVec<T>::setd
    (unsigned d, unsigned r, unsigned b, typename GeneratorMatrixVec<T>::D x)
 {
    if (vec == 1)  setv (d,r,b,x);
@@ -243,11 +305,80 @@ void L::MutableGeneratorMatrixVec<T>::setd
 
 
 /**
+ *  getPackedRowVector ()
+ */
+
+template<typename T>
+L::u64
+L::GeneratorMatrixVec<T>::getPackedRowVector (unsigned d, unsigned b) const
+{
+   u64 result (0);
+   for (int r = m - 1; r >= 0; --r)  result = result*base + getd(d,r,b);
+   return result;
+}
+
+
+/**
+ *  setPackedRowVector ()
+ */
+
+template<typename T>
+void
+L::GeneratorMatrixVec<T>::setPackedRowVector (unsigned d, unsigned b, u64 x)
+{
+   for (unsigned r = 0; r < m; ++r)
+   {
+      setd (d, r, b, x % base);
+
+      if (! (x /= base))
+      {
+         for (++r; r < m; ++r)  setd (d, r, b, 0);
+         break;
+      }
+   }
+}
+
+
+/**
+ *  getDigit ()
+ */
+
+template<typename T>
+unsigned
+L::GeneratorMatrixVec<T>::getDigit (unsigned d, unsigned r, unsigned b) const
+{
+   if (numeric_limits<D>::digits > numeric_limits<unsigned>::digits)
+   {
+      throw InternalError (__FILE__, __LINE__);
+   }
+
+   return unsigned(getd(d, r, b));
+}
+
+
+/**
+ *  getVector ()
+ */
+
+template<typename T>
+L::u64
+L::GeneratorMatrixVec<T>::getVector (unsigned d, unsigned r, unsigned b) const
+{
+   if (numeric_limits<T>::digits > numeric_limits<u64>::digits)
+   {
+      throw InternalError (__FILE__, __LINE__);
+   }
+
+   return u64(operator() (d, r, b));
+}
+
+
+/**
  *  setDigit ()
  */
 
-template<class T>
-void L::MutableGeneratorMatrixVec<T>::setDigit
+template<typename T>
+void L::GeneratorMatrixVec<T>::setDigit
    (unsigned d, unsigned r, unsigned b, unsigned x)
 {
    if (   numeric_limits<typename GeneratorMatrixVec<T>::D>::digits
@@ -265,8 +396,8 @@ void L::MutableGeneratorMatrixVec<T>::setDigit
  *  setVector ()
  */
 
-template<class T>
-void L::MutableGeneratorMatrixVec<T>::setVector
+template<typename T>
+void L::GeneratorMatrixVec<T>::setVector
    (unsigned d, unsigned r, unsigned b, u64 x)
 {
    if (   numeric_limits<T>::digits < numeric_limits<u64>::digits
@@ -280,11 +411,30 @@ void L::MutableGeneratorMatrixVec<T>::setVector
 
 
 /**
+ *  vSet/GetPackedRowVector ()
+ */
+
+template<typename T>
+L::u64
+L::GeneratorMatrixVec<T>::vGetPackedRowVector (unsigned d, unsigned b) const
+{
+   return getPackedRowVector (d, b);
+}
+
+template<typename T>
+void
+L::GeneratorMatrixVec<T>::vSetPackedRowVector (unsigned d, unsigned b, u64 x)
+{
+   setPackedRowVector (d, b, x);
+}
+
+
+/**
  *  make Equidistributed Coordinate()
  */
 
-template<class T>
-void L::MutableGeneratorMatrixVec<T>::makeEquidistributedCoordinate (unsigned d)
+template<typename T>
+void L::GeneratorMatrixVec<T>::makeEquidistributedCoordinate (unsigned d)
 {
    makeZeroMatrix (d);
    
@@ -299,8 +449,8 @@ void L::MutableGeneratorMatrixVec<T>::makeEquidistributedCoordinate (unsigned d)
  *  make Identity Matrix ()
  */
 
-template<class T>
-void L::MutableGeneratorMatrixVec<T>::makeIdentityMatrix  (unsigned d)
+template<typename T>
+void L::GeneratorMatrixVec<T>::makeIdentityMatrix  (unsigned d)
 {
    makeZeroMatrix (d);
    
@@ -313,8 +463,8 @@ void L::MutableGeneratorMatrixVec<T>::makeIdentityMatrix  (unsigned d)
  *  make Zero Matrix ()
  */
 
-template<class T>
-void L::MutableGeneratorMatrixVec<T>::makeZeroMatrix (unsigned d)
+template<typename T>
+void L::GeneratorMatrixVec<T>::makeZeroMatrix (unsigned d)
 {
    for (unsigned r = 0; r < m; ++r)
    {
@@ -323,137 +473,35 @@ void L::MutableGeneratorMatrixVec<T>::makeZeroMatrix (unsigned d)
    }
 }
 
-template<class T>
-void L::MutableGeneratorMatrixVec<T>::makeZeroMatrix ()
+template<typename T>
+void L::GeneratorMatrixVec<T>::makeZeroMatrix ()
 {
    std::fill (c, c + dimPrec * m, T(0));
 }
 
 
-/*****************************************************************************/
-/***     Heap Allocated Generator Matrix Vec <T>                           ***/
-/*****************************************************************************/
-
 /**
- *  Constructor
+ *  operator==
  */
 
-template<class T>
-L::HeapAllocatedGeneratorMatrixVec<T>::HeapAllocatedGeneratorMatrixVec
-   (unsigned _base, unsigned _vec, unsigned _dim, unsigned _m)
-   : MutableGeneratorMatrixVec<T> (
-         _base, _vec, _dim, _m,
-         std::min (_m, unsigned (ceil(log(2.0) / log(double(_base))
-                        * double(numeric_limits<real>::digits - 1)))))
+template<typename T>
+bool L::operator==
+   (const L::GeneratorMatrixVec<T> &m1, const L::GeneratorMatrixVec<T> &m2)
 {
-   allocate();
-}
+   if (m1.getVectorization() == m2.getVectorization())
+   {
+      return m1.getDimension() == m2.getDimension()
+          && m1.getM()         == m2.getM()
+          && m1.getTotalPrec() == m2.getTotalPrec()
+          && std::equal(
+               m1.getMatrix(),
+               m1.getMatrix()
+                   + m1.getDimension() * m1.getTotalPrec() * m1.getM(),
+               m2.getMatrix());
+   }
 
-template<class T>
-L::HeapAllocatedGeneratorMatrixVec<T>::HeapAllocatedGeneratorMatrixVec
-   (unsigned _base, unsigned _vec, unsigned _dim)
-   : MutableGeneratorMatrixVec<T> (
-         _base, _vec, _dim,
-         logInt (std::numeric_limits<Index>::max(), Index (_base)),
-         unsigned (ceil(log(2.0) / log(double(_base))
-                        * double(numeric_limits<real>::digits - 1))))
-{
-   allocate();
-}
-
-
-/**
- *  allocate()
- */
-
-template<class T>
-void L::HeapAllocatedGeneratorMatrixVec<T>::allocate()
-{
-   if (c)  throw InternalError (__FILE__, __LINE__);
-   c = new T [dimPrec * m];
-   makeZeroMatrix();
-}
-
-
-/*****************************************************************************/
-/***     Generator Matrix Vec Copy <T>                                     ***/
-/*****************************************************************************/
-
-/**
- *  Copy constructor
- */
-
-template<class T>
-L::GeneratorMatrixVecCopy<T>::GeneratorMatrixVecCopy
-   (const GeneratorMatrixVec<T> &gm)
-: HeapAllocatedGeneratorMatrixVec<T> (gm, true)
-{
-   std::copy (gm.getMatrix(), gm.getMatrix() + m*dimPrec, c);
-}
-
-
-/**
- *  Copy from arbitrary Generator Matrix
- */
-
-template<class T>
-L::GeneratorMatrixVecCopy<T>::GeneratorMatrixVecCopy (const GeneratorMatrix &gm)
-   : HeapAllocatedGeneratorMatrixVec<T> (
-      gm.getBase(),
-      digitsRepresentable (T(gm.getBase())),
-      gm.getDimension(),
-      gm.getM(),
-      gm.getTotalPrec(),
-      true)
-{
-   for (unsigned d = 0; d < dim; ++d)  assign (gm, d, *this, d);
-}
-
-
-/**
- *  Constructor  (truncating a given Generator Matrix)
- */
-
-template<class T>
-L::GeneratorMatrixVecCopy<T>::GeneratorMatrixVecCopy (
-   const GeneratorMatrixVec<T> &gm, const GMCopy &c)
-: HeapAllocatedGeneratorMatrixVec<T>
-   (gm.getBase(),
-    c.getVectorization (gm, std::numeric_limits<T>::digits),
-    c.getDimension (gm),
-    c.getM (gm),
-    c.getTotalPrec (gm),
-    false)
-{
-   const int dd = c.getEqui();
-   checkCopyDim (gm, *this, dd);
-
-   allocate();
-
-   for (unsigned d = 0; d < dim - dd; ++d)  assign (gm, d, *this, d + dd);
-
-   if (dd && dim)  makeEquidistributedCoordinate (0);
-}
-
-template<class T>
-L::GeneratorMatrixVecCopy<T>::GeneratorMatrixVecCopy (
-   const GeneratorMatrix &gm, const GMCopy& c)
-: HeapAllocatedGeneratorMatrixVec<T>
-   (gm.getBase(),
-    c.getVectorization(gm, std::numeric_limits<T>::digits),
-    c.getDimension (gm),
-    c.getM (gm),
-    c.getTotalPrec (gm),
-    false)
-{
-   const int dd = c.getEqui();
-   checkCopyDim (gm, *this, dd);
-
-   allocate();
-
-   for (unsigned d = 0; d < dim - dd; ++d)  assign (gm, d, *this, d + dd);
-
-   if (dd && dim)  makeEquidistributedCoordinate (0);
+   return static_cast<const GeneratorMatrix&>(m1)
+       == static_cast<const GeneratorMatrix&>(m2);
 }
 
 
@@ -461,14 +509,11 @@ namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) \
    template class GeneratorMatrixVec<X>; \
-   template class MutableGeneratorMatrixVec<X>; \
-   template class HeapAllocatedGeneratorMatrixVec<X>; \
-   template class GeneratorMatrixVecCopy<X>; \
    template void assign ( \
-      const GeneratorMatrix &, unsigned, \
-      MutableGeneratorMatrixVec<X> &, unsigned); \
-   template void assign ( \
-      const GeneratorMatrix &, MutableGeneratorMatrixVec<X> &);
+      const GeneratorMatrix &, unsigned, GeneratorMatrixVec<X> &, unsigned); \
+   template void assign (const GeneratorMatrix &, GeneratorMatrixVec<X> &); \
+   template bool operator== ( \
+      const GeneratorMatrixVec<X> &, const GeneratorMatrixVec<X> &);
 
    HINTLIB_INSTANTIATE (unsigned char)
    HINTLIB_INSTANTIATE (unsigned short)

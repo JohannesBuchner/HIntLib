@@ -82,7 +82,7 @@ protected:
    A alg;
    SA scalAlg;
    const unsigned totalPrec;
-   GeneratorMatrix2Copy<T> c;
+   GeneratorMatrix2<T> c;
    Array<T> x;      // current vector (size dim)
    Array<T> xStart; // Inital values for x (size dim)
    const Truncation trunc;
@@ -272,7 +272,7 @@ public:
    typedef DigitalNet::Truncation Truncation;
 
 protected:
-   const GeneratorMatrix2Copy<BaseType> gm;
+   const GeneratorMatrix2<BaseType> gm;
    bool copy;
    bool equi;
    Truncation trunc;
@@ -379,7 +379,7 @@ public:
    void init()  { delete net; net = 0; offset = 0; }
 
 protected:
-   GeneratorMatrix2Copy<BaseType> gm;
+   GeneratorMatrix2<BaseType> gm;
    DigitalNet2Gray<BaseType>* net;
    Index offset;
    const bool reset;

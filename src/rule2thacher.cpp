@@ -43,13 +43,17 @@
 
 namespace L = HIntLib;
 
+using L::real;
+
+namespace
+{
 #if HINTLIB_STATIC_WORKS == 1
-   L::real L::Rule2Thacher::r  = sqrt (3.0) / 6.0;
-   L::real L::Rule2Thacher::r2 = sqrt (3.0) / 3.0;
+   const real r  = sqrt (real (3.0)) / real (6.0);
+   const real r2 = sqrt (real (3.0)) / real (3.0);
 #else
-   L::real L::Rule2Thacher::r;
-   L::real L::Rule2Thacher::r2;
+   real r, r2;
 #endif
+}
 
 /**
  *  Constructor
@@ -60,17 +64,17 @@ L::Rule2Thacher::Rule2Thacher (unsigned _dim)
 {
    checkDimensionNotZero (dim);
 
-   #if HINTLIB_STATIC_WORKS != 1
-      r  = sqrt (3.0) / 6.0;
-      r2 = sqrt (3.0) / 3.0;
-   #endif
+#if HINTLIB_STATIC_WORKS != 1
+   r  = sqrt (real (3.0)) / real (6.0);
+   r2 = sqrt (real (3.0)) / real (3.0);
+#endif
 }
 
 /**
  *  Do the actual function evaluation
  */
 
-L::real L::Rule2Thacher::eval (Integrand &f, const Hypercube &h)
+real L::Rule2Thacher::eval (Integrand &f, const Hypercube &h)
 {
    // Sample all points
 
@@ -96,6 +100,11 @@ L::real L::Rule2Thacher::eval (Integrand &f, const Hypercube &h)
    }
 
    return h.getVolume() * sum;
+}
+
+real L::Rule2Thacher::getSumAbsWeight() const
+{
+   return real (1.0) + real (dim) * r2;
 }
 
 

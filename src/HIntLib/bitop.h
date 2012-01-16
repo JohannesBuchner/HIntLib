@@ -182,6 +182,53 @@ inline int ms1 (T n)
    return result + Private::ms1_data [n];
 }
 
+
+/**
+ *  thread()
+ *
+ *  Given integers  ...a3a2a1a0 and ...b3b2b1b0, create ...b3a3b2a2b1a1b0a0
+ */
+
+template<class T>
+inline T thread (T a, T b)
+{
+   T mask = 1;
+   T result = 0;
+
+   while (a | b)
+   {
+      if (a & 1)  result |= mask;
+      mask <<= 1;
+      a >>= 1;
+      if (b & 1)  result |= mask;
+      mask <<= 1;
+      b >>= 1;
+   }
+
+   return result;
+}
+
+/**
+ *  unthread()
+ *
+ *  Given an integer  ...a5a4a3a2a1a0, create ...a4a2a0 and ...a5a3a1.
+ */
+
+template<class T>
+inline void unthread (T both, T& a, T& b)
+{
+   a = b = 0;
+   T mask = 1;
+
+   while (both)
+   {
+      if (both & 1)  a |= mask;
+      if (both & 2)  b |= mask;
+      both >>= 2;
+      mask <<= 1;
+   }
+}
+
 }  // namespace HIntLib
 
 #endif

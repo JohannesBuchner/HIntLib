@@ -141,55 +141,106 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
 pkginclude_HEADERS = \
-   miser.h \
-   adaptintegrator.h             modulararithmetic.h \
-   adaptintegratorlocallist.h    myalgorithm.h \
-   adaptintegratorms.h           mymath.h gcd.h \
-   array.h                       mympi.h \
-   bitop.h                       niederreitermatrix.h niederreitermatrixgen.h \
+   adaptintegrator.h \
+   adaptintegratorlocallist.h \
+   adaptintegratorms.h \
+   algebra.h \
+   array.h \
+   bitop.h \
+   buffer.h \
+   builtinprng.h \
+   compruleintegrator.h \
+   counter.h \
+   cubaturerule.h \
+   cubepartitioner.h \
+   defaultcubaturerulefactory.h \
+   defaults.h \
+   digitalnet2.h \
+   digitalnetgen.h digitalnetgen.tcc \
+   distribution.h \
+   eratosthenes.h \
+   esterr.h \
+   exception.h \
+   exception_MPI.h \
+   factorring.h \
+   fallback_limits.h \
+   fallback_sstream.h \
    faure.h \
-   buffer.h                      old_bitop.h \
-   builtinprng.h                 orbitrule.h \
-   compruleintegrator.h          polynomial2.h polynomial.h \
+   fourthdiff.h \
    galoisfield.h \
+   gcd.h gcd.tcc \
+   generatormatrix.h \
+   generatormatrix2.h \
+   generatormatrix2row.h \
+   generatormatrixgen.h \
+   generatormatrixvec.h \
+   halton.h \
+   hypercube.h \
+   integerring.h \
+   integrand.h \
+   integrator.h \
+   kahanadd.h \
+   lcg_pow2.h \
+   lcg_prime.h \
+   linearalgebra.h linearalgebra.tcc \
    lookupfield.h \
-                                 prime.h integerring.h \
-   cubaturerule.h                pseudoembeddedrule.h \
-   cubepartitioner.h             qmcintegration.h \
-   defaultcubaturerulefactory.h  qmcintegrator.h \
-   qmcroutinesimp.h \
-   digitalnet2.h                 qrnsequencebase.h \
-   digitalnetgen.h digitalnetgen.tcc  qrnsequence.h \
-   distribution.h                regioncollection.h \
-   embeddedrule.h                region.h \
-   eratosthenes.h                rule1midpoint.h \
-   esterr.h                      rule1trapezoidal.h \
-   exception.h                   rule2simplex.h rule2thacher.h rule2ionescu.h \
-   exception_MPI.h               rule3gauss.h rule3cross.h \
-   fourthdiff.h                  rule3octahedron.h rule3tyler.h rule3ewing.h \
-   integrand.h                    rule5hammer.h \
-   generatormatrix.h generatormatrix2.h \
-   generatormatrixgen.h generatormatrixvec.h \
-   rule5stroud.h \
-   halton.h                      rule75genzmalik.h \
-         rule7phillips.h \
-                rule9stenger.h \
-   hypercube.h                   rulebasedintegrator.h \
-   integrator.h                  ruleintegrator.h \
-   kahanadd.h                    shiftscale.h \
-   lcg_pow2.h                    sobolmatrix.h \
-   lcg_prime.h                   staticloadbalancer.h \
-   make.h                        statistic.h \
-   mcintegration.h               \
-   mcintegrator.h                \
-   testintegrand.h \
-   mcpointset.h               vegas.h \
-   mersennetwister.h             virtualprng.h \
+   make.h \
+   mcintegration.h \
+   mcintegrator.h \
+   mcpointset.h \
+   mersennetwister.h \
    minmaxfinder.h \
+   miser.h \
+   myalgorithm.h \
+   mymath.h \
+   mympi.h \
+   niederreitermatrix.h \
+   niederreitermatrixgen.h \
+   old_bitop.h \
+   onedimvectorspace.h \
+   orbitrule.h \
+   pointset.h \
+   polynomial.h polynomial.tcc \
+   polynomial2.h \
+   prime.h \
    prime_generated.h \
-   defaults.h  pointset.h algebra.h \
-   fallback_limits.h fallback_sstream.h \
-   onedimvectorspace.h tparameter.h
+   pseudoembeddedrule.h \
+   qmcintegration.h \
+   qmcintegrator.h \
+   qmcroutinesimp.h \
+   qrnsequence.h \
+   qrnsequencebase.h \
+   quotientfield.h \
+   region.h \
+   regioncollection.h \
+   rule1midpoint.h \
+   rule1trapezoidal.h \
+   rule2ionescu.h \
+   rule2simplex.h \
+   rule2thacher.h \
+   rule3cross.h \
+   rule3ewing.h \
+   rule3gauss.h \
+   rule3octahedron.h \
+   rule3simpson.h \
+   rule3tyler.h \
+   rule5gauss.h \
+   rule5hammer.h \
+   rule5stroud.h \
+   rule75genzmalik.h \
+   rule7phillips.h \
+   rule9stenger.h \
+   rulebasedintegrator.h \
+   ruleintegrator.h \
+   shiftnet.h \
+   shiftscale.h \
+   sobolmatrix.h \
+   staticloadbalancer.h \
+   statistic.h \
+   testintegrand.h \
+   tparameter.h \
+   vegas.h \
+   virtualprng.h
 
 
 CLEANFILES = defaults.h prime_generated.h

@@ -57,8 +57,7 @@ namespace HIntLib
  *  GF2
  */
 
-class GF2 : public TrivialFieldMembers<unsigned char>,
-            public BitOpBasedAddition<unsigned char>
+class GF2 : public BitOpBasedAddition<unsigned char>
 {
 public:
    GF2 () {}
@@ -67,37 +66,35 @@ public:
    typedef cyclic_tag algebra_category;
    typedef nopolynomial_tag polynomial_category;
 
-   unsigned size() const  { return 2; }
-   unsigned modulus() const  { return 2; }
-   unsigned characteristic() const  { return 2; }
+   static unsigned size()  { return 2; }
+   static unsigned modulus()  { return 2; }
+   static unsigned characteristic()  { return 2; }
+   static unsigned extensionDegree()  { return 1; }
 
-   type one()  const  { return type(1); }
+   static type one()  { return type(1); }
 
-   bool is1 (type a) const  { return a; }
-   bool isUnit  (type a) const  { return a; }
+   static bool is1 (type a)  { return a; }
 
-   type element(unsigned i) const  { return type(i); }
-   unsigned index (type x) const   { return x; }
+   static type element  (unsigned i)  { return type(i); }
+   static unsigned index  (type x)  { return x; }
 
-   type  mul   (const type& a, const type& b) const { return a & b; }
-   type& mulBy (      type& a, const type& b) const { return a &= b; }
+   static type  mul   (const type& a, const type& b)  { return a & b; }
+   static type& mulBy (      type& a, const type& b)  { return a &= b; }
 
-   type power (const type& a, unsigned) const  { return a; }
+   static type power (const type& a, unsigned)  { return a; }
 
-   type recip     (const type& a) const  { return a; }
-   type unitRecip (const type&)   const  { return 1; }
+   static type recip     (const type&)  { return 1; }
 
-   void div (const type& a, const type&, type& q, type& r) const
-      { q = a; r = 0; }
-   type  div   (const type& a, const type&) const  { return a; }
-   type  quot  (const type& a, const type&) const  { return a; }
-   type& divBy (      type& a, const type&) const  { return a; }
+   static type  div   (const type& a, const type&)  { return a; }
+   static type& divBy (      type& a, const type&)  { return a; }
 
-   unsigned norm (const type& a) const  { return a; }
-
-   void print (std::ostream &, type) const;
-   void printShort (std::ostream &, type) const;
-   void printSuffix (std::ostream &) const;
+   static unsigned additiveOrder (const type& a)  { return a + 1; }
+   static unsigned order (const type&)  { return 1; }
+   static bool isPrimitiveElement (const type&)  { return true; }
+   
+   static void print (std::ostream &, type);
+   static void printShort (std::ostream &, type);
+   static void printSuffix (std::ostream &);
 };
 
 
@@ -183,6 +180,8 @@ public:
 
    void print (std::ostream &, const type&) const;
    void printShort (std::ostream &, const type&) const;
+
+   HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };
 
 
@@ -190,13 +189,16 @@ public:
  *  Polynomial 2
  */
 
-template <typename T>
+template<typename T>
 class Polynomial2
 {
 private:
    typedef Polynomial2<T> P;
 
+   static const T pattern0101 = T (0x5555555555555555ull);
+
    bool msb() const  { return d & (T(1) << std::numeric_limits<T>::digits-1); }
+
 public:
    typedef unsigned char coeff_type;
    typedef BitRef<T>     coeff_reference;
@@ -227,6 +229,13 @@ public:
    unsigned char lc() const  { return 1; }
    BitRef<T>     lc() { return BitRef<T> (&d, ms1(d)); }
 
+   template<typename I>
+   void toCoeff (I p) const
+   {
+      T x = d;
+      while (x)  *p++ = (x & 1), x >>= 1;
+   }
+
    // Degree of a polynomial. degree(f(x)=0) = -1
 
    int degree() const { return ms1 (d); }
@@ -253,21 +262,17 @@ public:
 
    P& divByX () { d >>= 1; return *this; }
    P& mulByX () { if (msb()) throw Overflow(); d <<= 1; return *this; }
-   P& divByXPow (unsigned k)  { d >>= k; return *this; }
-   P& mulByXPow (unsigned k)  { d <<= k; return *this; }
-
-   // Comparation
-
-   bool operator== (const P p) const { return p.d == d; }
-   bool operator!= (const P p) const { return p.d != d; }
+   P& divByX (unsigned k)  { d >>= k; return *this; }
+   P& mulByX (unsigned k)  { d <<= k; return *this; }
 
    bool is0() const  { return d == 0; }
    bool is1() const  { return d == 1; }
    bool isX() const  { return d == 2; }
 
+   P derivative () const { return P((d >> 1) & pattern0101); }
+
    // Constants
 
-   static P zero () { return P (0); }
    static P one ()  { return P (1); }
    static P x ()    { return P (2); }
    static P xPow (unsigned k) { return P (T(1) << k); }
@@ -275,15 +280,28 @@ public:
    // Test for certain classs
 
    bool isPrimitive() const;
-   bool isIrreducible() const;
-   bool isPrime() const { return isIrreducible(); }
-   bool isComposit() const { return d > 3 && ! isIrreducible(); }
+   bool isPrime() const;
+   bool isComposit() const { return d > 3 && ! isPrime(); }
 
    unsigned char evaluate (unsigned char x) const;
+
+   void printShort (std::ostream&, char) const;
+
+   template<typename TT>
+   friend
+   bool operator== (const Polynomial2<TT> p1, const Polynomial2<TT> p2);
 
 private:
    T d;      // coefficient bitmap
 };
+
+// Comparation
+
+template<typename T>
+bool operator== (const Polynomial2<T> p1, const Polynomial2<T> p2)
+{
+   return p1.d == p2.d;
+}
 
 
 // Define other operations
@@ -292,14 +310,20 @@ template<typename T>
 inline
 Polynomial2<T> operator* (const Polynomial2<T> p, int k)
 {
-   return (k & 1) ? p : zero();
+   return (k & 1) ? p : Polynomial2<T>();
 }
 
 template<typename T>
 inline
 Polynomial2<T> operator* (int k, const Polynomial2<T> p)
 {
-   return (k & 1) ? p : zero();
+   return (k & 1) ? p : Polynomial2<T>();
+}
+
+template<typename T>
+std::ostream& operator<< (std::ostream &o, const Polynomial2<T> p)
+{
+   p.printShort (o, 'x'); return o;
 }
 
 
@@ -310,9 +334,30 @@ Polynomial2<T> operator* (int k, const Polynomial2<T> p)
 class Polynomial2RingBase
 {
 public:
-   unsigned size() const  { return 0; }
-   void printSuffix (std::ostream &) const;
+   struct unit_type {};
+
+   static unsigned size()  { return 0; }
+   static unsigned characteristic()  { return 2; }
+
+   static unsigned numUnits()  { return 1; }
+   static unit_type unitRecip (unit_type)  { return unit_type(); }
+   static unit_type unitElement (unsigned) { return unit_type(); }
+   static unsigned unitIndex (unit_type)  { return 0; }
+
+   static void printSuffix (std::ostream &);
+
+   char getVar() const  { return var; }
+
+protected:
+   Polynomial2RingBase (char _var) : var (_var) {}
+   const char var;
 };
+
+inline
+bool operator== (Polynomial2RingBase::unit_type, Polynomial2RingBase::unit_type)
+{
+   return true;
+}
 
 template <typename T>
 class Polynomial2Ring : public Polynomial2RingBase
@@ -325,58 +370,86 @@ public:
    typedef GF2::type coeff_type;
    typedef BitRef<T> coeff_reference;
 
-   coeff_algebra getCoeffAlgebra() const  { return GF2(); }
+   Polynomial2Ring (char _var = 'x') : Polynomial2RingBase (_var) {}
 
-   type zero() const  { return type(0); }
-   type one() const  { return type(1); }
+   static coeff_algebra getCoeffAlgebra()  { return GF2(); }
 
-   bool is0 (type p) const  { return p.is0(); }
-   bool is1 (type p) const  { return p.is1(); }
+   static type one()  { return type(1); }
+   static type x (unsigned k = 1)  { return type (T(1) << k); }
 
-   type element(unsigned i) const { return type(i); }
-   unsigned index (type x) const { return T(x); }
+   static bool is0 (type p)  { return p.is0(); }
+   static bool is1 (type p)  { return p.is1(); }
 
-   type add (const type& a, const type& b) const  { return a +  b; }
-   type& addTo (type& a,    const type& b) const  { return a += b; }
+   static type element  (unsigned i) { return type(i); }
+   static unsigned index  (type x) { return T(x); }
 
-   type neg (const type& a) const  { return     -a; }
-   type& negate (type& a) const    { return a = -a; }
+   static type add (const type& a, const type& b)  { return a +  b; }
+   static type& addTo (type& a,    const type& b)  { return a += b; }
 
-   type sub (const type& a, const type& b) const  { return a -  b; }
-   type& subFrom (type& a,  const type& b) const  { return a -= b; }
+   static type neg (const type& a)  { return a; }
+   static type& negate (type& a)    { return a; }
 
-   type mul (const type& a, const type& b) const  { return a *  b; }
-   type& mulBy (type& a,    const type& b) const  { return a *= b; }
+   static type sub (const type& a, const type& b)  { return a -  b; }
+   static type& subFrom (type& a,  const type& b)  { return a -= b; }
 
-   type quot (const type& a, const type& b) const  { return a / b; }
-   type rem  (const type& a, const type& b) const  { return a % b; }
+   static type mul (const type& a, const type& b)  { return a *  b; }
+   static type& mulBy (type& a,    const type& b)  { return a *= b; }
 
-   void div (const type& a, const type& b, type& q, type& r) const
-         { type::div (a, b, q, r); }
+   static unit_type  mulUnit   (unit_type,    unit_type) { return unit_type(); }
+   static unit_type& mulByUnit (unit_type &a, unit_type) { return a; }
+   static type  mulUnit   (const type& a, unit_type)  { return a; }
+   static type& mulByUnit (      type& a, unit_type)  { return a; }
 
-   type times (const type& p, unsigned k) const { return odd(k) ? p : type(0); }
-   type power (const type& p, unsigned k) const { return powInt (p, k); }
+   static type quot (const type& a, const type& b)  { return a / b; }
+   static type rem  (const type& a, const type& b)  { return a % b; }
 
-   bool isUnit (const type& p)  const       { return p.is1(); }
-   bool isPrime (const type& p) const       { return p.isPrime(); }
-   bool isIrreducible (const type& p) const { return p.isIrreducible(); }
-   bool isComposit (const type& p) const    { return p.isComposit(); }
-   bool isMonic (const type&) const  { return true; }
+   static void div (const type& a, const type& b, type& q, type& r)
+      { type::div (a, b, q, r); }
 
-   type unitRecip (const type& p)  const  { return p; }
-   unsigned numOfRemainders(const type& p) const  { return 1u << p.degree(); }
-   unsigned norm (const type& p) const  { return p.degree() + 1; }
+   static type times (const type& p, unsigned k) { return odd(k) ? p : type(); }
+   static type power (const type& p, unsigned k) { return powInt (p, k); }
 
-   coeff_type evaluate (const type& p, const coeff_type& x) const
+   static bool isUnit (const type& p)        { return p.is1(); }
+   static bool isPrime (const type& p)       { return p.isPrime(); }
+   static bool isComposit (const type& p)    { return p.isComposit(); }
+   static bool isCanonical (const type&)     { return true; }
+   static bool isPrimitive (const type& p)   { return p.isPrimitive(); }
+
+   static unit_type makeCanonical (type &)  { return unit_type(); }
+
+   static type fromUnit (unit_type)  { return one(); }
+   static unit_type toUnit (const type&)  { return unit_type(); }
+   
+   static unsigned numOfRemainders(const type& p)  { return 1u << p.degree(); }
+
+   static unsigned norm (const type& p)  { return p.degree() + 1; }
+
+   static type derivative (const type& p)  { return p.derivative(); }
+   static coeff_type evaluate (const type& p, const coeff_type& x)
       { return p.evaluate (x); }
 
    void print (std::ostream &, const type&) const;
-   void printShort (std::ostream &o, const type& p) const  { o << p; }
+   void printShort (std::ostream &o, const type& p) const
+      { p.printShort (o, var); }
+
+   static unsigned order (const type& p)  { return is1(p) ? 1 : 0; }
+
+   class PrimeGenerator
+   {
+   public:
+      PrimeGenerator(const Polynomial2Ring<T> &) : n(2) {}
+      PrimeGenerator(const Polynomial2Ring<T>& alg, const type& p) : n (p) {}
+      type next();
+   private:
+      T n;
+      PrimeGenerator ();
+      PrimeGenerator& operator= (const PrimeGenerator&);
+   };
+
+   HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 }; 
 
 
-template<typename T>
-std::ostream& operator<< (std::ostream &, const Polynomial2<T>);
 std::ostream& operator<< (std::ostream &, const GF2 &);
 std::ostream& operator<< (std::ostream &, const GF2VectorSpaceBase &);
 std::ostream& operator<< (std::ostream &, const Polynomial2RingBase &);

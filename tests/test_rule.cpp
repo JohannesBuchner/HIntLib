@@ -746,7 +746,7 @@ bool checkDegree (
       if (f1.getCounter () != r.getNumPoints ())
       {
          cout << "\ngetNumPoints() wrong ("
-              << r.getNumPoints () << "!=" << f1.getCounter ()
+              << r.getNumPoints () << " != " << f1.getCounter ()
               << ")!!!" << endl;
          error();
       }
@@ -803,6 +803,10 @@ bool checkDegree (
 
 void testRule (CubatureRule& r, unsigned dim)
 {
+   // Reset random number generator
+
+   mt.init (12345);
+
    if (dim != r.getDimension())
    {
       cout << "\ngetDimension() is broken (" << dim << "!=" << r.getDimension()

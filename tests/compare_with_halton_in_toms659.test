@@ -4,7 +4,7 @@
 
 if test $? -ne 0; then
    echo "test_qrnsequence failed!"
-   exit 1
+   { (exit 1); exit 1; }
 fi
 
 cat <<EOF | toms659/halton > toms659_halton.txt
@@ -12,6 +12,11 @@ cat <<EOF | toms659/halton > toms659_halton.txt
 4999
 .00000000000001
 EOF
+
+if test $? -ne 0; then
+   echo "toms659/halton failed!"
+   { (exit 1); exit 1; }
+fi
 
 ./numericdiff hintlib_halton.txt toms659_halton.txt || exit 1
 

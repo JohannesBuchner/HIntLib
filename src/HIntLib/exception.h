@@ -263,6 +263,14 @@ namespace HIntLib
       virtual void makeString() const;
    };
 
+   void throwDivisionByZero ();
+
+   template<typename T>
+   void throwDivisionByZero (const T& x)
+   {
+      if (! x)  throwDivisionByZero();
+   }
+
    class InvalidLogBase : public ArithmeticException
    {
       virtual void makeString() const;

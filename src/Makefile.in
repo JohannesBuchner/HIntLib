@@ -143,105 +143,119 @@ target_alias = @target_alias@
 SUBDIRS = HIntLib
 
 ALLSRC = \
+   adaptintegrator.cpp \
+   builtinprng.cpp \
+   compruleintegrator.cpp \
+   counter.cpp \
    cubepartitioner.cpp \
-   kahanadd.cpp \
-   testintegrand.cpp \
-   qrnsequencebase.cpp \
-   shiftscale.cpp \
    digitalnet2.cpp \
    digitalnetgen.cpp \
-   sobolmatrix.cpp \
    faure.cpp \
-   niederreitermatrix.cpp \
+   generatormatrix2row.cpp \
+   generatormatrixvec.cpp \
    halton.cpp \
+   hypercube.cpp \
+   integrator.cpp \
+   kahanadd.cpp \
+   loadlibseq.cpp \
+   make.cpp \
+   makecubaturerulefactory.cpp \
+   makeqrnsequence.cpp \
+   mcintegrator.cpp \
+   mcpointset.cpp \
+   mersennetwister.cpp \
+   miser.cpp \
+   niederreitermatrix.cpp \
    orbitrule.cpp \
+   pointset.cpp \
+   polynomial.cpp \
    pseudoembeddedrule.cpp \
+   qmcintegrator.cpp \
+   qrnsequencebase.cpp \
+   quotientfield.cpp \
+   realfield.cpp \
+   regioncollection.cpp \
    rule1midpoint.cpp \
    rule1trapezoidal.cpp \
+   rule2ionescu.cpp \
    rule2simplex.cpp \
    rule2thacher.cpp \
-   rule2ionescu.cpp \
-   rule3octahedron.cpp \
    rule3cross.cpp \
-   rule3tyler.cpp \
-   rule3gauss.cpp \
    rule3ewing.cpp \
+   rule3gauss.cpp \
+   rule3octahedron.cpp \
+   rule3simpson.cpp \
+   rule3tyler.cpp \
+   rule5gauss.cpp \
    rule5hammer.cpp \
    rule5stroud.cpp \
+   rule75genzmalik.cpp \
    rule7phillips.cpp \
    rule9stenger.cpp \
-   rule75genzmalik.cpp \
-   integrator.cpp \
    rulebasedintegrator.cpp \
    ruleintegrator.cpp \
-   compruleintegrator.cpp \
-   adaptintegrator.cpp \
-   regioncollection.cpp \
-   qmcintegrator.cpp \
-   mcintegrator.cpp \
+   shiftnet.cpp \
+   shiftscale.cpp \
+   sobolmatrix.cpp \
+   testintegrand.cpp \
+   tparameter.cpp \
    vegas.cpp \
-   miser.cpp \
-   mersennetwister.cpp \
-   builtinprng.cpp \
-   virtualprng.cpp \
-   pointset.cpp \
-   mcpointset.cpp \
-   loadlibseq.cpp \
-   generatormatrixvec.cpp \
-   make.cpp makecubaturerulefactory.cpp makeqrnsequence.cpp
+   virtualprng.cpp
 
 
 ALLSRCSEQ = $(ALLSRC) \
-   staticloadbalancer.cpp \
-   region.cpp
+   region.cpp \
+   staticloadbalancer.cpp
 
 
 ALLSRCMPI = $(ALLSRC) \
-   mympi.cpp \
-   region_MPI.cpp \
-   hypercube_MPI.cpp \
-   exception_MPI.cpp \
-   staticloadbalancer_MPI.cpp \
+   adaptintegratorlocallist.cpp \
+   adaptintegratorms.cpp \
    buffer.cpp \
-   adaptintegratorms.cpp adaptintegratorlocallist.cpp \
-   mcintegrator_MPI.cpp qmcintegrator_MPI.cpp
+   exception_MPI.cpp \
+   hypercube_MPI.cpp \
+   mcintegrator_MPI.cpp \
+   mympi.cpp \
+   qmcintegrator_MPI.cpp \
+   region_MPI.cpp \
+   staticloadbalancer_MPI.cpp
 
 
 noinst_LTLIBRARIES = libcreatelookupfield.la libcreatematrix.la
 lib_LTLIBRARIES = libhintlib.la @LIB_HINTLIB_MPI@
 EXTRA_LTLIBRARIES = libhintlibmpi.la
 
-libcreatelookupfield_la_SOURCES = \
-   prime.cpp \
-   prime_generated.cpp \
-   bitop.cpp \
-   exception.cpp \
-   mymath.cpp \
-   gcd.cpp \
-   polynomial.cpp \
-   polynomial2.cpp \
-   modulararithmetic.cpp \
-   lookupfield.cpp \
-   integerring.cpp \
-   output.cpp \
-   galoisfield.cpp \
-   hypercube.cpp
-
 libcreatelookupfield_la_LIBADD = @STL_OBJECT@
 libcreatelookupfield_la_DEPENDENCIES = @STL_OBJECT@
+libcreatelookupfield_la_SOURCES = \
+   bitop.cpp \
+   exception.cpp \
+   factorring.cpp \
+   galoisfield.cpp \
+   integerring.cpp \
+   linearalgebra_ma.cpp \
+   mymath.cpp \
+   output.cpp \
+   polynomial_ma.cpp \
+   polynomial2.cpp \
+   prime.cpp \
+   prime_generated.cpp
+
 EXTRA_libcreatelookupfield_la_SOURCES = stl.cpp
 
+libcreatematrix_la_LDFLAGS = -lm
+libcreatematrix_la_LIBADD = libcreatelookupfield.la
 libcreatematrix_la_SOURCES = \
    generatormatrix.cpp \
    generatormatrix2.cpp \
    generatormatrixgen.cpp \
-   niederreitermatrixgen.cpp \
+   linearalgebra.cpp \
+   lookupfield.cpp \
+   lookupfield_generated.cpp \
    lookupgaloisfield.cpp \
-   tparameter.cpp \
-   lookupfield_generated.cpp
+   niederreitermatrixgen.cpp \
+   polynomial_lf.cpp
 
-libcreatematrix_la_LDFLAGS = -lm
-libcreatematrix_la_LIBADD = libcreatelookupfield.la
 
 libhintlib_la_SOURCES = $(ALLSRCSEQ)
 libhintlib_la_LDFLAGS = @NOUNDEFINED@
@@ -271,39 +285,42 @@ CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
 
 libcreatelookupfield_la_LDFLAGS =
-am_libcreatelookupfield_la_OBJECTS = prime.lo prime_generated.lo \
-	bitop.lo exception.lo mymath.lo gcd.lo polynomial.lo \
-	polynomial2.lo modulararithmetic.lo lookupfield.lo \
-	integerring.lo output.lo galoisfield.lo hypercube.lo
+am_libcreatelookupfield_la_OBJECTS = bitop.lo exception.lo factorring.lo \
+	galoisfield.lo integerring.lo linearalgebra_ma.lo mymath.lo \
+	output.lo polynomial_ma.lo polynomial2.lo prime.lo \
+	prime_generated.lo
 libcreatelookupfield_la_OBJECTS = $(am_libcreatelookupfield_la_OBJECTS)
 libcreatematrix_la_DEPENDENCIES = libcreatelookupfield.la
 am_libcreatematrix_la_OBJECTS = generatormatrix.lo generatormatrix2.lo \
-	generatormatrixgen.lo niederreitermatrixgen.lo \
-	lookupgaloisfield.lo tparameter.lo lookupfield_generated.lo
+	generatormatrixgen.lo linearalgebra.lo lookupfield.lo \
+	lookupfield_generated.lo lookupgaloisfield.lo \
+	niederreitermatrixgen.lo polynomial_lf.lo
 libcreatematrix_la_OBJECTS = $(am_libcreatematrix_la_OBJECTS)
 libhintlib_la_DEPENDENCIES = libcreatematrix.la
-am__objects_1 = cubepartitioner.lo kahanadd.lo testintegrand.lo \
-	qrnsequencebase.lo shiftscale.lo digitalnet2.lo \
-	digitalnetgen.lo sobolmatrix.lo faure.lo niederreitermatrix.lo \
-	halton.lo orbitrule.lo pseudoembeddedrule.lo rule1midpoint.lo \
-	rule1trapezoidal.lo rule2simplex.lo rule2thacher.lo \
-	rule2ionescu.lo rule3octahedron.lo rule3cross.lo rule3tyler.lo \
-	rule3gauss.lo rule3ewing.lo rule5hammer.lo rule5stroud.lo \
-	rule7phillips.lo rule9stenger.lo rule75genzmalik.lo \
-	integrator.lo rulebasedintegrator.lo ruleintegrator.lo \
-	compruleintegrator.lo adaptintegrator.lo regioncollection.lo \
-	qmcintegrator.lo mcintegrator.lo vegas.lo miser.lo \
-	mersennetwister.lo builtinprng.lo virtualprng.lo pointset.lo \
-	mcpointset.lo loadlibseq.lo generatormatrixvec.lo make.lo \
-	makecubaturerulefactory.lo makeqrnsequence.lo
-am__objects_2 = $(am__objects_1) staticloadbalancer.lo region.lo
+am__objects_1 = adaptintegrator.lo builtinprng.lo compruleintegrator.lo \
+	counter.lo cubepartitioner.lo digitalnet2.lo digitalnetgen.lo \
+	faure.lo generatormatrix2row.lo generatormatrixvec.lo halton.lo \
+	hypercube.lo integrator.lo kahanadd.lo loadlibseq.lo make.lo \
+	makecubaturerulefactory.lo makeqrnsequence.lo mcintegrator.lo \
+	mcpointset.lo mersennetwister.lo miser.lo niederreitermatrix.lo \
+	orbitrule.lo pointset.lo polynomial.lo pseudoembeddedrule.lo \
+	qmcintegrator.lo qrnsequencebase.lo quotientfield.lo \
+	realfield.lo regioncollection.lo rule1midpoint.lo \
+	rule1trapezoidal.lo rule2ionescu.lo rule2simplex.lo \
+	rule2thacher.lo rule3cross.lo rule3ewing.lo rule3gauss.lo \
+	rule3octahedron.lo rule3simpson.lo rule3tyler.lo rule5gauss.lo \
+	rule5hammer.lo rule5stroud.lo rule75genzmalik.lo \
+	rule7phillips.lo rule9stenger.lo rulebasedintegrator.lo \
+	ruleintegrator.lo shiftnet.lo shiftscale.lo sobolmatrix.lo \
+	testintegrand.lo tparameter.lo vegas.lo virtualprng.lo
+am__objects_2 = $(am__objects_1) region.lo staticloadbalancer.lo
 am_libhintlib_la_OBJECTS = $(am__objects_2)
 libhintlib_la_OBJECTS = $(am_libhintlib_la_OBJECTS)
 libhintlibmpi_la_DEPENDENCIES = libcreatematrix.la
-am__objects_3 = $(am__objects_1) mympi.lo region_MPI.lo hypercube_MPI.lo \
-	exception_MPI.lo staticloadbalancer_MPI.lo buffer.lo \
-	adaptintegratorms.lo adaptintegratorlocallist.lo \
-	mcintegrator_MPI.lo qmcintegrator_MPI.lo
+am__objects_3 = $(am__objects_1) adaptintegratorlocallist.lo \
+	adaptintegratorms.lo buffer.lo exception_MPI.lo \
+	hypercube_MPI.lo mcintegrator_MPI.lo mympi.lo \
+	qmcintegrator_MPI.lo region_MPI.lo staticloadbalancer_MPI.lo
 am_libhintlibmpi_la_OBJECTS = $(am__objects_3)
 libhintlibmpi_la_OBJECTS = $(am_libhintlibmpi_la_OBJECTS)
 noinst_PROGRAMS = create_sobol$(EXEEXT) create_niederreiter$(EXEEXT) \
@@ -338,7 +355,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/bitop.Plo ./$(DEPDIR)/buffer.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/builtinprng.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/compruleintegrator.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/create_bitop.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/counter.Plo ./$(DEPDIR)/create_bitop.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/create_lookupfield.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/create_niederreiter.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/create_sobol.Po \
@@ -346,16 +363,20 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/digitalnet2.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/digitalnetgen.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/exception.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/exception_MPI.Plo ./$(DEPDIR)/faure.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/galoisfield.Plo ./$(DEPDIR)/gcd.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/exception_MPI.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/factorring.Plo ./$(DEPDIR)/faure.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/galoisfield.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/generatormatrix.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/generatormatrix2.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/generatormatrix2row.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/generatormatrixgen.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/generatormatrixvec.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/halton.Plo ./$(DEPDIR)/hypercube.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/hypercube_MPI.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/integerring.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/integrator.Plo ./$(DEPDIR)/kahanadd.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/linearalgebra.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/linearalgebra_ma.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/loadlibseq.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/lookupfield.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/lookupfield_generated.Plo \
@@ -367,20 +388,23 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/mcintegrator_MPI.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/mcpointset.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/mersennetwister.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/miser.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/modulararithmetic.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/mymath.Plo ./$(DEPDIR)/mympi.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/miser.Plo ./$(DEPDIR)/mymath.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/mympi.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/niederreitermatrix.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/niederreitermatrixgen.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/orbitrule.Plo ./$(DEPDIR)/output.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/pointset.Plo ./$(DEPDIR)/polynomial.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/polynomial2.Plo ./$(DEPDIR)/prime.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/polynomial2.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/polynomial_lf.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/polynomial_ma.Plo ./$(DEPDIR)/prime.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/prime_generated.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/pseudoembeddedrule.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/qmcintegrator.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/qmcintegrator_MPI.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/qrnsequencebase.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/region.Plo ./$(DEPDIR)/region_MPI.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/quotientfield.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/realfield.Plo ./$(DEPDIR)/region.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/region_MPI.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/regioncollection.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/rule1midpoint.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/rule1trapezoidal.Plo \
@@ -391,7 +415,9 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/rule3ewing.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/rule3gauss.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/rule3octahedron.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/rule3simpson.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/rule3tyler.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/rule5gauss.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/rule5hammer.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/rule5stroud.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/rule75genzmalik.Plo \
@@ -399,7 +425,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/rule9stenger.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/rulebasedintegrator.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/ruleintegrator.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/shiftscale.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/shiftnet.Plo ./$(DEPDIR)/shiftscale.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/sobolmatrix.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/staticloadbalancer.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/staticloadbalancer_MPI.Plo \
@@ -517,6 +543,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/buffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builtinprng.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compruleintegrator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/counter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/create_bitop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/create_lookupfield.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/create_niederreiter.Po@am__quote@
@@ -526,11 +553,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/digitalnetgen.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exception.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exception_MPI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/factorring.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/faure.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/galoisfield.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gcd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generatormatrix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generatormatrix2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generatormatrix2row.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generatormatrixgen.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generatormatrixvec.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/halton.Plo@am__quote@
@@ -539,6 +567,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/integerring.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/integrator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/kahanadd.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linearalgebra.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linearalgebra_ma.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/loadlibseq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lookupfield.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lookupfield_generated.Plo@am__quote@
@@ -551,7 +581,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcpointset.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mersennetwister.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miser.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/modulararithmetic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mymath.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mympi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/niederreitermatrix.Plo@am__quote@
@@ -561,12 +590,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pointset.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/polynomial.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/polynomial2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/polynomial_lf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/polynomial_ma.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prime_generated.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pseudoembeddedrule.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qmcintegrator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qmcintegrator_MPI.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qrnsequencebase.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quotientfield.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/realfield.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/region.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/region_MPI.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regioncollection.Plo@am__quote@
@@ -579,7 +612,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule3ewing.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule3gauss.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule3octahedron.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule3simpson.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule3tyler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule5gauss.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule5hammer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule5stroud.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule75genzmalik.Plo@am__quote@
@@ -587,6 +622,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule9stenger.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rulebasedintegrator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ruleintegrator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shiftnet.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shiftscale.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sobolmatrix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/staticloadbalancer.Plo@am__quote@

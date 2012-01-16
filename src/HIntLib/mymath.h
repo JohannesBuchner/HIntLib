@@ -103,11 +103,13 @@ template<class T> inline T cube (T x)
  */
 
 template<class T> T powInt (T x, unsigned exponent);
+
 template<class A>
-// not inline
 typename A::type powInt (const A &a, typename A::type x, unsigned exponent)
 {
    typename A::type result (a.one());
+
+   if (a.size())  exponent %= a.size();
 
    for(;;)
    {
@@ -123,19 +125,18 @@ typename A::type powInt (const A &a, typename A::type x, unsigned exponent)
  */
 
 template<class T> T powerMod (T x, unsigned e, T m);
+template<class T> T powerModReduce (T x, unsigned e, T m);
 
 template<class A> typename A::type
-// not inline
 powerMod (const A &a, typename A::type x, unsigned exponent,
                 const typename A::type &m)
 {
    typename A::type result (a.one());
-   typename A::type q;
    for (;;)
    {
-      if (exponent & 1)  a.div (a.mul (result, x), m, q, result);
+      if (exponent & 1)  result = a.rem (a.mul (result, x), m);
       if ((exponent >>= 1) == 0)  return result;
-      a.div (a.mul (x, x), m, q, x);
+      x = a.rem (a.mul (x, x), m);
    }
 }
 
@@ -227,17 +228,10 @@ template<class T> inline bool even (T x)
  *  Determine if two (floating-point) numbers are approximately equal
  */
 
-template <class T> inline bool approx (T a, double b)  HINTLIB_GNU_CONST;
-template <class T> inline bool approx (T a, double b)
-{
-   return abs(a - b) < std::numeric_limits<T>::epsilon() * (abs(a) + abs(b));
-}
-
-template <class T> inline bool approx (T a, double b, double )HINTLIB_GNU_CONST;
-template <class T> inline bool approx (T a, double b, double factor)
+template <class T> inline bool approx (T a, T b, T factor = 10.0)
 {
    return abs(a - b)
-        < factor * std::numeric_limits<T>::epsilon() * (abs(a) + abs(b));
+        <= factor * std::numeric_limits<T>::epsilon() * (abs(a) + abs(b));
 }
 
 
@@ -256,13 +250,23 @@ template<typename T>
 inline
 T choose (T a, T b)
 {
-   T result = 1;
+   if (b < 0 || b > a)  return 0;
+
    if (2 * b > a)  b = a - b;
+   T result = 1;
    ++a;
    for (T i = 1; i <= b; ++i)  result = (result * (a-i)) / i;
    return result;
 }
 
+
+/**
+ *  radicalInverseFunction ()
+ *  radicalInverseFunction2 ()
+ */
+
+real radicalInverseFunction  (Index, unsigned base);
+real radicalInverseFunction2 (Index);
 
 }  // namespace HIntLib
 

@@ -4,7 +4,7 @@
 
 if test $? -ne 0; then
    echo "test_qrnsequence failed!"
-   exit 1
+   { (exit 1); exit 1; }
 fi
 
 cat <<EOF | toms738/genin2 > toms738_nied2.txt
@@ -12,6 +12,11 @@ cat <<EOF | toms738/genin2 > toms738_nied2.txt
 9999
 1
 EOF
+
+if test $? -ne 0; then
+   echo "toms738/genin2 failed!"
+   { (exit 1); exit 1; }
+fi
 
 ./numericdiff hintlib_nied2.txt toms738_nied2.txt || exit 1
 

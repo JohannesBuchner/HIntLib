@@ -47,18 +47,33 @@
 
 namespace L = HIntLib;
 
+using L::real;
+
+namespace
+{
+#if HINTLIB_STATIC_WORKS == 1
+   const real sqrt2by3    = sqrt (real (2.0) / real (3.0));
+   const real oneDivSqrt3 = real (1.0) / sqrt (real (3.0));
+#else
+   real sqrt2by3, oneDivSqrt3;
+#endif
+}
+
+
 /**
  *  The constructor is used primarily to initialize all the dimension dependent
  *  constatns and to allocate (dimension dependent) memory
  */
 
 L::Rule3Octahedron::Rule3Octahedron (unsigned d)
-: dim(d), dim2(d * 2), r(d * d * 2), p(d)
+   : dim(d), dim2(d * 2), r(d * d * 2), p(d)
 {
    checkDimensionNotZero (dim);
 
-   const real sqrt2by3    = sqrt (2.0 / 3.0);
-   const real oneDivSqrt3 = 1.0 / sqrt (3.0);
+#if HINTLIB_STATIC_WORKS == 0
+   sqrt2by3    = sqrt (real (2.0) / real (3.0));
+   oneDivSqrt3 = real (1.0) / sqrt (real (3.0));
+#endif
 
    // Initialze r
 
@@ -85,7 +100,7 @@ L::Rule3Octahedron::Rule3Octahedron (unsigned d)
  *  Do the actual function evaluation
  */
 
-L::real L::Rule3Octahedron::eval (Integrand &f, const Hypercube &h)
+real L::Rule3Octahedron::eval (Integrand &f, const Hypercube &h)
 {
    // Sample all points
 
@@ -96,7 +111,9 @@ L::real L::Rule3Octahedron::eval (Integrand &f, const Hypercube &h)
    for (unsigned i = 0; i < dim2; i++)
    {
       for (unsigned k = 0; k < dim; k++)
+      {
          p [k] = center [k] + r [i * dim + k] * width [k];
+      }
 
       sum += f(p);
    }

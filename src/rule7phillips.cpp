@@ -51,13 +51,13 @@ using L::Index;
 
 namespace
 {
-   #if HINTLIB_STATIC_WORKS == 1
-      const real rCD = sqrt (3.0 / 5.0);
-   #else
-      real rCD;
-   #endif
+#if HINTLIB_STATIC_WORKS == 1
+   const real rCD = sqrt (real (3.0) / real (5.0));
+#else
+   real rCD;
+#endif
 
-   const real weightD = 125.0 / 5832.0;
+const real weightD = real (125.0) / real (5832.0);
 }
 
 
@@ -70,15 +70,16 @@ L::Rule7Phillips::Rule7Phillips (unsigned dim)
 : OrbitRule (dim),
   aCD (dim),
 
-  eN (((25 * signed (dim) - 165) * signed (dim) + 302) / 972.0),
+  eN (((25 * signed (dim) - 165) * signed (dim) + 302) / real (972.0)),
   temp (14.0 * eN + 1.0),
 
   rB2 (sqrt ((21.0 * eN - 1.0) / (35.0 * eN))),
 
   weightB1 (eN / temp),
   weightB2 (490.0 * cube (eN) / temp / (21.0 * eN - 1.0)),
-  weightC  ((475 - 125 * signed (dim)) / 2916.0),
-  weightA  (1.0 + dim * (  125.0/2187.0 * (dim-1) * (dim-4.7)
+  weightC  ((475 - 125 * signed (dim)) / real (2916.0)),
+  weightA  (1.0 + dim * (  real (125.0) / real (2187.0) * (dim-1)
+                                        * (dim-real (47.0 / 10.0))
                          - 2.0 * (weightB1 + weightB2)))
 {
    checkDimensionNotZero (dim);
@@ -88,9 +89,9 @@ L::Rule7Phillips::Rule7Phillips (unsigned dim)
 
    if (dim < 5 && dim != 2)  throw InvalidDimension (dim);
 
-   #if HINTLIB_STATIC_WORKS == 0
-      rCD = sqrt (3.0 / 5.0);
-   #endif
+#if HINTLIB_STATIC_WORKS == 0
+   rCD = sqrt (real (3.0) / real (5.0));
+#endif
 }
 
 

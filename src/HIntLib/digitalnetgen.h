@@ -65,7 +65,7 @@ protected:
    const typename A::scalar_algebra scalArith;
    const T base;
    const unsigned totalPrec;
-   GeneratorMatrixVecCopy<T> c;
+   GeneratorMatrixVec<T> c;
    const unsigned prec;
    const S vecBase;
    Array<T> x;      // current vector (size dim)

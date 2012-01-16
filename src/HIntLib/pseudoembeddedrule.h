@@ -28,7 +28,7 @@
 
 #include <memory>
 
-#include <HIntLib/embeddedrule.h>
+#include <HIntLib/cubaturerule.h>
 #include <HIntLib/fourthdiff.h>
 
 

@@ -25,64 +25,21 @@
 #pragma interface
 #endif
 
-#include <HIntLib/generatormatrixgen.h>
-#include <HIntLib/polynomial.h>
-#include <HIntLib/mymath.h>
-
 namespace HIntLib
 {
+   template<typename T> class GeneratorMatrixGen;
+   template<class T>    class PolynomialRing;
+
 
    template<class A>
-   class NiederreiterMatrixGen
-      : public HeapAllocatedGeneratorMatrixGen<typename A::type>
-   {
-   private:
-      typedef typename A::type T;
-      typedef PolynomialRing<A> PolyRing;
-      typedef typename PolyRing::type Poly;
+   void initNiederreiter (GeneratorMatrixGen<typename A::type> &, A);
 
-   public:
-      static void init (
-         MutableGeneratorMatrixGen<typename A::type> &, A);
-      static void init (
-         MutableGeneratorMatrixGen<typename A::type> &,
-         A, unsigned d, const Poly &);
-      
-      void init (const A &a , unsigned d, const Poly &p)
-         {  init (*this, a, d, p); }
+   template<class A>
+   void initNiederreiter
+        (GeneratorMatrixGen<typename A::type> &, A, unsigned d,
+            const typename PolynomialRing<A>::type &);
 
-      NiederreiterMatrixGen
-         (const A &a, unsigned _dim, unsigned _m, unsigned _prec);
-   };
-
-   class NiederreiterMatrixPP
-      : public HeapAllocatedGeneratorMatrixGen<unsigned char>
-   {
-   public:
-      NiederreiterMatrixPP (unsigned _dim, unsigned char size)
-         : HeapAllocatedGeneratorMatrixGen<unsigned char> (size, _dim)
-         {  init (size); }
-      NiederreiterMatrixPP (unsigned _dim, unsigned char prime, unsigned power)
-         : HeapAllocatedGeneratorMatrixGen<unsigned char>
-                  (powInt (unsigned (prime), power), _dim)
-         {  init (prime, power); }
-
-      NiederreiterMatrixPP (
-         unsigned _dim, unsigned _m, unsigned _prec,
-         unsigned char size)
-      : HeapAllocatedGeneratorMatrixGen<unsigned char> (size, _dim, _m, _prec)
-         {  init (size); }
-      NiederreiterMatrixPP (
-         unsigned _dim, unsigned _m, unsigned _prec,
-         unsigned char prime, unsigned power)
-      : HeapAllocatedGeneratorMatrixGen<unsigned char>
-               (powInt (unsigned (prime), power), _dim, _m, _prec)
-         {  init (prime, power); }
-
-   private:
-      void init (unsigned char prime, unsigned power);
-      void init (unsigned char size);
-   };
+   void initNiederreiter (GeneratorMatrixGen<unsigned char> &);
 
 }   // namespace HIntLib
 

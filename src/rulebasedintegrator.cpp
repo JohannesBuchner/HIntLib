@@ -25,12 +25,11 @@
 #ifdef __GNUG__
 #pragma implementation
 #pragma implementation "cubaturerule.h"
-#pragma implementation "embeddedrule.h"
 #endif
 
 #include <HIntLib/rulebasedintegrator.h>
 
-#include <HIntLib/embeddedrule.h>
+#include <HIntLib/cubaturerule.h>
 
 
 namespace L = HIntLib;

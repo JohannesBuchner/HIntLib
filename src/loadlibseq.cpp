@@ -272,7 +272,7 @@ namespace
 }
 
 
-L::MutableGeneratorMatrixGen<unsigned char>*
+L::GeneratorMatrixGen<unsigned char>*
 L::loadLibSeq (std::istream &str)
 {
    Tokenizer t (str);
@@ -326,7 +326,7 @@ L::loadLibSeq (std::istream &str)
 
    unsigned m = 0;
 
-   HeapAllocatedGeneratorMatrixGen<unsigned char>* gm = 0;
+   GeneratorMatrixGen<unsigned char>* gm = 0;
 
    try
    {
@@ -356,8 +356,7 @@ L::loadLibSeq (std::istream &str)
                t.expectName (keyEndLine);
 
                m = v.size();
-               gm = new HeapAllocatedGeneratorMatrixGen<unsigned char>
-                              (base, dim, m, prec);
+               gm = new GeneratorMatrixGen<unsigned char> (base, dim, m, prec);
 
                for (unsigned r = 0; r < m; ++r)  gm->setd (d, r, b, v[r]);
             }
@@ -386,7 +385,7 @@ L::loadLibSeq (std::istream &str)
    return gm;
 }
 
-L::MutableGeneratorMatrixGen<unsigned char>*
+L::GeneratorMatrixGen<unsigned char>*
 L::loadLibSeq (const char* s)
 {
    std::ifstream str (s);
@@ -448,8 +447,7 @@ namespace
 }
 
 
-L::MutableGeneratorMatrixGen<unsigned char>*
-L::loadBinary (std::istream &str)
+L::GeneratorMatrixGen<unsigned char>* L::loadBinary (std::istream &str)
 {
    char s [sizeof (binaryMagic) - 1]; 
    str.read (s, sizeof (binaryMagic) - 1);
@@ -468,8 +466,8 @@ L::loadBinary (std::istream &str)
 
    if (! str)  throw FIXME (__FILE__, __LINE__);
 
-   HeapAllocatedGeneratorMatrixGen<unsigned char>* gm =
-      new HeapAllocatedGeneratorMatrixGen<unsigned char>(base, dim, m, prec);
+   GeneratorMatrixGen<unsigned char>* gm =
+      new GeneratorMatrixGen<unsigned char>(base, dim, m, prec);
 
    char check = 0;
    
@@ -494,10 +492,9 @@ L::loadBinary (std::istream &str)
    return gm;
 }
 
-L::MutableGeneratorMatrixGen<unsigned char>*
-L::loadBinary (const char* s)
+L::GeneratorMatrixGen<unsigned char>* L::loadBinary (const char* s)
 {
-   std::ifstream str (s);
+   std::ifstream str (s, std::ios::binary);
    if (! str)  throw FIXME (__FILE__, __LINE__);
    return loadBinary (str);
 }
@@ -545,7 +542,7 @@ void L::GeneratorMatrix::binaryDump (std::ostream &o) const
 
 void L::GeneratorMatrix::binaryDump (const char* fName) const
 {
-   std::ofstream f (fName);
+   std::ofstream f (fName, std::ios::binary);
    binaryDump (f);
 }
 
@@ -554,23 +551,30 @@ void L::GeneratorMatrix::binaryDump (const char* fName) const
  *  load Niederreiter Xing ()
  */
 
-L::MutableGeneratorMatrixGen<unsigned char>*
-L::loadNiederreiterXing (unsigned dim)
+namespace
 {
-   std::ostringstream ss;
-   ss << HINTLIB_DATADIR << "/fkmat"
-      << std::setw(2) << std::setfill ('0') << dim << ".bin";
-
-   try
+   const char* nxFileNames [] =
    {
-      MutableGeneratorMatrixGen<unsigned char>* m =
-         loadBinary (ss.str().c_str());
+      HINTLIB_DATADIR "/fkmat",
+      HINTLIB_SRCDATADIR "/fkmat"
+   };
+}
 
-      return m;
-   }
-   catch (...)
+L::GeneratorMatrixGen<unsigned char>* L::loadNiederreiterXing (unsigned dim)
+{
+   for (unsigned i = 0; i < 2; ++i)
    {
-      throw InvalidDimension (dim);
+      std::ostringstream ss;
+      ss << nxFileNames [i]
+         << std::setw(2) << std::setfill ('0') << dim << ".bin";
+
+      try
+      {
+         return loadBinary (ss.str().c_str());
+      }
+      catch (...)  { continue; }
    }
+
+   throw InvalidDimension (dim);
 }
 

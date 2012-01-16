@@ -24,14 +24,11 @@
 
 #include <HIntLib/digitalnetgen.tcc>
 
-namespace HIntLib
-{
-
 /**
  *  Digital Net
  */
 
-DigitalNet::DigitalNet (unsigned base, unsigned _m)
+HIntLib::DigitalNet::DigitalNet (unsigned base, unsigned _m)
    : m (std::min (
         _m,
         unsigned(logInt (std::numeric_limits<Index>::max(), Index(base))))),
@@ -39,23 +36,22 @@ DigitalNet::DigitalNet (unsigned base, unsigned _m)
 {}
 
 
-#define HINTLIB_INSTANTIATE(X) \
-   template class DigitalNetGen<X, Index>; \
-   template void DigitalNetGenNormal<X, Index>::updateX (); \
-   template void DigitalNetGenGray<X, Index>::updateX (); \
-   template void DigitalNetGenCyclicGray<X, Index>::updateX ();
+#include <HIntLib/onedimvectorspace.h>
+#include <HIntLib/factorring.h>
+#include <HIntLib/lookupfield.h>
+#include <HIntLib/polynomial2.h>
 
-HINTLIB_INSTANTIATE (OneDimVectorSpace<ModularArithField<unsigned char> >)
-HINTLIB_INSTANTIATE (OneDimVectorSpace<LookupField<unsigned char> >)
-HINTLIB_INSTANTIATE (OneDimVectorSpace<LookupFieldPow2<unsigned char> >)
-HINTLIB_INSTANTIATE (OneDimVectorSpace<LookupFieldPrime<unsigned char> >)
-HINTLIB_INSTANTIATE (OneDimVectorSpace<GF2>)
-HINTLIB_INSTANTIATE (GF2VectorSpace<u32>)
+namespace HIntLib
+{
+HINTLIB_INSTANTIATE_DIGITALNETGEN (OneDimVectorSpace<FactorField<unsigned char> >)
+HINTLIB_INSTANTIATE_DIGITALNETGEN (OneDimVectorSpace<LookupField<unsigned char> >)
+HINTLIB_INSTANTIATE_DIGITALNETGEN (OneDimVectorSpace<LookupFieldPow2<unsigned char> >)
+HINTLIB_INSTANTIATE_DIGITALNETGEN (OneDimVectorSpace<LookupFieldPrime<unsigned char> >)
+HINTLIB_INSTANTIATE_DIGITALNETGEN (OneDimVectorSpace<GF2>)
+HINTLIB_INSTANTIATE_DIGITALNETGEN (GF2VectorSpace<u32>)
 typedef LookupVectorSpace    <unsigned char,unsigned char> X1;
 typedef LookupVectorSpacePow2<unsigned char,unsigned char> X2;
-HINTLIB_INSTANTIATE (X1)
-HINTLIB_INSTANTIATE (X2)
-
-#undef HINTLIB_INSTANTIATE
+HINTLIB_INSTANTIATE_DIGITALNETGEN (X1)
+HINTLIB_INSTANTIATE_DIGITALNETGEN (X2)
 }
 

@@ -3,101 +3,114 @@
 SUBDIRS = HIntLib
 
 ALLSRC= \
+   adaptintegrator.cpp \
+   builtinprng.cpp \
+   compruleintegrator.cpp \
+   counter.cpp \
    cubepartitioner.cpp \
-   kahanadd.cpp \
-   testintegrand.cpp \
-   qrnsequencebase.cpp \
-   shiftscale.cpp \
    digitalnet2.cpp \
    digitalnetgen.cpp \
-   sobolmatrix.cpp \
    faure.cpp \
-   niederreitermatrix.cpp \
+   generatormatrix2row.cpp \
+   generatormatrixvec.cpp \
    halton.cpp \
+   hypercube.cpp \
+   integrator.cpp \
+   kahanadd.cpp \
+   loadlibseq.cpp \
+   make.cpp \
+   makecubaturerulefactory.cpp \
+   makeqrnsequence.cpp \
+   mcintegrator.cpp \
+   mcpointset.cpp \
+   mersennetwister.cpp \
+   miser.cpp \
+   niederreitermatrix.cpp \
    orbitrule.cpp \
+   pointset.cpp \
+   polynomial.cpp \
    pseudoembeddedrule.cpp \
+   qmcintegrator.cpp \
+   qrnsequencebase.cpp \
+   quotientfield.cpp \
+   realfield.cpp \
+   regioncollection.cpp \
    rule1midpoint.cpp \
    rule1trapezoidal.cpp \
+   rule2ionescu.cpp \
    rule2simplex.cpp \
    rule2thacher.cpp \
-   rule2ionescu.cpp \
-   rule3octahedron.cpp \
    rule3cross.cpp \
-   rule3tyler.cpp \
-   rule3gauss.cpp \
    rule3ewing.cpp \
+   rule3gauss.cpp \
+   rule3octahedron.cpp \
+   rule3simpson.cpp \
+   rule3tyler.cpp \
+   rule5gauss.cpp \
    rule5hammer.cpp \
    rule5stroud.cpp \
+   rule75genzmalik.cpp \
    rule7phillips.cpp \
    rule9stenger.cpp \
-   rule75genzmalik.cpp \
-   integrator.cpp \
    rulebasedintegrator.cpp \
    ruleintegrator.cpp \
-   compruleintegrator.cpp \
-   adaptintegrator.cpp \
-   regioncollection.cpp \
-   qmcintegrator.cpp \
-   mcintegrator.cpp \
+   shiftnet.cpp \
+   shiftscale.cpp \
+   sobolmatrix.cpp \
+   testintegrand.cpp \
+   tparameter.cpp \
    vegas.cpp \
-   miser.cpp \
-   mersennetwister.cpp \
-   builtinprng.cpp \
-   virtualprng.cpp \
-   pointset.cpp \
-   mcpointset.cpp \
-   loadlibseq.cpp \
-   generatormatrixvec.cpp \
-   make.cpp makecubaturerulefactory.cpp makeqrnsequence.cpp
+   virtualprng.cpp
 
 ALLSRCSEQ=$(ALLSRC) \
-   staticloadbalancer.cpp \
-   region.cpp
+   region.cpp \
+   staticloadbalancer.cpp
 
 ALLSRCMPI=$(ALLSRC) \
-   mympi.cpp \
-   region_MPI.cpp \
-   hypercube_MPI.cpp \
-   exception_MPI.cpp \
-   staticloadbalancer_MPI.cpp \
+   adaptintegratorlocallist.cpp \
+   adaptintegratorms.cpp \
    buffer.cpp \
-   adaptintegratorms.cpp adaptintegratorlocallist.cpp \
-   mcintegrator_MPI.cpp qmcintegrator_MPI.cpp
+   exception_MPI.cpp \
+   hypercube_MPI.cpp \
+   mcintegrator_MPI.cpp \
+   mympi.cpp \
+   qmcintegrator_MPI.cpp \
+   region_MPI.cpp \
+   staticloadbalancer_MPI.cpp
 
 noinst_LTLIBRARIES = libcreatelookupfield.la libcreatematrix.la
 lib_LTLIBRARIES = libhintlib.la @LIB_HINTLIB_MPI@
 EXTRA_LTLIBRARIES = libhintlibmpi.la
 
-libcreatelookupfield_la_SOURCES = \
-   prime.cpp \
-   prime_generated.cpp \
-   bitop.cpp \
-   exception.cpp \
-   mymath.cpp \
-   gcd.cpp \
-   polynomial.cpp \
-   polynomial2.cpp \
-   modulararithmetic.cpp \
-   lookupfield.cpp \
-   integerring.cpp \
-   output.cpp \
-   galoisfield.cpp \
-   hypercube.cpp
 libcreatelookupfield_la_LIBADD = @STL_OBJECT@
 libcreatelookupfield_la_DEPENDENCIES = @STL_OBJECT@
+libcreatelookupfield_la_SOURCES = \
+   bitop.cpp \
+   exception.cpp \
+   factorring.cpp \
+   galoisfield.cpp \
+   integerring.cpp \
+   linearalgebra_ma.cpp \
+   mymath.cpp \
+   output.cpp \
+   polynomial_ma.cpp \
+   polynomial2.cpp \
+   prime.cpp \
+   prime_generated.cpp
 EXTRA_libcreatelookupfield_la_SOURCES = stl.cpp
 
-
+libcreatematrix_la_LDFLAGS = -lm
+libcreatematrix_la_LIBADD = libcreatelookupfield.la
 libcreatematrix_la_SOURCES = \
    generatormatrix.cpp \
    generatormatrix2.cpp \
    generatormatrixgen.cpp \
-   niederreitermatrixgen.cpp \
+   linearalgebra.cpp \
+   lookupfield.cpp \
+   lookupfield_generated.cpp \
    lookupgaloisfield.cpp \
-   tparameter.cpp \
-   lookupfield_generated.cpp
-libcreatematrix_la_LDFLAGS = -lm
-libcreatematrix_la_LIBADD = libcreatelookupfield.la
+   niederreitermatrixgen.cpp \
+   polynomial_lf.cpp
 
 libhintlib_la_SOURCES = $(ALLSRCSEQ)
 libhintlib_la_LDFLAGS = @NOUNDEFINED@

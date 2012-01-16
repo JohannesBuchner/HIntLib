@@ -116,6 +116,31 @@ L::GeneratorMatrix::GeneratorMatrix (const GeneratorMatrix &gm)
 
 
 /**
+ *  getDefaultM ()
+ */
+
+unsigned L::GeneratorMatrix::getDefaultM (unsigned base)
+{
+   const Index maxNetSize
+      = numeric_limits<Index>::digits <= 48
+      ? numeric_limits<Index>::max()
+      : (Index(1) << 48) - 1;
+
+   return logInt (maxNetSize, Index (base));
+}
+
+/**
+ *  getDefaultTotalPrec ()
+ */
+
+unsigned L::GeneratorMatrix::getDefaultTotalPrec (unsigned base)
+{
+   return unsigned (ceil(
+    log(2.0) / log(double(base)) * double(numeric_limits<real>::digits - 1)));
+}
+
+
+/**
  *  setDigit()
  *  setVector()
  *
@@ -150,22 +175,57 @@ void L::GeneratorMatrix::dump (std::ostream &o) const
      << " (stored in " << getPrec() << " blocks of " << getVectorization()
      << " digits)\n";
 
-   unsigned size = logInt (base, 10u) + 1;
-   if (base >= 10)  ++size;
-   
    for (unsigned d = 0; d < getDimension(); ++d)
    {
       o << "Dimension " << d << ":\n";
 
-      for (unsigned p = 0; p < getTotalPrec(); ++p)
-      {
-         for (unsigned r = 0; r < getM(); ++r)
-         {
-            o << std::setw (size) << getDigit (d,r,p);
-         }
+      dumpDimension (o, d);
+   }
+}
 
-         o << '\n';
-      }
+
+/**
+ *  dumpDimension()
+ */
+
+void L::GeneratorMatrix::dumpDimension (std::ostream &o, unsigned d) const
+{
+   for (unsigned b = 0; b < getTotalPrec(); ++b)
+   {
+      dumpRowVector (o, d, b);
+      o << '\n';
+   }
+}
+
+
+/**
+ *  dumpRowVector ()
+ */
+
+void L::GeneratorMatrix::dumpRowVector (
+      std::ostream &o, unsigned d, unsigned b) const
+{
+   unsigned size = (base < 10) ? 1 : logInt (base, 10u) + 2;
+   
+   for (unsigned r = 0; r < getM(); ++r)
+   {
+      o << std::setw (size) << getDigit (d,r,b);
+   }
+}
+
+
+/**
+ *  dumpColumnVector ()
+ */
+
+void L::GeneratorMatrix::dumpColumnVector (
+      std::ostream &o, unsigned d, unsigned r) const
+{
+   unsigned size = (base < 10) ? 1 : logInt (base, 10u) + 2;
+   
+   for (unsigned b = 0; b < getTotalPrec(); ++b)
+   {
+      o << std::setw (size) << getDigit (d,r,b);
    }
 }
 

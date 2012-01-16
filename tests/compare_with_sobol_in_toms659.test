@@ -4,13 +4,18 @@
 
 if test $? -ne 0; then
    echo "test_qrnsequence failed!"
-   exit 1
+   { (exit 1); exit 1; }
 fi
 
 cat <<EOF | toms659/sobol > toms659_sobol.txt
 40
 9999
 EOF
+
+if test $? -ne 0; then
+   echo "toms659/sobol failed!"
+   { (exit 1); exit 1; }
+fi
 
 ./numericdiff hintlib_sobol.txt toms659_sobol.txt || exit 1
 

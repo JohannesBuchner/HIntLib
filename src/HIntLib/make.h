@@ -35,8 +35,8 @@ namespace HIntLib
 {
    class CubatureRuleFactory;
    class EmbeddedRuleFactory;
-   template<class T> class MutableGeneratorMatrix2;
-   template<class T> class MutableGeneratorMatrixGen;
+   template<typename T> class GeneratorMatrix2;
+   template<typename T> class GeneratorMatrixGen;
    class QRNSequence;
    class Hypercube;
 
@@ -99,8 +99,8 @@ namespace HIntLib
        *  get Generator Matrix Gen Name ()
        */
 
-      static MutableGeneratorMatrix2<u64>* generatorMatrix2 (int, unsigned dim);
-      static MutableGeneratorMatrixGen<unsigned char>*
+      static GeneratorMatrix2<u64>* generatorMatrix2 (int, unsigned dim);
+      static GeneratorMatrixGen<unsigned char>*
          generatorMatrixGen (int, unsigned dim);
 
       static const char* getGeneratorMatrix2Name (int);

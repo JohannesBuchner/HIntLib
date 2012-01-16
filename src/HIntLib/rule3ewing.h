@@ -60,9 +60,6 @@ namespace HIntLib
       static CubatureRuleFactory* getFactory();
  
    private:
-      // Array for offsets
-
-      const real b0;
       const real b1;
    };
 
