@@ -31,19 +31,22 @@
 
 namespace L = HIntLib;
 
-bool L::MCPointSetBase_::doJobRep (real *, ReportingJob &, Index n)
+bool
+L::MCPointSetBase_::doJobRep (real *, ReportingJob &, Index n)
 {
    if (n == 0)  return false;
    else throw InternalError (__FILE__, __LINE__);
 }
 
-L::Index L::MCPointSetBase_::getOptimalNumber (Index n, const Hypercube &)
+L::Index
+L::MCPointSetBase_::getOptimalNumber (Index n, const Hypercube &)
 {
-   return (n % alignment) * alignment;
+   return (n / alignment) * alignment;
 }
 
-void L::MCPointSetBase_::setCube (const Hypercube *_h)
+void
+L::MCPointSetBase_::setCube (const Hypercube* cube)
 {
-   h = _h;
+   h = cube;
 }
 

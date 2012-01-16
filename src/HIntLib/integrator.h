@@ -65,9 +65,8 @@ public:
    #endif
    };
 
-   // Normal constructor.  No copy constructor
+   // A virtual destructor is required by many child classes
 
-   Integrator () : seed (0) {}
    virtual ~Integrator () {}
 
    // calcualte integral
@@ -94,10 +93,17 @@ public:
 
 protected:
 
+   // Normal constructor.  No copy constructor
+
+   Integrator () : seed (0) {}
+
+   // A number of convenience functions used by many child classes
+
    static
    Status checkRequestedError (const EstErr &, real reqAbsErr, real reqRelErr);
 
    static void checkDimension (const Hypercube &, const Integrand &);
+   static void checkTerminationCriteria (Index, real, real, bool);
 
    unsigned getSeed ()  { return seed; }
 

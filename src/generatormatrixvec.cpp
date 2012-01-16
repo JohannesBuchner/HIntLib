@@ -298,7 +298,7 @@ void L::GeneratorMatrixVec<T>::setd
 
       T oldDigit = T((vector / shift) % base) * shift;
       vector = vector - oldDigit + x * shift;
-      if (vector >= vecBase)  throw 1;
+      if (vector >= vecBase)  throw InternalError (__FILE__, __LINE__);
    }
 }
 

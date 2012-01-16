@@ -101,20 +101,24 @@ namespace {
  * setXXX()
  */
 
-void
+L::AdaptIntegrator&
 L::AdaptIntegrator::setMinPercEval (double perc)
 {
-   if (perc < 0.0 || perc > 1.0)  throw 1;
+   checkPercentageRange (perc);
 
    minPercEval = perc;
+
+   return *this;
 }
 
-void
+L::AdaptIntegrator&
 L::AdaptIntegrator::setPercEvalInitialRegions (double perc)
 {
-   if (perc < 0.0 || perc > 1.0)  throw 1;
+   checkPercentageRange (perc);
 
    percEvalInitialRegions = perc;
+
+   return *this;
 }
 
 
@@ -133,6 +137,7 @@ L::AdaptIntegrator::integrate (
 #endif
 
    checkDimension (h, f);
+   checkTerminationCriteria (maxEval, reqAbsError, reqRelError, false);
 
    // Create Cubature Rule and Region Collection
 

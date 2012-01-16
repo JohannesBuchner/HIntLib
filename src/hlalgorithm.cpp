@@ -21,12 +21,14 @@
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/hlalgorithm.h>
+#include <HIntLib/exception.h>
 
 #ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma implementation
 #endif
 
 namespace L = HIntLib;
+namespace P = HIntLib::Private;
 
 
 /**
@@ -96,4 +98,17 @@ L::next_combination (bool* first, bool* last)
 
    return true;
 }
+
+
+/**
+ *  throwPartitionNotPossible()
+ */
+
+void
+P::throwPartitionNotPossible()
+{
+   throw OtherException ("Partitions of a positive number on zero slots "
+                         "do not exist!");
+}
+
 

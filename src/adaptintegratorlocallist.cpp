@@ -329,16 +329,7 @@ L::Integrator::Status L::AdaptIntegratorLocalList::integrate (
    real reqAbsError, real reqRelError, EstErr &finalEE)
 {
    checkDimension(h, f);
-
-   if (! maxEvaluations)
-   {
-      #ifdef HINTLIB_NO_EXCEPTIONS
-         finalEE.set (0.0, 0.0);
-         return ERROR;
-      #else
-         throw MaxEvaluationsRequired();
-      #endif
-   }
+   checkTerminationCriteria (maxEvaluations, reqAbsError, reqRelError, true);
 
    std::auto_ptr<EmbeddedRule> rule (getRule (h.getDimension()));
 

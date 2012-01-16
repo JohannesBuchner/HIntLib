@@ -326,18 +326,7 @@ L::Vegas::Status L::Vegas::integrate (
    EstErr &ee)
 {
    checkDimension(h, f);
-
-   // We need an upper bound to the number of sampling points
-
-   if (maxEval == 0)
-   {
-      #ifdef HINTLIB_NO_EXCEPTIONS
-         ee.set (0.0, 0.0);
-         return ERROR;
-      #else
-         throw MaxEvaluationsRequired ();
-      #endif
-   }
+   checkTerminationCriteria (maxEval, reqAbsError, reqRelError, true);
 
    // Constants
 

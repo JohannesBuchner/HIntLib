@@ -61,10 +61,9 @@ public:
   void set (real newEst, real newErr) { est = newEst; err = abs (newErr); }
   void setNoErr (real newEst)         { est = newEst; err = -1.0; }
 
-  EstErr& operator+= (const EstErr &ee);
-  EstErr& operator-= (const EstErr &ee);
-
-  void scale (real a)  { est *= a; err *= a; }
+  EstErr& operator+= (const EstErr &);
+  EstErr& operator-= (const EstErr &);
+  EstErr& operator*= (real a)  { est *= a; err *= a; return *this; }
 
 #ifdef HINTLIB_PARALLEL
    friend inline SendBuffer& operator<< (SendBuffer &, const EstErr &);

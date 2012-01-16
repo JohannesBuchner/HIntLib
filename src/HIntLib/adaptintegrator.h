@@ -56,15 +56,27 @@ namespace HIntLib
 
       // Set a minimum number of integrand evaluations
 
-      void setMinNumEval (Index n)  { minNumEval = n; }
-      void setMinPercEval (double);
+      AdaptIntegrator& setMinNumEval (Index n)
+      {
+         minNumEval = n;
+         return *this;
+      }
+      AdaptIntegrator& setMinPercEval (double);
 
       // Set the number of (points spent in the) initial regions which are
       // created by subdividing the integration domain in a regular way.
 
-      void setNumInitialRegions (Index n)    { numInitialRegions = n; }
-      void setNumEvalInitialRegions (Index n) { numEvalInitialRegions = n; }
-      void setPercEvalInitialRegions (double);
+      AdaptIntegrator& setNumInitialRegions (Index n)
+      {
+         numInitialRegions = n;
+         return *this;
+      }
+      AdaptIntegrator& setNumEvalInitialRegions (Index n)
+      {
+         numEvalInitialRegions = n;
+         return *this;
+      }
+      AdaptIntegrator& setPercEvalInitialRegions (double);
       
    private:
       Index minNumEval;

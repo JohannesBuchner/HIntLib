@@ -42,9 +42,10 @@ namespace L = HIntLib;
 
 L::Integrator::Status L::RuleIntegrator::integrate (
    Integrand &f, const Hypercube &h, Index maxEval,
-   real /* reqAbsError */, real /* reqRelError */, EstErr &ee)
+   real reqAbsError, real reqRelError, EstErr &ee)
 {
    checkDimension(h, f);
+   checkTerminationCriteria (maxEval, reqAbsError, reqRelError, false);
 
    std::auto_ptr<CubatureRule> rule (getRule(h.getDimension()));
 
@@ -68,6 +69,7 @@ L::Integrator::Status L::RuleIntegratorErr::integrate (
    real reqAbsError, real reqRelError, EstErr &ee)
 {
    checkDimension(h, f);
+   checkTerminationCriteria (maxEval, reqAbsError, reqRelError, false);
 
    std::auto_ptr<EmbeddedRule> rule (getRule(h.getDimension()));
 

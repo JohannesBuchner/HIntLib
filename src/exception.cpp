@@ -174,9 +174,22 @@ void L::NoEvaluationsPossible::makeString() const
    setString (ms(ss));
 }
 
+void L::RequestedErrorNegative::makeString() const
+{
+   ostringstream ss;
+   ss << "The requested (absolute or relative) error " << error
+      << " is negative!";
+   setString (ms(ss));
+}
+
 void L::MaxEvaluationsRequired::makeString() const
 {
    setStringCopy ("Integrator needs upper bound on the number of abscissas!");
+}
+
+void L::TerminationCriterionMissing::makeString() const
+{
+   setStringCopy ("No termination criterion specified!");
 }
 
 // Generator Matrix Exceptions
@@ -344,6 +357,38 @@ void L::MCRoutinesCreateNotSupported::makeString() const
 {
    setStringCopy ("MCRoutinesCreate does not support this operation!");
 }
+
+// Other exceptions
+
+void L::OtherException::makeString() const
+{
+   setStringCopy (msg);
+}
+
+namespace HIntLib
+{
+   class PercentageRangeException : public RangeException
+   {
+      virtual void makeString() const;
+   public:
+      PercentageRangeException (double v) : value (v) {}
+   private:
+      const double value;
+   };
+}
+
+void L::PercentageRangeException::makeString() const
+{
+   ostringstream ss;
+   ss << "A percentage value (" << value << ") must be between 0 and 1!";
+   setString (ms(ss));
+}
+
+void L::checkPercentageRange (double v)
+{
+   if (v < 0 || v > 1.0)  throw PercentageRangeException (v);
+}
+
 
 // Internal error
 

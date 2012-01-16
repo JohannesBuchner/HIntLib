@@ -138,6 +138,7 @@ HIntLib::Private::PRBA_GF<A>::isPrime (const type& p) const
          }
 
          if (degree <= 5)  return true;
+
       }
    }
 
@@ -201,7 +202,7 @@ HIntLib::Private::PRBA_GF<A>::factor (
    // Perform squarefree factorization
 
    Factorization sff;
-   coeff_type unit = squarefreeFactor (sff, p);
+   const coeff_type unit = squarefreeFactor (sff, p);
 
    const unsigned s = this->a.size();
 
@@ -223,6 +224,8 @@ HIntLib::Private::PRBA_GF<A>::factor (
       // There is a large chance for a linear factor.
       // So try linear factors first.
 
+      const coeff_type coeffOne = this->a.one();
+
       for (unsigned i = 0; i < s; ++i)   // x+1, x+2,...
       {
          const coeff_type u = this->a.element (i);
@@ -230,7 +233,7 @@ HIntLib::Private::PRBA_GF<A>::factor (
          if (this->a.is0 (evaluate (p, u)))
          {
             f.push_back (std::make_pair (
-                     type().mulAndAdd (this->a.one())
+                     type().mulAndAdd (coeffOne)
                            .mulAndAdd (this->a.neg (u)),
                      it->second));
             divByLinearFactor (p, u);
@@ -249,14 +252,14 @@ HIntLib::Private::PRBA_GF<A>::factor (
       }
 
       // Berlekamp's Algorithm
-
-      type factor =
+      
+      type factor =      // factor = x^s
          (int (s) < degree) ? this->x(s) :
          powerMod (*static_cast<const PolynomialRing<A>*>(this),
                    this->x(), s, p);
 
       Array<coeff_type> matrix (2 * HIntLib::sqr (degree));
-      type q = this->one();
+      type q = this->one();  // we always have q = (x^s)^col = x^(s*col)
 
       // Calculate the matrix  B - I
 
@@ -272,7 +275,7 @@ HIntLib::Private::PRBA_GF<A>::factor (
             matrix [row * degree + col] = coeff_type();
          }
 
-         this->a.subFrom (matrix [col * (degree + 1)], this->a.one());
+         this->a.subFrom (matrix [col * (degree + 1)], coeffOne);
 
          mulBy (q, factor);
          reduce (q, p);
@@ -295,46 +298,54 @@ HIntLib::Private::PRBA_GF<A>::factor (
 
       // Split  p  until we have  numFactors  factors
 
-      std::vector<type> polys;
-      polys.reserve (numFactors + 1);
+      typedef std::vector<type> Vec;
+      typedef typename Vec::iterator VecI;
+
+      Vec polys;
+      polys.reserve (numFactors);
       polys.push_back (p);
 
       for (;;)
       {
-         ns += degree;
-
+         // Build splitter polynomial from next row of the null space
+         // Make sure not to produce lc = 0
+         ns += degree;  // get next splitter
          coeff_type* leadingCoeff = ns + degree - 1;
          while (this->a.is0(*leadingCoeff))  --leadingCoeff;
          type splitter (ns, leadingCoeff + 1);
 
-         unsigned numPolys = polys.size();
-         for (unsigned i = 0; i < numPolys; ++i)
+         const VecI end = polys.end(); // Store end, because we're backinserting
+         for (VecI poly = polys.begin(); poly != end; ++poly)
          {
-            type& currentPoly = polys[i];
-            if (currentPoly.degree() < 4)  continue;
+            if (poly->degree() < 4)  continue;
 
-            bool success = false;
-
-            for (unsigned element = 0; element < s; ++element)
+            // Try all constant terms for the split
+            for (unsigned element = 0; ; ++element)
             {
                splitter.ct() = this->a.element(element);
 
                const type split =
                   genGcd (*static_cast<const PolynomialRing<A>*>(this),
-                          currentPoly, splitter);
+                          *poly, splitter);
 
-               if (split.degree() >= 1 && split.degree() < currentPoly.degree())
+               // Which part of *poly is selected?
+
+               if (split.degree() == poly->degree())  // everything?  Quit!
                {
-                  success = true;
-                  polys.push_back (split);
+                  break;
                }
-            }
+               // non-trivial split?
+               else if (split.degree() >= 1)
+               {
+                  polys.push_back (split);  // store factor
+                  divBy (*poly, split);     // reduce rest
 
-            if (success)
-            {
-               destructiveAssign (currentPoly, polys.back());
-               polys.pop_back();
-               if (polys.size() == numFactors)  goto end;
+                  // Abort once all factors are found
+                  if (polys.size() == numFactors)  goto end;
+
+                  // Abort for this poly if it is too small to be factored
+                  if (poly->degree() < 4)  break;
+               }
             }
          }
       }
@@ -342,10 +353,9 @@ end:
 
       // copy irreducible factors to output Factorization
 
-      for (typename std::vector<type>::iterator i = polys.begin();
-           i != polys.end(); ++i)
+      for (VecI i = polys.begin(); i != polys.end(); ++i)
       {
-         // use makeCanonicla(), because the result of genGcd() used above is
+         // use makeCanonical(), because the result of genGcd() used above is
          //    not guaranteed to have this property
          makeCanonical (*i);
          f.push_back (std::make_pair (*i, it->second));

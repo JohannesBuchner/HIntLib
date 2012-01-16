@@ -120,7 +120,7 @@ HIntLib::Private::PRBA_Complex<A>::roots (
 
             // if not, reduce step size by a factor of 4 (up to 20 times)
 
-            if (++tries > 20)  throw 1;
+            if (++tries > 20)  throw InternalError (__FILE__, __LINE__);
 
             aa.mulBy (dx, coeff_type (.25));
          }

@@ -2,12 +2,26 @@
 NEWS
 ====
 
+0.0.12   December 31, 2006	New Year's Eve Edition
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     51491  170572 1283308 total
+
++ MCIntegrator: Can use requested error as termination criterion
++ MCIntegrator: setMinNumEval(), setMinPercEval()
++ Some convenience functions for Integrators: checkPercentageRange() and
+  checkTerminationCriteria()
++ Improved algorithm for PolynomialRing<>::factor() and
+  PolynomialRing2<>::factor().
+/ EstErr::operator*() instead of EstErr::scale()
+
+
 
 0.0.11   October 2, 2006
 
    wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
      51225  169797 1276506 total
-     
+
 Build system:
 
 + HIntLib ported to GCC 4
@@ -307,7 +321,7 @@ Misc:
 
 
 
-0.0.5    November 1, 2003	Helloween Edition
+0.0.5    November 1, 2003	Halloween Edition
 
    wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
      31213  105251  776193 total

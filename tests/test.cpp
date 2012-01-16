@@ -214,7 +214,7 @@ int main (int argc, char** argv)
 #ifdef HINTLIB_STREAMS_SUPPORT_LOCALE
    if (! setlocale (LC_CTYPE, ""))
    {
-      cerr << ("Locale is invalid (setlocale() returned null)!\n");
+      cerr << "Locale is invalid (setlocale() returned null)!\n";
    }
 
    try
@@ -225,7 +225,7 @@ int main (int argc, char** argv)
    }
    catch (std::runtime_error&)
    {
-      cerr << ("Locale is invalid (std::locale() threw exeception)!\n");
+      cerr << "Locale is invalid (std::locale() threw exeception)!\n";
    }
 #endif
 

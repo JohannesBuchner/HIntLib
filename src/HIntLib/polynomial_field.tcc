@@ -465,15 +465,19 @@ HIntLib::Private::PRBA_Field<A>::makeCanonical (type &p) const
 {
    if (is0(p) || isCanonical(p))  return this->a.one();
 
-   unit_type l = p.lc();
-   unit_type il = this->a.recip (l);
+   const unit_type l = p.lc();
 
-   p.lc() = this->a.one();
-
-   const typename type::DownI end = p.toA0();
-   for (typename type::DownI i = p.fromLc() + 1; i != end; ++i)
+   if (! this->a.is1(l))
    {
-      this->a.mulBy (*i, il);
+      const unit_type il = this->a.recip (l);
+
+      p.lc() = this->a.one();
+
+      const typename type::DownI end = p.toA0();
+      for (typename type::DownI i = p.fromLc() + 1; i != end; ++i)
+      {
+         this->a.mulBy (*i, il);
+      }
    }
 
    return l;

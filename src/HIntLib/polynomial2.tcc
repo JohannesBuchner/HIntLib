@@ -573,7 +573,7 @@ template<typename T>
 HIntLib::Private::Polynomial2RingBase::unit_type
 HIntLib::Polynomial2Ring<T>::factor (Factorization& f, type p) const
 {
-   // Performe squarefree factorization
+   // Perform squarefree factorization
 
    Factorization sff;
    squarefreeFactor (sff, p);
@@ -667,32 +667,29 @@ HIntLib::Polynomial2Ring<T>::factor (Factorization& f, type p) const
 
       for (;;)
       {
-         ++nsp;  // Get next splitter
+         // Get next splitter
+         type splitter (*++nsp);
 
+         // Try to split each polynomial with this splitter
          unsigned ub = numPolys;
          for (unsigned i = 0; i < ub; ++i)
          {
             type& currentPoly = polys[i];
             if (currentPoly.degree() < 4)  continue;
 
-            bool success = false;
+            // Try to split.
+            // There are only 2 elements in GF(2), therefore also only to 
+            // possible ways to apply the splitter.  Either both of them split,
+            // or one gcd=1 whereas the other is P.
 
-            for (unsigned element = 0; element < 2; ++element)
+            const type split = genGcd (*this, currentPoly, splitter);
+
+            // Test whether the split is non-trivial
+            const int degree = split.degree();
+            if (degree >= 1 && degree < currentPoly.degree())
             {
-               type splitter (*nsp ^ element);
-
-               const type split = genGcd (*this, currentPoly, splitter);
-
-               if (split.degree() >= 1 && split.degree() < currentPoly.degree())
-               {
-                  success = true;
-                  polys [numPolys++] = split;
-               }
-            }
-
-            if (success)
-            {
-               currentPoly = polys [--numPolys];
+               divBy (currentPoly, split);
+               polys [numPolys++] = split;
                if (numPolys == numFactors)  goto end;
             }
          }

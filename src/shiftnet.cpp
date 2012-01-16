@@ -211,7 +211,7 @@ namespace
     *
     *  Optimality proven up to  m = 18
     *
-    *  The values are confirmed by test_shiftnet up to m <= 27.
+    *  The values are confirmed by test_shiftnet up to m <= 28.
     */
 
    //     b m          t

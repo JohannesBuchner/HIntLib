@@ -322,7 +322,7 @@ class DigitalNet2PointSet<real>: public DigitalNet2PointSetBase
 {
 public:
    DigitalNet2PointSet<real> (
-      const GeneratorMatrix& gm, bool e, DigitalNet::Truncation t, Index i)
+      const GeneratorMatrix& gm, bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE, Index i = 0)
    : DigitalNet2PointSetBase(gm, e, t, i) {}
 
    void integratePartition (real *, Integrand &, Index, Index, Index, Stat&);

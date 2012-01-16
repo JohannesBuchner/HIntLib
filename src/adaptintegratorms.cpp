@@ -471,7 +471,8 @@ Integrator::Status L::AdaptIntegratorMS::integrate (
    Integrand &f, const Hypercube &h, Index maxEvaluations,
    real reqAbsError, real reqRelError, EstErr &ee)
 {
-    checkDimension (h, f);
+   checkDimension (h, f);
+   checkTerminationCriteria (maxEvaluations, reqAbsError, reqRelError, false);
 
    // PA::calc (PA::CS, rank);
 

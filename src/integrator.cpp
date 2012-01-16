@@ -38,8 +38,26 @@
 
 namespace L = HIntLib;
 
-void L::Integrator::checkDimension (const Hypercube &h, const Integrand &f)
+void
+L::Integrator::checkDimension (const Hypercube &h, const Integrand &f)
 {
    L::checkDimensionEqual (h.getDimension(), f.getDimension());
 }
+
+void
+L::Integrator::checkTerminationCriteria (
+      Index maxEval, real reqAbsError, real reqRelError, bool maxEvalRequired)
+{
+   if (reqAbsError < 0)  throw RequestedErrorNegative (reqAbsError);
+
+   if (reqRelError < 0)  throw RequestedErrorNegative (reqRelError);
+
+   if (maxEvalRequired && maxEval == 0)  throw MaxEvaluationsRequired();
+
+   if (reqAbsError == 0 && reqRelError == 0 && maxEval == 0)
+   {
+      throw TerminationCriterionMissing();
+   }
+}
+
 

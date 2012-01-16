@@ -18,13 +18,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-/**
- *  PRNG
- *
- *  Abstract base class for Pseudo Random Number Generators
- */
-
-
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/pointset.h>
@@ -33,24 +26,24 @@
 #pragma implementation
 #endif
 
-#include <HIntLib/mersennetwister.h>
-#include <HIntLib/mcpointset.h>
-
 namespace L = HIntLib;
 
-void L::PartitionablePointSet::integrate (
+void
+L::PartitionablePointSet::integrate (
    real *point, Integrand &f, Index num, Stat &stat)
 {
    integratePartition (point, f, num, 0, num, stat);
 }
 
-void L::PartitionablePointSet::integrate (
+void
+L::PartitionablePointSet::integrate (
    real *point, Integrand &f, Index num, StatVar &stat)
 {
    integratePartition (point, f, num, 0, num, stat);
 }
 
-void L::PartitionablePointSet::doJob (real *point, Job &job, Index num)
+void
+L::PartitionablePointSet::doJob (real *point, Job &job, Index num)
 {
    doJobPartition (point, job, num, 0, num);
 }

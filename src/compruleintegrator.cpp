@@ -77,19 +77,11 @@ namespace {
 
 
 Integrator::Status L::CompRuleIntegrator::integrate (
-   Integrand &f, const Hypercube &h, Index maxEval, real, real, EstErr &ee)
+   Integrand &f, const Hypercube &h, Index maxEval,
+   real reqAbsError, real reqRelError, EstErr &ee)
 {
    checkDimension(h, f);
-
-   if (! maxEval)
-   {
-      #ifdef HINTLIB_NO_EXCEPTIONS
-         ee.set (0.0, 0.0);
-         return ERROR;
-      #else
-         throw MaxEvaluationsRequired();
-      #endif
-   }
+   checkTerminationCriteria (maxEval, reqAbsError, reqRelError, true);
 
    // Calculate the number of sections
 
@@ -162,16 +154,7 @@ Integrator::Status L::CompRuleIntegratorErr::integrate (
    real reqAbsError, real reqRelError, EstErr &ee)
 {
    checkDimension(h, f);
-
-   if (!maxEval)
-   {
-      #ifdef HINTLIB_NO_EXCEPTIONS
-         ee.set (0.0, 0.0);
-         return ERROR;
-      #else
-         throw MaxEvaluationsRequired();
-      #endif
-   }
+   checkTerminationCriteria (maxEval, reqAbsError, reqRelError, true);
 
    std::auto_ptr<EmbeddedRule> rule (getRule(h.getDimension()));
 

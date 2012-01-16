@@ -80,9 +80,9 @@ public:
 class MCPointSetBase_ : public MultiPointSet
 {
 public:
-   bool doJobRep (real *, ReportingJob &, Index n);
    Index getOptimalNumber (Index n, const Hypercube &);
    void setCube (const Hypercube *);
+   bool doJobRep (real *, ReportingJob &, Index);
 
 protected:
    MCPointSetBase_ (Index _alignment = 1) : h (0), alignment (_alignment) {}

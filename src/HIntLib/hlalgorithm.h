@@ -164,13 +164,18 @@ const T& min4 (const T& x1, const T& x2, const T& x3, const T& x4)
  *  If no new partition can be created, false is returned.
  */
 
+namespace Private
+{
+   void throwPartitionNotPossible() HINTLIB_GNU_NORETURN;
+}
+
 template<class Bi>
 void initial_partition
    (Bi first, Bi last, typename std::iterator_traits<Bi>::value_type num)
 {
    if (first == last)
    {
-      if (num)  throw 1;
+      if (num)  Private::throwPartitionNotPossible();
       return;
    }
 
@@ -230,7 +235,7 @@ void initial_partition
 {
    if (first == last)
    {
-      if (num)  throw 1;
+      if (num)  Private::throwPartitionNotPossible();
       return;
    }
 

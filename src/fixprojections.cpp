@@ -47,7 +47,12 @@ L::makeRegular (GM& gm, unsigned d)
 {
    const unsigned M = gm.getM();
 
-   if (gm.getPrec() < M)  throw FIXME(__FILE__, __LINE__);
+   if (gm.getPrec() < M)
+   {
+      throw OtherException (
+            "makeRegular(): Precision must be at least as large as m!");
+   }
+
    if (d >= gm.getDimension())  throw InvalidDimension (d);
 
    gm.la().basisSupplement (gm(d), M, M);
@@ -64,7 +69,13 @@ L::fixOneDimensionalProjections (GM& gm)
    const unsigned M = gm.getM();
    const unsigned DIM = gm.getDimension();
 
-   if (gm.getPrec() < M)  throw FIXME(__FILE__, __LINE__);
+   if (gm.getPrec() < M)
+   {
+      throw OtherException (
+            "fixOneDimensionalProjections(): "
+            "Precision must be at least as large as m!");
+   }
+
 
    for (unsigned d = 0; d < DIM; ++d)  gm.la().basisSupplement (gm(d), M, M);
 }
@@ -805,7 +816,12 @@ void L::fixTwoDimensionalProjections (GM& gm)
    const unsigned M = gm.getM();
    const unsigned DIM = gm.getDimension();
 
-   if (gm.getPrec() < M)  throw 1;
+   if (gm.getPrec() < M)
+   {
+      throw OtherException (
+            "fixTwoDimensionalProjections(): "
+            "Precision must be at least as large as m!");
+   }
 
    Array<unsigned char> work ((3 + DIM) * M * M + 2 * M);
 

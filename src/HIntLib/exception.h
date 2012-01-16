@@ -152,7 +152,21 @@ namespace HIntLib
       Index getN() const  { return n; }
    };
 
+   class RequestedErrorNegative : public IntegratorException
+   {
+      virtual void makeString() const;
+      const real error;
+   public:
+      RequestedErrorNegative (real e) : error(e) {}
+      real getError() const  { return error; }
+   };
+
    class MaxEvaluationsRequired : public IntegratorException
+   {
+      virtual void makeString() const;
+   };
+
+   class TerminationCriterionMissing : public IntegratorException
    {
       virtual void makeString() const;
    };
@@ -358,6 +372,19 @@ namespace HIntLib
    {
       virtual void makeString() const;
    };
+
+   // Other exceptions
+
+   class OtherException : public Exception
+   {
+      virtual void makeString() const;
+   public:
+      OtherException (const char* _msg) : msg(_msg) {}
+   private:
+      const char* msg;
+   };
+
+   void checkPercentageRange (double v);
 
    // Internal Error
 

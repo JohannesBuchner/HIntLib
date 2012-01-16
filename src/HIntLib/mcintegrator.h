@@ -46,7 +46,7 @@
 #endif
 
 /**
- *  MCIntegratorBase(NoLB)
+ *  MCIntegrator(NoLB)
  *
  *  The plain-vanilla Monte Carlo integration routine.
  *
@@ -66,18 +66,28 @@ namespace HIntLib
       typedef MultiPointSet PS;
 #else
       typedef PointSet PS;
+
+      Index minNumEval;
+      double minPercEval;
 #endif
+      PS* ps;
 
    public:
-      HINTLIB_NAME(MCIntegrator) (PS* _ps) : ps(_ps) {}
+      HINTLIB_NAME(MCIntegrator) (PS* _ps) :
+#ifndef HINTLIB_PARALLEL
+         minNumEval(0), minPercEval(0),
+#endif
+         ps(_ps) {}
 
       virtual
       Status integrate (
          Integrand &, const Hypercube &, Index maxEval,
-         real reqAbsError, real reqRelError, EstErr &ee);
+         real reqAbsError, real reqRelError, EstErr &);
 
-   private:
-      PS* ps;
+#ifndef HINTLIB_PARALLEL
+      MCIntegrator& setMinNumEval (Index n)  { minNumEval = n; return *this; }
+      MCIntegrator& setMinPercEval (double);
+#endif
    };
 }  // namespace HIntLib
 
