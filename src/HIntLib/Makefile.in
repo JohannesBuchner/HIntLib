@@ -1,0 +1,367 @@
+# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
+
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ../..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+host_alias = @host_alias@
+host_triplet = @host@
+AS = @AS@
+CC = @CC@
+CXX = @CXX@
+DLLTOOL = @DLLTOOL@
+ECHO = @ECHO@
+EXEEXT = @EXEEXT@
+F77 = @F77@
+GNUFLAGS = @GNUFLAGS@
+HAVE_SORT = @HAVE_SORT@
+HAVE_TAIL = @HAVE_TAIL@
+LIBTOOL = @LIBTOOL@
+LIB_HINTLIB_MPI = @LIB_HINTLIB_MPI@
+LN_S = @LN_S@
+MAKEINFO = @MAKEINFO@
+OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
+PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
+STRIP = @STRIP@
+VERSION = @VERSION@
+diff_check_progs = @diff_check_progs@
+fortran_check_dirs = @fortran_check_dirs@
+fortran_check_progs = @fortran_check_progs@
+
+pkginclude_HEADERS =     adapt.h                       miserintegrator.h    adaptintegrator.h             modulararithmetic.h bitvectorring.h    adaptintegratorlocallist.h    myalgorithm.h    adaptintegratorms.h           mymath.h gcd.h    array.h                       mympi.h    bitop.h                       niederreitermatrix.h niederreitermatrixgen.h    faure.h    buffer.h                      old_bitop.h    builtinprng.h                 orbitrule.h    compruleintegrator.h          polynomial2.h polynomial.h    galoisfield.h    precalculatedfield.h                                  prime.h integerring.h    cubaturerule.h                pseudoembeddedrule.h    cubepartitioner.h             qmcintegration.h    defaultcubaturerulefactory.h  qmcintegrator.h    qmcroutinesimp.h    digitalnet2.h                 qrnsequencebase.h    digitalnetgen.h               qrnsequence.h    distribution.h                regioncollection.h    embeddedrule.h                region.h    eratosthenes.h                rule1midpoint.h    esterr.h                      rule1trapezoidal.h    exception.h                   rule2simplex.h rule2thacher.h    exception_MPI.h               rule3gauss.h rule3cross.h    fourthdiff.h                  rule3octahedron.h rule3tyler.h rule3ewing.h    function.h                    rule5hammer.h    generatormatrix.h             rule5stroud.h    halton.h                      rule75genzmalik.h    hintlib_limits.h              rule7phillips.h    hintlib_sstream.h             rule9stenger.h    hypercube.h                   rulebasedintegrator.h    integrator.h                  ruleintegrator.h    kahanadd.h                    shiftscale.h    lcg_pow2.h                    sobolmatrix.h    lcg_prime.h                   staticloadbalancer.h    make.h                        statistic.h    mcintegration.h                  mcintegrator.h                   testfunction.h    mcpointset.h               vegasintegrator.h    mersennetwister.h             virtualprng.h    minmaxfinder.h    prime_generated.h    defaults.h  pointset.h
+
+
+CLEANFILES = defaults.h prime_generated.h
+
+noinst_HEADERS = _defaults1.h _defaults2.h
+
+noinst_PROGRAMS = create_prime
+create_prime_SOURCES = create_prime.cpp
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../../config.h
+CONFIG_CLEAN_FILES = 
+noinst_PROGRAMS =  create_prime$(EXEEXT)
+PROGRAMS =  $(noinst_PROGRAMS)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I../..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+create_prime_OBJECTS =  create_prime.$(OBJEXT)
+create_prime_LDADD = $(LDADD)
+create_prime_DEPENDENCIES = 
+create_prime_LDFLAGS = 
+CXXFLAGS = @CXXFLAGS@
+CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+HEADERS =  $(noinst_HEADERS) $(pkginclude_HEADERS)
+
+DIST_COMMON =  Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP_ENV = --best
+SOURCES = $(create_prime_SOURCES)
+OBJECTS = $(create_prime_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .cpp .lo .o .obj .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.ac $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps src/HIntLib/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-noinstPROGRAMS:
+
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+
+distclean-noinstPROGRAMS:
+
+maintainer-clean-noinstPROGRAMS:
+
+.c.o:
+	$(COMPILE) -c $<
+
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+.c.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.s.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.S.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+create_prime$(EXEEXT): $(create_prime_OBJECTS) $(create_prime_DEPENDENCIES)
+	@rm -f create_prime$(EXEEXT)
+	$(CXXLINK) $(create_prime_LDFLAGS) $(create_prime_OBJECTS) $(create_prime_LDADD) $(LIBS)
+.cpp.o:
+	$(CXXCOMPILE) -c $<
+.cpp.obj:
+	$(CXXCOMPILE) -c `cygpath -w $<`
+.cpp.lo:
+	$(LTCXXCOMPILE) -c $<
+
+install-pkgincludeHEADERS: $(pkginclude_HEADERS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(pkgincludedir)
+	@list='$(pkginclude_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(pkgincludedir)/$$p"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(pkgincludedir)/$$p; \
+	done
+
+uninstall-pkgincludeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	list='$(pkginclude_HEADERS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(pkgincludedir)/$$p; \
+	done
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = src/HIntLib
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+	$(MAKE) $(AM_MAKEFLAGS) top_distdir="$(top_distdir)" distdir="$(distdir)" dist-hook
+create_prime.o: create_prime.cpp defaults.h eratosthenes.h
+
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am:
+install-exec: install-exec-am
+
+install-data-am: install-pkgincludeHEADERS
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am: uninstall-pkgincludeHEADERS
+uninstall: uninstall-am
+all-am: Makefile $(PROGRAMS) $(HEADERS)
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs:
+	$(mkinstalldirs)  $(DESTDIR)$(pkgincludedir)
+
+
+mostlyclean-generic:
+
+clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+mostlyclean-am:  mostlyclean-noinstPROGRAMS mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-tags \
+		mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-noinstPROGRAMS clean-compile clean-libtool clean-tags \
+		clean-generic mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-noinstPROGRAMS distclean-compile \
+		distclean-libtool distclean-tags distclean-generic \
+		clean-am
+	-rm -f libtool
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-noinstPROGRAMS \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-tags maintainer-clean-generic \
+		distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY: mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
+clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile mostlyclean-libtool distclean-libtool \
+clean-libtool maintainer-clean-libtool uninstall-pkgincludeHEADERS \
+install-pkgincludeHEADERS tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
+check-am installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
+
+create_prime.obj create_prime.o create_prime.lo: defaults.h
+
+dist-hook:
+	cd $(distdir) && rm -f $(CLEANFILES)
+
+# defaults.h
+
+# Is created by concatenating _*.h files, ../config.h, and create.h produced
+# by libtest
+
+defaults.h: _defaults1.h _defaults2.h \
+            $(top_builddir)/libtest/result.h $(top_builddir)/config.h
+	@echo Creating header file \"defaults.h\"
+	cat _defaults1.h $(top_builddir)/config.h \
+            $(top_builddir)/libtest/result.h _defaults2.h > defaults.h
+
+$(top_builddir)/libtest/result.h:
+	cd $(top_builddir)/libtest && $(MAKE) result.h
+
+# prime_generated.h
+
+prime_generated.h: create_prime@EXEEXT@
+	@echo Creating header file \"prime_generated.h\"
+	./create_prime@EXEEXT@ h > prime_generated.h
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

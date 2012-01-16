@@ -1,0 +1,9 @@
+
+Change Log
+==========
+
+0.0.1    Mar 8, 2003    First public beta release
+
+   wc src/*.cpp src/HIntLib/*.h | tail -1
+     26284   90162  649380 total
+

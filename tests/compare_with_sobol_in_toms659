@@ -1,0 +1,19 @@
+#! /bin/sh
+
+./test_qrnsequence -p 10 -s -d 40 seq 1200 1 10000 > hintlib_sobol.txt
+
+if test $? -ne 0; then
+   echo "test_qrnsequence failed!"
+   exit 1
+fi
+
+cat <<EOF | toms659/sobol > toms659_sobol.txt
+40
+9999
+EOF
+
+./numericdiff hintlib_sobol.txt toms659_sobol.txt || exit 1
+
+rm hintlib_sobol.txt toms659_sobol.txt
+
+exit 0

@@ -1,0 +1,20 @@
+#! /bin/sh
+
+./test_qrnsequence -p 10 -s -d 40 seq 9000 1 5000 > hintlib_halton.txt
+
+if test $? -ne 0; then
+   echo "test_qrnsequence failed!"
+   exit 1
+fi
+
+cat <<EOF | toms659/halton > toms659_halton.txt
+40
+4999
+.00000000000001
+EOF
+
+./numericdiff hintlib_halton.txt toms659_halton.txt || exit 1
+
+rm hintlib_halton.txt toms659_halton.txt
+
+exit 0

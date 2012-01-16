@@ -1,0 +1,6 @@
+#! /bin/sh
+
+./test_arithmetic -s -n 3000
+
+exit $?
+

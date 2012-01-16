@@ -1,0 +1,6 @@
+#! /bin/sh
+
+./test_prime -s -n 7000
+
+exit $?
+

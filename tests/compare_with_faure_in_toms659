@@ -1,0 +1,25 @@
+#! /bin/sh
+
+for dim in 2 3 4 5 6 7 8 9 10 11 30 31 32 40
+do
+   echo "Checking dimension $dim..."
+
+   ./test_qrnsequence -p 10 -s -d $dim seq 2100 0 10000 > hintlib_faure_${dim}.txt
+
+   if test $? -ne 0; then
+      echo "test_qrnsequence failed!"
+      exit 1
+   fi
+
+cat <<EOF | (cd toms659 ; faure) > toms659_faure_${dim}.txt
+$dim
+10000
+EOF
+
+./numericdiff hintlib_faure_${dim}.txt toms659_faure_${dim}.txt || exit 1
+
+rm hintlib_faure_${dim}.txt toms659_faure_${dim}.txt
+
+done
+
+exit 0

@@ -1,0 +1,6 @@
+#! /bin/sh
+
+./test_bitop -s
+
+exit $?
+

@@ -1,0 +1,114 @@
+#! /bin/sh
+
+points=4096
+dim=20
+p=10
+
+echo "Testing base 2 sequence generation..."
+
+res=0
+./test_qrnsequence -s -p $p -d $dim seq 1001 $points > nied_2_naive.txt || res=1
+./test_qrnsequence -s -p $p -d $dim seq 1101 $points > nied_2_normal.txt || res=1
+./test_qrnsequence -s -p $p -d $dim seq 1201 $points > nied_2_gray.txt || res=1
+./test_qrnsequence -s -p $p -d $dim seq 2002 $points > nied_gen_naive.txt || res=1
+./test_qrnsequence -s -p $p -d $dim seq 2102 $points > nied_gen_normal.txt || res=1
+./test_qrnsequence -s -p $p -d $dim seq 2202 $points > nied_gen_gray.txt || res=1
+
+if test $res -ne 0; then
+  echo "test_qrnsequence failed!"
+  (exit1); exit 1
+fi
+
+# All correct-order sequences should be equal
+
+./numericdiff nied_2_naive.txt nied_2_normal.txt ||
+  { echo "nied_2_naive.txt and nied_2_normal.txt do not match!"; { (exit 1); exit 1; }; }
+
+./numericdiff nied_2_naive.txt nied_gen_normal.txt ||
+  { echo "nied_2_naive.txt and nied_gen_normal.txt do not match!"; { (exit 1); exit 1; }; }
+
+./numericdiff nied_2_naive.txt nied_gen_naive.txt ||
+  { echo "nied_2_naive.txt and nied_gen_naive.txt do not match!"; { (exit 1); exit 1; }; }
+
+# All gray-code-order sequences should be equal
+
+./numericdiff nied_2_gray.txt nied_gen_gray.txt ||
+  { echo "nied_2_gray.txt and nied_gen_gray.txt do not match!"; { (exit 1); exit 1; }; }
+
+# Compare with gray (requires sorting)
+
+sort nied_2_naive.txt > x1.txt
+sort nied_2_gray.txt  > x2.txt
+
+./numericdiff x1.txt x2.txt ||
+  { echo "nied_2_naive.txt and nied_2_gray.txt do not match after sorting!"; { (exit 1); exit 1; }; }
+
+# Check if starting in the middle works
+
+tail -100 nied_2_naive.txt > nied_back1.txt
+
+./test_qrnsequence -s -p $p -d $dim seq 2102 3996 $points > nied_back2.txt ||
+  { echo "test_qrnsequence failed!"; { (exit 1); exit 1; }; }
+
+./numericdiff nied_back1.txt nied_back2.txt ||
+  { echo "nied_back1.txt and nied_back2.txt do not match!"; { (exit 1); exit 1; }; }
+
+# Tests for prime number base
+
+echo "Testing prime base sequence generation..."
+
+points=3125
+
+./test_qrnsequence -s -p $p -d $dim seq 2005 $points > nied_gen5_naive.txt || res=1
+./test_qrnsequence -s -p $p -d $dim seq 2105 $points > nied_gen5_normal.txt || res=1
+./test_qrnsequence -s -p $p -d $dim seq 2205 $points > nied_gen5_gray.txt || res=1
+
+if test $res -ne 0; then
+  echo "test_qrnsequence failed!"
+  (exit1); exit 1
+fi
+
+./numericdiff nied_gen5_naive.txt nied_gen5_normal.txt ||
+  { echo "nied_gen5_naive.txt and nied_gen5_normal.txt do not match!"; { (exit 1); exit 1; }; }
+
+sort nied_gen5_naive.txt > x1.txt
+sort nied_gen5_gray.txt  > x2.txt
+
+./numericdiff x1.txt x2.txt ||
+  { echo "nied_gen5_naive.txt and nied_gen5_gray.txt do not match after sorting!"; { (exit 1); exit 1; }; }
+
+# Tests for prime power base
+
+echo "Testing prime power base sequence generation..."
+
+points=6561
+
+./test_qrnsequence -s -p $p -d $dim seq 2009 $points > nied_gen9_naive.txt || res=1
+./test_qrnsequence -s -p $p -d $dim seq 2109 $points > nied_gen9_normal.txt || res=1
+./test_qrnsequence -s -p $p -d $dim seq 2209 $points > nied_gen9_gray.txt || res=1
+
+if test $res -ne 0; then
+  echo "test_qrnsequence failed!"
+  (exit1); exit 1
+fi
+
+./numericdiff nied_gen9_naive.txt nied_gen9_normal.txt ||
+  { echo "nied_gen9_naive.txt and nied_gen9_normal.txt do not match!"; { (exit 1); exit 1; }; }
+
+sort nied_gen9_naive.txt > x1.txt
+sort nied_gen9_gray.txt  > x2.txt
+
+./numericdiff x1.txt x2.txt ||
+  { echo "nied_gen9_naive.txt and nied_gen9_gray.txt do not match after sorting!"; { (exit 1); exit 1; }; }
+
+# Cleanup
+
+rm nied_2_naive.txt nied_2_normal.txt nied_2_gray.txt \
+   nied_gen_naive.txt nied_gen_normal.txt nied_gen_gray.txt \
+   nied_gen5_naive.txt nied_gen5_normal.txt nied_gen5_gray.txt \
+   nied_gen9_naive.txt nied_gen9_normal.txt nied_gen9_gray.txt \
+   x1.txt x2.txt \
+   nied_back1.txt nied_back2.txt
+
+exit 0
+

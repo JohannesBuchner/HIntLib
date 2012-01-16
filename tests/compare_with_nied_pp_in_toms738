@@ -1,0 +1,27 @@
+#! /bin/sh
+
+for p in 04 08 16 32   09 27   25 49 
+do
+   echo "Checking prime power base $p..."
+
+   ./test_qrnsequence -p 10 -s -d 12 seq 20${p} 0 10000 > hintlib_nied${p}.txt
+
+   if test $? -ne 0; then
+      echo "test_qrnsequence failed!"
+      exit 1
+   fi
+
+cat <<EOF | (cd toms738 ; genin) > toms738_nied${p}.txt
+12
+${p}
+10000
+0
+EOF
+
+./numericdiff hintlib_nied${p}.txt toms738_nied${p}.txt || exit 1
+
+rm hintlib_nied${p}.txt toms738_nied${p}.txt
+
+done
+
+exit 0

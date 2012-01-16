@@ -1,0 +1,5 @@
+#! /bin/sh
+
+./test_genmatrix -s
+
+exit $?

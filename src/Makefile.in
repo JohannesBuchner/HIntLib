@@ -1,0 +1,949 @@
+# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
+
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+host_alias = @host_alias@
+host_triplet = @host@
+AS = @AS@
+CC = @CC@
+CXX = @CXX@
+DLLTOOL = @DLLTOOL@
+ECHO = @ECHO@
+EXEEXT = @EXEEXT@
+F77 = @F77@
+GNUFLAGS = @GNUFLAGS@
+HAVE_SORT = @HAVE_SORT@
+HAVE_TAIL = @HAVE_TAIL@
+LIBTOOL = @LIBTOOL@
+LIB_HINTLIB_MPI = @LIB_HINTLIB_MPI@
+LN_S = @LN_S@
+MAKEINFO = @MAKEINFO@
+OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
+PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
+STRIP = @STRIP@
+VERSION = @VERSION@
+diff_check_progs = @diff_check_progs@
+fortran_check_dirs = @fortran_check_dirs@
+fortran_check_progs = @fortran_check_progs@
+
+SUBDIRS = HIntLib
+
+ALLSRC =     bitop.cpp    old_bitop.cpp    prime.cpp    prime_generated.cpp    modulararithmetic.cpp    polynomial.cpp    polynomial2.cpp    integerring.cpp    galoisfield.cpp    precalculatedgaloisfield.cpp    precalculatedfield.cpp    gcd.cpp    mymath.cpp    cubepartitioner.cpp    kahanadd.cpp    testfunction.cpp    qrnsequencebase.cpp    shiftscale.cpp    digitalnet2.cpp    digitalnetgen.cpp    sobolmatrix.cpp    faure.cpp    niederreitermatrixgen.cpp    niederreitermatrix.cpp    halton.cpp    orbitrule.cpp    pseudoembeddedrule.cpp    rule1midpoint.cpp    rule1trapezoidal.cpp    rule2simplex.cpp    rule2thacher.cpp    rule3octahedron.cpp    rule3cross.cpp    rule3tyler.cpp    rule3gauss.cpp    rule3ewing.cpp    rule5hammer.cpp    rule5stroud.cpp    rule7phillips.cpp    rule9stenger.cpp    rule75genzmalik.cpp    integrator.cpp    rulebasedintegrator.cpp    ruleintegrator.cpp    compruleintegrator.cpp    adaptintegrator.cpp    adapt.cpp    regioncollection.cpp    qmcintegrator.cpp    mcintegrator.cpp    vegasintegrator.cpp    miserintegrator.cpp    mersennetwister.cpp    builtinprng.cpp    virtualprng.cpp    pointset.cpp    mcpointset.cpp    generatormatrix.cpp    loadlibseq.cpp    tparameter.cpp    stl.cpp    exception.cpp    make.cpp makecubaturerulefactory.cpp makeqrnsequence.cpp    output.cpp
+
+
+ALLSRCSEQ = $(ALLSRC)    hypercube.cpp region.cpp
+
+
+ALLSRCMPI = $(ALLSRC)    mympi.cpp    region_MPI.cpp    hypercube_MPI.cpp    exception_MPI.cpp    staticloadbalancer.cpp    buffer.cpp    adaptintegratorms.cpp adaptintegratorlocallist.cpp    mcintegrator_MPI.cpp qmcintegrator_MPI.cpp
+
+
+lib_LTLIBRARIES = libhintlib.la @LIB_HINTLIB_MPI@
+EXTRA_LTLIBRARIES = libhintlibmpi.la
+libhintlib_la_SOURCES = $(ALLSRCSEQ)
+libhintlibmpi_la_SOURCES = $(ALLSRCMPI)
+libhintlibmpi_la_LDFLAGS = -rpath $(libdir)
+
+noinst_PROGRAMS = create_sobol create_niederreiter create_bitop
+GNS = bitop.cpp exception.cpp hypercube.cpp generatormatrix.cpp prime.cpp prime_generated.cpp mymath.cpp polynomial2.cpp
+create_sobol_SOURCES = create_sobol.cpp $(GNS)
+create_niederreiter_SOURCES = create_niederreiter.cpp $(GNS) integerring.cpp niederreitermatrixgen.cpp modulararithmetic.cpp polynomial.cpp precalculatedfield.cpp precalculatedgaloisfield.cpp galoisfield.cpp gcd.cpp output.cpp
+create_bitop_SOURCES = create_bitop.cpp old_bitop.cpp
+
+INCLUDES = @GNUFLAGS@
+# LDFLAGS=
+LDADD = -lm
+
+CLEANFILES = prime_generated.cpp sobolmatrix.cpp niederreitermatrix.cpp bitop.cpp
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
+CONFIG_CLEAN_FILES = 
+LTLIBRARIES =  $(lib_LTLIBRARIES)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+libhintlibmpi_la_LIBADD = 
+libhintlibmpi_la_OBJECTS =  bitop.lo old_bitop.lo prime.lo \
+prime_generated.lo modulararithmetic.lo polynomial.lo polynomial2.lo \
+integerring.lo galoisfield.lo precalculatedgaloisfield.lo \
+precalculatedfield.lo gcd.lo mymath.lo cubepartitioner.lo kahanadd.lo \
+testfunction.lo qrnsequencebase.lo shiftscale.lo digitalnet2.lo \
+digitalnetgen.lo sobolmatrix.lo faure.lo niederreitermatrixgen.lo \
+niederreitermatrix.lo halton.lo orbitrule.lo pseudoembeddedrule.lo \
+rule1midpoint.lo rule1trapezoidal.lo rule2simplex.lo rule2thacher.lo \
+rule3octahedron.lo rule3cross.lo rule3tyler.lo rule3gauss.lo \
+rule3ewing.lo rule5hammer.lo rule5stroud.lo rule7phillips.lo \
+rule9stenger.lo rule75genzmalik.lo integrator.lo rulebasedintegrator.lo \
+ruleintegrator.lo compruleintegrator.lo adaptintegrator.lo adapt.lo \
+regioncollection.lo qmcintegrator.lo mcintegrator.lo vegasintegrator.lo \
+miserintegrator.lo mersennetwister.lo builtinprng.lo virtualprng.lo \
+pointset.lo mcpointset.lo generatormatrix.lo loadlibseq.lo \
+tparameter.lo stl.lo exception.lo make.lo makecubaturerulefactory.lo \
+makeqrnsequence.lo output.lo mympi.lo region_MPI.lo hypercube_MPI.lo \
+exception_MPI.lo staticloadbalancer.lo buffer.lo adaptintegratorms.lo \
+adaptintegratorlocallist.lo mcintegrator_MPI.lo qmcintegrator_MPI.lo
+libhintlib_la_LDFLAGS = 
+libhintlib_la_LIBADD = 
+libhintlib_la_OBJECTS =  bitop.lo old_bitop.lo prime.lo \
+prime_generated.lo modulararithmetic.lo polynomial.lo polynomial2.lo \
+integerring.lo galoisfield.lo precalculatedgaloisfield.lo \
+precalculatedfield.lo gcd.lo mymath.lo cubepartitioner.lo kahanadd.lo \
+testfunction.lo qrnsequencebase.lo shiftscale.lo digitalnet2.lo \
+digitalnetgen.lo sobolmatrix.lo faure.lo niederreitermatrixgen.lo \
+niederreitermatrix.lo halton.lo orbitrule.lo pseudoembeddedrule.lo \
+rule1midpoint.lo rule1trapezoidal.lo rule2simplex.lo rule2thacher.lo \
+rule3octahedron.lo rule3cross.lo rule3tyler.lo rule3gauss.lo \
+rule3ewing.lo rule5hammer.lo rule5stroud.lo rule7phillips.lo \
+rule9stenger.lo rule75genzmalik.lo integrator.lo rulebasedintegrator.lo \
+ruleintegrator.lo compruleintegrator.lo adaptintegrator.lo adapt.lo \
+regioncollection.lo qmcintegrator.lo mcintegrator.lo vegasintegrator.lo \
+miserintegrator.lo mersennetwister.lo builtinprng.lo virtualprng.lo \
+pointset.lo mcpointset.lo generatormatrix.lo loadlibseq.lo \
+tparameter.lo stl.lo exception.lo make.lo makecubaturerulefactory.lo \
+makeqrnsequence.lo output.lo hypercube.lo region.lo
+noinst_PROGRAMS =  create_sobol$(EXEEXT) create_niederreiter$(EXEEXT) \
+create_bitop$(EXEEXT)
+PROGRAMS =  $(noinst_PROGRAMS)
+
+create_sobol_OBJECTS =  create_sobol.$(OBJEXT) bitop.$(OBJEXT) \
+exception.$(OBJEXT) hypercube.$(OBJEXT) generatormatrix.$(OBJEXT) \
+prime.$(OBJEXT) prime_generated.$(OBJEXT) mymath.$(OBJEXT) \
+polynomial2.$(OBJEXT)
+create_sobol_LDADD = $(LDADD)
+create_sobol_DEPENDENCIES = 
+create_sobol_LDFLAGS = 
+create_niederreiter_OBJECTS =  create_niederreiter.$(OBJEXT) \
+bitop.$(OBJEXT) exception.$(OBJEXT) hypercube.$(OBJEXT) \
+generatormatrix.$(OBJEXT) prime.$(OBJEXT) prime_generated.$(OBJEXT) \
+mymath.$(OBJEXT) polynomial2.$(OBJEXT) integerring.$(OBJEXT) \
+niederreitermatrixgen.$(OBJEXT) modulararithmetic.$(OBJEXT) \
+polynomial.$(OBJEXT) precalculatedfield.$(OBJEXT) \
+precalculatedgaloisfield.$(OBJEXT) galoisfield.$(OBJEXT) gcd.$(OBJEXT) \
+output.$(OBJEXT)
+create_niederreiter_LDADD = $(LDADD)
+create_niederreiter_DEPENDENCIES = 
+create_niederreiter_LDFLAGS = 
+create_bitop_OBJECTS =  create_bitop.$(OBJEXT) old_bitop.$(OBJEXT)
+create_bitop_LDADD = $(LDADD)
+create_bitop_DEPENDENCIES = 
+create_bitop_LDFLAGS = 
+CXXFLAGS = @CXXFLAGS@
+CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP_ENV = --best
+SOURCES = $(libhintlibmpi_la_SOURCES) $(libhintlib_la_SOURCES) $(create_sobol_SOURCES) $(create_niederreiter_SOURCES) $(create_bitop_SOURCES)
+OBJECTS = $(libhintlibmpi_la_OBJECTS) $(libhintlib_la_OBJECTS) $(create_sobol_OBJECTS) $(create_niederreiter_OBJECTS) $(create_bitop_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .cpp .lo .o .obj .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.ac $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps src/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-libLTLIBRARIES:
+
+clean-libLTLIBRARIES:
+	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
+
+distclean-libLTLIBRARIES:
+
+maintainer-clean-libLTLIBRARIES:
+
+install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(libdir)/$$p"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(libdir)/$$p; \
+	  else :; fi; \
+	done
+
+uninstall-libLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(libdir)/$$p; \
+	done
+
+.c.o:
+	$(COMPILE) -c $<
+
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+.c.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.s.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.S.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+libhintlibmpi.la: $(libhintlibmpi_la_OBJECTS) $(libhintlibmpi_la_DEPENDENCIES)
+	$(CXXLINK)  $(libhintlibmpi_la_LDFLAGS) $(libhintlibmpi_la_OBJECTS) $(libhintlibmpi_la_LIBADD) $(LIBS)
+
+libhintlib.la: $(libhintlib_la_OBJECTS) $(libhintlib_la_DEPENDENCIES)
+	$(CXXLINK) -rpath $(libdir) $(libhintlib_la_LDFLAGS) $(libhintlib_la_OBJECTS) $(libhintlib_la_LIBADD) $(LIBS)
+
+mostlyclean-noinstPROGRAMS:
+
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+
+distclean-noinstPROGRAMS:
+
+maintainer-clean-noinstPROGRAMS:
+
+create_sobol$(EXEEXT): $(create_sobol_OBJECTS) $(create_sobol_DEPENDENCIES)
+	@rm -f create_sobol$(EXEEXT)
+	$(CXXLINK) $(create_sobol_LDFLAGS) $(create_sobol_OBJECTS) $(create_sobol_LDADD) $(LIBS)
+
+create_niederreiter$(EXEEXT): $(create_niederreiter_OBJECTS) $(create_niederreiter_DEPENDENCIES)
+	@rm -f create_niederreiter$(EXEEXT)
+	$(CXXLINK) $(create_niederreiter_LDFLAGS) $(create_niederreiter_OBJECTS) $(create_niederreiter_LDADD) $(LIBS)
+
+create_bitop$(EXEEXT): $(create_bitop_OBJECTS) $(create_bitop_DEPENDENCIES)
+	@rm -f create_bitop$(EXEEXT)
+	$(CXXLINK) $(create_bitop_LDFLAGS) $(create_bitop_OBJECTS) $(create_bitop_LDADD) $(LIBS)
+.cpp.o:
+	$(CXXCOMPILE) -c $<
+.cpp.obj:
+	$(CXXCOMPILE) -c `cygpath -w $<`
+.cpp.lo:
+	$(LTCXXCOMPILE) -c $<
+
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+# To change the values of `make' variables: instead of editing Makefiles,
+# (1) if the variable is set in `config.status', edit `config.status'
+#     (which will cause the Makefiles to be regenerated when you run `make');
+# (2) otherwise, pass the desired values on the `make' command line.
+
+@SET_MAKE@
+
+all-recursive install-data-recursive install-exec-recursive \
+installdirs-recursive install-recursive uninstall-recursive  \
+check-recursive installcheck-recursive info-recursive dvi-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+mostlyclean-recursive clean-recursive distclean-recursive \
+maintainer-clean-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
+	  rev="$$subdir $$rev"; \
+	  test "$$subdir" = "." && dot_seen=yes; \
+	done; \
+	test "$$dot_seen" = "no" && rev=". $$rev"; \
+	target=`echo $@ | sed s/-recursive//`; \
+	for subdir in $$rev; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
+	done
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+   if test "$$subdir" = .; then :; else \
+	    test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
+   fi; \
+	done; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = src
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+	for subdir in $(SUBDIRS); do \
+	  if test "$$subdir" = .; then :; else \
+	    test -d $(distdir)/$$subdir \
+	    || mkdir $(distdir)/$$subdir \
+	    || exit 1; \
+	    chmod 777 $(distdir)/$$subdir; \
+	    (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir=../$(top_distdir) distdir=../$(distdir)/$$subdir distdir) \
+	      || exit 1; \
+	  fi; \
+	done
+	$(MAKE) $(AM_MAKEFLAGS) top_distdir="$(top_distdir)" distdir="$(distdir)" dist-hook
+adapt.lo adapt.o : adapt.cpp HIntLib/adapt.h HIntLib/regioncollection.h \
+	HIntLib/region.h HIntLib/esterr.h HIntLib/mymath.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
+	HIntLib/hypercube.h HIntLib/array.h HIntLib/fourthdiff.h \
+	HIntLib/function.h HIntLib/minmaxfinder.h HIntLib/bitop.h
+adaptintegrator.lo adaptintegrator.o : adaptintegrator.cpp \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/adaptintegrator.h HIntLib/rulebasedintegrator.h \
+	HIntLib/integrator.h HIntLib/esterr.h HIntLib/mymath.h \
+	HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
+	HIntLib/hypercube.h HIntLib/array.h HIntLib/regioncollection.h \
+	HIntLib/region.h HIntLib/exception.h
+adaptintegratorlocallist.lo adaptintegratorlocallist.o : \
+	adaptintegratorlocallist.cpp HIntLib/mympi.h HIntLib/defaults.h \
+	HIntLib/hintlib_limits.h HIntLib/adaptintegratorlocallist.h \
+	HIntLib/rulebasedintegrator.h HIntLib/integrator.h \
+	HIntLib/esterr.h HIntLib/mymath.h HIntLib/buffer.h \
+	HIntLib/regioncollection.h HIntLib/region.h \
+	HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
+	HIntLib/hypercube.h HIntLib/array.h HIntLib/adapt.h \
+	HIntLib/exception.h HIntLib/bitop.h
+adaptintegratorms.lo adaptintegratorms.o : adaptintegratorms.cpp \
+	HIntLib/mympi.h HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/adaptintegratorms.h HIntLib/rulebasedintegrator.h \
+	HIntLib/integrator.h HIntLib/esterr.h HIntLib/mymath.h \
+	HIntLib/buffer.h HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
+	HIntLib/hypercube.h HIntLib/array.h HIntLib/regioncollection.h \
+	HIntLib/region.h HIntLib/adapt.h HIntLib/exception_MPI.h \
+	HIntLib/exception.h HIntLib/bitop.h
+bitop.o: bitop.cpp HIntLib/bitop.h HIntLib/defaults.h \
+	HIntLib/hintlib_limits.h
+buffer.lo buffer.o : buffer.cpp HIntLib/mympi.h HIntLib/defaults.h \
+	HIntLib/hintlib_limits.h HIntLib/buffer.h
+builtinprng.lo builtinprng.o : builtinprng.cpp HIntLib/builtinprng.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h HIntLib/exception.h
+compruleintegrator.lo compruleintegrator.o : compruleintegrator.cpp \
+	HIntLib/compruleintegrator.h HIntLib/rulebasedintegrator.h \
+	HIntLib/integrator.h HIntLib/esterr.h HIntLib/mymath.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
+	HIntLib/hypercube.h HIntLib/array.h HIntLib/cubepartitioner.h \
+	HIntLib/kahanadd.h HIntLib/exception.h
+create_bitop.o: create_bitop.cpp HIntLib/old_bitop.h
+create_niederreiter.o: create_niederreiter.cpp \
+	HIntLib/niederreitermatrix.h HIntLib/defaults.h \
+	HIntLib/hintlib_limits.h HIntLib/generatormatrix.h \
+	HIntLib/bitop.h HIntLib/niederreitermatrixgen.h \
+	HIntLib/polynomial.h HIntLib/mymath.h \
+	HIntLib/modulararithmetic.h
+create_sobol.o: create_sobol.cpp HIntLib/polynomial2.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h HIntLib/bitop.h \
+	HIntLib/prime.h HIntLib/exception.h HIntLib/prime_generated.h \
+	HIntLib/sobolmatrix.h HIntLib/generatormatrix.h
+cubepartitioner.lo cubepartitioner.o : cubepartitioner.cpp \
+	HIntLib/cubepartitioner.h HIntLib/defaults.h \
+	HIntLib/hypercube.h HIntLib/mymath.h HIntLib/hintlib_limits.h \
+	HIntLib/array.h HIntLib/exception.h
+digitalnet2.lo digitalnet2.o : digitalnet2.cpp HIntLib/digitalnet2.h \
+	HIntLib/generatormatrix.h HIntLib/defaults.h \
+	HIntLib/hintlib_limits.h HIntLib/bitop.h \
+	HIntLib/qrnsequencebase.h HIntLib/hypercube.h HIntLib/mymath.h \
+	HIntLib/array.h HIntLib/shiftscale.h HIntLib/pointset.h \
+	HIntLib/statistic.h HIntLib/minmaxfinder.h \
+	HIntLib/qmcintegration.h HIntLib/function.h HIntLib/exception.h
+digitalnetgen.lo digitalnetgen.o : digitalnetgen.cpp \
+	HIntLib/digitalnetgen.h HIntLib/generatormatrix.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h HIntLib/bitop.h \
+	HIntLib/qrnsequencebase.h HIntLib/hypercube.h HIntLib/mymath.h \
+	HIntLib/array.h HIntLib/shiftscale.h HIntLib/pointset.h \
+	HIntLib/statistic.h HIntLib/minmaxfinder.h \
+	HIntLib/qmcintegration.h HIntLib/function.h HIntLib/exception.h \
+	HIntLib/modulararithmetic.h HIntLib/precalculatedfield.h \
+	HIntLib/bitvectorring.h
+exception.lo exception.o : exception.cpp HIntLib/defaults.h \
+	HIntLib/exception.h HIntLib/hypercube.h HIntLib/mymath.h \
+	HIntLib/hintlib_limits.h HIntLib/array.h
+exception_MPI.lo exception_MPI.o : exception_MPI.cpp HIntLib/defaults.h \
+	HIntLib/mympi.h HIntLib/hintlib_limits.h \
+	HIntLib/exception_MPI.h HIntLib/exception.h
+faure.lo faure.o : faure.cpp HIntLib/faure.h HIntLib/generatormatrix.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h HIntLib/bitop.h \
+	HIntLib/modulararithmetic.h HIntLib/mymath.h HIntLib/prime.h \
+	HIntLib/exception.h HIntLib/prime_generated.h
+galoisfield.o: galoisfield.cpp HIntLib/defaults.h HIntLib/galoisfield.h \
+	HIntLib/polynomial.h HIntLib/modulararithmetic.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/exception.h
+gcd.o: gcd.cpp HIntLib/gcd.h HIntLib/integerring.h HIntLib/mymath.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/polynomial2.h HIntLib/bitop.h HIntLib/prime.h \
+	HIntLib/exception.h HIntLib/prime_generated.h \
+	HIntLib/modulararithmetic.h HIntLib/polynomial.h
+generatormatrix.lo generatormatrix.o : generatormatrix.cpp \
+	HIntLib/generatormatrix.h HIntLib/defaults.h \
+	HIntLib/hintlib_limits.h HIntLib/bitop.h HIntLib/mymath.h \
+	HIntLib/exception.h
+halton.lo halton.o : halton.cpp HIntLib/halton.h \
+	HIntLib/qrnsequencebase.h HIntLib/hypercube.h HIntLib/mymath.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/shiftscale.h HIntLib/qmcroutinesimp.h \
+	HIntLib/pointset.h HIntLib/statistic.h HIntLib/minmaxfinder.h \
+	HIntLib/qmcintegration.h HIntLib/function.h HIntLib/prime.h \
+	HIntLib/exception.h HIntLib/prime_generated.h
+hypercube.lo hypercube.o : hypercube.cpp HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/array.h
+hypercube_MPI.lo hypercube_MPI.o : hypercube_MPI.cpp HIntLib/mympi.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h hypercube.cpp \
+	HIntLib/hypercube.h HIntLib/mymath.h HIntLib/array.h \
+	HIntLib/buffer.h
+integerring.o: integerring.cpp HIntLib/integerring.h HIntLib/mymath.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h HIntLib/prime.h \
+	HIntLib/exception.h HIntLib/prime_generated.h
+integrator.lo integrator.o : integrator.cpp HIntLib/integrator.h \
+	HIntLib/esterr.h HIntLib/mymath.h HIntLib/defaults.h \
+	HIntLib/hintlib_limits.h HIntLib/exception.h \
+	HIntLib/hypercube.h HIntLib/array.h HIntLib/function.h
+kahanadd.lo kahanadd.o : kahanadd.cpp HIntLib/kahanadd.h \
+	HIntLib/defaults.h
+loadlibseq.lo loadlibseq.o : loadlibseq.cpp HIntLib/defaults.h \
+	HIntLib/generatormatrix.h HIntLib/hintlib_limits.h \
+	HIntLib/bitop.h HIntLib/prime.h HIntLib/exception.h \
+	HIntLib/prime_generated.h
+make.lo make.o : make.cpp HIntLib/defaults.h HIntLib/make.h \
+	HIntLib/exception.h
+makecubaturerulefactory.lo makecubaturerulefactory.o : \
+	makecubaturerulefactory.cpp HIntLib/make.h HIntLib/exception.h \
+	HIntLib/defaults.h HIntLib/pseudoembeddedrule.h \
+	HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
+	HIntLib/hypercube.h HIntLib/mymath.h HIntLib/hintlib_limits.h \
+	HIntLib/array.h HIntLib/esterr.h HIntLib/fourthdiff.h \
+	HIntLib/function.h HIntLib/minmaxfinder.h \
+	HIntLib/rule1midpoint.h HIntLib/rule1trapezoidal.h \
+	HIntLib/orbitrule.h HIntLib/bitop.h HIntLib/rule2simplex.h \
+	HIntLib/rule2thacher.h HIntLib/rule3octahedron.h \
+	HIntLib/rule3cross.h HIntLib/rule3tyler.h HIntLib/rule3gauss.h \
+	HIntLib/rule3ewing.h HIntLib/rule5hammer.h \
+	HIntLib/rule5stroud.h HIntLib/rule7phillips.h \
+	HIntLib/rule75genzmalik.h HIntLib/rule9stenger.h
+makeqrnsequence.lo makeqrnsequence.o : makeqrnsequence.cpp \
+	HIntLib/defaults.h HIntLib/make.h HIntLib/exception.h \
+	HIntLib/qrnsequence.h HIntLib/sobolmatrix.h \
+	HIntLib/hintlib_limits.h HIntLib/generatormatrix.h \
+	HIntLib/bitop.h HIntLib/niederreitermatrix.h \
+	HIntLib/niederreitermatrixgen.h HIntLib/polynomial.h \
+	HIntLib/mymath.h HIntLib/faure.h HIntLib/halton.h \
+	HIntLib/qrnsequencebase.h HIntLib/hypercube.h HIntLib/array.h \
+	HIntLib/shiftscale.h HIntLib/digitalnet2.h HIntLib/pointset.h \
+	HIntLib/statistic.h HIntLib/minmaxfinder.h \
+	HIntLib/qmcintegration.h HIntLib/function.h \
+	HIntLib/digitalnetgen.h HIntLib/modulararithmetic.h \
+	HIntLib/precalculatedfield.h HIntLib/prime.h \
+	HIntLib/prime_generated.h HIntLib/mersennetwister.h \
+	HIntLib/mcpointset.h HIntLib/distribution.h \
+	HIntLib/mcintegration.h HIntLib/cubepartitioner.h
+mcintegrator.lo mcintegrator.o : mcintegrator.cpp HIntLib/mcintegrator.h \
+	HIntLib/integrator.h HIntLib/esterr.h HIntLib/mymath.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/staticloadbalancer.h HIntLib/exception.h \
+	HIntLib/pointset.h HIntLib/statistic.h HIntLib/minmaxfinder.h \
+	HIntLib/function.h HIntLib/hypercube.h HIntLib/array.h
+mcintegrator_MPI.lo mcintegrator_MPI.o : mcintegrator_MPI.cpp \
+	HIntLib/mympi.h HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	mcintegrator.cpp HIntLib/mcintegrator.h HIntLib/integrator.h \
+	HIntLib/esterr.h HIntLib/mymath.h HIntLib/buffer.h \
+	HIntLib/staticloadbalancer.h HIntLib/exception.h \
+	HIntLib/pointset.h HIntLib/statistic.h HIntLib/minmaxfinder.h \
+	HIntLib/function.h HIntLib/hypercube.h HIntLib/array.h
+mcpointset.lo mcpointset.o : mcpointset.cpp HIntLib/mcpointset.h \
+	HIntLib/pointset.h HIntLib/defaults.h HIntLib/statistic.h \
+	HIntLib/minmaxfinder.h HIntLib/hintlib_limits.h \
+	HIntLib/mymath.h HIntLib/distribution.h HIntLib/hypercube.h \
+	HIntLib/array.h HIntLib/shiftscale.h HIntLib/mcintegration.h \
+	HIntLib/cubepartitioner.h HIntLib/exception.h
+mersennetwister.lo mersennetwister.o : mersennetwister.cpp \
+	HIntLib/mersennetwister.h HIntLib/defaults.h HIntLib/lcg_pow2.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/exception.h
+miserintegrator.lo miserintegrator.o : miserintegrator.cpp \
+	HIntLib/miserintegrator.h HIntLib/integrator.h HIntLib/esterr.h \
+	HIntLib/mymath.h HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/statistic.h HIntLib/minmaxfinder.h HIntLib/hypercube.h \
+	HIntLib/array.h HIntLib/function.h HIntLib/pointset.h \
+	HIntLib/distribution.h HIntLib/shiftscale.h HIntLib/exception.h
+modulararithmetic.o: modulararithmetic.cpp HIntLib/defaults.h \
+	HIntLib/modulararithmetic.h HIntLib/mymath.h \
+	HIntLib/hintlib_limits.h HIntLib/prime.h HIntLib/exception.h \
+	HIntLib/prime_generated.h HIntLib/polynomial.h HIntLib/gcd.h \
+	HIntLib/integerring.h
+mymath.o: mymath.cpp HIntLib/mymath.h HIntLib/defaults.h \
+	HIntLib/hintlib_limits.h HIntLib/polynomial2.h HIntLib/bitop.h \
+	HIntLib/prime.h HIntLib/exception.h HIntLib/prime_generated.h \
+	HIntLib/modulararithmetic.h HIntLib/polynomial.h
+mympi.lo mympi.o : mympi.cpp HIntLib/mympi.h HIntLib/defaults.h \
+	HIntLib/hintlib_limits.h HIntLib/exception_MPI.h \
+	HIntLib/exception.h
+niederreitermatrix.lo niederreitermatrix.o : niederreitermatrix.cpp \
+	HIntLib/niederreitermatrix.h HIntLib/defaults.h \
+	HIntLib/hintlib_limits.h HIntLib/generatormatrix.h \
+	HIntLib/bitop.h
+niederreitermatrixgen.o: niederreitermatrixgen.cpp \
+	HIntLib/niederreitermatrixgen.h HIntLib/generatormatrix.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h HIntLib/bitop.h \
+	HIntLib/polynomial.h HIntLib/mymath.h \
+	HIntLib/modulararithmetic.h HIntLib/precalculatedfield.h \
+	HIntLib/prime.h HIntLib/exception.h HIntLib/prime_generated.h
+old_bitop.lo old_bitop.o : old_bitop.cpp HIntLib/old_bitop.h
+orbitrule.lo orbitrule.o : orbitrule.cpp HIntLib/orbitrule.h \
+	HIntLib/defaults.h HIntLib/function.h HIntLib/array.h \
+	HIntLib/bitop.h HIntLib/hintlib_limits.h HIntLib/minmaxfinder.h
+output.lo output.o : output.cpp HIntLib/defaults.h HIntLib/region.h \
+	HIntLib/esterr.h HIntLib/mymath.h HIntLib/hintlib_limits.h \
+	HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
+	HIntLib/hypercube.h HIntLib/array.h HIntLib/integerring.h \
+	HIntLib/modulararithmetic.h
+pointset.lo pointset.o : pointset.cpp HIntLib/pointset.h \
+	HIntLib/defaults.h HIntLib/statistic.h HIntLib/minmaxfinder.h \
+	HIntLib/hintlib_limits.h HIntLib/mymath.h
+polynomial.o: polynomial.cpp HIntLib/defaults.h HIntLib/polynomial.h \
+	HIntLib/integerring.h HIntLib/mymath.h HIntLib/hintlib_limits.h \
+	HIntLib/modulararithmetic.h HIntLib/precalculatedfield.h \
+	HIntLib/exception.h
+polynomial2.o: polynomial2.cpp HIntLib/defaults.h HIntLib/polynomial2.h \
+	HIntLib/hintlib_limits.h HIntLib/bitop.h HIntLib/prime.h \
+	HIntLib/exception.h HIntLib/prime_generated.h \
+	HIntLib/integerring.h HIntLib/mymath.h \
+	HIntLib/modulararithmetic.h
+precalculatedfield.o: precalculatedfield.cpp \
+	HIntLib/precalculatedfield.h HIntLib/mymath.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h HIntLib/exception.h
+precalculatedgaloisfield.o: precalculatedgaloisfield.cpp \
+	HIntLib/defaults.h HIntLib/precalculatedfield.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/galoisfield.h \
+	HIntLib/polynomial.h HIntLib/modulararithmetic.h \
+	HIntLib/prime.h HIntLib/exception.h HIntLib/prime_generated.h
+prime.o: prime.cpp HIntLib/prime.h HIntLib/exception.h \
+	HIntLib/defaults.h HIntLib/prime_generated.h
+prime_generated.o: prime_generated.cpp HIntLib/prime.h \
+	HIntLib/exception.h HIntLib/defaults.h \
+	HIntLib/prime_generated.h
+pseudoembeddedrule.lo pseudoembeddedrule.o : pseudoembeddedrule.cpp \
+	HIntLib/pseudoembeddedrule.h HIntLib/embeddedrule.h \
+	HIntLib/cubaturerule.h HIntLib/defaults.h HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/esterr.h HIntLib/fourthdiff.h HIntLib/function.h \
+	HIntLib/minmaxfinder.h HIntLib/exception.h
+qmcintegrator.lo qmcintegrator.o : qmcintegrator.cpp \
+	HIntLib/qmcintegrator.h HIntLib/integrator.h HIntLib/esterr.h \
+	HIntLib/mymath.h HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/staticloadbalancer.h HIntLib/pointset.h \
+	HIntLib/statistic.h HIntLib/minmaxfinder.h HIntLib/exception.h \
+	HIntLib/function.h HIntLib/hypercube.h HIntLib/array.h
+qmcintegrator_MPI.lo qmcintegrator_MPI.o : qmcintegrator_MPI.cpp \
+	HIntLib/mympi.h HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	qmcintegrator.cpp HIntLib/qmcintegrator.h HIntLib/integrator.h \
+	HIntLib/esterr.h HIntLib/mymath.h HIntLib/buffer.h \
+	HIntLib/staticloadbalancer.h HIntLib/pointset.h \
+	HIntLib/statistic.h HIntLib/minmaxfinder.h HIntLib/exception.h \
+	HIntLib/function.h HIntLib/hypercube.h HIntLib/array.h
+qrnsequencebase.lo qrnsequencebase.o : qrnsequencebase.cpp \
+	HIntLib/qrnsequencebase.h HIntLib/hypercube.h HIntLib/mymath.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h HIntLib/array.h
+region.lo region.o : region.cpp HIntLib/region.h HIntLib/esterr.h \
+	HIntLib/mymath.h HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
+	HIntLib/hypercube.h HIntLib/array.h
+region_MPI.lo region_MPI.o : region_MPI.cpp HIntLib/mympi.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h region.cpp \
+	HIntLib/region.h HIntLib/esterr.h HIntLib/mymath.h \
+	HIntLib/buffer.h HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
+	HIntLib/hypercube.h HIntLib/array.h
+regioncollection.lo regioncollection.o : regioncollection.cpp \
+	HIntLib/regioncollection.h HIntLib/region.h HIntLib/esterr.h \
+	HIntLib/mymath.h HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
+	HIntLib/hypercube.h HIntLib/array.h HIntLib/myalgorithm.h
+rule1midpoint.lo rule1midpoint.o : rule1midpoint.cpp \
+	HIntLib/rule1midpoint.h HIntLib/cubaturerule.h \
+	HIntLib/defaults.h HIntLib/hypercube.h HIntLib/mymath.h \
+	HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/defaultcubaturerulefactory.h HIntLib/embeddedrule.h \
+	HIntLib/esterr.h HIntLib/function.h
+rule1trapezoidal.lo rule1trapezoidal.o : rule1trapezoidal.cpp \
+	HIntLib/rule1trapezoidal.h HIntLib/cubaturerule.h \
+	HIntLib/defaults.h HIntLib/hypercube.h HIntLib/mymath.h \
+	HIntLib/hintlib_limits.h HIntLib/array.h HIntLib/orbitrule.h \
+	HIntLib/function.h HIntLib/bitop.h HIntLib/minmaxfinder.h \
+	HIntLib/defaultcubaturerulefactory.h HIntLib/embeddedrule.h \
+	HIntLib/esterr.h HIntLib/exception.h
+rule2simplex.lo rule2simplex.o : rule2simplex.cpp HIntLib/rule2simplex.h \
+	HIntLib/cubaturerule.h HIntLib/defaults.h HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/defaultcubaturerulefactory.h HIntLib/embeddedrule.h \
+	HIntLib/esterr.h HIntLib/exception.h HIntLib/function.h
+rule2thacher.lo rule2thacher.o : rule2thacher.cpp HIntLib/rule2thacher.h \
+	HIntLib/cubaturerule.h HIntLib/defaults.h HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/defaultcubaturerulefactory.h HIntLib/embeddedrule.h \
+	HIntLib/esterr.h HIntLib/exception.h HIntLib/function.h
+rule3cross.lo rule3cross.o : rule3cross.cpp HIntLib/rule3cross.h \
+	HIntLib/cubaturerule.h HIntLib/defaults.h HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/orbitrule.h HIntLib/function.h HIntLib/bitop.h \
+	HIntLib/minmaxfinder.h HIntLib/defaultcubaturerulefactory.h \
+	HIntLib/embeddedrule.h HIntLib/esterr.h HIntLib/exception.h
+rule3ewing.lo rule3ewing.o : rule3ewing.cpp HIntLib/rule3ewing.h \
+	HIntLib/cubaturerule.h HIntLib/defaults.h HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/orbitrule.h HIntLib/function.h HIntLib/bitop.h \
+	HIntLib/minmaxfinder.h HIntLib/defaultcubaturerulefactory.h \
+	HIntLib/embeddedrule.h HIntLib/esterr.h HIntLib/exception.h
+rule3gauss.lo rule3gauss.o : rule3gauss.cpp HIntLib/rule3gauss.h \
+	HIntLib/cubaturerule.h HIntLib/defaults.h HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/orbitrule.h HIntLib/function.h HIntLib/bitop.h \
+	HIntLib/minmaxfinder.h HIntLib/defaultcubaturerulefactory.h \
+	HIntLib/embeddedrule.h HIntLib/esterr.h HIntLib/exception.h
+rule3octahedron.lo rule3octahedron.o : rule3octahedron.cpp \
+	HIntLib/rule3octahedron.h HIntLib/cubaturerule.h \
+	HIntLib/defaults.h HIntLib/hypercube.h HIntLib/mymath.h \
+	HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/defaultcubaturerulefactory.h HIntLib/embeddedrule.h \
+	HIntLib/esterr.h HIntLib/exception.h HIntLib/function.h
+rule3tyler.lo rule3tyler.o : rule3tyler.cpp HIntLib/rule3tyler.h \
+	HIntLib/cubaturerule.h HIntLib/defaults.h HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/orbitrule.h HIntLib/function.h HIntLib/bitop.h \
+	HIntLib/minmaxfinder.h HIntLib/defaultcubaturerulefactory.h \
+	HIntLib/embeddedrule.h HIntLib/esterr.h HIntLib/exception.h
+rule5hammer.lo rule5hammer.o : rule5hammer.cpp HIntLib/rule5hammer.h \
+	HIntLib/cubaturerule.h HIntLib/defaults.h HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/orbitrule.h HIntLib/function.h HIntLib/bitop.h \
+	HIntLib/minmaxfinder.h HIntLib/defaultcubaturerulefactory.h \
+	HIntLib/embeddedrule.h HIntLib/esterr.h HIntLib/exception.h
+rule5stroud.lo rule5stroud.o : rule5stroud.cpp HIntLib/rule5stroud.h \
+	HIntLib/cubaturerule.h HIntLib/defaults.h HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/orbitrule.h HIntLib/function.h HIntLib/bitop.h \
+	HIntLib/minmaxfinder.h HIntLib/defaultcubaturerulefactory.h \
+	HIntLib/embeddedrule.h HIntLib/esterr.h HIntLib/exception.h
+rule75genzmalik.lo rule75genzmalik.o : rule75genzmalik.cpp \
+	HIntLib/rule75genzmalik.h HIntLib/embeddedrule.h \
+	HIntLib/cubaturerule.h HIntLib/defaults.h HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/esterr.h HIntLib/orbitrule.h HIntLib/function.h \
+	HIntLib/bitop.h HIntLib/minmaxfinder.h \
+	HIntLib/defaultcubaturerulefactory.h HIntLib/exception.h
+rule7phillips.lo rule7phillips.o : rule7phillips.cpp \
+	HIntLib/rule7phillips.h HIntLib/cubaturerule.h \
+	HIntLib/defaults.h HIntLib/hypercube.h HIntLib/mymath.h \
+	HIntLib/hintlib_limits.h HIntLib/array.h HIntLib/orbitrule.h \
+	HIntLib/function.h HIntLib/bitop.h HIntLib/minmaxfinder.h \
+	HIntLib/defaultcubaturerulefactory.h HIntLib/embeddedrule.h \
+	HIntLib/esterr.h HIntLib/exception.h
+rule9stenger.lo rule9stenger.o : rule9stenger.cpp HIntLib/rule9stenger.h \
+	HIntLib/cubaturerule.h HIntLib/defaults.h HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/orbitrule.h HIntLib/function.h HIntLib/bitop.h \
+	HIntLib/minmaxfinder.h HIntLib/defaultcubaturerulefactory.h \
+	HIntLib/embeddedrule.h HIntLib/esterr.h HIntLib/exception.h
+rulebasedintegrator.lo rulebasedintegrator.o : rulebasedintegrator.cpp \
+	HIntLib/rulebasedintegrator.h HIntLib/integrator.h \
+	HIntLib/esterr.h HIntLib/mymath.h HIntLib/defaults.h \
+	HIntLib/hintlib_limits.h HIntLib/embeddedrule.h \
+	HIntLib/cubaturerule.h HIntLib/hypercube.h HIntLib/array.h
+ruleintegrator.lo ruleintegrator.o : ruleintegrator.cpp \
+	HIntLib/ruleintegrator.h HIntLib/rulebasedintegrator.h \
+	HIntLib/integrator.h HIntLib/esterr.h HIntLib/mymath.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
+	HIntLib/hypercube.h HIntLib/array.h HIntLib/exception.h
+shiftscale.lo shiftscale.o : shiftscale.cpp HIntLib/shiftscale.h \
+	HIntLib/hypercube.h HIntLib/mymath.h HIntLib/defaults.h \
+	HIntLib/hintlib_limits.h HIntLib/array.h HIntLib/exception.h
+sobolmatrix.lo sobolmatrix.o : sobolmatrix.cpp HIntLib/sobolmatrix.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/generatormatrix.h HIntLib/bitop.h
+staticloadbalancer.lo staticloadbalancer.o : staticloadbalancer.cpp \
+	HIntLib/mympi.h HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/staticloadbalancer.h HIntLib/exception.h
+stl.lo stl.o : stl.cpp HIntLib/defaults.h HIntLib/region.h \
+	HIntLib/esterr.h HIntLib/mymath.h HIntLib/hintlib_limits.h \
+	HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
+	HIntLib/hypercube.h HIntLib/array.h
+testfunction.lo testfunction.o : testfunction.cpp HIntLib/testfunction.h \
+	HIntLib/function.h HIntLib/defaults.h HIntLib/hypercube.h \
+	HIntLib/mymath.h HIntLib/hintlib_limits.h HIntLib/array.h \
+	HIntLib/exception.h
+tparameter.lo tparameter.o : tparameter.cpp HIntLib/generatormatrix.h \
+	HIntLib/defaults.h HIntLib/hintlib_limits.h HIntLib/bitop.h \
+	HIntLib/array.h HIntLib/myalgorithm.h HIntLib/exception.h \
+	HIntLib/mymath.h HIntLib/precalculatedfield.h
+vegasintegrator.lo vegasintegrator.o : vegasintegrator.cpp \
+	HIntLib/vegasintegrator.h HIntLib/integrator.h HIntLib/esterr.h \
+	HIntLib/mymath.h HIntLib/defaults.h HIntLib/hintlib_limits.h \
+	HIntLib/kahanadd.h HIntLib/hypercube.h HIntLib/array.h \
+	HIntLib/function.h HIntLib/exception.h HIntLib/pointset.h \
+	HIntLib/statistic.h HIntLib/minmaxfinder.h
+virtualprng.lo virtualprng.o : virtualprng.cpp HIntLib/virtualprng.h \
+	HIntLib/defaults.h
+
+info-am:
+info: info-recursive
+dvi-am:
+dvi: dvi-recursive
+check-am: all-am
+check: check-recursive
+installcheck-am:
+installcheck: installcheck-recursive
+install-exec-am: install-libLTLIBRARIES
+install-exec: install-exec-recursive
+
+install-data-am:
+install-data: install-data-recursive
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-recursive
+uninstall-am: uninstall-libLTLIBRARIES
+uninstall: uninstall-recursive
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS)
+all-redirect: all-recursive
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs: installdirs-recursive
+installdirs-am:
+	$(mkinstalldirs)  $(DESTDIR)$(libdir)
+
+
+mostlyclean-generic:
+
+clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+mostlyclean-am:  mostlyclean-libLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-noinstPROGRAMS \
+		mostlyclean-tags mostlyclean-generic
+
+mostlyclean: mostlyclean-recursive
+
+clean-am:  clean-libLTLIBRARIES clean-compile clean-libtool \
+		clean-noinstPROGRAMS clean-tags clean-generic \
+		mostlyclean-am clean-local
+
+clean: clean-recursive
+
+distclean-am:  distclean-libLTLIBRARIES distclean-compile \
+		distclean-libtool distclean-noinstPROGRAMS \
+		distclean-tags distclean-generic clean-am
+	-rm -f libtool
+
+distclean: distclean-recursive
+
+maintainer-clean-am:  maintainer-clean-libLTLIBRARIES \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-noinstPROGRAMS maintainer-clean-tags \
+		maintainer-clean-generic distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-recursive
+
+.PHONY: mostlyclean-libLTLIBRARIES distclean-libLTLIBRARIES \
+clean-libLTLIBRARIES maintainer-clean-libLTLIBRARIES \
+uninstall-libLTLIBRARIES install-libLTLIBRARIES mostlyclean-compile \
+distclean-compile clean-compile maintainer-clean-compile \
+mostlyclean-libtool distclean-libtool clean-libtool \
+maintainer-clean-libtool mostlyclean-noinstPROGRAMS \
+distclean-noinstPROGRAMS clean-noinstPROGRAMS \
+maintainer-clean-noinstPROGRAMS install-data-recursive \
+uninstall-data-recursive install-exec-recursive \
+uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
+all-recursive check-recursive installcheck-recursive info-recursive \
+dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
+maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
+distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-redirect all-am all installdirs-am \
+installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+
+
+clean-local:
+	rm -rf ii_files
+
+dist-hook:
+	cd $(distdir) && rm -f $(CLEANFILES)
+
+# Produce program-generated Source files
+
+bitop.cpp: create_bitop@EXEEXT@
+	@echo Creating source file \"bitop.cpp\"
+	./create_bitop@EXEEXT@ > bitop.cpp
+
+niederreitermatrix.cpp: create_niederreiter@EXEEXT@
+	@echo Creating source file \"niederreitermatrix.cpp\"
+	./create_niederreiter@EXEEXT@ > niederreitermatrix.cpp
+
+sobolmatrix.cpp: create_sobol@EXEEXT@
+	@echo Creating source file \"sobolmatrix.cpp\"
+	./create_sobol@EXEEXT@ > sobolmatrix.cpp
+
+prime_generated.cpp: HIntLib/create_prime@EXEEXT@
+	@echo Creating source file \"prime_generated.cpp\"
+	HIntLib/create_prime@EXEEXT@ cpp > prime_generated.cpp
+
+HIntLib/create_prime@EXEEXT@:
+	cd HIntLib && $(MAKE) create_prime
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:
