@@ -37,6 +37,8 @@ using std::setw;
 
 using namespace HIntLib;
 
+typedef Polynomial2<u32> P;
+
 
 /*
  *  List of MAX_DIM primitive polynomials on the field {0,1}, ordered by degree.
@@ -46,48 +48,48 @@ using namespace HIntLib;
  *  of the next higher degree.
  */
 
-const Polynomial2 polynomials [SobolMatrix::MAX_DIM] =
+const P polynomials [SobolMatrix::MAX_DIM] =
 {
-   Polynomial2 (2),    // deg 1   x       this one is NOT primitive!!!
-   Polynomial2 (3),    //         x+1
-   Polynomial2 (7),    // deg 2   x²+x+1
-   Polynomial2 (11),   // deg 3   x³+x+1
-   Polynomial2 (13),   //         x³+x²+1
-   Polynomial2 (19),   // deg 4   x^4+x+1
-   Polynomial2 (25),   //         x^4+x³+1
-   Polynomial2 (37),   // deg 5   x^5+x²+1
-   Polynomial2 (59),
-   Polynomial2 (47),
-   Polynomial2 (61),
-   Polynomial2 (55),
-   Polynomial2 (41),
-   Polynomial2 (67),   // deg 6
-   Polynomial2 (97),
-   Polynomial2 (91),
-   Polynomial2 (109),
-   Polynomial2 (103),
-   Polynomial2 (115),
-   Polynomial2 (131),  // deg 7
-   Polynomial2 (193),
-   Polynomial2 (137),
-   Polynomial2 (145),
-   Polynomial2 (143),
-   Polynomial2 (241),
-   Polynomial2 (157),
-   Polynomial2 (185),
-   Polynomial2 (167),
-   Polynomial2 (229),
-   Polynomial2 (171),
-   Polynomial2 (213),
-   Polynomial2 (191),
-   Polynomial2 (253),
-   Polynomial2 (203),
-   Polynomial2 (211),
-   Polynomial2 (239),
-   Polynomial2 (247),
-   Polynomial2 (285),  // deg 8
-   Polynomial2 (369),
-   Polynomial2 (299)
+   P (2),    // deg 1   x       this one is NOT primitive!!!
+   P (3),    //         x+1
+   P (7),    // deg 2   x²+x+1
+   P (11),   // deg 3   x³+x+1
+   P (13),   //         x³+x²+1
+   P (19),   // deg 4   x^4+x+1
+   P (25),   //         x^4+x³+1
+   P (37),   // deg 5   x^5+x²+1
+   P (59),
+   P (47),
+   P (61),
+   P (55),
+   P (41),
+   P (67),   // deg 6
+   P (97),
+   P (91),
+   P (109),
+   P (103),
+   P (115),
+   P (131),  // deg 7
+   P (193),
+   P (137),
+   P (145),
+   P (143),
+   P (241),
+   P (157),
+   P (185),
+   P (167),
+   P (229),
+   P (171),
+   P (213),
+   P (191),
+   P (253),
+   P (203),
+   P (211),
+   P (239),
+   P (247),
+   P (285),  // deg 8
+   P (369),
+   P (299)
 };
 
 
@@ -218,7 +220,7 @@ SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _prec)
 
    for (unsigned d = 0; d < dim; ++d)
    {
-      Polynomial2 p = polynomials [d];
+      P p = polynomials [d];
 
       const int deg = p.degree();
 

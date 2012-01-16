@@ -285,8 +285,10 @@ void test(int argc, char**)
 
    test (static_cast<unsigned long> (0));
 
+#ifdef HAVE_UNSIGNED_LONG_LONG_INT
    NORMAL  cout << "Testing type unsigned long long" << endl;
 
    test (static_cast<unsigned long long> (0));
+#endif
 }
 

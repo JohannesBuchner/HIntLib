@@ -83,7 +83,7 @@ diff_check_progs = @diff_check_progs@
 fortran_check_dirs = @fortran_check_dirs@
 fortran_check_progs = @fortran_check_progs@
 
-SUBDIRS = libtest src tests
+SUBDIRS = libtest src share tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h

@@ -11,7 +11,7 @@ do
       exit 1
    fi
 
-cat <<EOF | (cd toms659 ; faure) > toms659_faure_${dim}.txt
+cat <<EOF | toms659/faure > toms659_faure_${dim}.txt
 $dim
 10000
 EOF

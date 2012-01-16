@@ -49,7 +49,7 @@ namespace L = HIntLib;
  */
 
 template<class T>
-std::ostream& L::operator<< (std::ostream& o, const L::GenPolynomial2<T> p)
+std::ostream& L::operator<< (std::ostream& o, const L::Polynomial2<T> p)
 {
    std::ostringstream ss;
 
@@ -84,7 +84,7 @@ std::ostream& L::operator<< (std::ostream& o, const L::GenPolynomial2<T> p)
  */
 
 template<class T>
-L::GenPolynomial2<T> L::GenPolynomial2<T>::operator* (const P p) const
+L::Polynomial2<T> L::Polynomial2<T>::operator* (const P p) const
 {
    // Initialize result to f(x)=0
 
@@ -131,7 +131,7 @@ L::GenPolynomial2<T> L::GenPolynomial2<T>::operator* (const P p) const
  */
 
 template<class T>
-void L::GenPolynomial2<T>::div (P u, const P v, P &q, P &r)
+void L::Polynomial2<T>::div (P u, const P v, P &q, P &r)
 {
    const int m = u.degree();
    const int n = v.degree();
@@ -191,7 +191,7 @@ void L::GenPolynomial2<T>::div (P u, const P v, P &q, P &r)
 
 
 template<class T>
-bool L::GenPolynomial2<T>::isPrimitive () const
+bool L::Polynomial2<T>::isPrimitive () const
 {
    const int deg = degree();
 
@@ -199,7 +199,7 @@ bool L::GenPolynomial2<T>::isPrimitive () const
 
    const unsigned r = (1 << degree()) - 1;
 
-   const GenPolynomial2<T> p = x();
+   const Polynomial2<T> p = x();
 
    if (! powerMod (p, r, *this).is1())  return false;
 
@@ -224,7 +224,7 @@ bool L::GenPolynomial2<T>::isPrimitive () const
 }
 
 template<class T>
-bool L::GenPolynomial2<T>::isIrreducible() const
+bool L::Polynomial2<T>::isIrreducible() const
 {
    if (d < 2)  return false;
 
@@ -244,13 +244,21 @@ std::ostream & L::operator<< (std::ostream &o, const Polynomial2RingBase &)
 
 namespace HIntLib
 {
-#ifdef HINTLIB_32BIT
-   template
-   std::ostream& operator<< (std::ostream &, const GenPolynomial2<u32> p);
-   template class GenPolynomial2<u32>;
+#define HINTLIB_INSTANTIATE(X) \
+   template \
+   std::ostream& operator<< (std::ostream &, const Polynomial2<X>); \
+   template Polynomial2<X> Polynomial2<X>::operator* \
+     (const Polynomial2<X>) const; \
+   template void Polynomial2<X>::div \
+     (Polynomial2<X>,const Polynomial2<X>,Polynomial2<X> &,Polynomial2<X> &); \
+   template bool Polynomial2<X>::isPrimitive () const; \
+   template bool Polynomial2<X>::isIrreducible() const;
+
+   HINTLIB_INSTANTIATE (u32)
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
+   HINTLIB_INSTANTIATE (u64)
 #endif
-   template
-   std::ostream& operator<< (std::ostream &, const GenPolynomial2<u64> p);
-   template class GenPolynomial2<u64>;
+
+#undef HINTLIB_INSTANTIATE
 }
 

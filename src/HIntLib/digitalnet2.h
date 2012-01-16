@@ -42,10 +42,10 @@ namespace HIntLib
 {
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
    template<class X> struct FloatType {};
-   #ifdef HINTLIB_32BIT
    template<> struct FloatType<u32> {  typedef float  floatType; };
-   #endif
+   #ifdef HINTLIB_U32_NOT_EQUAL_U64
    template<> struct FloatType<u64> {  typedef double floatType; };
+   #endif
 #endif
 
 
@@ -180,14 +180,14 @@ protected:
 
    int calculateM (Index) const;
 
-#ifdef HINTLIB_32BIT
    DigitalNet2PointSetBase (
       const GeneratorMatrix2<u32>& _gm, bool _equi, Truncation t, Index i)
       : gm(_gm), equi(_equi), trunc(t), index (i), h (0)  {}
-#endif
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
    DigitalNet2PointSetBase (
       const GeneratorMatrix2<u64>& _gm, bool _equi, Truncation t, Index i)
       : gm(_gm), equi(_equi), trunc(t), index (i), h (0)  {}
+#endif
 
 public:
    void setCube (const Hypercube*);
@@ -208,18 +208,18 @@ template<class Sum>
 class DigitalNet2PointSet: public DigitalNet2PointSetBase
 {
 public:
-#ifdef HINTLIB_32BIT
    DigitalNet2PointSet (
       const GeneratorMatrix2<u32>& _gm,
       bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
       Index i = 0)
    : DigitalNet2PointSetBase(_gm, e, t, i) {}
-#endif
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
    DigitalNet2PointSet (
       const GeneratorMatrix2<u64>& _gm,
       bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
       Index i = 0)
    : DigitalNet2PointSetBase(_gm, e, t, i) {}
+#endif
 
    void integratePartition (real *, Function &, Index, Index, Index, Stat&);
    void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
@@ -231,18 +231,18 @@ template<>
 class DigitalNet2PointSet<real>: public DigitalNet2PointSetBase
 {
 public:
-#ifdef HINTLIB_32BIT
    DigitalNet2PointSet<real> (
       const GeneratorMatrix2<u32>& gm,
       bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
       Index i = 0)
    : DigitalNet2PointSetBase(gm, e, t, i) {}
-#endif
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
    DigitalNet2PointSet<real> (
       const GeneratorMatrix2<u64>& gm,
       bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
       Index i = 0)
    : DigitalNet2PointSetBase(gm, e, t, i) {}
+#endif
 
    void integratePartition (real *, Function &, Index, Index, Index, Stat&);
    void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
@@ -273,13 +273,13 @@ protected:
 
    void checkSize (const DigitalNet2<BaseType> &, Index) const;
 
-#ifdef HINTLIB_32BIT
    DigitalSeq2PointSetBase (const GeneratorMatrix2<u32> &_gm, bool _reset)
       : gm (_gm), net (0), offset (0), reset (_reset) {}
-#endif
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
    DigitalSeq2PointSetBase (const GeneratorMatrix2<u64> &_gm, bool _reset)
       : gm (_gm), net (0), offset (0), reset (_reset) {}
    ~DigitalSeq2PointSetBase ();
+#endif
 
 public:
    Index getOptimalNumber (Index max, const Hypercube &);
@@ -299,12 +299,12 @@ template<class Sum>
 class DigitalSeq2PointSet: public DigitalSeq2PointSetBase
 {
 public:
-#ifdef HINTLIB_32BIT
    DigitalSeq2PointSet (const GeneratorMatrix2<u32>& gm, bool reset)
       : DigitalSeq2PointSetBase(gm, reset) {}
-#endif
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
    DigitalSeq2PointSet (const GeneratorMatrix2<u64>& gm, bool reset)
       : DigitalSeq2PointSetBase(gm, reset) {}
+#endif
 
    void integratePartition (real *, Function &, Index, Index, Index, Stat&);
    void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
@@ -316,12 +316,12 @@ template<>
 class DigitalSeq2PointSet<real>: public DigitalSeq2PointSetBase
 {
 public:
-#ifdef HINTLIB_32BIT
    DigitalSeq2PointSet<real> (const GeneratorMatrix2<u32>& gm, bool reset)
       : DigitalSeq2PointSetBase(gm, reset) {}
-#endif
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
    DigitalSeq2PointSet<real> (const GeneratorMatrix2<u64>& gm, bool reset)
       : DigitalSeq2PointSetBase(gm, reset) {}
+#endif
 
    void integratePartition (real *, Function &, Index, Index, Index, Stat&);
    void integratePartition (real *, Function &, Index, Index, Index, StatVar&);

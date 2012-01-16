@@ -18,6 +18,9 @@
 /* Define to 1 if you have the <float.h> header file. */
 #undef HAVE_FLOAT_H
 
+/* Define to 1 if you have the `floor' function. */
+#undef HAVE_FLOOR
+
 /* Define to 1 if you have the <functional> header file. */
 #undef HAVE_FUNCTIONAL
 
@@ -60,8 +63,17 @@
 /* Define to 1 if you have the <ostream> header file. */
 #undef HAVE_OSTREAM
 
+/* Define to 1 if you have the `pow' function. */
+#undef HAVE_POW
+
+/* Define to 1 if the system has the type `ptrdiff_t'. */
+#undef HAVE_PTRDIFF_T
+
 /* Define to 1 if you have the <queue> header file. */
 #undef HAVE_QUEUE
+
+/* Define to 1 if you have the `sqrt' function. */
+#undef HAVE_SQRT
 
 /* Define to 1 if you have the <sstream> header file. */
 #undef HAVE_SSTREAM
@@ -120,7 +132,7 @@
 /* define if std::abs(double) is available */
 #undef HINTLIB_STD_ABS_AVAILABLE
 
-/* define if IEEE magic works */
+/* define if streams support local */
 #undef HINTLIB_STREAMS_SUPPORT_LOCAL
 
 /* Name of package */
@@ -141,11 +153,20 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* The size of a `unsigned long', as computed by sizeof. */
-#undef SIZEOF_UNSIGNED_LONG
+/* The size of a `unsigned int', as computed by sizeof. */
+#undef SIZEOF_UNSIGNED_INT
+
+/* The size of a `unsigned long int', as computed by sizeof. */
+#undef SIZEOF_UNSIGNED_LONG_INT
+
+/* The size of a `unsigned long long int', as computed by sizeof. */
+#undef SIZEOF_UNSIGNED_LONG_LONG_INT
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
 /* Version number of package */
 #undef VERSION
+
+/* Define to `unsigned' if <sys/types.h> does not define. */
+#undef size_t

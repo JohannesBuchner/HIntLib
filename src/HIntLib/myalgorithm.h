@@ -123,7 +123,9 @@ MYALGO_H_XXX(char)
 MYALGO_H_XXX(int)
 MYALGO_H_XXX(long)
 #ifdef HAVE_LONG_LONG_INT
+#ifdef HAVE_UNSIGNED_LONG_LONG_INT
 MYALGO_H_XXX(long long)
+#endif
 #endif
 
 #undef MYALGO_H_XXX

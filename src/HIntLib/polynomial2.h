@@ -59,19 +59,19 @@ using ::abs;
  */
 
 template <class T>
-class GenPolynomial2
+class Polynomial2
 {
 private:
-   typedef GenPolynomial2<T> P;
+   typedef Polynomial2<T> P;
 
    bool msb() const  { return d & (T(1) << std::numeric_limits<T>::digits-1); }
 public:
 
    // Constructors
 
-   GenPolynomial2 ()             : d (T()) {}   // Default is f(x) = 0
-   GenPolynomial2 (const P &p)   : d (p.d) {}   // Copy constructor
-   explicit GenPolynomial2 (T d) : d (d)   {}   // Conversion from int
+   Polynomial2 ()             : d (T()) {}   // Default is f(x) = 0
+   Polynomial2 (const P &p)   : d (p.d) {}   // Copy constructor
+   explicit Polynomial2 (T d) : d (d)   {}   // Conversion from int
 
    // You can convert a polynomial to an int to get the coefficient bitmap
 
@@ -142,11 +142,7 @@ private:
 };
 
 template<class T>
-std::ostream& operator<< (std::ostream &, const GenPolynomial2<T>);
-
-// Define a type for the standard implementation (using unsigned int)
-
-typedef GenPolynomial2<u32> Polynomial2;
+std::ostream& operator<< (std::ostream &, const Polynomial2<T>);
 
 
 // Define other operations
@@ -158,14 +154,14 @@ typedef GenPolynomial2<u32> Polynomial2;
 
 template<class T>
 inline
-GenPolynomial2<T> operator* (const GenPolynomial2<T> p, int k)
+Polynomial2<T> operator* (const Polynomial2<T> p, int k)
 {
    return (k & 1) ? p : zero();
 }
 
 template<class T>
 inline
-GenPolynomial2<T> operator* (int k, const GenPolynomial2<T> p)
+Polynomial2<T> operator* (int k, const Polynomial2<T> p)
 {
    return (k & 1) ? p : zero();
 }
@@ -181,7 +177,7 @@ template <class T>
 class Polynomial2Ring : public Polynomial2RingBase
 {
 private:
-   typedef GenPolynomial2<T> P;
+   typedef Polynomial2<T> P;
 
 public:
    typedef P type;

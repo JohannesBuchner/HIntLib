@@ -87,7 +87,7 @@ L::DigitalNet2<T>::DigitalNet2 (
    {
       if (i >= _c.getM())
       {
-         throw NetIndexToHigh (indexCopy, _c.getM(), m);
+         throw NetIndexTooHigh (indexCopy, _c.getM(), m);
       }
       
       if (index & 1)
@@ -413,12 +413,12 @@ void L::DigitalSeq2PointSet<L::real>::integratePartition
    qmcIntegration (point, *net, f, begin, end, stat);
 }
 
-#ifdef HINTLIB_32BIT
 template class L::DigitalNet2<L::u32>;
 template class L::DigitalNet2Gray<L::u32>;
-#endif
 
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
 template class L::DigitalNet2<L::u64>;
 template class L::DigitalNet2Gray<L::u64>;
+#endif
 
 

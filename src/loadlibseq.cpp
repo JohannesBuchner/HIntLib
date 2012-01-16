@@ -454,7 +454,7 @@ L::loadBinary (std::istream &str)
    char s [sizeof (binaryMagic) - 1]; 
    str.read (s, sizeof (binaryMagic) - 1);
 
-   if (memcmp (binaryMagic, s, sizeof (binaryMagic) - 1) != 0)
+   if (! std::equal (binaryMagic, binaryMagic + sizeof(binaryMagic), s))
    {
       throw FIXME (__FILE__, __LINE__);
    }

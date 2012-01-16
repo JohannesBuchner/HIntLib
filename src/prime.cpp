@@ -54,10 +54,12 @@ bool L::Prime::doPrimeTest (T n)
 }
 
 template bool L::Prime::doPrimeTest (unsigned);
-#ifdef HINTLIB_32BIT
+#ifdef HINTLIB_UNSIGNED_NOT_EQUAL_U32
 template bool L::Prime::doPrimeTest (u32);
 #endif
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
 template bool L::Prime::doPrimeTest (u64);
+#endif
 
 
 /**
@@ -73,10 +75,12 @@ T L::Prime::searchForNextPrime (T n)
 }
 
 template unsigned L::Prime::searchForNextPrime (unsigned);
-#ifdef HINTLIB_32BIT
+#ifdef HINTLIB_UNSIGNED_NOT_EQUAL_U32
 template L::u32   L::Prime::searchForNextPrime (u32);
 #endif
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
 template L::u64   L::Prime::searchForNextPrime (u64);
+#endif
 
 /**
  *  eulerPhi()
@@ -123,10 +127,12 @@ T L::Prime::eulerPhi (T n)
 }
 
 template unsigned L::Prime::eulerPhi (unsigned);
-#ifdef HINTLIB_32BIT
+#ifdef HINTLIB_UNSIGNED_NOT_EQUAL_U32
 template L::u32   L::Prime::eulerPhi (u32);
 #endif
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
 template L::u64   L::Prime::eulerPhi (u64);
+#endif
 
 
 /**

@@ -415,7 +415,9 @@ void L::AdaptIntegratorMS::slave (
 
       buffer << rc.getEstErr();
 
-      for (unsigned i = 0; i < std::min(numSentBack, rc.size()); ++i)
+      for (unsigned i = 0;
+           i < std::min(RegionCollection::size_type(numSentBack), rc.size());
+           ++i)
       {
          Region *region = rc.top();
  

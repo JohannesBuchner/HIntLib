@@ -31,11 +31,11 @@ namespace L = HIntLib;
 
 void L::RegionCollection::killQueueAndUpdateResult (void)
 {
-   ee = EstErr (0.0, 0.0);
+   set (0.0, 0.0);
  
-   for (I i = Q::c.begin (); i != Q::c.end (); ++i)
+   for (I i = c.begin (); i != c.end (); ++i)
    {
-      ee += (*i)->getEstErr ();
+      operator+= ((*i)->getEstErr ());
       delete *i;
    }
  

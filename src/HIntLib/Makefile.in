@@ -347,11 +347,13 @@ dist-hook:
 # Is created by concatenating _*.h files, ../config.h, and create.h produced
 # by libtest
 
-defaults.h: _defaults1.h _defaults2.h \
+defaults.h: $(srcdir)/_defaults1.h $(srcdir)/_defaults2.h \
             $(top_builddir)/libtest/result.h $(top_builddir)/config.h
 	@echo Creating header file \"defaults.h\"
-	cat _defaults1.h $(top_builddir)/config.h \
-            $(top_builddir)/libtest/result.h _defaults2.h > defaults.h
+	cat $(srcdir)/_defaults1.h \
+            $(top_builddir)/config.h \
+            $(top_builddir)/libtest/result.h \
+            $(srcdir)/_defaults2.h > defaults.h
 
 $(top_builddir)/libtest/result.h:
 	cd $(top_builddir)/libtest && $(MAKE) result.h

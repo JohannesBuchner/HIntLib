@@ -38,7 +38,7 @@ namespace L = HIntLib;
  *  Works for
  *     - integers
  *     - floats
- *     - GenPolynomial2
+ *     - Polynomial2
  */
 
 template<class T>
@@ -63,8 +63,10 @@ namespace HIntLib
    HINTLIB_INSTANTIATE (int);
    HINTLIB_INSTANTIATE (unsigned);
    HINTLIB_INSTANTIATE (unsigned long);
-   HINTLIB_INSTANTIATE (GenPolynomial2<unsigned long>);
-   HINTLIB_INSTANTIATE (GenPolynomial2<unsigned long long>);
+   HINTLIB_INSTANTIATE (Polynomial2<u32>);
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
+   HINTLIB_INSTANTIATE (Polynomial2<u64>);
+#endif
 #undef HINTLIB_INSTANTIATE
 }
 
@@ -92,8 +94,10 @@ namespace HIntLib
 
    HINTLIB_INSTANTIATE (unsigned);
    HINTLIB_INSTANTIATE (unsigned long);
-   HINTLIB_INSTANTIATE (GenPolynomial2<unsigned long>);
-   HINTLIB_INSTANTIATE (GenPolynomial2<unsigned long long>);
+   HINTLIB_INSTANTIATE (Polynomial2<u32>);
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
+   HINTLIB_INSTANTIATE (Polynomial2<u64>);
+#endif
 #undef HINTLIB_INSTANTIATE
 }
 

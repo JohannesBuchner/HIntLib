@@ -2,6 +2,20 @@
 Change Log
 ==========
 
+0.0.2    Mar 16, 2003
+
+   wc src/*.cpp src/HIntLib/*.h | tail -1
+     26343   90283  650607 total
+
++ Precalculated Niederreiter/Xing matrices are included.
+  They are installed in $(prefix)/shared in a binary format  (Gottlieb Pirsic)
+- Some test scripts assumed '.' in $PATH  (Reinhold Kainhofer)
+- Many improvements for systems with sizeof int, long, and long long not equal
+  to 4/4/8. HIntLib compiles and links successfully on 64 bit platforms.
+- HIntLib can be built outside the source directory
+/ Name GenPolynomial2 changed to Polynomial2
+
+
 0.0.1    Mar 8, 2003    First public beta release
 
    wc src/*.cpp src/HIntLib/*.h | tail -1

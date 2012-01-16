@@ -43,11 +43,11 @@ template void std::fill<>(int*,           int*,           const int&);
 template void std::fill<>(unsigned char*, unsigned char*, const unsigned char&);
 template void std::fill<>(unsigned char*, unsigned char*, const int&);
 template void std::fill<>(unsigned short*,unsigned short*,const int&);
-#ifdef HINTLIB_32BIT
 template void std::fill<>(L::u32*,        L::u32*,        const L::u32&);
 template void std::fill<>(L::u32*,        L::u32*,        const int&);
-#endif
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
 template void std::fill<>(L::u64*,        L::u64*,        const L::u64&);
+#endif
 template void std::fill<>(L::EstErr*,     L::EstErr*,     const L::EstErr&);
 template void std::fill<>(L::Region**,    L::Region**,    L::Region *const&);
 
@@ -66,7 +66,9 @@ template void
 
 template std::istream& std::getline<>(std::istream&, std::string&, char);
 template std::istream& std::istream::_M_get_num<>(unsigned int&);
+#ifdef HINTLIB_UNSIGNED_NOT_EQUAL_U32
 template std::ostream& std::ostream::_M_put_num<>(L::u32);
+#endif
 template std::ostream& std::ostream::_M_put_num<>(long);
 template std::ostream& std::ostream::_M_put_num<>(const void*);
 template std::ostream& std::ostream::_M_put_num<>(double);

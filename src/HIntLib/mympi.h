@@ -69,8 +69,10 @@ template<> class MPIType<int>
    { public: static const MPI_Datatype type = MPI_INT; };
 template<> class MPIType<long>
    { public: static const MPI_Datatype type = MPI_LONG; };
+#ifdef HAVE_LONG_LONG_INT
 template<> class MPIType<long long>
    { public: static const MPI_Datatype type = MPI_LONG_LONG_INT; };
+#endif
 template<> class MPIType<unsigned char>
    { public: static const MPI_Datatype type = MPI_UNSIGNED_CHAR; };
 template<> class MPIType<unsigned short>
@@ -79,8 +81,10 @@ template<> class MPIType<unsigned>
    { public: static const MPI_Datatype type = MPI_UNSIGNED; };
 template<> class MPIType<unsigned long>
    { public: static const MPI_Datatype type = MPI_UNSIGNED_LONG; };
+#ifdef HAVE_UNSIGNED_LONG_LONG_INT
 template<> class MPIType<unsigned long long>
    { public: static const MPI_Datatype type = MPI_LONG_LONG_INT; }; // XXX
+#endif
 template<> class MPIType<float>
    { public: static const MPI_Datatype type = MPI_FLOAT; };
 template<> class MPIType<double>

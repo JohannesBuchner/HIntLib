@@ -235,7 +235,7 @@ void L::NumbersExhausted::makeString() const
    setStringCopy ("All numbers of a Sequence are exhausted!");
 }
 
-void L::NetIndexToHigh::makeString() const
+void L::NetIndexTooHigh::makeString() const
 {
    ostringstream ss;
    ss << "Trying to get Digital Net #" << requestedIndex

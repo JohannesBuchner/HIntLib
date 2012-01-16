@@ -1,13 +1,151 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(HIntLib, 0.0.1, [rudolf.schuerer@sbg.ac.at] )
-AM_INIT_AUTOMAKE(HIntLib, 0.0.1)
+###############################################################################
+# Makro definitions
+###############################################################################
+
+
+# Checks abs (dobule)
+
+AC_DEFUN([HL_ABS_AVAILABLE],
+[AC_CACHE_CHECK([whether $1::abs(double) is available], hl_cv_$2_abs_available,
+[AC_TRY_RUN([
+#include <stdlib.h>
+#ifdef HAVE_CMATH
+#include <cmath>
+#else
+#include <math.h>
+#endif
+
+int main()
+{
+   if (   $1::abs (static_cast<float> (-3.75)) == static_cast<float> (3.75)
+       && $1::abs (static_cast<double> (-3.75)) == static_cast<double> (3.75)
+       && $1::abs (static_cast<long double> (-3.75)) == static_cast<long double> (3.75))
+   {
+      exit (0);
+   }
+
+   exit (1);
+}
+], hl_cv_$2_abs_available=yes, hl_cv_$2_abs_available=no)])
+
+if test x"$hl_cv_$2_abs_available" = xyes; then
+   AC_DEFINE(HINTLIB_[]translit([$2],[a-z],[A-Z])_ABS_AVAILABLE, 1,
+             [define if $1::abs(double) is available])
+fi
+])
+
+AC_DEFUN([HL_FLT_ROUNDS_CONST],
+[AC_CACHE_CHECK([whether FLT_ROUNDS is constant], hl_cv_flt_rounds_const,
+[AC_TRY_COMPILE([
+#include <float.h>
+],[
+#if FLT_ROUNDS < 7
+  ;
+#endif
+],hl_cv_flt_rounds_const=yes, hl_cv_flt_rounds_const=no)])
+
+if test x"$hl_cv_flt_rounds_const" = xyes; then
+   AC_DEFINE([HINTLIB_FLT_ROUNDS_CONST],1,[define if FLT_ROUNDS is constant])
+fi
+])
+
+
+# Check if we can use IEEE Magic
+
+AC_DEFUN([HL_IEEE_MAGIC_WORKS],
+[AC_CACHE_CHECK([whether IEEE magic works], hl_cv_ieee_magic_works,
+[AC_TRY_RUN([
+#include <stdlib.h>
+#if SIZEOF_UNSIGNED_INT >= 4
+   #undef HINTLIB_UNSIGNED_NOT_EQUAL_U32
+   typedef unsigned u32;
+#else
+#if SIZEOF_UNSIGNED_LONG_INT >= 4
+   #define HINTLIB_UNSIGNED_NOT_EQUAL_U32 1
+   typedef unsigned long u32;
+#else
+   error "unsigned long int does not have 32 bits!"
+#endif
+#endif
+
+#if SIZEOF_UNSIGNED_INT >= 8
+   #undef HINTLIB_U32_NOT_EQUAL_U64
+   typedef unsigned u64;
+#else
+#if SIZEOF_UNSIGNED_LONG_INT >= 8
+   #ifdef HINTLIB_UNSIGNED_NOT_EQUAL_U32
+      #undef HINTLIB_U32_NOT_EQUAL_U64
+   #else
+      #define HINTLIB_U32_NOT_EQUAL_U64
+   #endif
+   typedef unsigned long u64;
+#else
+#ifdef HAVE_UNSIGNED_LONG_LONG_INT
+   #if SIZEOF_UNSIGNED_LONG_LONG_INT >= 8
+      #define HINTLIB_U32_NOT_EQUAL_U64 1
+      typedef unsigned long long u64;
+   #else
+      #error "Can not determine an unsigned integer type with at least 64 bits!"
+   #endif
+#else
+   #error "Can not determine an unsigned integer type with at least 64 bits!"
+#endif
+#endif
+#endif
+int main()
+{
+   union { double d; u64 i; } x64;
+
+   x64.d = 1.0; if (x64.d != 1.0)  exit (1);
+   x64.i |= (1ull << 51); if (x64.d != 1.5)   exit (1);
+   x64.i |= (1ull << 50); if (x64.d != 1.75)  exit (1);
+   x64.i ^= (1ull << 51); if (x64.d != 1.25)  exit (1);
+   
+   union { float d; u32 i; } x32;
+
+   x32.d = 1.0f; if (x32.d != 1.0f)  exit (1);
+   x32.i |= (1ul << 22); if (x32.d != 1.5f)   exit (1);
+   x32.i |= (1ul << 21); if (x32.d != 1.75f)  exit (1);
+   x32.i ^= (1ul << 22); if (x32.d != 1.25f)  exit (1);
+   
+   exit (0);
+}
+],hl_cv_ieee_magic_works=yes, hl_cv_ieee_magic_works=no, hl_cv_ieee_magic_works=no)])
+
+if test x"$hl_cv_ieee_magic_works" = xyes; then
+   AC_DEFINE([HINTLIB_IEEE_MAGIC_WORKS],1,[define if IEEE magic works])
+fi
+])
+
+AC_DEFUN([HL_STREAMS_SUPPORT_LOCAL],
+[
+AC_CACHE_CHECK([whether streams support local], hl_cv_streams_support_local,
+[AC_TRY_COMPILE([
+#include <iostream>
+],[
+   std::cin.imbue (std::cout.getloc());
+],hl_cv_streams_support_local=yes, hl_cv_streams_support_local=no)])
+
+if test x"$hl_cv_streams_support_local" = xyes; then
+   AC_DEFINE(HINTLIB_STREAMS_SUPPORT_LOCAL,1,[define if streams support local])
+fi
+])
+
+
+###############################################################################
+# Header
+###############################################################################
+
+AC_INIT(HIntLib, 0.0.2, [rudolf.schuerer@sbg.ac.at] )
+AM_INIT_AUTOMAKE(HIntLib, 0.0.2)
 AM_CONFIG_HEADER(config.h)
 
 # Information on the package
 
 AC_CONFIG_SRCDIR([src/HIntLib/integrator.h])
-AC_CONFIG_FILES([Makefile src/Makefile src/HIntLib/Makefile tests/Makefile tests/toms659/Makefile tests/toms738/Makefile libtest/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile src/HIntLib/Makefile share/Makefile tests/Makefile tests/toms659/Makefile tests/toms738/Makefile libtest/Makefile])
 AC_LANG(C++)
 
 ###############################################################################
@@ -53,14 +191,14 @@ AC_PROG_INSTALL
 AM_PROG_LIBTOOL
 if test -z "${GCC}"; then
 AC_MSG_NOTICE([Patching libtool])
-   sed -e 's/^with_gcc=$/with_gcc=no/' libtool > libtool.temp
+   sed -e 's/^with_gcc=$/with_gcc=no/' libtool > libtool.temp &&
    mv libtool.temp libtool
 fi
 
 AC_CHECK_PROG(HAVE_TAIL,tail,yes)
 AC_CHECK_PROG(HAVE_SORT,sort,yes)
 
-if test "${HAVE_TAIL}" != "yes" -o "${HAVE_SORT}" != "yes"; then
+if test x"$HAVE_TAIL" != xyes -o x"$HAVE_SORT" != xyes; then
    AC_MSG_WARN([Either tail or sort is missing. Some programs in the test-suite will be skipped!])
    diff_check_progs=
 else
@@ -75,7 +213,9 @@ AC_SUBST(diff_check_progs)
 
 # Add MPI_HEADER_PATH to CXXFLAGS
 
-if test "${MPI_HEADER_PATH}X" != "X"; then
+AC_ARG_ENABLE([MPI], AC_HELP_STRING([--disable-MPI], [do not use MPI]),,)
+
+if test "X${MPI_HEADER_PATH}" != "X"; then
   CXXFLAGS="${CXXFLAGS} -I${MPI_HEADER_PATH}"
   AC_MSG_NOTICE([Adding compiler flag -I${MPI_HEADER_PATH}])
 fi
@@ -159,17 +299,18 @@ AC_CHECK_HEADERS([sstream],,
 
 # Do we have MPI?
 
-AC_CHECK_HEADERS([mpi.h]
-  ,
-  LIB_HINTLIB_MPI=libhintlibmpi.la
-  ,
+LIB_HINTLIB_MPI=
+
+if test x"$enable_MPI" != xno; then
+AC_CHECK_HEADERS([mpi.h],
+  LIB_HINTLIB_MPI=[libhintlibmpi.la],
   AC_MSG_WARN([Cannot find header file mpi.h. No parallel library will be built!
      
      Try     ./configure MPI_HEADER_PATH=path     to solve this problem!
-     ])
-  LIB_HINTLIB_MPI=
-  , [ ]
-AC_SUBST(LIB_HINTLIB_MPI))
+     ]),
+  [ ])
+fi
+
 AC_SUBST(LIB_HINTLIB_MPI)
 
 ###############################################################################
@@ -178,133 +319,33 @@ AC_SUBST(LIB_HINTLIB_MPI)
 
 # Checks for typedefs, structures
 
-# AC_TYPE_SIZE_T
-AC_CHECK_TYPES([long long int])
-AC_CHECK_TYPES([unsigned long long int])
-AC_CHECK_SIZEOF([unsigned long])
+AC_TYPE_SIZE_T
+AC_CHECK_TYPES([ptrdiff_t])
+AC_CHECK_TYPES([long long int, unsigned long long int])
+
+# Size checks
+
+AC_CHECK_SIZEOF(unsigned int)
+AC_CHECK_SIZEOF(unsigned long int)
+AC_CHECK_SIZEOF(unsigned long long int)
 
 ###############################################################################
 # Do compile time  checks
 ###############################################################################
 
-AC_CACHE_CHECK([whether streams support local], ac_cv_streams_support_local,
-[AC_TRY_COMPILE([
-#include <iostream>
-],[
-   std::cin.imbue (std::cout.getloc());
-],ac_cv_streams_support_local=yes, ac_cv_streams_support_local=no)])
-
-if test "$ac_cv_streams_support_local" = yes; then
-   AC_DEFINE(HINTLIB_STREAMS_SUPPORT_LOCAL,1,[define if IEEE magic works])
-fi
-
-
-AC_CACHE_CHECK([whether FLT_ROUNDS is constant], ac_cv_flt_rounds_const,
-[AC_TRY_COMPILE([
-#include <float.h>
-],[
-#if FLT_ROUNDS < 7
-  ;
-#endif
-],ac_cv_flt_rounds_const=yes, ac_cv_flt_rounds_const=no)])
-
-if test "$ac_cv_flt_rounds_const" = yes; then
-   AC_DEFINE(HINTLIB_FLT_ROUNDS_CONST,1,[define if FLT_ROUNDS is constant])
-fi
+HL_STREAMS_SUPPORT_LOCAL
+HL_FLT_ROUNDS_CONST
 
 ###############################################################################
 # Do runtime checks
 ###############################################################################
 
-# Check if we can use IEEE Magic
+HL_IEEE_MAGIC_WORKS
 
-AC_CACHE_CHECK([whether IEEE magic works], ac_cv_ieee_magic_works,
-[AC_TRY_RUN([
-#include <stdlib.h>
-int main()
-{
-   union { double d; unsigned long long i; } x64;
+HL_ABS_AVAILABLE(std,std)
+HL_ABS_AVAILABLE(,global)
 
-   x64.d = 1.0; if (x64.d != 1.0)  exit (1);
-   x64.i |= (1ull << 51); if (x64.d != 1.5)   exit (1);
-   x64.i |= (1ull << 50); if (x64.d != 1.75)  exit (1);
-   x64.i ^= (1ull << 51); if (x64.d != 1.25)  exit (1);
-   
-   union { float d; unsigned long i; } x32;
-
-   x32.d = 1.0f; if (x32.d != 1.0f)  exit (1);
-   x32.i |= (1ul << 22); if (x32.d != 1.5f)   exit (1);
-   x32.i |= (1ul << 21); if (x32.d != 1.75f)  exit (1);
-   x32.i ^= (1ul << 22); if (x32.d != 1.25f)  exit (1);
-   
-   exit (0);
-}
-],ac_cv_ieee_magic_works=yes, ac_cv_ieee_magic_works=no, ac_cv_ieee_magic_works=no)])
-
-if test "$ac_cv_ieee_magic_works" = yes; then
-   AC_DEFINE(HINTLIB_IEEE_MAGIC_WORKS,1,[define if IEEE magic works])
-fi
-
-
-# Checks abs (dobule)
-
-AC_CACHE_CHECK([whether std::abs(double) is available], ac_cv_std_abs_available,
-[AC_TRY_RUN([
-#include <stdlib.h>
-#ifdef HAVE_CMATH
-#include <cmath>
-#else
-#include <math.h>
-#endif
-
-int main()
-{
-   if (   std::abs (static_cast<float> (-3.75)) == static_cast<float> (3.75)
-       && std::abs (static_cast<double> (-3.75)) == static_cast<double> (3.75)
-       && std::abs (static_cast<long double> (-3.75)) == static_cast<long double> (3.75))
-   {
-      exit (0);
-   }
-
-   exit (1);
-}
-],ac_cv_std_abs_available=yes,ac_cv_std_abs_available=no)])
-
-if test "$ac_cv_std_abs_available" = yes; then
-   AC_DEFINE(HINTLIB_STD_ABS_AVAILABLE,1,
-             [define if std::abs(double) is available])
-fi
-
-AC_CACHE_CHECK([whether ::abs(double) is available], ac_cv_global_abs_available,
-[AC_TRY_RUN([
-#include <stdlib.h>
-#ifdef HAVE_CMATH
-#include <cmath>
-#else
-#include <math.h>
-#endif
-
-int main()
-{
-   if (   ::abs (static_cast<float> (-3.75)) == static_cast<float> (3.75)
-       && ::abs (static_cast<double> (-3.75)) == static_cast<double> (3.75)
-       && ::abs (static_cast<long double> (-3.75)) == static_cast<long double> (3.75))
-   {
-      exit (0);
-   }
-
-   exit (1);
-}
-],ac_cv_global_abs_available=yes,ac_cv_global_abs_available=no)])
-
-if test "$ac_cv_global_abs_available" = yes; then
-   AC_DEFINE(HINTLIB_GLOBAL_ABS_AVAILABLE,1,
-             [define if ::abs(double) is available])
-fi
-
-
-# AC_FUNC_ERROR_AT_LINE
-# AC_CHECK_FUNCS([sqrt])
+AC_CHECK_FUNCS([floor pow sqrt])
 
 AC_PROG_MAKE_SET
 

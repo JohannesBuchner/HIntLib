@@ -635,16 +635,16 @@ L::GeneratorMatrix2Copy<T>::GeneratorMatrix2Copy (
 
 namespace HIntLib
 {
-#ifdef HINTLIB_32BIT
    template class GeneratorMatrix2<u32>;
    template class MutableGeneratorMatrix2<u32>;
    template class HeapAllocatedGeneratorMatrix2<u32>;
    template class GeneratorMatrix2Copy<u32>;
-#endif
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
    template class GeneratorMatrix2<u64>;
    template class MutableGeneratorMatrix2<u64>;
    template class HeapAllocatedGeneratorMatrix2<u64>;
    template class GeneratorMatrix2Copy<u64>;
+#endif
 
 // template instanciation of member-template breaks GCC 2.95.4   XXX
 

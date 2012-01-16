@@ -46,7 +46,7 @@ namespace L = HIntLib;
 void L::Make::GeneratorMatrixDoesNotExist::makeString() const
 {
    std::ostringstream ss;
-   ss << "GeneratorMatirs(2/Gen) #" << number << " does not exist!";
+   ss << "GeneratorMatrix(2/Gen) #" << number << " does not exist!";
    setStringCopy (ss.str().c_str());
 }
 

@@ -29,7 +29,6 @@
 #pragma interface
 #endif
 
-#include <stddef.h>
 #include <queue>
 #include <vector>
 
@@ -44,7 +43,8 @@ class Function;
 
 class RegionCollection
    : private std::priority_queue<Region*, std::vector<Region*>,
-                                 RegionErrorLess>
+                                 RegionErrorLess>,
+     private EstErr
 {
 private:
    typedef std::priority_queue<Region*, std::vector <Region*>,
@@ -52,36 +52,33 @@ private:
    typedef Q::container_type::iterator I;
 
 public:
+   using Q::size_type;
 
-   RegionCollection() : ee (0.0, 0.0) {}
+   RegionCollection() : EstErr (0.0, 0.0) {}
    ~RegionCollection();
 
-   size_t size () const  { return Q::size(); }
-   bool empty () const   { return Q::empty(); }
+   using Q::size;
+   using Q::empty;
 
-   real getEstimate () const  { return ee.getEstimate(); }
-   real getError () const     { return ee.getError(); }
-   real getRelError () const  { return ee.getRelError(); }
-   real getTopError () const  { return Q::top()->getError(); }
-   const EstErr & getEstErr () const { return ee; }
+   using EstErr::getEstimate;
+   using EstErr::getError;
+   using EstErr::getRelError;
+   real getTopError () const  { return top()->getError(); }
+   const EstErr & getEstErr () const { return *static_cast<const EstErr*>(this); }
 
    void push (Region*);
    Region*   pop ();
-   Region*   top () const  { return Q::top(); }
+   using Q::top;
 
    void refine (Function &, EmbeddedRule &);
 
    void killQueueAndUpdateResult ();
-
-private:
-
-   EstErr ee;
 };
 
 inline
 void RegionCollection::push (Region *r)
 {
-   ee += r->getEstErr();
+   operator+= (r->getEstErr());
 
    Q::push (r);
 }
@@ -89,9 +86,9 @@ void RegionCollection::push (Region *r)
 inline
 Region* RegionCollection::pop ()
 {
-   Region* r = Q::top();
+   Region* r = top();
 
-   ee -= r->getEstErr();
+   operator-= (r->getEstErr());
 
    Q::pop();
 

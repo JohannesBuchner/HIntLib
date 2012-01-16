@@ -7,6 +7,7 @@
   #define GNU_CONST
 #endif
 
+
 /**
  *  real
  *
@@ -26,8 +27,7 @@
 #elif HINTLIB_REAL == 3
   typedef long double real;
 #else
-  #error Value of HINTLIB_REAL is invalid. \
-         It must be either 1 (float), 2 (double), or 3 (long double)!
+  #error "Value of HINTLIB_REAL is invalid.\nIt must be either 1 (float), 2 (double), or 3 (long double)!"
 #endif
 
 
@@ -35,15 +35,50 @@
  *  u32, u64
  *
  *  Shorthand for an unsigned integer with at least 32 and 64 bits
+ *
+ *  If unsigned and u32 do not refere to the same type,
+ *     HINTLIB_UNSIGNED_NOT_EQUAL_U32 ist set.
+ *  If u32 and u64 do not refere to the same type,
+ *     HINTLIB_U32_NOT_EQUAL_U64 ist set.
+ *  If unsigned and u64 do not refere to the same type,
+ *     HINTLIB_UNSIGNED_NOT_EQUAL_U32 or HINTLIB_U32_NOT_EQUAL_U64 ist set.
  */
 
-typedef unsigned long u32;
-#if SIZEOF_UNSIGNED_LONG >= 8
-#undef HINTLIB_32BIT
-typedef unsigned long u64;
+#if SIZEOF_UNSIGNED_INT >= 4
+   #undef HINTLIB_UNSIGNED_NOT_EQUAL_U32
+   typedef unsigned u32;
 #else
-#define HINTLIB_32BIT 1
-typedef unsigned long long u64;
+#if SIZEOF_UNSIGNED_LONG_INT >= 4
+   #define HINTLIB_UNSIGNED_NOT_EQUAL_U32 1
+   typedef unsigned long u32;
+#else
+   error "unsigned long int does not have 32 bits!"
+#endif
+#endif
+
+#if SIZEOF_UNSIGNED_INT >= 8
+   #undef HINTLIB_U32_NOT_EQUAL_U64
+   typedef unsigned u64;
+#else
+#if SIZEOF_UNSIGNED_LONG_INT >= 8
+   #ifdef HINTLIB_UNSIGNED_NOT_EQUAL_U32
+      #undef HINTLIB_U32_NOT_EQUAL_U64
+   #else
+      #define HINTLIB_U32_NOT_EQUAL_U64
+   #endif
+   typedef unsigned long u64;
+#else
+#ifdef HAVE_UNSIGNED_LONG_LONG_INT
+   #if SIZEOF_UNSIGNED_LONG_LONG_INT >= 8
+      #define HINTLIB_U32_NOT_EQUAL_U64 1
+      typedef unsigned long long u64;
+   #else
+   #error "Can not determine an unsigned integer type with at least 64 bits!"
+   #endif
+#else
+   #error "Can not determine an unsigned integer type with at least 64 bits!"
+#endif
+#endif
 #endif
 
 
@@ -65,8 +100,9 @@ typedef unsigned long long u64;
 #elif HINTLIB_INDEX == 64
    typedef u64 Index;
 #else
-   #error Value of HINTLIB_INDEX is invalid.  It must be either 32 or 64!
+   #error "Value of HINTLIB_INDEX is invalid.  It must be either 32 or 64!"
 #endif
+
 
 /**
  *  PRIME_TABLE_SIZE

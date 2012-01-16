@@ -22,7 +22,7 @@ numericdiff_SOURCES = numericdiff.cpp
 
 noinst_HEADERS = test.h
 
-INCLUDES = -I$(top_srcdir)/src @GNUFLAGS@
+INCLUDES = -I$(top_srcdir)/src -I$(top_builddir)/src @GNUFLAGS@
 # LDFLAGS= @SGIFLAGS@
 LDADD = ../src/libhintlib.la -lm
 

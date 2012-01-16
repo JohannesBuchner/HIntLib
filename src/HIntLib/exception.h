@@ -233,14 +233,14 @@ namespace HIntLib
       virtual void makeString() const;
    };
 
-   class NetIndexToHigh : public SequenceException
+   class NetIndexTooHigh : public SequenceException
    {
       const Index requestedIndex;
       const unsigned originalM;
       const unsigned newM;
       virtual void makeString() const;
    public:
-      NetIndexToHigh (Index i, unsigned _originalM, unsigned _newM)
+      NetIndexTooHigh (Index i, unsigned _originalM, unsigned _newM)
          : requestedIndex (i), originalM(_originalM), newM(_newM)  {}
    };
 

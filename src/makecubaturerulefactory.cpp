@@ -95,7 +95,7 @@ const RuleRecord* lookup (int n)
 
 #ifdef HINTLIB_SGI
    template const RuleRecord* std::__lower_bound<> (
-      const RuleRecord*, const RuleRecord*, const RuleRecord&, int*);
+      const RuleRecord*, const RuleRecord*, const RuleRecord&, ptrdiff_t*);
 #endif
 
 CubatureRuleFactory* L::Make::cubatureRuleFactory (int rule)

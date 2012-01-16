@@ -30,7 +30,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-typedef L::Polynomial2 P;
+typedef L::Polynomial2<L::u32> P;
 
 unsigned SIZE = 1000;
 
