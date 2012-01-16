@@ -38,7 +38,7 @@ namespace HIntLib
 
    template<class A>
    void initNiederreiter
-        (GeneratorMatrixGen<typename A::type> &, A, unsigned d,
+        (GeneratorMatrixGen<typename A::type> &, A, int d,
             const typename PolynomialRing<A>::type &);
 
    void initNiederreiter (GeneratorMatrixGen<unsigned char> &);

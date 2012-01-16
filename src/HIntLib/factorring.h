@@ -332,7 +332,7 @@ protected:
       : FactorPoly<A> (a, modulus) {}
 
 private:
-   typedef std::vector<std::pair<unsigned, unsigned> > Fac;
+   typedef std::vector<std::pair<unsigned, int> > Fac;
    typedef Fac::const_iterator FacI;
 
    mutable Fac facNMinus1;

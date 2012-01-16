@@ -29,7 +29,7 @@
 #include <iomanip>
 
 // This is not really a library object. However, since library files are
-// linked static, we do not require DLL-export names.
+// linked statically, we do not require DLL-export names.
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/polynomial2.h>
@@ -231,7 +231,7 @@ int main (void)
 SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _prec)
    : GeneratorMatrix2<u64> (_dim, _m, _prec)
 {
-   for (unsigned d = 0; d < dim; ++d)
+   for (int d = 0; d < dim; ++d)
    {
       // Get the polynomial defining the recurrence for the current dimension
 
@@ -248,7 +248,7 @@ SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _prec)
 
       // Calculate the following elements according to the recurrence
 
-      for (unsigned i = deg; i < m; ++i)
+      for (int i = deg; i < m; ++i)
       {
          BaseType x = (*this)(d, i-deg) >> deg;
 

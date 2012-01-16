@@ -39,29 +39,27 @@ namespace HIntLib
 
 template<class A>
 bool
-isZeroMatrix (const A&, const typename A::type*,
-      unsigned numRows, unsigned numCols);
+isZeroMatrix (const A&, const typename A::type*, int numRows, int numCols);
 
 template<class A>
 bool
-isIdentityMatrix (const A&, const typename A::type*, unsigned num);
+isIdentityMatrix (const A&, const typename A::type*, int num);
 
 template<typename T>
 void
-matrixTranspose (const T*, unsigned numRows, unsigned numCols, T*);
+matrixTranspose (const T*, int numRows, int numCols, T*);
 
 template<class A>
 void
 matrixMul (const A&,
       const typename A::type*, const typename A::type*,
-      unsigned numRows, unsigned numRowsCols, unsigned numCols2,
-      typename A::type*);
+      int numRows, int numRowsCols, int numCols2, typename A::type*);
 
 template<class A>
 inline
 void
 matrixMul (const A& a, const typename A::type* m1, const typename A::type* m2,
-      unsigned size, typename A::type* res)
+      int size, typename A::type* res)
 {
    matrixMul (a, m1, m2, size, size, size, res);
 }
@@ -70,46 +68,43 @@ template<class A>
 void
 matrixVectorMul (const A& a,
       const typename A::type* m, const typename A::type* v,
-      unsigned numRows, unsigned numCols, typename A::type* res);
+      int numRows, int numCols, typename A::type* res);
 
 template<class A>
 void
 vectorMatrixMul (const A& a,
       const typename A::type* v, const typename A::type* m,
-      unsigned numRows, unsigned numCols, typename A::type* res);
+      int numRows, int numCols, typename A::type* res);
 
 template<class A>
 bool
-isLinearlyIndependent (
-      const A&, typename A::type*, unsigned numRows, unsigned numCols);
+isLinearlyIndependent (const A&, typename A::type*, int numRows, int numCols);
 
 template<class A>
-unsigned
-matrixRank (const A&, typename A::type*, unsigned numRows, unsigned numCols);
+int
+matrixRank (const A&, typename A::type*, int numRows, int numCols);
 
 template<class A>
-unsigned
+int
 numLinearlyIndependentVectors (
-      const A&, typename A::type*, unsigned numRows, unsigned numCols);
+      const A&, typename A::type*, int numRows, int numCols);
 
 template<class A>
-unsigned
-nullSpace (const A&, typename A::type*, unsigned numRows, unsigned numCols,
+int
+nullSpace (const A&, typename A::type*, int numRows, int numCols,
            typename A::type*);
 
 template<class A>
-unsigned
-basisSupplement (const A&, typename A::type*,
-      unsigned numRows, unsigned numCols);
+int
+basisSupplement (const A&, typename A::type*, int numRows, int numCols);
 
 template<class A>
-unsigned
-basisSupplement (const A&, typename A::type*,
-      unsigned numRows, unsigned numCols, unsigned*);
+int
+basisSupplement (const A&, typename A::type*, int numRows, int numCols, int*);
 
 template<class A>
 bool
-matrixInverse (const A&, typename A::type*, unsigned num);
+matrixInverse (const A&, typename A::type*, int num);
 
 }  // namespace HIntLib
 

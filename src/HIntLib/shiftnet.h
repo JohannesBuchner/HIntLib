@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef HINTLIB_SHIFTNET_H
-#define HINTLIB_SHIFTNET_H 1
+#ifndef HINTLIB_SHIFT_NET_H
+#define HINTLIB_SHIFT_NET_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -43,9 +43,9 @@ namespace HIntLib
       g.makeShiftNet();
    }
 
-   unsigned maxMForShiftNet (unsigned base);
-   unsigned maxBaseForShiftNet ();
-   unsigned optimalShiftNetT (unsigned base, unsigned m);
+   int maxMForShiftNet (int base);
+   int maxBaseForShiftNet ();
+   int optimalShiftNetT (int base, int m);
 
 }   // namespace HIntLib
 

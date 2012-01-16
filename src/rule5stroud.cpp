@@ -42,8 +42,8 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hypercube.h>
 
 
 namespace L = HIntLib;
@@ -71,7 +71,7 @@ namespace
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule5Stroud::Rule5Stroud (unsigned dim)
+L::Rule5Stroud::Rule5Stroud (int dim)
    : OrbitRule (dim),
 
      aR      (dim),
@@ -82,8 +82,8 @@ L::Rule5Stroud::Rule5Stroud (unsigned dim)
      aMinusT (dim),
 
      b0 (real(5 * sqr(dim) - 15 * dim + 14) / real(14)),
-     b2 (real(50 - 25 * int (dim)) / real(168)),
-     b4 (real(10 -  5 * int (dim)) / real (48))
+     b2 (real(50 - 25 * dim) / real(168)),
+     b4 (real(10 -  5 * dim) / real (48))
 {
    checkDimensionNotZero (dim);
    checkDimensionGeq<2> (dim);
@@ -124,7 +124,7 @@ L::real L::Rule5Stroud::eval (Integrand &f, const Hypercube &h)
    // Calculate center and width of the rectange. Adjust volume accordingly
 
    const real* width = h.getWidth();
-   for (unsigned int i = 0; i < dim; i++)
+   for (int i = 0; i < dim; i++)
    {
       real w = width [i];
 

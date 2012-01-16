@@ -43,17 +43,17 @@
 #include <algorithm>
 
 #ifdef HINTLIB_HAVE_CSTDDEF
-  #define HINTLIB_SDN std::
+#  define HINTLIB_SDN std::
 #else
-  #define HINTLIB_SDN
+#  define HINTLIB_SDN
 #endif
 
 #ifdef HINTLIB_HAVE_CSTRING
-  #include <cstring>
-  #define HINTLIB_SSN std::
+#  include <cstring>
+#  define HINTLIB_SSN std::
 #else
-  #include <string.h>
-  #define HINTLIB_SSN
+#  include <string.h>
+#  define HINTLIB_SSN
 #endif
 
 #include <HIntLib/lcg_pow2.h>
@@ -197,10 +197,10 @@ void L::MersenneTwister::restoreState (const void *p)
 L::MersenneTwister::MersenneTwister (unsigned start)
    : next(state)
 {
-   #if HINTLIB_STATIC_WORKS == 0
-      RANGE = real(~u32()) + real(1);
-      RESOLUTION = real(1) / RANGE;
-   #endif
+#if HINTLIB_STATIC_WORKS == 0
+   RANGE = real(~u32()) + real(1);
+   RESOLUTION = real(1) / RANGE;
+#endif
    init(start);
 }
 
@@ -211,10 +211,10 @@ L::MersenneTwister::MersenneTwister (unsigned start)
 L::MersenneTwister::MersenneTwister (const MersenneTwister &mt)
   : next ((state + N) - ((mt.state + N) - mt.next))
 {
-   #if HINTLIB_STATIC_WORKS == 0
-      RANGE = real(~u32()) + real(1);
-      RESOLUTION = real(1) / RANGE;
-   #endif
+#if HINTLIB_STATIC_WORKS == 0
+   RANGE = real(~u32()) + real(1);
+   RESOLUTION = real(1) / RANGE;
+#endif
 
    std::copy (mt.state, mt.state + N, state);
 }

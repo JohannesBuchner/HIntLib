@@ -43,9 +43,9 @@ using std::endl;
  */
 
 void
-L::makeRegular (GM& gm, unsigned d)
+L::makeRegular (GM& gm, int d)
 {
-   const unsigned M = gm.getM();
+   const int M = gm.getM();
 
    if (gm.getPrec() < M)
    {
@@ -66,8 +66,8 @@ L::makeRegular (GM& gm, unsigned d)
 void
 L::fixOneDimensionalProjections (GM& gm)
 {
-   const unsigned M = gm.getM();
-   const unsigned DIM = gm.getDimension();
+   const int M = gm.getM();
+   const int DIM = gm.getDimension();
 
    if (gm.getPrec() < M)
    {
@@ -77,7 +77,7 @@ L::fixOneDimensionalProjections (GM& gm)
    }
 
 
-   for (unsigned d = 0; d < DIM; ++d)  gm.la().basisSupplement (gm(d), M, M);
+   for (int d = 0; d < DIM; ++d)  gm.la().basisSupplement (gm(d), M, M);
 }
 
 
@@ -86,17 +86,17 @@ L::fixOneDimensionalProjections (GM& gm)
  */
 
 void
-L::withIdentityMatrix (GeneratorMatrixGenRow<unsigned char>& gm, unsigned d)
+L::withIdentityMatrix (GeneratorMatrixGenRow<unsigned char>& gm, int d)
 {
-   const unsigned DIM = gm.getDimension();
+   const int DIM = gm.getDimension();
    if (d >= DIM)  throw InvalidDimension (d);
 
    LinearAlgebra& la = gm.la();
 
-   const unsigned m  = gm.getM();
-   const unsigned m2 = m * m;
-   const unsigned numRows  = gm.getPrec();
-   const unsigned numRows2 = std::min (m, numRows);
+   const int m  = gm.getM();
+   const int m2 = m * m;
+   const int numRows  = gm.getPrec();
+   const int numRows2 = std::min (m, numRows);
 
    Array<unsigned char> scratch (m * (m + numRows));
    unsigned char* scratch1 = scratch.begin();
@@ -115,7 +115,7 @@ L::withIdentityMatrix (GeneratorMatrixGenRow<unsigned char>& gm, unsigned d)
 
    // multiply with all matrices
 
-   for (unsigned dd = 0; dd < gm.getDimension(); ++dd)
+   for (int dd = 0; dd < gm.getDimension(); ++dd)
    {
       std::copy (gm(dd), gm(dd) + m * numRows, scratch2);
       la.matrixMul (scratch2, scratch1, numRows, m, m, gm(dd));
@@ -128,15 +128,15 @@ L::withIdentityMatrix (GeneratorMatrixGenRow<unsigned char>& gm, unsigned d)
  */
 
 void
-L::withIdentityMatrix2 (GM& gm, unsigned d)
+L::withIdentityMatrix2 (GM& gm, int d)
 {
-   const unsigned DIM = gm.getDimension();
+   const int DIM = gm.getDimension();
    if (d >= DIM)  throw InvalidDimension (d);
 
-   const unsigned M = gm.getM();
+   const int M = gm.getM();
    if (M != gm.getPrec())  throw FIXME (__FILE__, __LINE__);
 
-   const unsigned M2 = M * M;
+   const int M2 = M * M;
    LinearAlgebra& la = gm.la();
 
    // Construct inverse transformation, tranforming original matrix into E
@@ -155,7 +155,7 @@ L::withIdentityMatrix2 (GM& gm, unsigned d)
 
    Array<unsigned char> temp (M2);
 
-   for (unsigned dd = 0; dd < DIM; ++dd)
+   for (int dd = 0; dd < DIM; ++dd)
    {
       if (dd == d)  continue;
 
@@ -179,7 +179,7 @@ L::withIdentityMatrix2 (GM& gm, unsigned d)
  */
 
 void
-L::WithIdentityMatrix::init (unsigned d, const GeneratorMatrix& src)
+L::WithIdentityMatrix::init (int d, const GeneratorMatrix& src)
 {
    GeneratorMatrixGenRow<unsigned char>& gm =
       *new GeneratorMatrixGenRow<unsigned char> (src);
@@ -193,14 +193,13 @@ namespace
 {
 
 void
-printMatrix (std::ostream& o,
-             const unsigned char* m, unsigned numRows, unsigned numCols)
+printMatrix (std::ostream& o, const unsigned char* m, int numRows, int numCols)
 {
    o << '\n';
 
-   for (unsigned row = 0; row < numRows; ++row)
+   for (int row = 0; row < numRows; ++row)
    {
-      for (unsigned col = 0; col < numCols; ++col)
+      for (int col = 0; col < numCols; ++col)
       {
          o << std::setw (2) << int (*m++);
       }
@@ -227,7 +226,7 @@ printVector (std::ostream& o, const unsigned char* i, const unsigned char* end)
 
 inline
 unsigned char*
-copyToMatrix (const GM& gm, unsigned dim, unsigned num, unsigned char* m)
+copyToMatrix (const GM& gm, int dim, int num, unsigned char* m)
 {
    const unsigned char* base = gm(dim);
    return std::copy (base, base + gm.getM() * num, m);
@@ -249,22 +248,22 @@ public:
    AchievableThickness (const GM&);
 
    int get() const  { return data0; }
-   int get (unsigned d) const  { return data1 [d]; }
-   int get (unsigned d1, unsigned d2) const
+   int get (int d) const  { return data1 [d]; }
+   int get (int d1, int d2) const
       { return data2 [(d1 < d2) ? (d1 * DIM + d2) : (d2 * DIM + d1)]; }
 
-   int getMax (unsigned d) const;
+   int getMax (int d) const;
 
-   bool set (unsigned d1, unsigned d2, int x);
+   bool set (int d1, int d2, int x);
 
-   void init   (const GM&, unsigned);
+   void init   (const GM&, int);
    void update (const GM&, int);
 
    void print() const;
 
 private:
-   const unsigned DIM;
-   const unsigned M;
+   const int DIM;
+   const int M;
 
    L::Array<unsigned char> m;
 
@@ -279,14 +278,14 @@ AchievableThickness::AchievableThickness (const GM& gm)
      data2 (DIM * DIM, M), data1 (DIM, M), data0 (M)
 {}
 
-int AchievableThickness::getMax (unsigned d) const
+int AchievableThickness::getMax (int d) const
 {
    L::MaxFinder<int> mf;
-   for (unsigned i = 0; i < DIM; ++i)  if (i != d)  mf << get (i, d);
+   for (int i = 0; i < DIM; ++i)  if (i != d)  mf << get (i, d);
    return mf.getMaximum();
 }
 
-bool AchievableThickness::set (unsigned d1, unsigned d2, int x)
+bool AchievableThickness::set (int d1, int d2, int x)
 {
    int& r = data2 [(d1 < d2) ? (d1 * DIM + d2) : (d2 * DIM + d1)];
 
@@ -310,16 +309,16 @@ bool AchievableThickness::set (unsigned d1, unsigned d2, int x)
  *  _numRows_ rows.
  */
 
-void AchievableThickness::init (const GM& gm, unsigned numRows)
+void AchievableThickness::init (const GM& gm, int numRows)
 {
-   const unsigned MAX_THICKNESS = std::min (2u * numRows, M);
+   const int MAX_THICKNESS = std::min (2 * numRows, M);
 
-   for (unsigned d1 = 1; d1 < DIM; ++d1)
-   for (unsigned d2 = 0; d2 < d1;  ++d2)
+   for (int d1 = 1; d1 < DIM; ++d1)
+   for (int d2 = 0; d2 < d1;  ++d2)
    {
-      for (unsigned k = 1; k <= MAX_THICKNESS; ++k)
+      for (int k = 1; k <= MAX_THICKNESS; ++k)
       {
-         for (unsigned k1 = 0; k1 <= k; ++k1)
+         for (int k1 = 0; k1 <= k; ++k1)
          {
             if (k1 > numRows || k - k1 > numRows)  continue;
 
@@ -349,8 +348,8 @@ void AchievableThickness::init (const GM& gm, unsigned numRows)
 
 void AchievableThickness::update (const GM& gm, int numRows)
 {
-   for (unsigned d1 = 1; d1 < DIM; ++d1)
-   for (unsigned d2 = 0; d2 < d1;  ++d2)
+   for (int d1 = 1; d1 < DIM; ++d1)
+   for (int d2 = 0; d2 < d1;  ++d2)
    {
       {
          if (get(d1,d2) < numRows) continue;
@@ -382,17 +381,17 @@ void AchievableThickness::print() const
 {
    cout << "AchievableThickness\n" << get() << '\n';
    cout << "    ";
-   for (unsigned i = 0; i < DIM; ++i)  cout << std::setw(3) << i;
+   for (int i = 0; i < DIM; ++i)  cout << std::setw(3) << i;
    cout << "\n    ";
-   for (unsigned i = 0; i < DIM; ++i)  cout << std::setw(3) << get(i);
+   for (int i = 0; i < DIM; ++i)  cout << std::setw(3) << get(i);
    cout << "\n    ";
-   for (unsigned i = 0; i < DIM; ++i)  cout << std::setw(3) << getMax(i);
+   for (int i = 0; i < DIM; ++i)  cout << std::setw(3) << getMax(i);
    cout << "\n\n";
-   for (unsigned i = 0; i < DIM - 1; ++i)
+   for (int i = 0; i < DIM - 1; ++i)
    {
       cout << std::setw (3) << i << ' ';
-      for (unsigned j = 0; j <= i; ++j)  cout << "   ";
-      for (unsigned j = i + 1; j < DIM; ++j)  cout << std::setw(3) << get(i,j);
+      for (int j = 0; j <= i; ++j)  cout << "   ";
+      for (int j = i + 1; j < DIM; ++j)  cout << std::setw(3) << get(i,j);
       cout << '\n';
    }
 }
@@ -407,7 +406,7 @@ void AchievableThickness::print() const
  */
 
 inline
-bool increment (unsigned char* begin, unsigned char* end, unsigned base)
+bool increment (unsigned char* begin, unsigned char* end, int base)
 {
    if (*begin == 0)  // a trailing zero can always be incremented
    {
@@ -447,15 +446,15 @@ bool increment (unsigned char* begin, unsigned char* end, unsigned base)
 inline
 void fillFirstRow (GM& gm)
 {
-   const unsigned B = gm.getBase();
-   const unsigned M = gm.getM();
-   const unsigned DIM = gm.getDimension();
+   const int B = gm.getBase();
+   const int M = gm.getM();
+   const int DIM = gm.getDimension();
 
    unsigned char* p = gm(0);
    std::fill (p, p + M, 0);
    increment (p, p + M, B);
 
-   for (unsigned d = 1; d < DIM; ++d)
+   for (int d = 1; d < DIM; ++d)
    {
       std::copy (p, p + M, gm(d));
       p = gm(d);
@@ -472,17 +471,17 @@ void fillFirstRow (GM& gm)
 
 bool
 fullCorrect (
-      GM& gm, unsigned d, int out, unsigned char* work,
+      GM& gm, int d, int out, unsigned char* work,
       bool specialAlgo, AchievableThickness& at)
 {
-   const unsigned DEB = 0;
+   const int DEB = 0;
 
    // Geometry of the matrix
 
-   const unsigned M   = gm.getM();
-   const unsigned M2  = M * M;
-   const unsigned DIM = gm.getDimension();
-   const unsigned B   = gm.getBase();
+   const int M   = gm.getM();
+   const int M2  = M * M;
+   const int DIM = gm.getDimension();
+   const int B   = gm.getBase();
    L::LinearAlgebra& la = gm.la();
 
    if (DEB > 1) cout << endl;
@@ -523,7 +522,7 @@ fullCorrect (
    {
       originalBreadth = M;
 
-      for (unsigned d2 = 0; d2 < DIM; ++d2)
+      for (int d2 = 0; d2 < DIM; ++d2)
       {
          if (d == d2)  continue;
 
@@ -588,7 +587,7 @@ fullCorrect (
 
    // Transform all generator matrices
 
-   for (unsigned dd = 0; dd < DIM; ++dd)
+   for (int dd = 0; dd < DIM; ++dd)
    {
       copyToMatrix (gm, dd, M, m);
       la.matrixMul (m, trans1, M, tm + dd * M2);
@@ -606,8 +605,8 @@ fullCorrect (
    {
       // Entries 0,..,M-1 contain num dims for truncated breadth
       // Entires M,..,2M-1 contain num dims for untracted breadth
-      L::Array<unsigned> optimalNumDimensions (2 * M, 0u);
-      L::Array<unsigned> numDimensions (2 * M);
+      L::Array<int> optimalNumDimensions (2 * M, 0u);
+      L::Array<int> numDimensions (2 * M);
 
       L::Array<int> breadths (DIM);
       L::Array<int> optimalBreadths (DIM);
@@ -621,7 +620,7 @@ fullCorrect (
             
          std::fill (numDimensions.begin(), numDimensions.begin() + 2 * M, 0);
 
-         for (unsigned d2 = 0; d2 < DIM; ++d2)
+         for (int d2 = 0; d2 < DIM; ++d2)
          {
             if (d == d2)  continue;
 
@@ -654,7 +653,7 @@ fullCorrect (
 
          // is the new vector superior to previous results?
 
-         for (unsigned i = 1; i < 2 * M; ++i)
+         for (int i = 1; i < 2 * M; ++i)
          {
             if (numDimensions[i] > optimalNumDimensions[i])  break;
             if (numDimensions[i] < optimalNumDimensions[i])  goto vectorFailed;
@@ -673,7 +672,7 @@ fullCorrect (
          if (DEB > 1)
          {
             cout << "New optimal num dims:";
-            for (unsigned i = 1; i < 2 * M; ++i)
+            for (int i = 1; i < 2 * M; ++i)
             {
                cout << ' ' << optimalNumDimensions[i];
             }
@@ -684,7 +683,7 @@ fullCorrect (
       }
 
       if (DEB > 1)  cout << "Breadths:";
-      for (unsigned i = 0; i < DIM; ++i)
+      for (int i = 0; i < DIM; ++i)
       {
          if (i == d)  continue;
          if (DEB > 1)  cout << ' ' << optimalBreadths[i];
@@ -719,7 +718,7 @@ fullCorrect (
 
             // check linear independence with each matrix
             
-            for (unsigned d2 = 0; d2 < DIM; ++d2)
+            for (int d2 = 0; d2 < DIM; ++d2)
             {
                if (d == d2)  continue;
 
@@ -796,7 +795,7 @@ fullCorrect (
          cout << endl;
       }
 
-      for (unsigned i = 0; i < M; ++i)  gm.setd (d, i, out, m[i]);
+      for (int i = 0; i < M; ++i)  gm.setd (d, i, out, m[i]);
 
       return true;
    }
@@ -811,10 +810,10 @@ fullCorrect (
 
 void L::fixTwoDimensionalProjections (GM& gm)
 {
-   const unsigned DEB = 0;
+   const int DEB = 0;
 
-   const unsigned M = gm.getM();
-   const unsigned DIM = gm.getDimension();
+   const int M = gm.getM();
+   const int DIM = gm.getDimension();
 
    if (gm.getPrec() < M)
    {
@@ -826,7 +825,7 @@ void L::fixTwoDimensionalProjections (GM& gm)
    Array<unsigned char> work ((3 + DIM) * M * M + 2 * M);
 
    int initialOut = std::max (
-      std::max (M - tParameterMax3DimProjection(gm), 2u) - 2,  // what is taboo
+      std::max (M - tParameterMax3DimProjection(gm), 2) - 2,  // what is taboo
       (M - tParameterMax2DimProjection(gm)) / 2     // what is alright already
    );
 
@@ -855,7 +854,7 @@ void L::fixTwoDimensionalProjections (GM& gm)
       {
          changes = false;
 
-         for (unsigned d = 0; d < DIM; ++d)
+         for (int d = 0; d < DIM; ++d)
          {
             if (dimensionDone [d])  continue;
             if (DEB > 1)  cout << d << ": ";

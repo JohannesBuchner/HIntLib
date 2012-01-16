@@ -646,7 +646,7 @@ P::LookupVectorSpaceBB::operator= (const LookupVectorSpaceBB &r)
 
 template<typename T, typename C>
 P::LookupVectorSpaceBase<T,C>::LookupVectorSpaceBase
-   (unsigned aSize, unsigned _dim, unsigned numData)
+   (unsigned aSize, int _dim, unsigned numData)
    : LookupVectorSpaceBB (powInt (aSize, _dim), _dim, numData * sizeof (T))
 {
    if (     std::numeric_limits<T>::is_signed
@@ -656,9 +656,9 @@ P::LookupVectorSpaceBase<T,C>::LookupVectorSpaceBase
       throw InvalidType ("LookupVectorSpaceBB");
    }
 
-   if (dimension() == 0)  throw FIXME(__FILE__, __LINE__);
+   if (dimension() <= 0)  throw FIXME(__FILE__, __LINE__);
 
-   if (logInt (unsigned (T(-1)) + 1, aSize) < int (_dim))
+   if (logInt (unsigned(T(-1)) + 1, aSize) < _dim)
    {
       throw FIXME(__FILE__, __LINE__);
    }
@@ -985,10 +985,10 @@ P::vectorPrintShort (
 #endif
    typename PrinterSelector<C>::printer ss (o);
 
-   const unsigned DIM = a.dimension();
+   const int DIM = a.dimension();
 
    ss << C('(');
-   for (unsigned i = 0; i != DIM; ++i)
+   for (int i = 0; i != DIM; ++i)
    {
       if (i > 0)  ss << C(',');
       a.getScalarAlgebra().printShort (ss, a.coord (x, i));
@@ -1057,7 +1057,7 @@ P::vectorPrint (
 
 template<typename T>
 L::VectorSpacePow2<T>::VectorSpacePow2
-   (const scalar_algebra& a, unsigned _dim)
+   (const scalar_algebra& a, int _dim)
    : algebra (a),
      vecalg (a, logInt (unsigned (static_cast<unsigned char>(-1))+1, a.size())),
      baseBits (ms1 (algebra.size())),
@@ -1067,7 +1067,7 @@ L::VectorSpacePow2<T>::VectorSpacePow2
      dim (_dim),
      vecDim ((dim - 1) / (vecalg.dimension()) + 1)
 {
-   if (baseBits * dim > unsigned (std::numeric_limits<T>::digits))
+   if (baseBits * dim > std::numeric_limits<T>::digits)
    {
       throw FIXME (__FILE__, __LINE__);
    }
@@ -1082,7 +1082,7 @@ template<typename T>
 unsigned
 L::VectorSpacePow2<T>::size () const
 {
-   return unsigned (std::numeric_limits<unsigned>::digits) > dim * baseBits
+   return std::numeric_limits<unsigned>::digits > dim * baseBits
         ? 1u << (dim * baseBits)
 #if 0
         : std::numeric_limits<unsigned>::max();
@@ -1142,7 +1142,7 @@ namespace HIntLib
 #define HINTLIB_INSTANTIATE(X,Y,NAME) \
    namespace Private { \
    template LookupVectorSpaceBase<X,Y >::LookupVectorSpaceBase \
-               (unsigned, unsigned, unsigned); \
+               (unsigned, int, unsigned); \
    template void LookupVectorSpaceBase<X,Y >::dump \
                (std::ostream &,unsigned) const; \
    } \
@@ -1176,7 +1176,7 @@ namespace HIntLib
 
 #define HINTLIB_INSTANTIATE(X) \
    template VectorSpacePow2<X >::VectorSpacePow2 \
-                (const scalar_algebra&, unsigned); \
+                (const scalar_algebra&, int); \
    template unsigned VectorSpacePow2<X >::size() const; \
    template X VectorSpacePow2<X >::mul (const X& a, scalar_type l) const; \
    HINTLIB_INSTANTIATE_VECTOR_PRINT(VectorSpacePow2<X >)

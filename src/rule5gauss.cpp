@@ -38,8 +38,8 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hypercube.h>
 
 
 namespace L = HIntLib;
@@ -64,18 +64,18 @@ namespace
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule5Gauss::Rule5Gauss (unsigned dim)
+L::Rule5Gauss::Rule5Gauss (int dim)
    : OrbitRule (dim), a (dim), oneDivTwoPowDim (real(1) / (Index(1) << dim))
 {
    checkDimensionNotZero (dim);
 
-   unsigned maxDim = digitsRepresentable(Index(3));
+   const int maxDim = logInt(std::numeric_limits<Index>::max(), Index(3));
 
    if (dim > maxDim)  throw DimensionTooHigh (dim, maxDim);
 
-   #if HINTLIB_STATIC_WORKS == 0
-      r  = HINTLIB_MN sqrt (real(3) / real(5));
-   #endif
+#if HINTLIB_STATIC_WORKS == 0
+   r  = HINTLIB_MN sqrt (real(3) / real(5));
+#endif
 }
 
 
@@ -87,7 +87,7 @@ real L::Rule5Gauss::eval (Integrand &f, const Hypercube &h)
 {
    const real* width = h.getWidth();
 
-   for (unsigned d = 0; d < dim; ++d)  a[d] = width[d] * r;
+   for (int d = 0; d < dim; ++d)  a[d] = width[d] * r;
 
    return h.getVolume() * eval3powS (f, h.getCenter(), a, w0, w1)
         * oneDivTwoPowDim;

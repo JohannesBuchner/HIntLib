@@ -33,8 +33,8 @@
  *  as formula Cn: 3-1
  */
 
-#ifndef HINTLIB_RULE3OCTAHEDRON_H
-#define HINTLIB_RULE3OCTAHEDRON_H 1
+#ifndef HINTLIB_RULE_3_OCTAHEDRON_H
+#define HINTLIB_RULE_3_OCTAHEDRON_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -53,22 +53,22 @@ namespace HIntLib
    class Rule3Octahedron : public CubatureRule
    {
    public:
-      Rule3Octahedron (unsigned dim);
+      Rule3Octahedron (int dim);
 
       virtual real eval (Integrand &, const Hypercube &);
 
-      virtual unsigned getDimension()  const  { return dim; }
-      virtual Index getNumPoints()     const  { return 2 * dim; }
-      virtual unsigned getDegree()     const  { return 3; }
-      virtual bool isAllPointsInside() const  { return true; }
-      virtual real getSumAbsWeight()   const  { return 1.0; }
+      virtual int   getDimension()      const  { return dim; }
+      virtual Index getNumPoints()      const  { return 2 * dim; }
+      virtual int   getDegree()         const  { return 3; }
+      virtual bool  isAllPointsInside() const  { return true; }
+      virtual real  getSumAbsWeight()   const  { return 1.0; }
 
       static CubatureRuleFactory* getFactory();
 
    private:
 
-      const unsigned dim;
-      const unsigned dim2;
+      const int dim;
+      const int dim2;
 
       // Dimension dependent constants
 

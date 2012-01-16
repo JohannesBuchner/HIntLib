@@ -43,17 +43,17 @@ namespace HIntLib
 class ZeroMatrices : public GeneratorMatrix
 {
 public:
-   ZeroMatrices (unsigned _base, unsigned _dim)
+   ZeroMatrices (int _base, int _dim)
       : GeneratorMatrix (_base, _dim, getDefaultM (_base),
                                          getDefaultPrec (_base)) {}
-   ZeroMatrices (unsigned _base, unsigned _dim, unsigned _m)
+   ZeroMatrices (int _base, int _dim, int _m)
       : GeneratorMatrix (_base, _dim, _m,
                          std::min (_m, getDefaultPrec (_base))) {}
-   ZeroMatrices (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec)
+   ZeroMatrices (int _base, int _dim, int _m, int _prec)
       : GeneratorMatrix (_base, _dim, _m, _prec) {}
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
+   virtual int getDigit  (int d, int r, int b) const;
+   virtual u64 vGetPackedRowVector (int d, int b) const;
 };
 
 
@@ -64,18 +64,17 @@ public:
 class IdentityMatrices : public GeneratorMatrix
 {
 public:
-   IdentityMatrices (unsigned _base, unsigned _dim)
+   IdentityMatrices (int _base, int _dim)
       : GeneratorMatrix (_base, _dim, getDefaultM (_base),
                                          getDefaultPrec (_base)) {}
-   IdentityMatrices (unsigned _base, unsigned _dim, unsigned _m)
+   IdentityMatrices (int _base, int _dim, int _m)
       : GeneratorMatrix (_base, _dim, _m,
                          std::min (_m, getDefaultPrec (_base))) {}
-   IdentityMatrices (unsigned _base, unsigned _dim, unsigned _m,
-                     unsigned _prec)
+   IdentityMatrices (int _base, int _dim, int _m, int _prec)
       : GeneratorMatrix (_base, _dim, _m, _prec) {}
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
+   virtual int getDigit  (int d, int r, int b) const;
+   virtual u64 vGetPackedRowVector (int d, int b) const;
 };
 
 
@@ -99,12 +98,12 @@ public:
       if (p >= 0)  prec = p;
    }
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
+   virtual int getDigit  (int d, int r, int b) const;
+   virtual u64 vGetPackedRowVector (int d, int b) const;
 
 private:
    const GeneratorMatrix* gm;
-   const unsigned oldPrec;
+   const int oldPrec;
 };
 
 class AdjustPrecSquare : public AdjustPrec
@@ -128,8 +127,8 @@ public:
       prec = _gm.getPrec() + 1;
    }
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
+   virtual int getDigit  (int d, int r, int b) const;
+   virtual u64 vGetPackedRowVector (int d, int b) const;
 
 private:
    const GeneratorMatrix* gm;
@@ -149,12 +148,12 @@ class AdjustM : public GeneratorMatrix
 public:
    AdjustM (int _m, const GeneratorMatrix&);
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
+   virtual int getDigit  (int d, int r, int b) const;
+   virtual u64 vGetPackedRowVector (int d, int b) const;
 
 private:
    const GeneratorMatrix* gm;
-   const unsigned oldM;
+   const int oldM;
    const u64 bToTheM;
 };
 
@@ -176,16 +175,16 @@ private:
 class MReduction : public GeneratorMatrix
 {
 public:
-   MReduction (unsigned _m, const GeneratorMatrix&);
-   MReduction (unsigned _m, unsigned _identityDim, const GeneratorMatrix&);
+   MReduction (int _m, const GeneratorMatrix&);
+   MReduction (int _m, int _identityDim, const GeneratorMatrix&);
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
+   virtual int getDigit  (int d, int r, int b) const;
+   virtual u64 vGetPackedRowVector (int d, int b) const;
 
 private:
    const GeneratorMatrix* gm;
-   const unsigned identityDim;
-   const unsigned diff;
+   const int identityDim;
+   const int diff;
    const u64 bToTheDiff;
    const u64 bToTheM;
 };
@@ -198,22 +197,22 @@ private:
 class NetFromSequence : public GeneratorMatrix
 {
 public:
-   NetFromSequence (unsigned _m, bool _equi, const GeneratorMatrix& _gm)
+   NetFromSequence (int _m, bool _equi, const GeneratorMatrix& _gm)
       : GeneratorMatrix (_gm), gm (&_gm), equi(_equi)
    {
       m = _m;
       if (equi)  ++dim;
    }
 
-   NetFromSequence (unsigned _m, const GeneratorMatrix& _gm)
+   NetFromSequence (int _m, const GeneratorMatrix& _gm)
       : GeneratorMatrix (_gm), gm (&_gm), equi(true)
    {
       m = _m;
       ++dim;
    }
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
+   virtual int getDigit  (int d, int r, int b) const;
+   virtual u64 vGetPackedRowVector (int d, int b) const;
 
 private:
    const GeneratorMatrix* gm;
@@ -234,8 +233,8 @@ public:
       if (_dim >= 0)  dim = _dim;
    }
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
+   virtual int getDigit (int d, int r, int b) const;
+   virtual u64 vGetPackedRowVector (int d, int b) const;
 
 private:
    const GeneratorMatrix* gm;
@@ -251,22 +250,21 @@ private:
 class SelectDimensions : public GeneratorMatrix
 {
 public:
-   SelectDimensions (unsigned _dim, const GeneratorMatrix&);
-   SelectDimensions (unsigned dim1, unsigned dim2, const GeneratorMatrix&);
-   SelectDimensions (
-        const unsigned* begin, const unsigned* end, const GeneratorMatrix&);
+   SelectDimensions (int _dim, const GeneratorMatrix&);
+   SelectDimensions (int dim1, int dim2, const GeneratorMatrix&);
+   SelectDimensions (const int* begin, const int* end, const GeneratorMatrix&);
 
-   void selectDimension (unsigned dResult, unsigned dOri)
+   void selectDimension (int dResult, int dOri)
    {
       dimensions [dResult] = dOri;
    }
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
+   virtual int getDigit  (int d, int r, int b) const;
+   virtual u64 vGetPackedRowVector (int d, int b) const;
 
 private:
    const GeneratorMatrix* gm;
-   Array<unsigned> dimensions;
+   Array<int> dimensions;
 };
 
 
@@ -281,8 +279,8 @@ class VirtualMatrixBase : public GeneratorMatrix
 public:
    ~VirtualMatrixBase();
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
+   virtual int getDigit  (int d, int r, int b) const;
+   virtual u64 vGetPackedRowVector (int d, int b) const;
 
 protected:
    VirtualMatrixBase () : gm(0) {}
@@ -315,11 +313,11 @@ class WithIdentityMatrix : public VirtualMatrixBase
 {
 public:
    WithIdentityMatrix (const GeneratorMatrix& _gm)  { init (0, _gm); }
-   WithIdentityMatrix (unsigned d, const GeneratorMatrix& _gm)
+   WithIdentityMatrix (int d, const GeneratorMatrix& _gm)
       { init (d, _gm); }
 
 private:
-   void init (unsigned d, const GeneratorMatrix&);
+   void init (int d, const GeneratorMatrix&);
 };
 
 }  // namespace HIntLib

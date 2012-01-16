@@ -37,6 +37,7 @@
 
 #include <HIntLib/cubaturerule.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hypercube.h>
 
 namespace L = HIntLib;
 
@@ -51,12 +52,12 @@ L::Integrator::Status L::RuleIntegrator::integrate (
 
    if (maxEval < rule->getNumPoints ())
    {
-      #ifdef HINTLIB_NO_EXCEPTIONS
-         ee.set (0.0, 0.0);
-         return ERROR;
-      #else
-         throw NoEvaluationsPossible (maxEval);
-      #endif
+#ifdef HINTLIB_NO_EXCEPTIONS
+      ee.set (0.0, 0.0);
+      return ERROR;
+#else
+      throw NoEvaluationsPossible (maxEval);
+#endif
    }
 
    ee.setNoErr (rule->eval(f, h));
@@ -75,12 +76,12 @@ L::Integrator::Status L::RuleIntegratorErr::integrate (
 
    if (maxEval < rule->getNumPoints ())
    {
-      #ifdef HINTLIB_NO_EXCEPTIONS
-         ee.set (0.0, 0.0);
-         return ERROR;
-      #else
-         throw NoEvaluationsPossible (maxEval);
-      #endif
+#ifdef HINTLIB_NO_EXCEPTIONS
+      ee.set (0.0, 0.0);
+      return ERROR;
+#else
+      throw NoEvaluationsPossible (maxEval);
+#endif
    }
 
    rule->evalError (f, h, ee);

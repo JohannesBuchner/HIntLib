@@ -43,23 +43,21 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
+#include <HIntLib/hypercube.h>
 #include <HIntLib/exception.h>
 
 
 namespace L = HIntLib;
-using L::real;
-using L::Index;
 
 namespace
 {
 #if HINTLIB_STATIC_WORKS == 1
-   const real rCD = HINTLIB_MN sqrt (real(3) / real(5));
+   const L::real rCD = HINTLIB_MN sqrt (L::real(3) / L::real(5));
 #else
-   real rCD;
+   L::real rCD;
 #endif
 
-const real weightD = real(125) / real(5832);
+   const L::real weightD = L::real(125) / L::real(5832);
 }
 
 
@@ -68,18 +66,18 @@ const real weightD = real(125) / real(5832);
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule7Phillips::Rule7Phillips (unsigned dim)
+L::Rule7Phillips::Rule7Phillips (int dim)
 : OrbitRule (dim),
   aCD (dim),
 
-  eN (real((25 * int(dim) - 165) * int(dim) + 302) / real(972)),
+  eN (real((25 * dim - 165) * dim + 302) / real(972)),
   temp (real(14) * eN + real(1)),
 
   rB2 (HINTLIB_MN sqrt ((real(21) * eN - real(1)) / (real(35) * eN))),
 
   weightB1 (eN / temp),
   weightB2 (real(490) * cube (eN) / (temp * (real(21) * eN - real(1)))),
-  weightC  (real(475 - 125 * signed (dim)) / real(2916)),
+  weightC  (real(475 - 125 * dim) / real(2916)),
   weightA  (real(1) + real(dim) * (  real(125) / real(2187) * (dim-1)
                                         * (dim - real(47) / real(10))
                          - real(2) * (weightB1 + weightB2)))
@@ -97,13 +95,23 @@ L::Rule7Phillips::Rule7Phillips (unsigned dim)
 }
 
 
-Index L::Rule7Phillips::getNumPoints () const
+/**
+ *  getNumPoints()
+ */
+
+L::Index
+L::Rule7Phillips::getNumPoints () const
 {
    return numRRR0_0fs () + numRR0_0fs () + 2 * numR0_0fs () + num0_0 ();
 }
 
 
-real L::Rule7Phillips::getSumAbsWeight() const
+/**
+ *  getSumAbsWeight()
+ */
+
+L::real
+L::Rule7Phillips::getSumAbsWeight() const
 {
    // Multiply each weight with the number of sampling points it is used for.
    // Don't forget to take the absolute value for weights that meight be
@@ -117,15 +125,16 @@ real L::Rule7Phillips::getSumAbsWeight() const
 
 
 /**
- *  Do the actual function evaluation
+ *  eval()
  */
 
-real L::Rule7Phillips::eval (Integrand &f, const Hypercube &h)
+L::real
+L::Rule7Phillips::eval (Integrand &f, const Hypercube &h)
 {
    // Calculate offsets from the center for points A and B
 
    const real* width = h.getWidth();
-   for (unsigned i = 0; i < dim; ++i)  aCD [i] = width [i] * rCD;
+   for (int i = 0; i < dim; ++i)  aCD [i] = width [i] * rCD;
 
    // Set up a scaler for point C
 
@@ -146,11 +155,13 @@ real L::Rule7Phillips::eval (Integrand &f, const Hypercube &h)
    );
 }
 
+
 /**
  *  getFactory()
  */
 
-L::CubatureRuleFactory* L::Rule7Phillips::getFactory()
+L::CubatureRuleFactory*
+L::Rule7Phillips::getFactory()
 {
    return new DefaultCubatureRuleFactory<L::Rule7Phillips> ();
 }

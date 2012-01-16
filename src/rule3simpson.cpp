@@ -38,8 +38,8 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hypercube.h>
 
 
 namespace L = HIntLib;
@@ -58,12 +58,12 @@ namespace
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule3Simpson::Rule3Simpson (unsigned dim)
+L::Rule3Simpson::Rule3Simpson (int dim)
    : OrbitRule (dim), oneDivTwoPowDim (real(1) / real(Index(1) << dim))
 {
    checkDimensionNotZero (dim);
 
-   unsigned maxDim = digitsRepresentable(Index(3));
+   int maxDim = logInt(std::numeric_limits<Index>::max(), Index(3));
 
    if (dim > maxDim)  throw DimensionTooHigh (dim, maxDim);
 }

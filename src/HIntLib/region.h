@@ -34,7 +34,7 @@
 #include <HIntLib/cubaturerule.h>
 #include <HIntLib/hypercube.h>
 #ifdef HINTLIB_PARALLEL
-   #include <HIntLib/buffer.h>
+#  include <HIntLib/buffer.h>
 #endif
 
 
@@ -52,10 +52,9 @@ public:
 #ifdef HINTLIB_PARALLEL
    // Create an empty (invalid) Region that can be filled with MPI_Receive
 
-   Region (unsigned dim) : h (dim) {}
-   Region (unsigned dim, RecvBuffer &b);
-   Region (unsigned dim,
-           int source, int tag, MPI_Comm comm, MPI_Status *status);
+   Region (int dim) : h (dim) {}
+   Region (int dim, RecvBuffer &b);
+   Region (int dim, int source, int tag, MPI_Comm comm, MPI_Status *status);
 #endif
 
    // Create new Region
@@ -91,8 +90,8 @@ private:
    Hypercube h;
    EstErr ee;
 
-   unsigned splitDim;
-   unsigned numOfSplits;
+   int splitDim;
+   Index numOfSplits;
 
 #ifdef HINTLIB_PARALLEL
    friend SendBuffer& operator<< (SendBuffer &, const Region &);
@@ -125,8 +124,7 @@ struct RegionErrorLess : public std::binary_function<Region*,Region*,bool>
 #ifdef HINTLIB_PARALLEL
 
 inline
-Region::Region (unsigned dim,
-                int source, int tag, MPI_Comm comm, MPI_Status *status)
+Region::Region (int dim, int source, int tag, MPI_Comm comm, MPI_Status *status)
    : h (dim)
 {
    recv (source, tag, comm, status);

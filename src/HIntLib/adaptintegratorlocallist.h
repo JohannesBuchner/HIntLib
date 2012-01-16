@@ -24,8 +24,8 @@
  *  Parallel Adaptive Integration with local region collections
  */
 
-#ifndef HINTLIB_ADAPTINTEGRATORLOCALLIST_H
-#define HINTLIB_ADAPTINTEGRATORLOCALLIST_H 1
+#ifndef HINTLIB_ADAPT_INTEGRATOR_LOCAL_LIST_H
+#define HINTLIB_ADAPT_INTEGRATOR_LOCAL_LIST_H 1
 
 #include <HIntLib/defaults.h>
 

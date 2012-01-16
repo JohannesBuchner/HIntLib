@@ -60,7 +60,10 @@ private:
 
    static const T pattern0101 = T (0x5555555555555555ull);
 
-   bool msb() const  { return d & (T(1) << std::numeric_limits<T>::digits-1); }
+   bool msb() const
+   {
+      return d & (T(1) << (std::numeric_limits<T>::digits - 1));
+   }
 
 public:
    typedef unsigned char coeff_type;
@@ -243,7 +246,7 @@ public:
    typedef GF2 coeff_algebra;
    typedef GF2::type coeff_type;
    typedef BitRef<T> coeff_reference;
-   typedef std::vector<std::pair<type,unsigned> > Factorization;
+   typedef std::vector<std::pair<type,int> > Factorization;
 
    explicit Polynomial2Ring (char _var = 'x')
       : Private::Polynomial2RingBase (_var) {}

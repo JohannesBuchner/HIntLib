@@ -77,6 +77,7 @@ pkginclude_HEADERS = \
    polynomial2.h polynomial2.tcc \
    prime.h \
    prime_generated.h \
+   productrule.h \
    pseudoembeddedrule.h \
    qmcintegration.h \
    qmcintegrator.h \
@@ -100,11 +101,14 @@ pkginclude_HEADERS = \
    rule3tyler.h \
    rule5gauss.h \
    rule5hammer.h \
+   rule5mustardlynessblatt.h \
    rule5stroud.h \
+   rule5stroud2.h \
    rule75genzmalik.h \
    rule7phillips.h \
    rule9stenger.h \
    rulebasedintegrator.h \
+   rulegauss.h \
    ruleintegrator.h \
    shiftnet.h \
    shiftscale.h \

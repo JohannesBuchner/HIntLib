@@ -68,10 +68,10 @@ namespace HIntLib
    {
       virtual void makeString() const;
    public:
-      InvalidDimension (unsigned d) : dim(d) {}
-      unsigned getDimension() const { return dim; }
+      InvalidDimension (int d) : dim(d) {}
+      int getDimension() const { return dim; }
    private:
-      const unsigned dim;
+      const int dim;
    };
 
    class DimensionZero : public InvalidDimension
@@ -81,21 +81,21 @@ namespace HIntLib
       DimensionZero() : InvalidDimension(0) {}
    };
 
-   void checkDimensionNotZero (unsigned dim);
+   void checkDimensionNotZero (int dim);
 
    class DimensionTooHigh : public InvalidDimension
    {
       virtual void makeString() const;
    public:
-      DimensionTooHigh(unsigned d,unsigned m) : InvalidDimension(d), max (m) {}
-      unsigned getMaximum() const  {  return max; }
+      DimensionTooHigh(int d, int m) : InvalidDimension(d), max (m) {}
+      int getMaximum() const  {  return max; }
    private:
-      const unsigned max;
+      const int max;
    };
 
-   template <unsigned max>
+   template <int max>
    inline
-   void checkDimensionLeq (unsigned dim)
+   void checkDimensionLeq (int dim)
    {
       if (dim > max)  throw DimensionTooHigh (dim, max);
    }
@@ -104,15 +104,15 @@ namespace HIntLib
    {
       virtual void makeString() const;
    public:
-      DimensionTooLow(unsigned d, unsigned m) : InvalidDimension(d), min (m) {}
-      unsigned getMinimum() const  {  return min; }
+      DimensionTooLow(int d, int m) : InvalidDimension(d), min (m) {}
+      int getMinimum() const  {  return min; }
    private:
-      const unsigned min;
+      const int min;
    };
 
-   template <unsigned min>
+   template <int min>
    inline
-   void checkDimensionGeq (unsigned dim)
+   void checkDimensionGeq (int dim)
    {
       if (dim < min)  throw DimensionTooLow (dim, min);
    }
@@ -123,18 +123,18 @@ namespace HIntLib
    {
       virtual void makeString() const;
    public:
-      DimensionMismatch (unsigned d1, unsigned d2) : dim1(d1), dim2(d2) {}
-      unsigned getDimension1() const  { return dim1; }
-      unsigned getDimensino2() const  { return dim2; }
+      DimensionMismatch (int d1, int d2) : dim1(d1), dim2(d2) {}
+      int getDimension1() const  { return dim1; }
+      int getDimensino2() const  { return dim2; }
    private:
-      const unsigned dim1;
-      const unsigned dim2;
+      const int dim1;
+      const int dim2;
    };
 
-   void throwDimensionMismatch(unsigned dim1, unsigned dim2) HINTLIB_GNU_NORETURN;
+   void throwDimensionMismatch(int dim1, int dim2) HINTLIB_GNU_NORETURN;
 
    inline
-   void checkDimensionEqual (unsigned dim1, unsigned dim2)
+   void checkDimensionEqual (int dim1, int dim2)
    {
       if (dim1 != dim2)  throwDimensionMismatch (dim1, dim2);
    }
@@ -178,58 +178,58 @@ namespace HIntLib
    class GM_PrecTooHigh : public GeneratorMatrixException
    {
       virtual void makeString() const;
-      const unsigned b;
-      const unsigned max;
-      const unsigned prec;
+      const int b;
+      const int max;
+      const int prec;
    public:
-      GM_PrecTooHigh (unsigned _b, unsigned _max, unsigned _prec)
+      GM_PrecTooHigh (int _b, int _max, int _prec)
          : b(_b), max(_max), prec(_prec)  {}
    };
 
    class GM_BaseTooLarge : public GeneratorMatrixException
    {
       virtual void makeString() const;
-      const unsigned base;
-      const unsigned max;
+      const int base;
+      const int max;
    public:
-      GM_BaseTooLarge (unsigned _base, unsigned _max)
+      GM_BaseTooLarge (int _base, int _max)
          : base(_base), max(_max)  {}
    };
 
    class GM_CopyPrec : public GeneratorMatrixException
    {
       virtual void makeString() const;
-      const unsigned n;
-      const unsigned o;
+      const int n;
+      const int o;
    public:
-      GM_CopyPrec (unsigned _n, unsigned _o) : n(_n), o(_o)  {}
+      GM_CopyPrec (int _n, int _o) : n(_n), o(_o)  {}
    };
 
    class GM_CopyM : public GeneratorMatrixException
    {
       virtual void makeString() const;
-      const unsigned n;
-      const unsigned o;
+      const int n;
+      const int o;
    public:
-      GM_CopyM (unsigned _n, unsigned _o) : n(_n), o(_o)  {}
+      GM_CopyM (int _n, int _o) : n(_n), o(_o)  {}
    };
 
    class GM_CopyDim : public GeneratorMatrixException
    {
       virtual void makeString() const;
-      const unsigned n;
-      const unsigned o;
+      const int n;
+      const int o;
    public:
-      GM_CopyDim (unsigned _n, unsigned _o) : n(_n), o(_o)  {}
+      GM_CopyDim (int _n, int _o) : n(_n), o(_o)  {}
    };
 
    class GM_CopyBase: public GeneratorMatrixException
    {
       virtual void makeString() const;
-      const unsigned n;
-      const unsigned o;
+      const int n;
+      const int o;
    public:
-      GM_CopyBase (unsigned _n, unsigned _o) : n(_n), o(_o)  {}
+      GM_CopyBase (int _n, int _o) : n(_n), o(_o)  {}
    };
 
    // Sequence Exceptions
@@ -239,11 +239,11 @@ namespace HIntLib
    class DigitalNetTooLarge : public SequenceException
    {
       virtual void makeString() const;
-      const unsigned b;
-      const unsigned max;
-      const unsigned m;
+      const int b;
+      const int max;
+      const int m;
    public:
-      DigitalNetTooLarge (unsigned _b, unsigned _max, unsigned _m)
+      DigitalNetTooLarge (int _b, int _max, int _m)
          : b(_b), max(_max), m(_m)  {}
    };
 
@@ -255,11 +255,11 @@ namespace HIntLib
    class NetIndexTooHigh : public SequenceException
    {
       const Index requestedIndex;
-      const unsigned originalM;
-      const unsigned newM;
+      const int originalM;
+      const int newM;
       virtual void makeString() const;
    public:
-      NetIndexTooHigh (Index i, unsigned _originalM, unsigned _newM)
+      NetIndexTooHigh (Index i, int _originalM, int _newM)
          : requestedIndex (i), originalM(_originalM), newM(_newM)  {}
    };
 

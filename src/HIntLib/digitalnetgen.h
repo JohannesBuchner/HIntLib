@@ -68,9 +68,9 @@ protected:
    const A arith;
    const typename A::scalar_algebra scalArith;
    const T base;
-   const unsigned prec;
+   const int prec;
    GeneratorMatrixVec<T> c;
-   const unsigned vecPrec;
+   const int vecPrec;
    const S vecBase;
    Array<T> x;      // current vector (size dim)
    Array<T> xStart; // Inital values for x (size dim)
@@ -80,7 +80,7 @@ protected:
 
    DigitalNetGen
       (const A &, const GeneratorMatrix &, const Hypercube &,
-       unsigned m, Index index, bool equi, Truncation);
+       int m, Index index, bool equi, Truncation);
 
    void resetX          (Index n, real* p) { resetX(n); copyXtoP(p); }
    void resetXDontScale (Index n, real* p) { resetX(n); copyXtoPDontScale(p); }
@@ -105,7 +105,7 @@ class DigitalNetGenNaive : public DigitalNetGen<A,S>
 public:
    DigitalNetGenNaive
       (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h,
-       unsigned m, Index i, bool equi, DigitalNet::Truncation t)
+       int m, Index i, bool equi, DigitalNet::Truncation t)
       : DigitalNetGen<A,S> (_arith, gm, _h, m, i, equi, t) {}
 
    DigitalNetGenNaive
@@ -135,7 +135,7 @@ class DigitalNetGenNormal : public DigitalNetGen<A,S>
 public:
    DigitalNetGenNormal
       (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h,
-       unsigned m, Index i, bool equi, DigitalNet::Truncation t)
+       int m, Index i, bool equi, DigitalNet::Truncation t)
       : DigitalNetGen<A,S> (_arith, gm, _h, m, i, equi, t) {}
 
    DigitalNetGenNormal
@@ -167,7 +167,7 @@ class DigitalNetGenGray : public DigitalNetGen<A,S>
 public:
    DigitalNetGenGray
       (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h,
-       unsigned m, Index i, bool equi, DigitalNet::Truncation t)
+       int m, Index i, bool equi, DigitalNet::Truncation t)
       : DigitalNetGen<A,S> (_arith, gm, _h, m, i, equi, t) {}
 
    DigitalNetGenGray
@@ -202,7 +202,7 @@ class DigitalNetGenCyclicGray : public DigitalNetGen<A,S>
 public:
    DigitalNetGenCyclicGray
       (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h,
-       unsigned m, Index i, bool equi, DigitalNet::Truncation t)
+       int m, Index i, bool equi, DigitalNet::Truncation t)
       : DigitalNetGen<A,S> (_arith, gm, _h, m, i, equi, t) {}
 
    DigitalNetGenCyclicGray
@@ -312,7 +312,7 @@ void HIntLib::DigitalNet2Gray<T>::next (real* point)
 {
    // Determine which bit changed in gray-code notation of n
  
-   unsigned r = ls0 (n++);
+   int r = ls0 (n++);
  
    // Update x and points
 
@@ -320,7 +320,7 @@ void HIntLib::DigitalNet2Gray<T>::next (real* point)
    T *xp = x;
    const T *vp = c(r);
  
-   for (unsigned i = getDimension(); i; --i)
+   for (int i = getDimension(); i; --i)
    {
       *point++ = (*ssp++) (*xp++ ^= *vp++);
    }

@@ -53,7 +53,7 @@ void L::initNiederreiter (GeneratorMatrixGen<typename A::type> &gm, A a)
    PolyRing poly (a);
    typename PolyRing::PrimeGenerator ig (poly);
 
-   for (unsigned d = 0; d < gm.getDimension(); ++d)
+   for (int d = 0; d < gm.getDimension(); ++d)
    {
       initNiederreiter (gm, a, d, ig.next());
    }
@@ -69,7 +69,7 @@ void L::initNiederreiter (GeneratorMatrixGen<typename A::type> &gm, A a)
 
 template<class A>
 void L::initNiederreiter
-  (GeneratorMatrixGen<typename A::type> &gm, A a, unsigned d,
+  (GeneratorMatrixGen<typename A::type> &gm, A a, int d,
    const typename PolynomialRing<A>::type &irred)
 {
    typedef typename A::type T;
@@ -78,7 +78,7 @@ void L::initNiederreiter
 
    const int degree = irred.degree ();
 
-   const unsigned vSize
+   const int vSize
       = std::max (gm.getM() + degree - 1,   // these elements are copied to gm
                   (gm.getPrec() + degree + 1));  // used in the loop
 
@@ -91,7 +91,7 @@ void L::initNiederreiter
 
    int u = 0;
 
-   for (unsigned j = 0; j < gm.getPrec(); j++)
+   for (int j = 0; j < gm.getPrec(); j++)
    {
       // cout << "  j=" << j << endl;
       // Do we need a new v?
@@ -99,7 +99,7 @@ void L::initNiederreiter
       if (u == 0)
       {
          Poly oldPoly = newPoly;
-         unsigned oldDegree = oldPoly.degree ();
+         int oldDegree = oldPoly.degree ();
 
          // calculate polyK+1 from polyK
 
@@ -109,7 +109,7 @@ void L::initNiederreiter
 
          // kj can be set to any value between 0 <= kj < newDegree
 
-         const unsigned kj = oldDegree   // proposed by BFN
+         const int kj = oldDegree   // proposed by BFN
                              // newDegree - 1    // standard, bad???
                              // 0
                              // (newDegree > 3) ? 3 : oldDegree
@@ -123,7 +123,7 @@ void L::initNiederreiter
          {
             T term = oldPoly [kj];
 
-            for (unsigned r = kj + 1; r < oldDegree; ++r)
+            for (int r = kj + 1; r < oldDegree; ++r)
             {
                v [r] = a.one (); // 1 is arbitrary. Could be 0, too
 
@@ -144,7 +144,7 @@ void L::initNiederreiter
          // All other elements are calculated by a recursion parameterized
          // by polyK
 
-         for (unsigned r = 0; r < vSize - newDegree; ++r)
+         for (int r = 0; r < vSize - newDegree; ++r)
          {
             T term = T();
 
@@ -158,7 +158,7 @@ void L::initNiederreiter
 
       // Set data in ci
 
-      for (unsigned r = 0; r < gm.getM(); ++r)  gm.setd (d,r,j, v[r+u]);
+      for (int r = 0; r < gm.getM(); ++r)  gm.setd (d,r,j, v[r+u]);
 
       if (++u == degree) u = 0;
    }
@@ -173,7 +173,7 @@ void L::initNiederreiter
 
 void L::initNiederreiter (GeneratorMatrixGen<unsigned char> &gm)
 {
-   const unsigned base = gm.getBase();
+   const int base = gm.getBase();
 
    if (Prime::test (base))
    {
@@ -201,10 +201,10 @@ void createIrredPolys (Poly* irredPolys)
 {
    // Use the following map for Eratosthenes' sieve
 
-   unsigned mapSize = 100;
+   int mapSize = 100;
    bool* map = 0;
 
-   unsigned int count;
+   int count;
 
    do
    {
@@ -223,7 +223,7 @@ void createIrredPolys (Poly* irredPolys)
 
       count = 0;
 
-      for (unsigned i = 0; i < mapSize; i++) if (map [i]) count++;
+      for (int i = 0; i < mapSize; i++) if (map [i]) count++;
 
    } while (count < NiederreiterMatrix::MAX_DIM);  // do we have enough?
 
@@ -231,7 +231,7 @@ void createIrredPolys (Poly* irredPolys)
 
    bool* p = map;
 
-   for (unsigned i = 0; i < NiederreiterMatrix::MAX_DIM; i++)
+   for (int i = 0; i < NiederreiterMatrix::MAX_DIM; i++)
    {
       while (! *p) p++;
 

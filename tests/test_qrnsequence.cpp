@@ -28,6 +28,16 @@
 #include <iomanip>
 #include <memory>
 
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_CSTRING
+#  include <cstring>
+#  define HINTLIB_SSN std::
+#else
+#  include <string.h>
+#  define HINTLIB_SSN
+#endif
+
 #include <HIntLib/qrnsequence.h>
 #include <HIntLib/exception.h>
 #include <HIntLib/hypercube.h>
@@ -76,7 +86,7 @@ bool opt (int c, const char* s)
    switch (c)
    {
    case 'p':
-      PRECISION = atoi (s);
+      PRECISION = parseInt (s);
       if (PRECISION >= 1 && PRECISION <= 20)  return true;
       break;
    case 'd':
@@ -96,8 +106,8 @@ void test (int argc, char** argv)
    enum Type {SEQUENCE, NET} type = NET;
 
    if (argc < 2)  usage("Invalid number of arguments!");
-   else if (strcmp (argv [0], "seq") == 0)  type = SEQUENCE;
-   else if (strcmp (argv [0], "net") == 0)  type = NET;
+   else if (HINTLIB_SSN strcmp (argv [0], "seq") == 0)  type = SEQUENCE;
+   else if (HINTLIB_SSN strcmp (argv [0], "net") == 0)  type = NET;
    else usage("First argument must either be `net' or `sequence'!");
 
    const unsigned SEQ = atoi (argv [1]);

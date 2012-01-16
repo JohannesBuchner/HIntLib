@@ -46,9 +46,9 @@
 
 
 #ifdef HINTLIB_PARALLEL
-   #define NAME(x) x##StaticLB
+#  define NAME(x) x##StaticLB
 #else
-   #define NAME(x) x
+#  define NAME(x) x
 #endif
 
 namespace L = HIntLib;
@@ -64,12 +64,12 @@ L::Integrator::Status L::NAME(QMCIntegrator)::integrate (
 
    if (n == 0)
    {
-      #ifdef HINTLIB_NO_EXCEPTIONS
-         ee.set (0.0, 0.0);
-         return ERROR;
-      #else
-         throw MaxEvaluationsRequired();
-      #endif
+#ifdef HINTLIB_NO_EXCEPTIONS
+      ee.set (0.0, 0.0);
+      return ERROR;
+#else
+      throw MaxEvaluationsRequired();
+#endif
    }
 
    // Decrease the number of points, to get a "good" number
@@ -80,18 +80,18 @@ L::Integrator::Status L::NAME(QMCIntegrator)::integrate (
    Statistic<> stat;
    Point point (h.getDimension());
 
-   #ifdef HINTLIB_PARALLEL
-      StaticLoadBalancer slb (n);
+#ifdef HINTLIB_PARALLEL
+   StaticLoadBalancer slb (n);
 
-      ps->integratePartition (
-         point, f, slb.getRange(), slb.getBegin(), slb.getEnd(), stat);
+   ps->integratePartition (
+      point, f, slb.getRange(), slb.getBegin(), slb.getEnd(), stat);
 
-      stat.reduce();
+   stat.reduce();
 
-      if (slb.getRank() > 0) return WRONG_NODE;
-   #else
-      ps->integrate(point, f, n, stat);
-   #endif
+   if (slb.getRank() > 0) return WRONG_NODE;
+#else
+   ps->integrate(point, f, n, stat);
+#endif
 
    ee.setNoErr (stat.getMean() * h.getVolume());
 

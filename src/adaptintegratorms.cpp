@@ -204,7 +204,7 @@ Integrator::Status L::AdaptIntegratorMSAsync::master (
    unsigned initialResultsMissing = numWorkers();
    Array<bool> initialMissing (numWorkers (), true);
 
-   maxIter -= numWorkers();   // # of times we can send new Regions
+   maxIter -= numWorkers();   // Number of times we can send new Regions
 
    // Main loop
 
@@ -480,12 +480,12 @@ Integrator::Status L::AdaptIntegratorMS::integrate (
 
    if (numWorkers() == 0)
    {
-      #ifdef HINTLIB_NO_EXCEPTIONS
+#     ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
-      #else
+#     else
          throw TooFewNodes();
-      #endif
+#     endif
    }
 
    // Figure out load balancing interval
@@ -514,12 +514,12 @@ Integrator::Status L::AdaptIntegratorMS::integrate (
       if (maxEvaluations <
           Index (2 * interval * rule->getNumPoints() * w) + initialPoints)
       {
-         #ifdef HINTLIB_NO_EXCEPTIONS
+#        ifdef HINTLIB_NO_EXCEPTIONS
             ee.set (0.0, 0.0);
             return ERROR;
-         #else
+#        else
             throw NoEvaluationsPossible(maxEvaluations);
-         #endif
+#        endif
       }
 
       maxIter = maxEvaluations - initialPoints;

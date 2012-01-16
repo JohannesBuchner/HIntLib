@@ -79,6 +79,7 @@ ALLSRC= \
    polynomial_rational.cpp \
    polynomial_real.cpp \
    polynomial_ring.cpp \
+   productrule.cpp \
    pseudoembeddedrule.cpp \
    qmcintegrator.cpp \
    qrnsequencebase.cpp \
@@ -98,11 +99,14 @@ ALLSRC= \
    rule3tyler.cpp \
    rule5gauss.cpp \
    rule5hammer.cpp \
+   rule5mustardlynessblatt.cpp \
    rule5stroud.cpp \
+   rule5stroud2.cpp \
    rule75genzmalik.cpp \
    rule7phillips.cpp \
    rule9stenger.cpp \
    rulebasedintegrator.cpp \
+   rulegauss.cpp \
    ruleintegrator.cpp \
    shiftnet.cpp \
    shiftscale.cpp \

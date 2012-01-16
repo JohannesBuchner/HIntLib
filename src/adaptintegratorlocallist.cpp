@@ -343,12 +343,12 @@ L::Integrator::Status L::AdaptIntegratorLocalList::integrate (
 
    if (initialPoints > maxEvaluations)
    {
-      #ifdef HINTLIB_NO_EXCEPTIONS
+#     ifdef HINTLIB_NO_EXCEPTIONS
          finalEE.set (0.0, 0.0);
          return ERROR;
-      #else
+#     else
          throw NoEvaluationsPossible(maxEvaluations);
-      #endif
+#     endif
    }
 
    // Number of possible iterations

@@ -31,17 +31,17 @@
 #include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_CSTRING
-  #include <cstring>
-  #define HINTLIB_SSN std::
+#  include <cstring>
+#  define HINTLIB_SSN std::
 #else
-  #include <string.h>
-  #define HINTLIB_SSN
+#  include <string.h>
+#  define HINTLIB_SSN
 #endif
 
 #ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
+#  include <sstream>
 #else
-  #include <HIntLib/fallback_sstream.h>
+#  include <HIntLib/fallback_sstream.h>
 #endif
 
 #include <HIntLib/exception.h>
@@ -129,9 +129,9 @@ void L::DimensionZero::makeString() const
    setStringCopy ("Dimension must not be zero!");
 }
 
-void L::checkDimensionNotZero (unsigned dim)
+void L::checkDimensionNotZero (int dim)
 {
-   if (dim == 0)  throw DimensionZero();
+   if (dim <= 0)  throw DimensionZero();
 }
 
 void L::DimensionTooHigh::makeString() const
@@ -159,7 +159,7 @@ void L::DimensionMismatch::makeString() const
    setString (ms(ss));
 }
 
-void L::throwDimensionMismatch (unsigned dim1, unsigned dim2)
+void L::throwDimensionMismatch (int dim1, int dim2)
 {
    throw DimensionMismatch(dim1, dim2);
 }
@@ -221,7 +221,7 @@ void L::GM_CopyPrec::makeString() const
 void L::GM_CopyM::makeString() const
 {
    ostringstream ss;
-   ss << "Trying to create Generator Matrix with M=" << n
+   ss << "Trying to create Generator Matrix with m=" << n
       << " from matrix with m=" << o << '!';
    setString (ms(ss));
 }

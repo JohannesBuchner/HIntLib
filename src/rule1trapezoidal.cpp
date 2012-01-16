@@ -41,6 +41,7 @@
 
 #include <HIntLib/defaultcubaturerulefactory.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hypercube.h>
 
 
 namespace L = HIntLib;
@@ -51,7 +52,7 @@ namespace L = HIntLib;
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule1Trapezoidal::Rule1Trapezoidal (unsigned dim)
+L::Rule1Trapezoidal::Rule1Trapezoidal (int dim)
    : OrbitRule (dim), a (dim), oneDivTwoPowDim (real(1) / (Index(1) << dim))
 {
    checkDimensionNotZero (dim);

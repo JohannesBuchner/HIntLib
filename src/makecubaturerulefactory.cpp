@@ -18,6 +18,16 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_CSTRING
+#  include <cstring>
+#  define HINTLIB_SSN std::
+#else
+#  include <string.h>
+#  define HINTLIB_SSN
+#endif
+
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/make.h>
@@ -36,11 +46,14 @@
 #include <HIntLib/rule3ewing.h>
 #include <HIntLib/rule3simpson.h>
 #include <HIntLib/rule5hammer.h>
+#include <HIntLib/rule5mustardlynessblatt.h>
 #include <HIntLib/rule5stroud.h>
+#include <HIntLib/rule5stroud2.h>
 #include <HIntLib/rule5gauss.h>
 #include <HIntLib/rule7phillips.h>
 #include <HIntLib/rule75genzmalik.h>
 #include <HIntLib/rule9stenger.h>
+#include <HIntLib/rulegauss.h>
 
 namespace L = HIntLib;
 
@@ -49,6 +62,17 @@ using L::EmbeddedRuleFactory;
 
 namespace
 {
+
+CubatureRuleFactory* makeGauss1() { return L::RuleGauss::getFactory(1); }
+CubatureRuleFactory* makeGauss2() { return L::RuleGauss::getFactory(2); }
+CubatureRuleFactory* makeGauss3() { return L::RuleGauss::getFactory(3); }
+CubatureRuleFactory* makeGauss4() { return L::RuleGauss::getFactory(4); }
+CubatureRuleFactory* makeGauss5() { return L::RuleGauss::getFactory(5); }
+CubatureRuleFactory* makeGauss6() { return L::RuleGauss::getFactory(6); }
+CubatureRuleFactory* makeGauss7() { return L::RuleGauss::getFactory(7); }
+CubatureRuleFactory* makeGauss8() { return L::RuleGauss::getFactory(8); }
+CubatureRuleFactory* makeGauss9() { return L::RuleGauss::getFactory(9); }
+
 struct RuleRecord
 {
    int n;
@@ -58,24 +82,35 @@ struct RuleRecord
 
 const RuleRecord factories [] =
 {
-   { 11, "1-Midpoint",    L::Rule1Midpoint::getFactory },
-   { 12, "1-Trapezoidal", L::Rule1Trapezoidal::getFactory },
-   { 21, "2-Simplex",     L::Rule2Simplex::getFactory },
-   { 22, "2-Thacher",     L::Rule2Thacher::getFactory },
-   { 23, "2-Ionescu",     L::Rule2Ionescu::getFactory },
-   { 31, "3-Octahedron",  L::Rule3Octahedron::getFactory },
-   { 32, "3-Cross",       L::Rule3Cross::getFactory },
-   { 33, "3-Tyler",       L::Rule3Tyler::getFactory },
-   { 34, "3-Gauss",       L::Rule3Gauss::getFactory },
-   { 35, "3-Ewing",       L::Rule3Ewing::getFactory },
-   { 36, "3-Simpson",     L::Rule3Simpson::getFactory },
-   { 51, "5-Hammer",      L::Rule5Hammer::getFactory },
-   { 52, "5-Stroud",      L::Rule5Stroud::getFactory },
-   { 53, "5-Gauss",       L::Rule5Gauss::getFactory },
-   { 71, "7-GenzMalik",   (CubatureRuleFactory* (*)())
-                                L::Rule75GenzMalik::getFactory },
-   { 72, "7-Phillips",    L::Rule7Phillips::getFactory },
-   { 91, "9-Stenger",     L::Rule9Stenger::getFactory },
+   {  11, "1-Midpoint",           L::Rule1Midpoint::getFactory },
+   {  12, "1-Trapezoidal",        L::Rule1Trapezoidal::getFactory },
+   {  13, "1-Gauss1D",            makeGauss1 },
+   {  21, "2-Simplex",            L::Rule2Simplex::getFactory },
+   {  22, "2-Thacher",            L::Rule2Thacher::getFactory },
+   {  23, "2-Ionescu",            L::Rule2Ionescu::getFactory },
+   {  31, "3-Octahedron",         L::Rule3Octahedron::getFactory },
+   {  32, "3-Cross",              L::Rule3Cross::getFactory },
+   {  33, "3-Tyler",              L::Rule3Tyler::getFactory },
+   {  34, "3-Gauss",              L::Rule3Gauss::getFactory },
+   {  35, "3-Ewing",              L::Rule3Ewing::getFactory },
+   {  36, "3-Simpson",            L::Rule3Simpson::getFactory },
+   {  37, "3-Gauss1D",            makeGauss2 },
+   {  51, "5-Hammer",             L::Rule5Hammer::getFactory },
+   {  52, "5-Stroud",             L::Rule5Stroud::getFactory },
+   {  53, "5-Gauss",              L::Rule5Gauss::getFactory },
+   {  54, "5-Gauss1D",            makeGauss3 },
+   {  55, "5-Stroud2",            L::Rule5Stroud2::getFactory },
+   {  56, "5-MustardLynessBlatt", L::Rule5MustardLynessBlatt::getFactory },
+   {  71, "7-GenzMalik",          (CubatureRuleFactory* (*)())
+                                        L::Rule75GenzMalik::getFactory },
+   {  72, "7-Phillips",           L::Rule7Phillips::getFactory },
+   {  73, "7-Gauss1D",            makeGauss4 },
+   {  91, "9-Stenger",            L::Rule9Stenger::getFactory },
+   {  92, "9-Gauss1D",            makeGauss5 },
+   { 111, "11-Gauss1D",           makeGauss6 },
+   { 131, "13-Gauss1D",           makeGauss7 },
+   { 151, "15-Gauss1D",           makeGauss8 },
+   { 171, "17-Gauss1D",           makeGauss9 },
 };
 
 inline bool operator< (const RuleRecord& r1, const RuleRecord& r2)
@@ -174,15 +209,17 @@ const char* namePERF (int rule1, int rule2)
    const char* s1 = L::Make::getCubatureRuleFactoryName (rule1);
    const char* s2 = L::Make::getCubatureRuleFactoryName (rule2);
 
+   // FIXME this fails if the degree is >= 10
+
    s[0] = s1[0];
    s[1] = '/';
    s[2] = s2[0];
    s[3] = '-';
    s[4] = '\0';
 
-   strcat (s, s1+2);
-   strcat (s, "/");
-   strcat (s, s2+2);
+   HINTLIB_SSN strcat (s, s1+2);
+   HINTLIB_SSN strcat (s, "/");
+   HINTLIB_SSN strcat (s, s2+2);
 
    return s;
 }
@@ -195,6 +232,8 @@ const char* namePDERF (int rule1, int rule2, int rule3)
    const char* s2 = L::Make::getCubatureRuleFactoryName (rule2);
    const char* s3 = L::Make::getCubatureRuleFactoryName (rule3);
 
+   // FIXME this fails if the degree is >= 10
+
    s[0] = s1[0];
    s[1] = '/';
    s[2] = s2[0];
@@ -203,11 +242,11 @@ const char* namePDERF (int rule1, int rule2, int rule3)
    s[5] = '-';
    s[6] = '\0';
 
-   strcat (s, s1+2);
-   strcat (s, "/");
-   strcat (s, s2+2);
-   strcat (s, "/");
-   strcat (s, s3+2);
+   HINTLIB_SSN strcat (s, s1+2);
+   HINTLIB_SSN strcat (s, "/");
+   HINTLIB_SSN strcat (s, s2+2);
+   HINTLIB_SSN strcat (s, "/");
+   HINTLIB_SSN strcat (s, s3+2);
 
    return s;
 }

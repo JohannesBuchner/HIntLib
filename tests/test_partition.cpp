@@ -46,7 +46,7 @@ bool opt(int c, const char* s)
 {
    switch (c)
    {
-   case 'r':  RESTRICTION = atoi (s); return true;
+   case 'r':  RESTRICTION = parseInt (s); return true;
    }
 
    return false;

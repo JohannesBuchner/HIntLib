@@ -29,8 +29,8 @@
  *  as formula Cn: 3-4
  */
 
-#ifndef HINTLIB_RULE3GAUSS_H
-#define HINTLIB_RULE3GAUSS_H 1
+#ifndef HINTLIB_RULE_3_GAUSS_H
+#define HINTLIB_RULE_3_GAUSS_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -49,15 +49,15 @@ namespace HIntLib
    class Rule3Gauss : public CubatureRule, private OrbitRule
    {
    public:
-      Rule3Gauss (unsigned dim);
+      Rule3Gauss (int dim);
 
       virtual real eval (Integrand &, const Hypercube &);
 
-      virtual unsigned getDimension()   const { return dim; }
-      virtual Index getNumPoints ()     const { return numR_Rfs(); }
-      virtual unsigned getDegree ()     const { return 3; }
-      virtual bool isAllPointsInside () const { return true; }
-      virtual real getSumAbsWeight ()   const { return 1.0; }
+      virtual int   getDimension()      const  { return dim; }
+      virtual Index getNumPoints()      const  { return numR_Rfs(); }
+      virtual int   getDegree()         const  { return 3; }
+      virtual bool  isAllPointsInside() const  { return true; }
+      virtual real  getSumAbsWeight()   const  { return 1.0; }
 
       static CubatureRuleFactory* getFactory();
  

@@ -97,6 +97,8 @@ extern const int  testProgramCopyright;
 void error();
 void error(const char*);
 void usage(const char*);
+int parseInt (const char*);
+void parseRange (const char*, int, int&, int&);
 void printHeader (std::ostream&);
 void doubleQuote (std::ostream&, const char*);
 #ifdef HINTLIB_BUILD_WCHAR

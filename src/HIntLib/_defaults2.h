@@ -26,11 +26,11 @@
  */
 
 #ifdef __GNUG__
-  #define HINTLIB_GNU_NORETURN __attribute__((noreturn))
-  #define HINTLIB_GNU_CONST __attribute__((const))
+#  define HINTLIB_GNU_NORETURN __attribute__((noreturn))
+#  define HINTLIB_GNU_CONST __attribute__((const))
 #else
-  #define HINTLIB_GNU_NORETURN
-  #define HINTLIB_GNU_CONST
+#  define HINTLIB_GNU_NORETURN
+#  define HINTLIB_GNU_CONST
 #endif
 
 
@@ -49,7 +49,7 @@
 #elif HINTLIB_REAL == 3 && defined HINTLIB_HAVE_LONG_DOUBLE
   typedef long double real;
 #else
-  #error "Value of HINTLIB_REAL is invalid.\nIt must be either 1 (float), 2 (double), or 3 (long double)!"
+#  error "Value of HINTLIB_REAL is invalid.\nIt must be either 1 (float), 2 (double), or 3 (long double)!"
 #endif
 
 
@@ -67,38 +67,38 @@
  */
 
 #if HINTLIB_SIZEOF_UNSIGNED_INT >= 4
-   #undef HINTLIB_UNSIGNED_NOT_EQUAL_U32
+#  undef HINTLIB_UNSIGNED_NOT_EQUAL_U32
    typedef unsigned u32;
 #else
 #if HINTLIB_SIZEOF_UNSIGNED_LONG_INT >= 4
-   #define HINTLIB_UNSIGNED_NOT_EQUAL_U32 1
+#  define HINTLIB_UNSIGNED_NOT_EQUAL_U32 1
    typedef unsigned long u32;
 #else
-   #error "unsigned long int does not have at least 32 bits!"
+#  error "unsigned long int does not have at least 32 bits!"
 #endif
 #endif
 
 #if HINTLIB_SIZEOF_UNSIGNED_INT >= 8
-   #undef HINTLIB_U32_NOT_EQUAL_U64
+#  undef HINTLIB_U32_NOT_EQUAL_U64
    typedef unsigned u64;
 #else
 #if HINTLIB_SIZEOF_UNSIGNED_LONG_INT >= 8
-   #ifdef HINTLIB_UNSIGNED_NOT_EQUAL_U32
-      #undef HINTLIB_U32_NOT_EQUAL_U64
-   #else
-      #define HINTLIB_U32_NOT_EQUAL_U64
-   #endif
+#  ifdef HINTLIB_UNSIGNED_NOT_EQUAL_U32
+#    undef HINTLIB_U32_NOT_EQUAL_U64
+#  else
+#    define HINTLIB_U32_NOT_EQUAL_U64
+#  endif
    typedef unsigned long u64;
 #else
 #ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
-   #if HINTLIB_SIZEOF_UNSIGNED_LONG_LONG_INT >= 8
-      #define HINTLIB_U32_NOT_EQUAL_U64 1
+#  if HINTLIB_SIZEOF_UNSIGNED_LONG_LONG_INT >= 8
+#    define HINTLIB_U32_NOT_EQUAL_U64 1
       typedef unsigned long long u64;
-   #else
-   #error "Cannot determine an unsigned integer type with at least 64 bits!"
-   #endif
+#  else
+#    error "Cannot determine an unsigned integer type with at least 64 bits!"
+#  endif
 #else
-   #error "Cannot determine an unsigned integer type with at least 64 bits!"
+#  error "Cannot determine an unsigned integer type with at least 64 bits!"
 #endif
 #endif
 #endif
@@ -118,7 +118,7 @@
 #elif HINTLIB_INDEX == 64
    typedef u64 Index;
 #else
-   #error "Value of HINTLIB_INDEX is invalid.  It must be either 32 or 64!"
+#  error "Value of HINTLIB_INDEX is invalid.  It must be either 32 or 64!"
 #endif
 
 
@@ -132,7 +132,7 @@
  */
 
 #ifndef HINTLIB_PRIME_TABLE_SIZE
-   #define HINTLIB_PRIME_TABLE_SIZE 5000
+#  define HINTLIB_PRIME_TABLE_SIZE 5000
 #endif
 
 
@@ -146,7 +146,7 @@
  */
 
 #ifndef HINTLIB_PRECALCULATED_FIELD_MAX_SIZE
-   #define HINTLIB_PRECALCULATED_FIELD_MAX_SIZE 32
+#  define HINTLIB_PRECALCULATED_FIELD_MAX_SIZE 32
 #endif
 
 

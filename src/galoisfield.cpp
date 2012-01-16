@@ -41,7 +41,7 @@ namespace L = HIntLib;
  */
 
 template<typename B>
-L::GaloisField<B>::GaloisField (unsigned base, unsigned exponent, bool xPrim)
+L::GaloisField<B>::GaloisField (unsigned base, int exponent, bool xPrim)
    : FactorField<PolynomialRing<ModularArithmeticField<B> > >
       (Poly (Field (base)),
        findPoly (base, exponent, xPrim))
@@ -67,9 +67,9 @@ L::GaloisField<B>::GaloisField (unsigned size, bool xPrim)
 
 template<typename B>
 typename L::GaloisField<B>::T
-L::GaloisField<B>::findPoly (unsigned base, unsigned deg, bool xPrim)
+L::GaloisField<B>::findPoly (unsigned base, int deg, bool xPrim)
 {
-   if (deg == 0)  throw GaloisFieldExponent ();
+   if (deg <= 0)  throw GaloisFieldExponent ();
 
    Field field (base);
    Poly poly (field);
@@ -117,7 +117,7 @@ L::GaloisField<B>::findPoly (unsigned base, unsigned deg, bool xPrim)
 
    T x = ef.one();
 
-   for (unsigned col = 0; col < deg; ++col)
+   for (int col = 0; col < deg; ++col)
    {
       for (int row = 0; row <= x.degree(); ++row)
       {
@@ -136,10 +136,10 @@ L::GaloisField<B>::findPoly (unsigned base, unsigned deg, bool xPrim)
 
    p[deg] = field.one();
 
-   for (unsigned row = 0; row < deg; ++row)
+   for (int row = 0; row < deg; ++row)
    {
       B y = B();
-      for (unsigned col = 0; col < deg; ++ col)
+      for (int col = 0; col < deg; ++ col)
       {
          field.addTo (y, field.mul (matrix[row * deg + col], x[col]));
       }
@@ -153,7 +153,8 @@ template<typename B>
 typename L::GaloisField<B>::T
 L::GaloisField<B>::findPoly (unsigned size, bool xPrim)
 {
-   unsigned base, exponent;
+   unsigned base;
+   int exponent;
    Prime::factorPrimePower (size, base, exponent);
    return findPoly (base, exponent, xPrim);
 }

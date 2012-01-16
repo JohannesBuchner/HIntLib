@@ -52,8 +52,8 @@ public:
    unsigned getUnsigned ();
    const char* getName ();
 
-   unsigned getLineNumber () const  { return ln; }
-   unsigned getPosition () const  { return pos + 1; }
+   int getLineNumber () const  { return ln; }
+   int getPosition () const  { return pos + 1; }
    const char* getLine () const  { return line.c_str(); }
 
    void throwException (const char*) const;
@@ -63,7 +63,7 @@ private:
    std::istream &str;
    std::string line;
    unsigned pos;
-   unsigned ln;
+   int ln;
    bool nl;
    std::string name;
 };
@@ -84,7 +84,7 @@ public:
    Token next ();
    void putBack ();
 
-   unsigned getNumber ()  { return number; }
+   int getNumber ()  { return number; }
    const char* getName()  { return s; }
    void expectName (const char*);
    void expectName ();
@@ -96,7 +96,7 @@ private:
    LineReader lr;
    Token nextToken;
    Token lastToken;
-   unsigned number;
+   int number;
    const char* s;
 };
 

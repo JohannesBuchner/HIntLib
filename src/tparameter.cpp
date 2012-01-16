@@ -209,7 +209,7 @@ bool L::TCalc2<T>::checkRestricted (int strength, int maxRows)
          for (int i = 0; i < dim; ++i)  std::cout << partition[i];
          std::cout <<'\n';
 #endif
-         
+
          return false;
       }
    }
@@ -386,7 +386,7 @@ L::TCalcGen::~TCalcGen ()
 
 inline
 void
-L::TCalcGen::copyToSelection (int d, int num, unsigned& pos)
+L::TCalcGen::copyToSelection (int d, int num, int& pos)
 {
    for (int i = 0; i < num; ++i)
    {
@@ -399,7 +399,7 @@ inline
 void
 L::TCalcGen::copyToSelection ()
 {
-   unsigned pos = 0;
+   int pos = 0;
    for (int d = 0; d < dim; ++d)  copyToSelection (d, partition[d], pos);
 }
 
@@ -448,7 +448,14 @@ bool L::TCalcGen::checkRestricted (int strength, int maxRows)
    do
    {
       copyToSelection ();
-      if (singular (strength))  return false;
+      if (singular (strength))
+      {
+#if 0
+         for (int i = 0; i < dim; ++i)  std::cout << partition[i];
+         std::cout <<'\n';
+#endif
+         return false;
+      }
    }
    while (next_partition (&partition[0], &partition[dim], maxRows));
 
@@ -488,7 +495,7 @@ bool L::TCalcGen::checkRestrictedRO (int strength, int maxRows)
 
          // create selection
 
-         unsigned l = 0;
+         int l = 0;
 
          for (int d = 0; d < pos; ++d)  copyToSelection (d, partition[d], l);
          copyToSelection (pos, maxRows, l);
@@ -521,7 +528,7 @@ bool L::confirmT (const GeneratorMatrix& gm, int t, TOption opts)
    if (opts & LOWER_RESTRICTION_OK)  throw FIXME (__FILE__, __LINE__);
 
    if (t < 0 || t > int (gm.getM()))  throw FIXME (__FILE__, __LINE__);
-   const unsigned k = gm.getM() - t;
+   const int k = gm.getM() - t;
    if (k > gm.getPrec())  return false;
 
    AdjustPrec gm1 (k, gm);
@@ -778,16 +785,16 @@ int L::tParameterRestricted (
  *  tParameter1DimProjection()
  */
 
-int L::tParameter1DimProjection (const GeneratorMatrix& gm, unsigned d)
+int L::tParameter1DimProjection (const GeneratorMatrix& gm, int d)
 {
-   const unsigned m = gm.getM();
-   const unsigned prec = gm.getPrec();
+   const int m = gm.getM();
+   const int prec = gm.getPrec();
 
    Array<unsigned char> matrix (m * prec);
 
-   for (unsigned r = 0; r < m; ++r)
+   for (int r = 0; r < m; ++r)
    {
-      for (unsigned b = 0; b < prec; ++b)
+      for (int b = 0; b < prec; ++b)
       {
          matrix [r + m * b] = gm.getDigit (d, r, b);
       }
@@ -805,18 +812,18 @@ int L::tParameter1DimProjection (const GeneratorMatrix& gm, unsigned d)
 
 int L::tParameterMax1DimProjection (const GeneratorMatrix& gm)
 {
-   const unsigned dim = gm.getDimension();
-   const unsigned m = gm.getM();
-   const unsigned prec = gm.getPrec();
+   const int dim = gm.getDimension();
+   const int m = gm.getM();
+   const int prec = gm.getPrec();
 
    Array<unsigned char> matrix (m * prec);
-   MinFinder<unsigned> mf;
+   MinFinder<int> mf;
 
-   for (unsigned d = 0; d < dim; ++d)
+   for (int d = 0; d < dim; ++d)
    {
-      for (unsigned r = 0; r < m; ++r)
+      for (int r = 0; r < m; ++r)
       {
-         for (unsigned b = 0; b < prec; ++b)
+         for (int b = 0; b < prec; ++b)
          {
             matrix [r + m * b] = gm.getDigit (dim, r, b);
          }
@@ -836,9 +843,9 @@ int L::tParameterMax1DimProjection (const GeneratorMatrix& gm)
  */
 
 int L::tParameter2DimProjection
-      (const GeneratorMatrix& gm, unsigned d1, unsigned d2)
+      (const GeneratorMatrix& gm, int d1, int d2)
 {
-   unsigned dimensions [2];
+   int dimensions [2];
    dimensions [0] = d1;
    dimensions [1] = d2;
 
@@ -856,19 +863,19 @@ int L::tParameter2DimProjection
 
 int L::tParameterMax2DimProjection (const GeneratorMatrix& gm)
 {
-   const unsigned dim = gm.getDimension();
+   const int dim = gm.getDimension();
 
    if (dim < 2)  return tParameterMax1DimProjection (gm);
 
-   MaxFinder<unsigned> mf;
+   MaxFinder<int> mf;
 
    SelectDimensions gm2 (2, gm);
 
-   for (unsigned d1 = 1; d1 < dim; ++d1)
+   for (int d1 = 1; d1 < dim; ++d1)
    {
       gm2.selectDimension (0, d1);
 
-      for (unsigned d2 = 0; d2 < d1; ++d2)
+      for (int d2 = 0; d2 < d1; ++d2)
       {
          gm2.selectDimension (1, d2);
          mf << tParameter (gm2);
@@ -885,23 +892,23 @@ int L::tParameterMax2DimProjection (const GeneratorMatrix& gm)
 
 int L::tParameterMax3DimProjection (const GeneratorMatrix& gm)
 {
-   const unsigned dim = gm.getDimension();
+   const int dim = gm.getDimension();
 
    if (dim < 3)  return tParameterMax2DimProjection (gm);
 
-   MaxFinder<unsigned> mf;
+   MaxFinder<int> mf;
 
    SelectDimensions gm2 (3, gm);
 
-   for (unsigned d1 = 2; d1 < dim; ++d1)
+   for (int d1 = 2; d1 < dim; ++d1)
    {
       gm2.selectDimension (0, d1);
 
-      for (unsigned d2 = 1; d2 < d1; ++d2)
+      for (int d2 = 1; d2 < d1; ++d2)
       {
          gm2.selectDimension (1, d2);
 
-         for (unsigned d3 = 0; d3 < d2; ++d3)
+         for (int d3 = 0; d3 < d2; ++d3)
          {
             gm2.selectDimension (2, d3);
             mf << tParameter (gm2);

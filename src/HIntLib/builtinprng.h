@@ -24,8 +24,8 @@
  *  Makes the built-in PRNG available
  */
 
-#ifndef HINTLIB_BUILTINPRNG_H
-#define HINTLIB_BUILTINPRNG_H 1
+#ifndef HINTLIB_BUILTIN_PRNG_H
+#define HINTLIB_BUILTIN_PRNG_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -34,17 +34,17 @@
 #endif
 
 #ifdef HINTLIB_HAVE_CSTDLIB
-  #include <cstdlib>
-  #define HINTLIB_SLN std::
+#  include <cstdlib>
+#  define HINTLIB_SLN std::
 #else
-  #include <stdlib.h>
-  #define HINTLIB_SLN
+#  include <stdlib.h>
+#  define HINTLIB_SLN
 #endif
 
 #ifdef HINTLIB_HAVE_LIMITS
-  #include <limits>
+#  include <limits>
 #else
-  #include <HIntLib/fallback_limits.h>
+#  include <HIntLib/fallback_limits.h>
 #endif
 
 
@@ -55,13 +55,13 @@ class BuiltInPRNG
 {
 private:
 
-   #if HINTLIB_STATIC_WORKS == 1
-      static HINTLIB_DLL_IMPORT const real RANGE;
-      static HINTLIB_DLL_IMPORT const real RESOLUTION;
-   #else
-      static real RANGE;
-      static real RESOLUTION;
-   #endif
+#if HINTLIB_STATIC_WORKS == 1
+   static HINTLIB_DLL_IMPORT const real RANGE;
+   static HINTLIB_DLL_IMPORT const real RESOLUTION;
+#else
+   static real RANGE;
+   static real RESOLUTION;
+#endif
 
    static HINTLIB_DLL_IMPORT bool inUse;
 
@@ -102,7 +102,7 @@ public:
 /**
  *  getReal()
  *
- *  Returns a random real from [0,1]
+ *  Returns a random real from (0,1)
  */
 
 inline
@@ -115,9 +115,12 @@ real BuiltInPRNG::getReal()
 inline
 int BuiltInPRNG::operator() (int max)
 {
+#if RAND_MAX == 0x7fffffff
+      return int ((u64((*this)()) * max) >> 31);
+#else
    if (std::numeric_limits<int>::digits + std::numeric_limits<unsigned>::digits
     <= std::numeric_limits<u64>::digits
-    && RAND_MAX + 1 != 0)
+    && RAND_MAX < std::numeric_limits<int>::max())
    {
       return int ((u64((*this)()) * max) / (RAND_MAX + 1));
    }
@@ -125,6 +128,7 @@ int BuiltInPRNG::operator() (int max)
    {
       return int (getReal() * max);
    }
+#endif
 }
 
 } // namespace HIntLib

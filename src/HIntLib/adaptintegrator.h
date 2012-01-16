@@ -22,8 +22,8 @@
  *  AdaptIntegrator
  */
 
-#ifndef HINTLIB_ADAPTINTEGRATOR_H
-#define HINTLIB_ADAPTINTEGRATOR_H 1
+#ifndef HINTLIB_ADAPT_INTEGRATOR_H
+#define HINTLIB_ADAPT_INTEGRATOR_H 1
 
 #include <HIntLib/defaults.h>
 

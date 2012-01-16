@@ -38,9 +38,9 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 #include <HIntLib/integrand.h>
+#include <HIntLib/hypercube.h>
 
 
 namespace L = HIntLib;
@@ -61,7 +61,7 @@ namespace
  *  Constructor
  */
 
-L::Rule2Thacher::Rule2Thacher (unsigned _dim)
+L::Rule2Thacher::Rule2Thacher (int _dim)
 : dim(_dim), p(_dim)
 {
    checkDimensionNotZero (dim);
@@ -84,15 +84,15 @@ real L::Rule2Thacher::eval (Integrand &f, const Hypercube &h)
    const real* width  = h.getWidth();
    real sum = 0.0;
 
-   for (unsigned i = 0; i < dim; ++i)  p [i] = center[i] + r2 * width[i];
+   for (int i = 0; i < dim; ++i)  p [i] = center[i] + r2 * width[i];
 
    sum += f(p);
 
-   for (unsigned j = 0; j < dim; ++j)
+   for (int j = 0; j < dim; ++j)
    {
-      for (unsigned i = 0; i < j; ++i)      p [i] = center[i] + r * width[i];
+      for (int i = 0; i < j; ++i)      p [i] = center[i] + r * width[i];
       p[j] = center[j] + width [j];
-      for (unsigned i = j+1; i < dim; ++i)  p [i] = center[i] + r * width[i];
+      for (int i = j+1; i < dim; ++i)  p [i] = center[i] + r * width[i];
 
       sum -= r * f(p);
 

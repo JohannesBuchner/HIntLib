@@ -38,7 +38,7 @@
 #include <HIntLib/hlmath.h>
 #include <HIntLib/array.h>
 #ifdef HINTLIB_PARALLEL
-   #include <HIntLib/buffer.h>
+#  include <HIntLib/buffer.h>
 #endif
 
 
@@ -52,10 +52,10 @@ class Hypercube
 // So they have to be defined here
 
 private:
-   real* width  ()            { return &data [dim]; }
-   real* center ()            { return &data [0]; }
-   real& width  (unsigned i)  { return width()  [i]; }
-   real& center (unsigned i)  { return center() [i]; }
+   real* width  ()       { return &data [dim]; }
+   real* center ()       { return &data [0]; }
+   real& width  (int i)  { return width()  [i]; }
+   real& center (int i)  { return center() [i]; }
    void calcVolume ();
 
 public:
@@ -66,15 +66,15 @@ public:
 
    // [0,1]^dim
 
-   explicit Hypercube (unsigned dim);
+   explicit Hypercube (int dim);
 
    // [a_1,b_1]x..x[a_dim,b_dim]
 
-   Hypercube (unsigned dim, const real a [], const real b []);
+   Hypercube (int dim, const real a [], const real b []);
 
    // [a,b]^dim
 
-   Hypercube (unsigned dim, real a, real b);
+   Hypercube (int dim, real a, real b);
 
    // Copy constructor
 
@@ -85,16 +85,15 @@ public:
     *  Create a new Hypercube be splitting another one
     */
 
-   Hypercube (Hypercube &, unsigned dim);
+   Hypercube (Hypercube &, int dim);
 
    // Assignement
 
    Hypercube& operator= (const Hypercube&);
 
 #ifdef HINTLIB_PARALLEL
-   Hypercube (unsigned dim,
-              int source, int tag, MPI_Comm comm, MPI_Status *status);
-   Hypercube (unsigned dim, RecvBuffer &b);
+   Hypercube (int dim, int source, int tag, MPI_Comm comm, MPI_Status *status);
+   Hypercube (int dim, RecvBuffer &b);
    int send (int dest, int tag, MPI_Comm comm) const;
    void isend (int dest, int tag, MPI_Comm comm) const;
    int recv (int source, int tag, MPI_Comm comm, MPI_Status *status); 
@@ -111,17 +110,17 @@ public:
     *  Get geometry information about a cube
     */
 
-   unsigned getDimension () const       { return dim; }
-         real getVolume () const        { return volume; }
-   const real* getCenter () const       { return &data [0]; }
-   const real* getWidth  () const       { return &data [dim]; }
-         real  getCenter (unsigned i) const { return data [i]; }
-         real  getWidth  (unsigned i) const { return data [i + dim]; }
-         real  getUpperBound (unsigned i) const
+   int getDimension () const  { return dim; }
+         real getVolume () const       { return volume; }
+   const real* getCenter () const      { return &data [0]; }
+   const real* getWidth  () const      { return &data [dim]; }
+         real  getCenter (int i) const { return data [i]; }
+         real  getWidth  (int i) const { return data [i + dim]; }
+         real  getUpperBound (int i) const
                      { return getCenter (i) + getWidth (i); }
-         real  getLowerBound (unsigned i) const
+         real  getLowerBound (int i) const
                      { return getCenter (i) - getWidth (i); }
-         real  getDiameter (unsigned i) const { return 2.0 * getWidth (i); }
+         real  getDiameter (int i) const { return 2.0 * getWidth (i); }
 
    // Places a point can be relative to a Hypercube
 
@@ -131,15 +130,15 @@ public:
     *  Methods for changing a cube
     */
 
-   void set (unsigned dim, real a, real b);
+   void set (int dim, real a, real b);
 
-   void move (unsigned dim, real distance);
+   void move (int dim, real distance);
 
-   void cutLeft  (unsigned dim);
-   void cutRight (unsigned dim);
+   void cutLeft  (int dim);
+   void cutRight (int dim);
 
 private:
-   const unsigned dim;
+   const int dim;
    Array<real> data;
 
    real volume;
@@ -169,7 +168,7 @@ std::wostream& operator<< (std::wostream &, const Hypercube &);
 
 bool unite (Hypercube &, const Hypercube &);
 
-void throwDimensionMismatch(unsigned dim1, unsigned dim2);
+void throwDimensionMismatch(int dim1, int dim2);
 inline
 void checkDimensionEqual (const Hypercube &h1, const Hypercube &h2)
 {
@@ -186,23 +185,12 @@ inline
 void Hypercube::calcVolume ()
 {
    real v = 1.0;
-
-   // Workaround another g++ Optimizer bug. :-(
-
-   #ifdef __GNUG__
-   for (volatile unsigned i = 0; i < dim; ++i)
-   #else
-   for (unsigned i = 0; i < dim; ++i)
-   #endif
-   {
-      v *= getDiameter (i);
-   }
-
+   for (int i = 0; i < dim; ++i)  v *= getDiameter (i);
    volume = v;
 }
 
 inline
-void Hypercube::cutLeft (unsigned split)
+void Hypercube::cutLeft (int split)
 {
    width  (split) /= 2.0;
    center (split) -= width (split);
@@ -211,7 +199,7 @@ void Hypercube::cutLeft (unsigned split)
 }
 
 inline
-void Hypercube::cutRight (unsigned split)
+void Hypercube::cutRight (int split)
 {
    width  (split) /= 2.0;
    center (split) += width (split);
@@ -223,7 +211,7 @@ inline Hypercube::Hypercube (const Hypercube &h)
    : dim (h.dim), data (h.data, 2 * dim), volume (h.volume)
 {}
 
-inline Hypercube::Hypercube (Hypercube &h, unsigned split)
+inline Hypercube::Hypercube (Hypercube &h, int split)
    : dim (h.dim), data (h.data, 2 * dim), volume (h.volume)
 {
    h.cutLeft  (split);
@@ -231,7 +219,7 @@ inline Hypercube::Hypercube (Hypercube &h, unsigned split)
 }
 
 inline
-void Hypercube::set (unsigned i, real a, real b)
+void Hypercube::set (int i, real a, real b)
 {
    center() [i] =     (a + b) * .5;
    width()  [i] = abs (b - a) * .5;
@@ -239,7 +227,7 @@ void Hypercube::set (unsigned i, real a, real b)
 }
                                 
 inline
-void Hypercube::move (unsigned i, real distance)
+void Hypercube::move (int i, real distance)
 {
    center() [i] += distance;
 }

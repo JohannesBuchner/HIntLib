@@ -29,7 +29,7 @@
 
 // Check different flags, depending on parallel mode
 
-#if defined(HINTLIB_PARALLEL) && !defined(HINTLIB_MCINTEGRATOR_MPI_H) || !defined(HINTLIB_PARALLEL) && !defined(HINTLIB_MCINTEGRATOR_H)
+#if defined(HINTLIB_PARALLEL) && !defined(HINTLIB_MC_INTEGRATOR_MPI_H) || !defined(HINTLIB_PARALLEL) && !defined(HINTLIB_MC_INTEGRATOR_H)
 
 
 #include <HIntLib/integrator.h>
@@ -38,11 +38,11 @@
 // Define Name macro and set flag according to parallel mode
 
 #ifdef HINTLIB_PARALLEL
-   #define HINTLIB_MCINTEGRATOR_MPI_H 1
-   #define HINTLIB_NAME(x) x##StaticLB
+#  define HINTLIB_MC_INTEGRATOR_MPI_H 1
+#  define HINTLIB_NAME(x) x##StaticLB
 #else
-   #define HINTLIB_MCINTEGRATOR_H 1
-   #define HINTLIB_NAME(x) x
+#  define HINTLIB_MC_INTEGRATOR_H 1
+#  define HINTLIB_NAME(x) x
 #endif
 
 /**

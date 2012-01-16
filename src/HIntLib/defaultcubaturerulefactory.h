@@ -46,7 +46,7 @@ namespace HIntLib
    public:
       DefaultCubatureRuleFactory<T> () {}
 
-      virtual T* create (unsigned dim) { return new T(dim); }
+      virtual T* create (int dim) { return new T(dim); }
       virtual DefaultCubatureRuleFactory<T>* clone() const
          {  return new DefaultCubatureRuleFactory<T>; }
    };
@@ -57,7 +57,7 @@ namespace HIntLib
    public:
       DefaultEmbeddedRuleFactory<T> () {}
 
-      virtual T* create (unsigned dim) { return new T(dim); }
+      virtual T* create (int dim) { return new T(dim); }
       virtual DefaultEmbeddedRuleFactory<T>* clone() const
          {  return new DefaultEmbeddedRuleFactory<T>; }
    };

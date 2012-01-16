@@ -34,8 +34,8 @@
  *  as formula Cn: 7-1
  */
 
-#ifndef HINTLIB_RULE7PHILLIPS_H
-#define HINTLIB_RULE7PHILLIPS_H 1
+#ifndef HINTLIB_RULE_7_PHILLIPS_H
+#define HINTLIB_RULE_7_PHILLIPS_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -54,15 +54,15 @@ namespace HIntLib
    class Rule7Phillips : public CubatureRule, private OrbitRule
    {
    public:
-      Rule7Phillips (unsigned dim);
+      Rule7Phillips (int dim);
 
       virtual real eval (Integrand &, const Hypercube &);
 
-      virtual unsigned getDimension()       const  { return dim; }
-      virtual Index    getNumPoints ()      const;
-      virtual unsigned getDegree ()         const  { return 7; }
-      virtual bool     isAllPointsInside () const  { return true; }
-      virtual real     getSumAbsWeight ()   const;
+      virtual int   getDimension()      const  { return dim; }
+      virtual Index getNumPoints()      const;
+      virtual int   getDegree()         const  { return 7; }
+      virtual bool  isAllPointsInside() const  { return true; }
+      virtual real  getSumAbsWeight()   const;
 
       static CubatureRuleFactory* getFactory();
 

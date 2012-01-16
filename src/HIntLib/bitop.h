@@ -34,9 +34,9 @@
 #endif
 
 #ifdef HINTLIB_HAVE_LIMITS
-  #include <limits>
+#  include <limits>
 #else
-  #include <HIntLib/fallback_limits.h>
+#  include <HIntLib/fallback_limits.h>
 #endif
 
 namespace HIntLib

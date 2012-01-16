@@ -52,9 +52,9 @@ namespace HIntLib
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
    template<class X> struct FloatType {};
    template<> struct FloatType<u32> {  typedef float  floatType; };
-   #ifdef HINTLIB_U32_NOT_EQUAL_U64
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
    template<> struct FloatType<u64> {  typedef double floatType; };
-   #endif
+#endif
 #endif
 
 
@@ -82,7 +82,7 @@ protected:
    typedef GF2VectorSpace<T> A;
    typedef typename A::scalar_algebra SA;
 
-   const unsigned prec;
+   const int prec;
    A alg;
    SA scalAlg;
    GeneratorMatrix2<T> c;
@@ -100,7 +100,7 @@ protected:
 
    DigitalNet2
       (const GeneratorMatrix2<T> &, const Hypercube &,
-       unsigned m, Index index, bool equi, Truncation);
+       int m, Index index, bool equi, Truncation);
 
    void copyXtoP          (real*);
    void copyXtoPDontScale (real*);
@@ -125,7 +125,7 @@ class DigitalNet2Gray : public DigitalNet2<T>
 public:
    DigitalNet2Gray
       (const GeneratorMatrix2<T> & gm, const Hypercube& _h,
-       unsigned m, Index i, bool equi, DigitalNet::Truncation t,
+       int m, Index i, bool equi, DigitalNet::Truncation t,
        bool correct = true)
       : DigitalNet2<T> (gm, _h, m, i, equi, t)
       { if (correct)  this->c.prepareForGrayCode(); }
@@ -162,14 +162,14 @@ void HIntLib::DigitalNet2<T>::copyXtoP (real* point)
        || mode == DIRECT)
    {
       floatType *p = reinterpret_cast<floatType*>(&x[0]);
-      for (unsigned d = 0; d < getDimension(); ++d)
+      for (int d = 0; d < getDimension(); ++d)
       {
          point[d] = ssMagic[d] (p[d]);
       }
    }
    else
 #endif
-   for (unsigned d = 0; d < getDimension(); ++d)  point[d] = ss[d] (x[d]);
+   for (int d = 0; d < getDimension(); ++d)  point[d] = ss[d] (x[d]);
 }
 
 
@@ -187,11 +187,11 @@ void HIntLib::DigitalNet2<T>::copyXtoPDontScale (real* point)
        || mode == DIRECT)
    {
       floatType *p = reinterpret_cast<floatType*>(&x[0]);
-      for (unsigned d = 0; d < getDimension(); ++d)  point[d] = p[d] + -1.0;
+      for (int d = 0; d < getDimension(); ++d)  point[d] = p[d] + -1.0;
    }
    else
 #endif
-   for (unsigned d = 0; d < getDimension(); ++d) point[d] = x[d] * trivialScale;
+   for (int d = 0; d < getDimension(); ++d) point[d] = x[d] * trivialScale;
 }
 
 
@@ -207,9 +207,9 @@ inline
 void HIntLib::DigitalNet2Gray<T>::next (real* point)
 {
    const T *vp = c (ls0 (this->n++));  // determine digit that changed
-   const unsigned DIM = this->getDimension();
+   const int DIM = this->getDimension();
 
-   for (unsigned d = 0; d != DIM; ++d)  this->alg.addTo (this->x[d], vp[d]);
+   for (int d = 0; d != DIM; ++d)  this->alg.addTo (this->x[d], vp[d]);
 
    this->copyXtoP (point);
 } 
@@ -219,9 +219,9 @@ inline
 void HIntLib::DigitalNet2Gray<T>::nextDontScale (real* point)
 {
    const T *vp = c (ls0 (this->n++)); // determine digit that changed
-   const unsigned DIM = this->getDimension();
+   const int DIM = this->getDimension();
 
-   for (unsigned d = 0; d != DIM; ++d)  this->alg.addTo (this->x[d], vp[d]);
+   for (int d = 0; d != DIM; ++d)  this->alg.addTo (this->x[d], vp[d]);
 
    this->copyXtoPDontScale (point);
 } 

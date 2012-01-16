@@ -38,7 +38,7 @@ void testModularArithmetic (unsigned size)
    typedef IntegerRing<> Z;
    Z z;
 
-   unsigned maxDim32 = logInt (std::numeric_limits<unsigned>::max(), size);
+   const int maxDim32 = logInt (std::numeric_limits<unsigned>::max(), size);
 
    // Only prime numbers give a field
 
@@ -54,14 +54,14 @@ void testModularArithmetic (unsigned size)
       
       // Factor fields modulo irreducible polynomials
 
-      for (unsigned j = 1; j <= std::min (8u, maxDim32); ++j)
+      for (int j = 1; j <= std::min (8, maxDim32); ++j)
       {
          doTests (GaloisField<u8> (size, j), "GaloisField<>");
       }
 
       // Factor rings modulo arbitrary polynomials
 
-      for (unsigned deg = 1; deg <= std::min (5u, maxDim32); ++deg)
+      for (int deg = 1; deg <= std::min (5, maxDim32); ++deg)
       {
          for (unsigned j = 0;
               j < std::min (4u, (size - 1) * powInt (size,deg)); ++j)

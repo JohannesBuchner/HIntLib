@@ -10,7 +10,7 @@ gfplys_SOURCES = gfplys.f charac.f setfld.f itop.f ptoi.f plymul.f
 gfplys_DEPENDENCIES = gftabs.dat
 
 CLEANFILES = gftabs.dat irrtabs.dat
-EXTRA_DIST = genin2_ori.f genin_ori.f original_source.txt COPYRIGHT.html
+EXTRA_DIST = genin2_ori.f genin_ori.f gfplys_ori.f original_source.txt COPYRIGHT.html
 
 gftabs.dat: gfarit@EXEEXT@
 	@echo "Creating \"gftabs.dat\""

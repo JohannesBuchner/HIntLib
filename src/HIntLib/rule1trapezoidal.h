@@ -31,8 +31,8 @@
  *  as formula Cn: 1-2
  */
 
-#ifndef HINTLIB_RULE1TRAPEZOIDAL_H
-#define HINTLIB_RULE1TRAPEZOIDAL_H 1
+#ifndef HINTLIB_RULE_1_TRAPEZOIDAL_H
+#define HINTLIB_RULE_1_TRAPEZOIDAL_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -50,15 +50,15 @@ namespace HIntLib
    class Rule1Trapezoidal : public CubatureRule, private OrbitRule
    {
    public:
-      Rule1Trapezoidal (unsigned dim);
+      Rule1Trapezoidal (int dim);
 
       virtual real eval (Integrand &, const Hypercube &);
 
-      virtual unsigned getDimension()   const { return dim; }
-      virtual Index getNumPoints ()     const { return numR_Rfs(); }
-      virtual unsigned getDegree ()     const { return 1; }
-      virtual bool isAllPointsInside () const { return true; }
-      virtual real getSumAbsWeight ()   const { return 1.0; }
+      virtual int   getDimension()       const { return dim; }
+      virtual Index getNumPoints ()      const { return numR_Rfs(); }
+      virtual int   getDegree ()         const { return 1; }
+      virtual bool  isAllPointsInside () const { return true; }
+      virtual real  getSumAbsWeight ()   const { return 1.0; }
 
       static CubatureRuleFactory* getFactory();
  

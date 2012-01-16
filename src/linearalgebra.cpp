@@ -48,7 +48,7 @@ namespace HIntLib
 
 bool
 L::LinearAlgebra::isZeroMatrix (
-      const unsigned char* m, unsigned numCols, unsigned numRows)
+      const unsigned char* m, int numCols, int numRows)
 {
    const unsigned char* end = m + numCols * numRows;
    while (m != end)  if (*m++)  return false;
@@ -56,10 +56,10 @@ L::LinearAlgebra::isZeroMatrix (
 }
 
 bool
-L::LinearAlgebra::isIdentityMatrix (const unsigned char* m, unsigned size)
+L::LinearAlgebra::isIdentityMatrix (const unsigned char* m, int size)
 {
    const unsigned char* end = m + size * size;
-   unsigned pos = 0;
+   int pos = 0;
 
    while (m != end)
    {
@@ -90,28 +90,23 @@ class LinearAlgebraImp : public LinearAlgebra
 {
 public:
    LinearAlgebraImp (unsigned base) : field (base) {}
-   bool isLinearlyIndependent (
-      unsigned char *m, unsigned numRows, unsigned numCols);
-   unsigned matrixRank (unsigned char*, unsigned numRows, unsigned numCols);
-   unsigned numLinearlyIndependentVectors (
-      unsigned char*, unsigned numRows, unsigned numCols);
-   unsigned nullSpace (
-      unsigned char*, unsigned numRows, unsigned numCols, unsigned char*);
-   unsigned basisSupplement (
-      unsigned char*, unsigned numRows, unsigned numCols, unsigned*);
-   unsigned basisSupplement (
-      unsigned char*, unsigned numRows, unsigned numCols);
-   bool matrixInverse  (unsigned char*, unsigned num);
+   bool isLinearlyIndependent (unsigned char *m, int numRows, int numCols);
+   int matrixRank (unsigned char*, int numRows, int numCols);
+   int numLinearlyIndependentVectors (unsigned char*, int numRows, int numCols);
+   int nullSpace (unsigned char*, int numRows, int numCols, unsigned char*);
+   int basisSupplement (unsigned char*, int numRows, int numCols, int*);
+   int basisSupplement (unsigned char*, int numRows, int numCols);
+   bool matrixInverse  (unsigned char*, int num);
    void matrixMul (
       const unsigned char*, const unsigned char*,
-      unsigned numRows1, unsigned numRowsCols, unsigned numCols2,
+      int numRows1, int numRowsCols, int numCols2,
       unsigned char*);
    void matrixVectorMul (
       const unsigned char*, const unsigned char*,
-      unsigned numRows, unsigned numCols, unsigned char*);
+      int numRows, int numCols, unsigned char*);
    void vectorMatrixMul (
       const unsigned char*, const unsigned char*,
-      unsigned numRows, unsigned numCols, unsigned char*);
+      int numRows, int numCols, unsigned char*);
 
 private:
    A field;
@@ -121,48 +116,48 @@ private:
 
 template<class A>
 bool L::LinearAlgebraImp<A>::isLinearlyIndependent (
-   unsigned char* m, unsigned numRows, unsigned numCols)
+   unsigned char* m, int numRows, int numCols)
 {
    return L::isLinearlyIndependent (field, m, numRows, numCols);
 }
 
 template<class A>
-unsigned L::LinearAlgebraImp<A>::matrixRank (
-      unsigned char* m, unsigned numRows, unsigned numCols)
+int L::LinearAlgebraImp<A>::matrixRank (
+      unsigned char* m, int numRows, int numCols)
 {
    return L::matrixRank (field, m, numRows, numCols);
 }
 
 template<class A>
-unsigned L::LinearAlgebraImp<A>::numLinearlyIndependentVectors (
-      unsigned char* m, unsigned numRows, unsigned numCols)
+int L::LinearAlgebraImp<A>::numLinearlyIndependentVectors (
+      unsigned char* m, int numRows, int numCols)
 {
    return L::numLinearlyIndependentVectors (field, m, numRows, numCols);
 }
 
 template<class A>
-unsigned L::LinearAlgebraImp<A>::nullSpace (
-      unsigned char* m, unsigned numRows, unsigned numCols, unsigned char* res)
+int L::LinearAlgebraImp<A>::nullSpace (
+      unsigned char* m, int numRows, int numCols, unsigned char* res)
 {
    return L::nullSpace (field, m, numRows, numCols, res);
 }
 
 template<class A>
-unsigned L::LinearAlgebraImp<A>::basisSupplement (
-      unsigned char* m, unsigned numRows, unsigned numCols, unsigned* res)
+int L::LinearAlgebraImp<A>::basisSupplement (
+      unsigned char* m, int numRows, int numCols, int* res)
 {
    return L::basisSupplement (field, m, numRows, numCols, res);
 }
 
 template<class A>
-unsigned L::LinearAlgebraImp<A>::basisSupplement (
-      unsigned char* m, unsigned numRows, unsigned numCols)
+int L::LinearAlgebraImp<A>::basisSupplement (
+      unsigned char* m, int numRows, int numCols)
 {
    return L::basisSupplement (field, m, numRows, numCols);
 }
 
 template<class A>
-bool L::LinearAlgebraImp<A>::matrixInverse (unsigned char* m, unsigned num)
+bool L::LinearAlgebraImp<A>::matrixInverse (unsigned char* m, int num)
 {
    return L::matrixInverse (field, m, num);
 }
@@ -170,7 +165,7 @@ bool L::LinearAlgebraImp<A>::matrixInverse (unsigned char* m, unsigned num)
 template<class A>
 void L::LinearAlgebraImp<A>::matrixMul (
       const unsigned char* m1, const unsigned char* m2,
-      unsigned numRows1, unsigned numRowsCols, unsigned numCols2,
+      int numRows1, int numRowsCols, int numCols2,
       unsigned char* res)
 {
    return L::matrixMul (field, m1, m2, numRows1, numRowsCols, numCols2, res);
@@ -179,7 +174,7 @@ void L::LinearAlgebraImp<A>::matrixMul (
 template<class A>
 void L::LinearAlgebraImp<A>::matrixVectorMul (
       const unsigned char* m, const unsigned char* v,
-      unsigned numRows, unsigned numCols, unsigned char* res)
+      int numRows, int numCols, unsigned char* res)
 {
    return L::matrixVectorMul (field, m, v, numRows, numCols, res);
 }
@@ -187,7 +182,7 @@ void L::LinearAlgebraImp<A>::matrixVectorMul (
 template<class A>
 void L::LinearAlgebraImp<A>::vectorMatrixMul (
       const unsigned char* v, const unsigned char* m,
-      unsigned numRows, unsigned numCols, unsigned char* res)
+      int numRows, int numCols, unsigned char* res)
 {
    return L::vectorMatrixMul (field, v, m, numRows, numCols, res);
 }
@@ -196,7 +191,7 @@ void L::LinearAlgebraImp<A>::vectorMatrixMul (
 L::LinearAlgebra* L::LinearAlgebra::make (unsigned base)
 {
    unsigned prime;
-   unsigned power;
+   int power;
    Prime::factorPrimePower (base, prime, power);
 
    if (power == 1)

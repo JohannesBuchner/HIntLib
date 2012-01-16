@@ -24,8 +24,8 @@
  *  Distributes a task statically among all available processing nodes
  */
 
-#ifndef HINTLIB_STATICLOADBALANCER_H
-#define HINTLIB_STATICLOADBALANCER_H 1
+#ifndef HINTLIB_STATIC_LOAD_BALANCER_H
+#define HINTLIB_STATIC_LOAD_BALANCER_H 1
 
 #include <HIntLib/defaults.h>
 

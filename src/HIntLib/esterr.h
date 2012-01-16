@@ -33,7 +33,7 @@
 
 #include <HIntLib/hlmath.h>
 #ifdef HINTLIB_PARALLEL
-   #include <HIntLib/buffer.h>
+#  include <HIntLib/buffer.h>
 #endif
 
 

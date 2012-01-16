@@ -38,8 +38,8 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hypercube.h>
 #include <HIntLib/integrand.h>
 
 
@@ -63,7 +63,7 @@ namespace
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule2Simplex::Rule2Simplex (unsigned d)
+L::Rule2Simplex::Rule2Simplex (int d)
    : dim(d), oneOverDimPlusOne (real(1) / real(d + 1)), r(d * (d+1)), p(d)
 {
    checkDimensionNotZero (dim);
@@ -75,9 +75,9 @@ L::Rule2Simplex::Rule2Simplex (unsigned d)
 
    // Initialze r
 
-   for (unsigned i = 0; i <= dim; ++i)
+   for (int i = 0; i <= dim; ++i)
    {
-      for (unsigned k = 0; k < dim/2; ++k)
+      for (int k = 0; k < dim / 2; ++k)
       {
          real t = 2 * (i+1) * (k+1) * Constants<real>::pi() / (dim + 1);
 
@@ -104,9 +104,9 @@ real L::Rule2Simplex::eval (Integrand &f, const Hypercube &h)
    const real* width  = h.getWidth();
    real sum = 0.0;
 
-   for (unsigned i = 0; i <= dim; i++)
+   for (int i = 0; i <= dim; i++)
    {
-      for (unsigned k = 0; k < dim; k++)
+      for (int k = 0; k < dim; k++)
       {
          p [k] = center [k] + r [i * dim + k] * width [k];
       }

@@ -19,8 +19,8 @@
  */
 
 
-#ifndef HINTLIB_TPARAMETER_H
-#define HINTLIB_TPARAMETER_H 1
+#ifndef HINTLIB_T_PARAMETER_H
+#define HINTLIB_T_PARAMETER_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -40,11 +40,11 @@ template<class T> class GeneratorMatrixGen;
 template<class T> class GeneratorMatrixGenRow;
 template<class T> class GeneratorMatrix2Row;
 
-void makeRegular (GeneratorMatrixGenRow<unsigned char>&, unsigned d);
+void makeRegular (GeneratorMatrixGenRow<unsigned char>&, int d);
 void fixOneDimensionalProjections (GeneratorMatrixGenRow<unsigned char>&);
 void fixTwoDimensionalProjections (GeneratorMatrixGenRow<unsigned char>&);
-void withIdentityMatrix (GeneratorMatrixGenRow<unsigned char>&, unsigned d = 0);
-void withIdentityMatrix2(GeneratorMatrixGenRow<unsigned char>&, unsigned d = 0);
+void withIdentityMatrix (GeneratorMatrixGenRow<unsigned char>&, int d = 0);
+void withIdentityMatrix2(GeneratorMatrixGenRow<unsigned char>&, int d = 0);
 
 
 /***********  TCalc  *********************************************************/
@@ -154,7 +154,7 @@ public:
    bool checkRestrictedRO (int strength, int maxRows);
 
 protected:
-   void copyToSelection (int d, int num, unsigned& pos);
+   void copyToSelection (int d, int num, int& pos);
    void copyToSelection ();
    bool singular (int strength, int newM);
    bool singular (int strength);
@@ -241,8 +241,8 @@ bool confirmTRestricted (
 /*************** t-Parameter of low-dimensionl projections *******************/
 
 
-int tParameter1DimProjection (const GeneratorMatrix&, unsigned d);
-int tParameter2DimProjection (const GeneratorMatrix&, unsigned d1, unsigned d2);
+int tParameter1DimProjection (const GeneratorMatrix&, int d);
+int tParameter2DimProjection (const GeneratorMatrix&, int d1, int d2);
 
 int tParameterMax1DimProjection (const GeneratorMatrix&);
 int tParameterMax2DimProjection (const GeneratorMatrix&);

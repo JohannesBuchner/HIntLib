@@ -51,9 +51,9 @@
 #include <limits.h>
 
 #ifdef HINTLIB_HAVE_CMATH
-  #include <cmath>
+#  include <cmath>
 #else
-  #include <math.h>
+#  include <math.h>
 #endif
 
 namespace std
@@ -169,9 +169,9 @@ struct real
 template<class T>
 struct realT : public real
 {
-   #ifdef HINTLIB_HAVE_REAL_INFINITY
-      inline static T infinity() throw()  { return 0.0; }
-   #endif
+#ifdef HINTLIB_HAVE_REAL_INFINITY
+   inline static T infinity() throw()  { return 0.0; }
+#endif
 
    inline static T round_error() throw()  { return 0.5; }
    inline static T quiet_NaN() throw()  { return T(sqrt(T(-1.0))); }
@@ -343,15 +343,15 @@ template<> class numeric_limits<unsigned long long>
 {
 public:
    inline static unsigned long long max() throw()  { return
-   #ifdef ULLONG_MIN
-      ULLONG_MIN;           // ISO C 99 standard
-   #else
-     #ifdef ULONG_LONG_MIN
-        ULONG_LONG_MIN;     // GCC
-     #else
-	static_cast<unsigned long long>(-1);
-     #endif
-   #endif
+#ifdef ULLONG_MIN
+   ULLONG_MIN;      // ISO C 99 standard
+#else
+#ifdef ULONG_LONG_MIN
+   ULONG_LONG_MIN;  // GCC
+#else
+   static_cast<unsigned long long>(-1);
+#endif
+#endif
    }
 };
 #endif
@@ -389,7 +389,7 @@ public:
    inline static char max() throw()  { return CHAR_MAX; }
 };
 #else
-  #error "Invalid macro CHAR_MIN: "##CHAR_MIN
+#  error "Invalid macro CHAR_MIN: "##CHAR_MIN
 #endif
 template<> class numeric_limits<short> : public Private::s_integerT<short>
 {
@@ -416,26 +416,26 @@ template<> class numeric_limits<long long>
 {
 public:
    inline static long long min() throw()  { return
-   #ifdef LLONG_MIN
-      LLONG_MIN;         // ISO C 99 standard
-   #else
-     #ifdef LONG_LONG_MIN
-        LONG_LONG_MIN;   // GCC
-     #else
-	(static_cast<unsigned long long>(-1) >> 1) + 1;
-     #endif
-   #endif
+#ifdef LLONG_MIN
+   LLONG_MIN;      // ISO C 99 standard
+#else
+#ifdef LONG_LONG_MIN
+   LONG_LONG_MIN;  // GCC
+#else
+   (static_cast<unsigned long long>(-1) >> 1) + 1;
+#endif
+#endif
    }
    inline static long long max() throw()  { return
-   #ifdef LLONG_MAX
-      LLONG_MAX;         // ISO C 99 standard
-   #else
-     #ifdef LONG_LONG_MAX
-        LONG_LONG_MAX;   // GCC
-     #else
-	(static_cast<unsigned long long>(-1) >> 1);
-     #endif
-   #endif
+#ifdef LLONG_MAX
+   LLONG_MAX;      // ISO C 99 standard
+#else
+#ifdef LONG_LONG_MAX
+   LONG_LONG_MAX;  // GCC
+#else
+   (static_cast<unsigned long long>(-1) >> 1);
+#endif
+#endif
    }
 };
 #endif

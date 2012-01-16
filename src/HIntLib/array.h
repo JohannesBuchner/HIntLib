@@ -38,11 +38,11 @@
 #endif
 
 #ifdef HINTLIB_HAVE_CSTDDEF
-  #include <cstddef>
-  #define HINTLIB_SN std::
+#  include <cstddef>
+#  define HINTLIB_SN std::
 #else
-  #include <stddef.h>
-  #define HINTLIB_SN
+#  include <stddef.h>
+#  define HINTLIB_SN
 #endif
 
 #include <algorithm>

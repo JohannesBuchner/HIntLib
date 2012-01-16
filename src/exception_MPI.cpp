@@ -25,17 +25,17 @@
 #include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_CSTRING
-  #include <cstring>
-  #define HINTLIB_SSN std::
+#  include <cstring>
+#  define HINTLIB_SSN std::
 #else
-  #include <string.h>
-  #define HINTLIB_SSN
+#  include <string.h>
+#  define HINTLIB_SSN
 #endif
 
 #ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
+#  include <sstream>
 #else
-  #include <HIntLib/fallback_sstream.h>
+#  include <HIntLib/fallback_sstream.h>
 #endif
 
 #include <HIntLib/hlmpi.h>

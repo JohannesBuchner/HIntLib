@@ -25,8 +25,8 @@
  *  of an integral.
  */
 
-#ifndef HINTLIB_RULEINTEGRATOR_H
-#define HINTLIB_RULEINTEGRATOR_H 1
+#ifndef HINTLIB_RULE_INTEGRATOR_H
+#define HINTLIB_RULE_INTEGRATOR_H 1
 
 #include <HIntLib/defaults.h>
 

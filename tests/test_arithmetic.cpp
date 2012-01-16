@@ -65,7 +65,7 @@ bool opt (int c, const char* s)
 {
    switch (c)
    {
-   case 'n':  SIZE = atoi (s); return true;
+   case 'n':  SIZE = parseInt(s); return true;
    case 'f':  FLUSH = true; return true;
    case 'c':
       {

@@ -182,7 +182,8 @@ int main()
 
    for (unsigned size = 2; size <= HINTLIB_PRECALCULATED_FIELD_MAX_SIZE; ++size)
    {
-      unsigned prime, power;
+      unsigned prime;
+      int power;
       if (L::Prime::isPrimePower(size, prime, power))
       {
          L::GaloisField<unsigned char> gf (prime, power);

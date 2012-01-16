@@ -75,7 +75,9 @@ C
 C
       INTEGER I
 C
-      OPEN (UNIT=1, FILE='gftabs.dat', STATUS = 'old')
+C   gftabs.dat should NOT be opened here, because it is opened in setfld.f
+C
+C     OPEN (UNIT=1, FILE='gftabs.dat', STATUS = 'old')
       OPEN (UNIT=2, FILE='irrtabs.dat', STATUS = 'unknown')
 C
 C      *****  OPEN statements are system dependent

@@ -646,7 +646,7 @@ namespace
  *  max Base For Shift Net ()
  */
 
-unsigned L::maxBaseForShiftNet ()
+int L::maxBaseForShiftNet ()
 {
    return sizeof (snets) / sizeof (SNLists) - 1;
 }
@@ -656,7 +656,7 @@ unsigned L::maxBaseForShiftNet ()
  *  max M For Shift Net ()
  */
 
-unsigned L::maxMForShiftNet (unsigned base)
+int L::maxMForShiftNet (int base)
 {
    if (base > maxBaseForShiftNet())  throw InternalError (__FILE__, __LINE__);
 
@@ -668,7 +668,7 @@ unsigned L::maxMForShiftNet (unsigned base)
  *  optimal Shift Net T ()
  */
 
-unsigned L::optimalShiftNetT (unsigned base, unsigned m)
+int L::optimalShiftNetT (int base, int m)
 {
    if (m > maxMForShiftNet (base))  throw InternalError (__FILE__, __LINE__);
 
@@ -682,8 +682,8 @@ unsigned L::optimalShiftNetT (unsigned base, unsigned m)
 
 void L::Private::initShiftNetFirstDim (GeneratorMatrix &gm)
 {
-   unsigned b = gm.getBase();
-   unsigned m = gm.getM();
+   int b = gm.getBase();
+   int m = gm.getM();
 
    if (gm.getDimension() > m)  throw InternalError (__FILE__, __LINE__);
 

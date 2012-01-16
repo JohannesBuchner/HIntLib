@@ -46,10 +46,10 @@ namespace HIntLib
 class GeneratorMatrix2RowBase : public GeneratorMatrix
 {
 public:
-   unsigned getBase() const  { return 2; }
+   int getBase() const  { return 2; }
 
 protected:
-   GeneratorMatrix2RowBase (unsigned _dim, unsigned _m, unsigned _prec)
+   GeneratorMatrix2RowBase (int _dim, int _m, int _prec)
       : GeneratorMatrix (2, _dim, _m, _prec) {} 
 
    GeneratorMatrix2RowBase (const GeneratorMatrix2RowBase &gm)
@@ -76,9 +76,9 @@ public:
 
    // Constructors
 
-   explicit GeneratorMatrix2Row (unsigned _dim);
-   GeneratorMatrix2Row (unsigned _dim, unsigned _m);
-   GeneratorMatrix2Row (unsigned _dim, unsigned _m, unsigned _prec);
+   explicit GeneratorMatrix2Row (int _dim);
+   GeneratorMatrix2Row (int _dim, int _m);
+   GeneratorMatrix2Row (int _dim, int _m, int _prec);
 
    // Copy constructors
 
@@ -90,58 +90,58 @@ public:
    // get (parts of) Matrix
 
    const T* getMatrix() const  { return c; }
-   const T* operator() (unsigned d) const  { return &c[d*prec]; }
-         T* operator() (unsigned d)        { return &c[d*prec]; }
+   const T* operator() (int d) const  { return &c[d*prec]; }
+         T* operator() (int d)        { return &c[d*prec]; }
 
    // get/set column vectors
 
-   T  operator() (unsigned d, unsigned b) const  { return c[d*prec + b]; }
-   T& operator() (unsigned d, unsigned b)        { return c[d*prec + b]; }
+   T  operator() (int d, int b) const  { return c[d*prec + b]; }
+   T& operator() (int d, int b)        { return c[d*prec + b]; }
 
    // get/set row vectors
 
-   T getPackedRowVector (unsigned d, unsigned b) const
+   T getPackedRowVector (int d, int b) const
       { return (*this)(d,b); }
-   void setPackedRowVector (unsigned d, unsigned b, T x)
+   void setPackedRowVector (int d, int b, T x)
       { c[d*prec + b] = x; }
-   void makeZeroRowVector (unsigned d, unsigned b)
+   void makeZeroRowVector (int d, int b)
       { setPackedRowVector (d,b,0); }
 
    // get/set digits
 
 private:
-   T mask (unsigned r) const  { return T(1) << r; }
+   T mask (int r) const  { return T(1) << r; }
 
-   unsigned char getdMask (unsigned d, T ma, unsigned b) const
+   unsigned char getdMask (int d, T ma, int b) const
       { return ((*this)(d,b) & ma) != 0; }
 
-   void setd0Mask (unsigned d, T ma, unsigned b)
+   void setd0Mask (int d, T ma, int b)
       { c[d*prec + b] &= ~ma; }
-   void setd1Mask (unsigned d, T ma, unsigned b)
+   void setd1Mask (int d, T ma, int b)
       { c[d*prec + b] |=  ma; }
-   void setdiMask (unsigned d, T ma, unsigned b)
+   void setdiMask (int d, T ma, int b)
       { c[d*prec + b] ^=  ma; }
-   void setdMask (unsigned d, T ma, unsigned b, unsigned char x)
+   void setdMask (int d, T ma, int b, int x)
       { if (x) setd1Mask (d, ma, b); else setd0Mask (d, ma, b); }
 
 public:
-   unsigned char operator() (unsigned d, unsigned r, unsigned b) const
+   unsigned char operator() (int d, int r, int b) const
       { return getdMask (d, mask (r), b); }
-   void setd0 (unsigned d, unsigned r, unsigned b) { setd0Mask (d,mask(r),b); }
-   void setd1 (unsigned d, unsigned r, unsigned b) { setd1Mask (d,mask(r),b); }
-   void setdi (unsigned d, unsigned r, unsigned b) { setdiMask (d,mask(r),b); }
-   void setd (unsigned d, unsigned r, unsigned b, unsigned char x)
+   void setd0 (int d, int r, int b) { setd0Mask (d,mask(r),b); }
+   void setd1 (int d, int r, int b) { setd1Mask (d,mask(r),b); }
+   void setdi (int d, int r, int b) { setdiMask (d,mask(r),b); }
+   void setd  (int d, int r, int b, int x)
    {
       setdMask (d, mask(r), b, x);
    }
 
    // virtual get
 
-   virtual unsigned getDigit (unsigned d, unsigned r, unsigned b) const;
-   virtual void setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
+   virtual int  getDigit (int d, int r, int b) const;
+   virtual void setDigit (int d, int r, int b, int x);
 
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
-   virtual void vSetPackedRowVector (unsigned d, unsigned b, u64 x);
+   virtual u64  vGetPackedRowVector (int d, int b) const;
+   virtual void vSetPackedRowVector (int d, int b, u64 x);
 
    // Comparison
    
@@ -149,14 +149,14 @@ public:
 
    // Manipulations
 
-   void makeHammersley (unsigned d);
-   void makeIdentityMatrix (unsigned d);
-   void makeZeroMatrix (unsigned d);
+   void makeHammersley (int d);
+   void makeIdentityMatrix (int d);
+   void makeZeroMatrix (int d);
    void makeZeroMatrix ();
    // void prepareForGrayCode ();
    // void restoreFromGrayCode ();
    void makeShiftNet ();
-   void makeShiftNet (unsigned b);
+   void makeShiftNet (int b);
 
 protected:
    void setMatrix (const T*);
@@ -174,7 +174,7 @@ private:
 
 template<typename T>
 void assign (
-      const GeneratorMatrix &, unsigned, GeneratorMatrix2Row<T> &, unsigned);
+      const GeneratorMatrix &, int, GeneratorMatrix2Row<T> &, int);
 template<typename T>
 void assign (const GeneratorMatrix &, GeneratorMatrix2Row<T> &);
 

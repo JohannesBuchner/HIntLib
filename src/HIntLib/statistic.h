@@ -81,9 +81,9 @@ public:
 
    void reset()  { sum = 0; n = 0; }
 
-   #ifdef HINTLIB_PARALLEL
-      void reduce (MPI_Comm = MPI_COMM_WORLD);
-   #endif
+#ifdef HINTLIB_PARALLEL
+   void reduce (MPI_Comm = MPI_COMM_WORLD);
+#endif
 
 private:
    Sum sum;
@@ -192,9 +192,9 @@ public:
 
    void reset()  { Statistic<Data,Sum,CT>::reset(); squares = 0; }
 
-   #ifdef HINTLIB_PARALLEL
-      void reduce (MPI_Comm = MPI_COMM_WORLD);
-   #endif
+#ifdef HINTLIB_PARALLEL
+   void reduce (MPI_Comm = MPI_COMM_WORLD);
+#endif
 
 private:
    Sum squares;

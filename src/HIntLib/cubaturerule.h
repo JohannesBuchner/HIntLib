@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef HINTLIB_CUBATURERULE_H
-#define HINTLIB_CUBATURERULE_H 1
+#ifndef HINTLIB_CUBATURE_RULE_H
+#define HINTLIB_CUBATURE_RULE_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -28,12 +28,12 @@
 // Implementation in rulebasedintegrator.cpp
 #endif
 
-#include <HIntLib/hypercube.h>
 #include <HIntLib/esterr.h>
 
 namespace HIntLib
 {
    class Integrand;
+   class Hypercube;
 
 /**
  *  Cubature Rule
@@ -56,11 +56,11 @@ public:
    // Here are some simple methods to query (static) information about a
    // certain rule
 
-   virtual unsigned getDimension()      const = 0;
-   virtual Index    getNumPoints()      const = 0;
-   virtual unsigned getDegree()         const = 0;
-   virtual bool     isAllPointsInside() const = 0;
-   virtual real     getSumAbsWeight()   const = 0;
+   virtual int   getDimension()      const = 0;
+   virtual Index getNumPoints()      const = 0;
+   virtual int   getDegree()         const = 0;
+   virtual bool  isAllPointsInside() const = 0;
+   virtual real  getSumAbsWeight()   const = 0;
 
 private:
 
@@ -83,7 +83,7 @@ public:
    // Evaluates the rule on a given hyper-rectangle for a given function.
    // Estimates the integral and an error estimate
 
-   virtual unsigned evalError (Integrand &, const Hypercube &, EstErr &ee) = 0;
+   virtual int evalError (Integrand &, const Hypercube &, EstErr &ee) = 0;
 
    // Discard error from evalError() to get plain eval() done 
 
@@ -107,7 +107,7 @@ real EmbeddedRule::eval (Integrand &f, const Hypercube &h)
  *
  *  Two methods are provided:
  *
- *  create(unsigned)
+ *  create(int)
  *     Returns a pointer to a new CubatureRule (allocated on free store) for
  *     the given dimension.
  *
@@ -122,7 +122,7 @@ class CubatureRuleFactory
 public:
    CubatureRuleFactory() {}
    virtual ~CubatureRuleFactory() {}
-   virtual CubatureRule* create (unsigned) = 0;
+   virtual CubatureRule* create (int) = 0;
    virtual CubatureRuleFactory* clone() const = 0;
 private:
    CubatureRuleFactory (const CubatureRuleFactory&);
@@ -141,7 +141,7 @@ class EmbeddedRuleFactory : public CubatureRuleFactory
 public:
    EmbeddedRuleFactory() {}
    virtual ~EmbeddedRuleFactory() {}
-   virtual EmbeddedRule* create (unsigned) = 0;
+   virtual EmbeddedRule* create (int) = 0;
    virtual EmbeddedRuleFactory* clone() const = 0;
 private:
    EmbeddedRuleFactory (const EmbeddedRuleFactory&);

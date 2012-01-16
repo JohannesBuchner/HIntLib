@@ -371,7 +371,7 @@ HIntLib::Polynomial2<T>::isPrime() const
 
    P q (1);
    const int numRows = degree() - 1;
-   const T overflow = T(1) << numRows + 1;
+   const T overflow = T(1) << (numRows + 1);
    T matrix [std::numeric_limits<T>::digits];
 
    for (int row = 0; row < numRows; ++row)
@@ -402,7 +402,7 @@ template<typename T>
 unsigned char
 HIntLib::Polynomial2<T>::evaluate (unsigned char x) const
 {
-   return (x == 0) ? (d & 1) : parity (d);
+   return (x == 0) ? (d & 1) : parity(d);
 }
 
 
@@ -541,7 +541,7 @@ HIntLib::Polynomial2Ring<T>::squarefreeFactor (Factorization& f, type p) const
          // Step 4  -- Special case
 
          ++k;
-         if (k & 1 == 0)  // Special treatment for  k  a multiple of char
+         if ((k & 1) == 0)  // Special treatment for  k  a multiple of char
          {
             t /= v;
             ++k;

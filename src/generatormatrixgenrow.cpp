@@ -44,8 +44,8 @@ using std::numeric_limits;
 
 template<class T>
 void L::assign (
-   const GeneratorMatrix & src, unsigned srcDim,
-         GeneratorMatrixGenRow<T> & dst, unsigned dstDim)
+   const GeneratorMatrix & src, int srcDim,
+         GeneratorMatrixGenRow<T> & dst, int dstDim)
 {
 #if 0
    cerr <<"A3" <<endl;
@@ -69,9 +69,9 @@ void L::assign (
 
    T* p = dst(dstDim);
 
-   for (unsigned b = 0; b < dst.getPrec(); ++b)
+   for (int b = 0; b < dst.getPrec(); ++b)
    {
-      for (unsigned r = 0; r < dst.getM(); ++r)
+      for (int r = 0; r < dst.getM(); ++r)
       {
          *p++ = src.getDigit (srcDim, r, b);
       }
@@ -81,7 +81,7 @@ void L::assign (
 template<class T>
 void L::assign (const GeneratorMatrix &src, GeneratorMatrixGenRow<T> &dst)
 {
-   for (unsigned d = 0; d < dst.getDimension(); ++d)  assign (src, d, dst, d);
+   for (int d = 0; d < dst.getDimension(); ++d)  assign (src, d, dst, d);
 }
 
 
@@ -110,7 +110,7 @@ L::GeneratorMatrixGenRowBase::GeneratorMatrixGenRowBase (
  */
 
 template<class T>
-L::GeneratorMatrixGenRow<T>::GeneratorMatrixGenRow (unsigned _base, unsigned _dim)
+L::GeneratorMatrixGenRow<T>::GeneratorMatrixGenRow (int _base, int _dim)
    : GeneratorMatrixGenRowBase (
       _base, _dim, getDefaultM (_base), getDefaultPrec (_base))
 {
@@ -120,8 +120,7 @@ L::GeneratorMatrixGenRow<T>::GeneratorMatrixGenRow (unsigned _base, unsigned _di
 }
 
 template<class T>
-L::GeneratorMatrixGenRow<T>::GeneratorMatrixGenRow
-      (unsigned _base, unsigned _dim, unsigned _m)
+L::GeneratorMatrixGenRow<T>::GeneratorMatrixGenRow (int _base, int _dim, int _m)
    : GeneratorMatrixGenRowBase (
       _base, _dim, _m, std::min (_m, getDefaultPrec (_base)))
 {
@@ -133,7 +132,7 @@ L::GeneratorMatrixGenRow<T>::GeneratorMatrixGenRow
 
 template<class T>
 L::GeneratorMatrixGenRow<T>::GeneratorMatrixGenRow
-      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec)
+      (int _base, int _dim, int _m, int _prec)
    : GeneratorMatrixGenRowBase (_base, _dim, _m, _prec)
 {
    checkBase();
@@ -166,7 +165,7 @@ L::GeneratorMatrixGenRow<T>::GeneratorMatrixGenRow (const GeneratorMatrix &gm)
 {
    checkBase();
    allocate();
-   for (unsigned d = 0; d < dim; ++d)  assign (gm, d, *this, d);
+   for (int d = 0; d < dim; ++d)  assign (gm, d, *this, d);
 }
 
 
@@ -179,7 +178,7 @@ void L::GeneratorMatrixGenRow<T>::checkBase() const
 {
    if (getBase() < 2 || getBase() - 1 > numeric_limits<T>::max())
    {
-      throw GM_BaseTooLarge (getBase(), unsigned (numeric_limits<T>::max()));
+      throw GM_BaseTooLarge (getBase(), numeric_limits<T>::max());
    }
 }
 
@@ -200,7 +199,7 @@ void L::GeneratorMatrixGenRow<T>::allocate()
  */
 
 template<class T>
-void L::GeneratorMatrixGenRow<T>::makeZeroColumnVector (unsigned d, unsigned r)
+void L::GeneratorMatrixGenRow<T>::makeZeroColumnVector (int d, int r)
 {
    T* i = c + d * mPrec + r;
    T* end = i + mPrec;
@@ -219,7 +218,7 @@ void L::GeneratorMatrixGenRow<T>::makeZeroColumnVector (unsigned d, unsigned r)
 
 template<class T>
 L::u64
-L::GeneratorMatrixGenRow<T>::getPackedRowVector (unsigned d, unsigned b) const
+L::GeneratorMatrixGenRow<T>::getPackedRowVector (int d, int b) const
 {
    u64 result (0);
    const T* end = (*this)(d,b);
@@ -237,7 +236,7 @@ L::GeneratorMatrixGenRow<T>::getPackedRowVector (unsigned d, unsigned b) const
 
 template<class T>
 void
-L::GeneratorMatrixGenRow<T>::setPackedRowVector (unsigned d, unsigned b, u64 x)
+L::GeneratorMatrixGenRow<T>::setPackedRowVector (int d, int b, u64 x)
 {
    T* i = c + d * mPrec + b * m;
    T* end = i + m;
@@ -260,7 +259,7 @@ L::GeneratorMatrixGenRow<T>::setPackedRowVector (unsigned d, unsigned b, u64 x)
  */
 
 template<class T>
-void L::GeneratorMatrixGenRow<T>::makeZeroRowVector (unsigned d, unsigned b)
+void L::GeneratorMatrixGenRow<T>::makeZeroRowVector (int d, int b)
 {
    T* i = c + d * mPrec + b * m;
    std::fill (i, i + m, 0);
@@ -272,15 +271,15 @@ void L::GeneratorMatrixGenRow<T>::makeZeroRowVector (unsigned d, unsigned b)
  */
 
 template<class T>
-unsigned
-L::GeneratorMatrixGenRow<T>::getDigit (unsigned d, unsigned r, unsigned b) const
+int
+L::GeneratorMatrixGenRow<T>::getDigit (int d, int r, int b) const
 {
-   if (numeric_limits<T>::digits > numeric_limits<unsigned>::digits)
+   if (numeric_limits<T>::digits > numeric_limits<int>::digits)
    {
       throw InternalError (__FILE__, __LINE__);
    }
 
-   return unsigned((*this) (d, r, b));
+   return int((*this) (d, r, b));
 }
 
 
@@ -289,10 +288,9 @@ L::GeneratorMatrixGenRow<T>::getDigit (unsigned d, unsigned r, unsigned b) const
  */
 
 template<class T>
-void L::GeneratorMatrixGenRow<T>::setDigit
-   (unsigned d, unsigned r, unsigned b, unsigned x)
+void L::GeneratorMatrixGenRow<T>::setDigit (int d, int r, int b, int x)
 {
-   if (   numeric_limits<T>::digits < numeric_limits<unsigned>::digits
+   if (   numeric_limits<T>::digits < numeric_limits<int>::digits
        && x >= getBase())
    {
       throw InternalError (__FILE__, __LINE__);
@@ -308,14 +306,14 @@ void L::GeneratorMatrixGenRow<T>::setDigit
 
 template<typename T>
 L::u64
-L::GeneratorMatrixGenRow<T>::vGetPackedRowVector (unsigned d, unsigned b) const
+L::GeneratorMatrixGenRow<T>::vGetPackedRowVector (int d, int b) const
 {
    return getPackedRowVector (d, b);
 }
 
 template<typename T>
 void
-L::GeneratorMatrixGenRow<T>::vSetPackedRowVector (unsigned d, unsigned b, u64 x)
+L::GeneratorMatrixGenRow<T>::vSetPackedRowVector (int d, int b, u64 x)
 {
    setPackedRowVector (d, b, x);
 }
@@ -326,11 +324,11 @@ L::GeneratorMatrixGenRow<T>::vSetPackedRowVector (unsigned d, unsigned b, u64 x)
  */
 
 template<class T>
-void L::GeneratorMatrixGenRow<T>::makeHammersley (unsigned d)
+void L::GeneratorMatrixGenRow<T>::makeHammersley (int d)
 {
    makeZeroMatrix (d);
 
-   for (unsigned r = 0; r < m; ++r)
+   for (int r = 0; r < m; ++r)
    {
       if (m-(r+1) < prec)  setd (d, r, m-(r+1), 1);
    }
@@ -342,12 +340,12 @@ void L::GeneratorMatrixGenRow<T>::makeHammersley (unsigned d)
  */
 
 template<class T>
-void L::GeneratorMatrixGenRow<T>::makeIdentityMatrix  (unsigned d)
+void L::GeneratorMatrixGenRow<T>::makeIdentityMatrix  (int d)
 {
    makeZeroMatrix (d);
 
-   const unsigned ub = std::min (m, prec);
-   for (unsigned r = 0; r < ub; ++r)  setd (d, r, r, 1);
+   const int ub = std::min (m, prec);
+   for (int r = 0; r < ub; ++r)  setd (d, r, r, 1);
 }
 
 
@@ -356,7 +354,7 @@ void L::GeneratorMatrixGenRow<T>::makeIdentityMatrix  (unsigned d)
  */
 
 template<class T>
-void L::GeneratorMatrixGenRow<T>::makeZeroMatrix (unsigned d)
+void L::GeneratorMatrixGenRow<T>::makeZeroMatrix (int d)
 {
    T* i = c + d * mPrec;
    std::fill (i, i + mPrec, 0);
@@ -376,21 +374,21 @@ void L::GeneratorMatrixGenRow<T>::makeZeroMatrix ()
  */
 
 template<typename T>
-void L::GeneratorMatrixGenRow<T>::makeShiftNet (unsigned b)
+void L::GeneratorMatrixGenRow<T>::makeShiftNet (int b)
 {
-   for (unsigned r = 0; r < m; ++r)
+   for (int r = 0; r < m; ++r)
    {
       T x = (*this)(0, r, b);
 
-      for (unsigned d = 1;       d < dim - r; ++d)  setd (d, d+r,     b, x);
-      for (unsigned d = dim - r; d < dim;     ++d)  setd (d, d+r-dim, b, x);
+      for (int d = 1;       d < dim - r; ++d)  setd (d, d+r,     b, x);
+      for (int d = dim - r; d < dim;     ++d)  setd (d, d+r-dim, b, x);
    }
 }
 
 template<typename T>
 void L::GeneratorMatrixGenRow<T>::makeShiftNet()
 {
-   for (unsigned b = 0; b < prec; ++b)  makeShiftNet (b);
+   for (int b = 0; b < prec; ++b)  makeShiftNet (b);
 }
 
 
@@ -417,7 +415,7 @@ namespace HIntLib
 #define HINTLIB_INSTANTIATE(X) \
    template class GeneratorMatrixGenRow<X>; \
    template void assign ( \
-      const GeneratorMatrix &, unsigned, GeneratorMatrixGenRow<X> &, unsigned); \
+      const GeneratorMatrix &, int, GeneratorMatrixGenRow<X> &, int); \
    template void assign (const GeneratorMatrix &, GeneratorMatrixGenRow<X> &); \
    template bool operator== ( \
       const GeneratorMatrixGenRow<X> &, const GeneratorMatrixGenRow<X> &);
@@ -447,14 +445,14 @@ void L::VirtualMatrixBase::setMatrix (GeneratorMatrixGenRow<unsigned char>* p)
    setParameters (*gm);
 }
 
-unsigned
-L::VirtualMatrixBase::getDigit  (unsigned d, unsigned r, unsigned b) const
+int
+L::VirtualMatrixBase::getDigit  (int d, int r, int b) const
 {
    return (*gm)(d, r, b);
 }
 
 L::u64
-L::VirtualMatrixBase::vGetPackedRowVector (unsigned d, unsigned b) const
+L::VirtualMatrixBase::vGetPackedRowVector (int d, int b) const
 {
    return gm->getPackedRowVector (d, b);
 }
@@ -466,8 +464,9 @@ L::VirtualMatrixBase::vGetPackedRowVector (unsigned d, unsigned b) const
 
 L::BaseReduction::BaseReduction (const GeneratorMatrix& src)
 {
-   const unsigned srcBase = src.getBase();
-   unsigned prime, power;
+   const int srcBase = src.getBase();
+   unsigned prime;
+   int power;
    Prime::factorPrimePower (srcBase, prime, power);
 
    if (power == 1)
@@ -485,17 +484,17 @@ L::BaseReduction::BaseReduction (const GeneratorMatrix& src)
 
    LookupGaloisField<unsigned char> a (srcBase);
 
-   for (unsigned d = 0; d < src.getDimension(); ++d)
-   for (unsigned r = 0; r < src.getM(); ++r)
-   for (unsigned p = 0; p < src.getPrec(); ++p)
+   for (int d = 0; d < src.getDimension(); ++d)
+   for (int r = 0; r < src.getM(); ++r)
+   for (int p = 0; p < src.getPrec(); ++p)
    {
       unsigned char digit = src.getDigit (d, r, p);
 
-      for (unsigned i = 0; i < power; ++i)
+      for (int i = 0; i < power; ++i)
       {
          unsigned char digit1 = a.mul (digit, a.element (powInt (prime, i)));
 
-         for (unsigned j = 0; j < power; ++j)
+         for (int j = 0; j < power; ++j)
          {
             gm->setDigit (d, r * power + i, (p+1) * power - 1 - j,
                              digit1 % prime);

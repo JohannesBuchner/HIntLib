@@ -48,7 +48,7 @@ protected:
    // Constructor with direct initialization
 
    GeneratorMatrixGenBase
-      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec)
+      (int _base, int _dim, int _m, int _prec)
    : GeneratorMatrix (_base, _dim, _m, _prec), dimPrec (dim * prec) {}
 
    // protected copy constructor
@@ -57,7 +57,7 @@ protected:
    GeneratorMatrixGenBase (const GeneratorMatrixGenBase &gm)
       : GeneratorMatrix (gm), dimPrec (gm.dimPrec)  {}
 
-   const unsigned dimPrec;
+   const int dimPrec;
 };
 
 
@@ -73,10 +73,9 @@ class GeneratorMatrixGen : public GeneratorMatrixGenBase
 public:
    // Constructing a new matrix
 
-   GeneratorMatrixGen (unsigned _base, unsigned _dim);
-   GeneratorMatrixGen (unsigned _base, unsigned _dim, unsigned _m);
-   GeneratorMatrixGen
-      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec);
+   GeneratorMatrixGen (int _base, int _dim);
+   GeneratorMatrixGen (int _base, int _dim, int _m);
+   GeneratorMatrixGen (int _base, int _dim, int _m, int _prec);
 
    // Copying a given matrix
 
@@ -88,44 +87,41 @@ public:
    // get (parts of) the matrix
 
    const T* getMatrix() const  { return c; }
-   const T* operator() (unsigned r) const  { return c + r*dimPrec; }
+   const T* operator() (int r) const  { return c + r*dimPrec; }
 
    // get/set column vectors
 
-   const T* operator() (unsigned d, unsigned r) const
-      { return c + r*dimPrec + d*prec; }
-         T* operator() (unsigned d, unsigned r)
-      { return c + r*dimPrec + d*prec; }
-   void makeZeroColumnVector (unsigned d, unsigned r);
+   const T* operator() (int d, int r) const { return c + r*dimPrec + d*prec; }
+         T* operator() (int d, int r)       { return c + r*dimPrec + d*prec; }
+   void makeZeroColumnVector (int d, int r);
 
    // get/set row vectors
 
-   u64  getPackedRowVector (unsigned d, unsigned b) const;
-   void setPackedRowVector (unsigned d, unsigned b, u64 x);
-   void makeZeroRowVector (unsigned d, unsigned b);
+   u64  getPackedRowVector (int d, int b) const;
+   void setPackedRowVector (int d, int b, u64 x);
+   void makeZeroRowVector  (int d, int b);
 
    // get/set digits
 
-   T operator() (unsigned d, unsigned r, unsigned b) const
+   T operator() (int d, int r, int b) const
       { return c[r*dimPrec + d*prec + b]; }
-   void setd (unsigned d, unsigned r, unsigned b, T x)
-      { c[r*dimPrec + d*prec + b] = x; }
+   void setd (int d, int r, int b, T x)  { c[r*dimPrec + d*prec + b] = x; }
 
    // Virtual set/get
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual void setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
+   virtual int  getDigit (int d, int r, int b) const;
+   virtual void setDigit (int d, int r, int b, int x);
 
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
-   virtual void vSetPackedRowVector (unsigned d, unsigned b, u64 x);
+   virtual u64  vGetPackedRowVector (int d, int b) const;
+   virtual void vSetPackedRowVector (int d, int b, u64 x);
 
    // Manipulation
 
-   void makeHammersley (unsigned d);
-   void makeIdentityMatrix (unsigned d);
+   void makeHammersley (int d);
+   void makeIdentityMatrix (int d);
    void makeZeroMatrix ();
-   void makeZeroMatrix (unsigned d);
-   void makeShiftNet (unsigned b);
+   void makeZeroMatrix (int d);
+   void makeShiftNet (int b);
    void makeShiftNet ();
 
 private:
@@ -139,14 +135,14 @@ template<typename T>
 bool operator== (const GeneratorMatrixGen<T> &, const GeneratorMatrixGen<T> &);
 
 GeneratorMatrixGen<unsigned char>* loadLibSeq (std::istream &);
-GeneratorMatrixGen<unsigned char>* loadEdel   (std::istream &, unsigned);
+GeneratorMatrixGen<unsigned char>* loadEdel   (std::istream &, int);
 GeneratorMatrixGen<unsigned char>* loadBinary (std::istream &);
-GeneratorMatrixGen<unsigned char>* loadNiederreiterXing (unsigned dim);
+GeneratorMatrixGen<unsigned char>* loadNiederreiterXing (int dim);
 
 
 template<typename T>
 void
-assign (const GeneratorMatrix &, unsigned, GeneratorMatrixGen<T> &, unsigned);
+assign (const GeneratorMatrix &, int, GeneratorMatrixGen<T> &, int);
 
 template<typename T>
 void assign (const GeneratorMatrix &, GeneratorMatrixGen<T> &);

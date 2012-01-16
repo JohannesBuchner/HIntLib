@@ -53,8 +53,7 @@ public:
 protected:
    // Constructor with direct initialization
 
-   GeneratorMatrixGenRowBase
-      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec)
+   GeneratorMatrixGenRowBase (int _base, int _dim, int _m, int _prec)
       : GeneratorMatrix (_base, _dim, _m, _prec),
         mPrec (m * _prec),
         linAlg (LinearAlgebra::make (_base))
@@ -69,7 +68,7 @@ protected:
         linAlg (LinearAlgebra::make(base))
    {}
 
-   const unsigned mPrec;
+   const int mPrec;
    std::auto_ptr<LinearAlgebra> linAlg;
 };
 
@@ -86,10 +85,9 @@ class GeneratorMatrixGenRow : public GeneratorMatrixGenRowBase
 public:
    // Constructing a new matrix
 
-   GeneratorMatrixGenRow (unsigned _base, unsigned _dim);
-   GeneratorMatrixGenRow (unsigned _base, unsigned _dim, unsigned _m);
-   GeneratorMatrixGenRow
-      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec);
+   GeneratorMatrixGenRow (int _base, int _dim);
+   GeneratorMatrixGenRow (int _base, int _dim, int _m);
+   GeneratorMatrixGenRow (int _base, int _dim, int _m, int _prec);
 
    // Copying a given matrix
 
@@ -102,45 +100,41 @@ public:
 
    const T* getMatrix() const  { return c; }
          T* getMatrix()        { return c; }
-   const T* operator() (unsigned d) const  { return c + d * mPrec; }
-         T* operator() (unsigned d)        { return c + d * mPrec; }
-   const T* operator() (unsigned d, unsigned b) const
-      { return c + d * mPrec + b * m; }
-         T* operator() (unsigned d, unsigned b)
-      { return c + d * mPrec + b * m; }
+   const T* operator() (int d) const  { return c + d * mPrec; }
+         T* operator() (int d)        { return c + d * mPrec; }
+   const T* operator() (int d, int b) const  { return c + d * mPrec + b * m; }
+         T* operator() (int d, int b)        { return c + d * mPrec + b * m; }
 
    // get/set column vectors
 
-   void makeZeroColumnVector (unsigned d, unsigned r);
+   void makeZeroColumnVector (int d, int r);
 
    // get/set row vectors
 
-   u64  getPackedRowVector (unsigned d, unsigned b) const;
-   void setPackedRowVector (unsigned d, unsigned b, u64 x);
-   void makeZeroRowVector (unsigned d, unsigned b);
+   u64  getPackedRowVector (int d, int b) const;
+   void setPackedRowVector (int d, int b, u64 x);
+   void makeZeroRowVector  (int d, int b);
 
    // get/set digits
 
-   T operator() (unsigned d, unsigned r, unsigned b) const
-      { return c [d*mPrec + b*m + r]; }
-   void setd (unsigned d, unsigned r, unsigned b, T x)
-      { c [d*mPrec + b*m + r] = x; }
+   T operator() (int d, int r, int b) const { return c [d*mPrec + b*m + r]; }
+   void setd    (int d, int r, int b, T x)  {     c [d*mPrec + b*m + r] = x; }
 
    // Virtual set/get
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual void setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
+   virtual int  getDigit (int d, int r, int b) const;
+   virtual void setDigit (int d, int r, int b, int x);
 
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
-   virtual void vSetPackedRowVector (unsigned d, unsigned b, u64 x);
+   virtual u64  vGetPackedRowVector (int d, int b) const;
+   virtual void vSetPackedRowVector (int d, int b, u64 x);
 
    // Manipulation
 
-   void makeHammersley (unsigned d);
-   void makeIdentityMatrix (unsigned d);
+   void makeHammersley (int d);
+   void makeIdentityMatrix (int d);
    void makeZeroMatrix ();
-   void makeZeroMatrix (unsigned d);
-   void makeShiftNet (unsigned b);
+   void makeZeroMatrix (int d);
+   void makeShiftNet (int b);
    void makeShiftNet ();
 
 private:
@@ -157,7 +151,7 @@ bool operator== (const GeneratorMatrixGenRow<T> &,
 
 template<typename T>
 void
-assign (const GeneratorMatrix &, unsigned, GeneratorMatrixGenRow<T> &, unsigned);
+assign (const GeneratorMatrix &, int, GeneratorMatrixGenRow<T> &, int);
 
 template<typename T>
 void assign (const GeneratorMatrix &, GeneratorMatrixGenRow<T> &);

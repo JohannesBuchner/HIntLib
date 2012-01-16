@@ -25,27 +25,27 @@
  *  library.
  */
 
-#ifndef HINTLIB_HLMATH_H
-#define HINTLIB_HLMATH_H 1
+#ifndef HINTLIB_HL_MATH_H
+#define HINTLIB_HL_MATH_H 1
 
 #include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_CSTDLIB
-  #include <cstdlib>
+#  include <cstdlib>
 #else
-  #include <stdlib.h>
+#  include <stdlib.h>
 #endif
 
 #ifdef HINTLIB_HAVE_CMATH
-  #include <cmath>
+#  include <cmath>
 #else
-  #include <math.h>
+#  include <math.h>
 #endif
 
 #ifdef HINTLIB_HAVE_LIMITS
-  #include <limits>
+#  include <limits>
 #else
-  #include <HIntLib/fallback_limits.h>
+#  include <HIntLib/fallback_limits.h>
 #endif
 
 #include <HIntLib/bitop.h>
@@ -72,14 +72,14 @@ namespace HIntLib
 template<typename T>
 struct Constants
 {
-  static T pi ()  { return M_PI; }
+   static T pi ()  { return M_PI; }
 };
 
 #ifdef HINTLIB_HAVE_LONG_DOUBLE
 template<>
 struct Constants<long double>
 {
-  static long double pi ()  { return M_PIl; }
+   static long double pi ()  { return M_PIl; }
 };
 #endif
 
@@ -99,12 +99,12 @@ struct Constants<long double>
       return HINTLIB_ABS_FOR_DOUBLE (x);
    }
 
- #ifdef HINTLIB_HAVE_LONG_DOUBLE
+# ifdef HINTLIB_HAVE_LONG_DOUBLE
    inline long double abs (const long double& x)
    {
       return HINTLIB_ABS_FOR_LONG_DOUBLE (x);
    }
- #endif
+# endif
 
    inline int abs (const int& x)
    {
@@ -116,25 +116,25 @@ struct Constants<long double>
       return HINTLIB_ABS_FOR_LONG_INT (x);
    }
 
- #if 0
- #ifdef HAVE_LONG_LONG_INT
+# if 0
+# ifdef HAVE_LONG_LONG_INT
    inline long long int abs (const long long int& x)
    {
       return HINTLIB_ABS_FOR_LONG_LONG_INT (x);
    }
- #endif
- #endif
+# endif
+# endif
 #else
- #if HINTLIB_ABS_STRATEGY == 2
+# if HINTLIB_ABS_STRATEGY == 2
    using ::std::abs;
- #else
-  #if HINTLIB_ABS_STRATEGY == 3
+# else
+#  if HINTLIB_ABS_STRATEGY == 3
    using ::abs;
-  #else
+#  else
    using ::std::abs;
    using ::abs;
-  #endif
- #endif
+#  endif
+# endif
 #endif
 
 
@@ -146,15 +146,15 @@ struct Constants<long double>
 
  // float
 
- #if HINTLIB_SIN_FOR_FLOAT_NUM == 1
-   #undef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
-   #define HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
- #else
- #if HINTLIB_SIN_FOR_FLOAT_NUM == 2
-   #undef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
-   #define HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
- #else
- #if HINTLIB_SIN_FOR_FLOAT_NUM == 3
+#  if HINTLIB_SIN_FOR_FLOAT_NUM == 1
+#    undef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+#    define HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+#  else
+#  if HINTLIB_SIN_FOR_FLOAT_NUM == 2
+#    undef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+#    define HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+#  else
+#  if HINTLIB_SIN_FOR_FLOAT_NUM == 3
    inline float sin   (const float& x) { return ::std::sinf   (x); }
    inline float cos   (const float& x) { return ::std::cosf   (x); }
    inline float sqrt  (const float& x) { return ::std::sqrtf  (x); }
@@ -165,8 +165,8 @@ struct Constants<long double>
    inline float modf  (const float& x, float* y) { return ::std::modff (x, y); }
    inline float pow   (const float& x, const float& y)
       { return ::std::powf (x, y); }
- #else
- #if HINTLIB_SIN_FOR_FLOAT_NUM == 4
+#  else
+#  if HINTLIB_SIN_FOR_FLOAT_NUM == 4
    inline float sin   (const float& x) { return ::std::sinf   (x); }
    inline float cos   (const float& x) { return ::std::cosf   (x); }
    inline float sqrt  (const float& x) { return ::std::sqrtf  (x); }
@@ -177,25 +177,25 @@ struct Constants<long double>
    inline float modf  (const float& x, float* y) { return ::std::modff (x, y); }
    inline float pow   (const float& x, const float& y)
       { return ::std::powf (x, y); }
- #else
+#  else
    // for HINTLIB_SIN_FOR_FLOAT_NUM == 0, we do nothing
- #endif
- #endif
- #endif
- #endif
+#  endif
+#  endif
+#  endif
+#  endif
 
  // long double
 
- #ifdef HINTLIB_HAVE_LONG_DOUBLE
- #if HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 1
-   #undef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
-   #define HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
- #else
- #if HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 2
-   #undef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
-   #define HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
- #else
- #if HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 3
+#  ifdef HINTLIB_HAVE_LONG_DOUBLE
+#  if HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 1
+#    undef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+#    define HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+#  else
+#  if HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 2
+#    undef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+#    define HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+#  else
+#  if HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 3
    inline long double sin   (const long double& x) { return ::std::sinl   (x); }
    inline long double cos   (const long double& x) { return ::std::cosl   (x); }
    inline long double sqrt  (const long double& x) { return ::std::sqrtl  (x); }
@@ -207,8 +207,8 @@ struct Constants<long double>
       { return ::std::modfl (x, y); }
    inline long double pow  (const long double& x, const long double& y)
       { return ::std::powl (x, y); }
- #else
- #if HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 4
+#  else
+#  if HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 4
    inline long double sin   (const long double& x) { return ::std::sinl   (x); }
    inline long double cos   (const long double& x) { return ::std::cosl   (x); }
    inline long double sqrt  (const long double& x) { return ::std::sqrtl  (x); }
@@ -220,27 +220,27 @@ struct Constants<long double>
       { return ::std::modfl (x, y); }
    inline long double pow  (const long double& x, const long double& y)
       { return ::std::powl (x, y); }
- #else
+#  else
    // for HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 0, we do nothing
- #endif
- #endif
- #endif
- #endif
- #endif
+#  endif
+#  endif
+#  endif
+#  endif
+#  endif
 
  // double
 
- #if HINTLIB_SIN_FOR_DOUBLE_NUM == 1 || HINTLIB_SIN_FOR_DOUBLE_NUM == 3
-   #undef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
-   #define HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
- #else
-   #undef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
-   #define HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
- #endif
+#  if HINTLIB_SIN_FOR_DOUBLE_NUM == 1 || HINTLIB_SIN_FOR_DOUBLE_NUM == 3
+#    undef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+#    define HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+#  else
+#    undef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+#    define HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+#  endif
 
  // Import functions using "using"
 
- #ifdef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+#  ifdef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
    using ::std::sin;
    using ::std::cos;
    using ::std::sqrt;
@@ -250,10 +250,10 @@ struct Constants<long double>
    using ::std::ceil;
    using ::std::modf;
    using ::std::pow;
-   #undef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
- #endif
+#    undef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+#  endif
 
- #ifdef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+#  ifdef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
    using ::sin;
    using ::cos;
    using ::sqrt;
@@ -263,17 +263,17 @@ struct Constants<long double>
    using ::ceil;
    using ::modf;
    using ::pow;
-   #undef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
- #endif
+#    undef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+#  endif
 
- #define HINTLIB_MN ::HIntLib::
+#  define HINTLIB_MN ::HIntLib::
 
 #else
- #if HINTLIB_MATH_FUN_STRATEGY == 2
-  #define HINTLIB_MN ::std::
- #else
-  #define HINTLIB_MN ::
- #endif
+#  if HINTLIB_MATH_FUN_STRATEGY == 2
+#    define HINTLIB_MN ::std::
+#  else
+#    define HINTLIB_MN ::
+#  endif
 #endif
 
 
@@ -358,12 +358,41 @@ template<class T> T powerModReduce (T, unsigned, T m)  HINTLIB_GNU_CONST;
  *  logInt()
  */
 
-template<class T> int logInt (T x, T base);   // may throw
+// Helper classes. Depending on whether T is signed or unsigned
 
+namespace Private
+{
+   template<class T, bool is_signed> struct LogIntHelper {};
+
+   template<class T>
+   struct LogIntHelper<T,true>  { static int logInt (T x, T base); };
+   template<class T>
+   struct LogIntHelper<T,false> { static int logInt (T x, T base); };
+}
+
+// The generic interface calling the dispatchers
+
+template<class T>
+inline int logInt (T x, T base)   // may throw
+{
+   return Private::LogIntHelper<T,std::numeric_limits<T>::is_signed>::logInt
+      (x, base);
+}
+
+// Specializations for short types
+
+template<> inline int logInt (short x, short b)
+{
+   return logInt (int(x), int (b));
+}
 template<> inline int logInt (unsigned char x, unsigned char b)
-   { return logInt (unsigned(x), unsigned (b)); }
+{
+   return logInt (unsigned(x), unsigned (b));
+}
 template<> inline int logInt (unsigned short x, unsigned short b)
-   { return logInt (unsigned(x), unsigned (b)); }
+{
+   return logInt (unsigned(x), unsigned (b));
+}
 
 
 /**

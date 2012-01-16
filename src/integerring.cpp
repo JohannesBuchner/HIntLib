@@ -90,7 +90,7 @@ int L::IntegerRing<T>::factor (Factorization& f, type n)
    unit_type u = makeCanonical (n);
    PrimeDivisors pd (n);
 
-   unsigned e;
+   int e;
    while (unsigned prime = pd.next(e))
    {
       f.push_back (std::make_pair (type(prime), e));

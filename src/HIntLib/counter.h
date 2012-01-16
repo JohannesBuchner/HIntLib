@@ -27,47 +27,102 @@
 #pragma interface
 #endif
 
+#include <iosfwd>
+
 #include <HIntLib/array.h>
 
 namespace HIntLib
 {
 
-class Counter
-{
-public:
-   Counter (unsigned _digits, unsigned _base)
-      : digits (_digits), baseMinusOne (_base - 1),
-        index (digits, 0) {}
+/**
+ *  CounterBase
+ *
+ *  The common base class for all counters
+ */
 
+class CounterBase
+{
+protected:
+   CounterBase (unsigned _digits) : digits (_digits), index (digits, 0) {}
+
+public:
    unsigned operator[] (unsigned i) const  { return index[i]; }
    const unsigned* array() const  { return index.begin(); }
-   bool next();
+   unsigned getNumDigits() const  { return digits; }
 
-private:
+protected:
+   void reset();
+   
    const unsigned digits;
-   const unsigned baseMinusOne;
    Array<unsigned> index;
 };
 
-class CounterMixedBase
+std::ostream& operator<< (std::ostream &, const CounterBase &);
+#ifdef HINTLIB_BUILD_WCHAR
+std::wostream& operator<< (std::wostream &, const CounterBase &);
+#endif
+
+
+/**
+ *  Counter
+ */
+
+class Counter : public CounterBase
+{
+public:
+   Counter (unsigned _digits, unsigned _base)
+      : CounterBase (_digits), baseMinusOne (_base - 1) {}
+
+   bool next();
+   using CounterBase::reset;
+
+private:
+   const unsigned baseMinusOne;
+};
+
+
+/**
+ *  CounterMixedBase
+ */
+
+class CounterMixedBase : public CounterBase
 {
 public:
    template<typename T>
    CounterMixedBase (T begin, T end)
-      : digits (end - begin), baseMinusOne (digits),
-        index (digits, 0)
+      : CounterBase (end - begin), baseMinusOne (digits)
    {
       unsigned* p = baseMinusOne.begin();
       while (begin != end)  *p++ = *begin++ - 1;
    }
 
-   unsigned operator[] (unsigned i) const  { return index[i]; }
    bool next();
+   using CounterBase::reset;
 
 private:
-   const unsigned digits;
    Array<unsigned> baseMinusOne;
-   Array<unsigned> index;
+};
+
+
+/**
+ *  GrayCounter
+ */
+
+class GrayCounter : public CounterBase
+{
+public:
+   GrayCounter (unsigned _digits, unsigned _base)
+      : CounterBase (_digits),
+        baseMinusOne(_base - 1), direction(_digits, 1) {}
+
+   bool next();
+   unsigned nextDigit();
+   unsigned nextDigit(unsigned*);
+   void reset();
+
+private:
+   const unsigned baseMinusOne;
+   Array<int> direction;
 };
 
 }  // namespace HIntLib

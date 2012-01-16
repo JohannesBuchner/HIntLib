@@ -42,8 +42,8 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hypercube.h>
 
 
 namespace L = HIntLib;
@@ -55,11 +55,11 @@ namespace
 {
    const real b2 = real(25) / real(324);
 
-   #if HINTLIB_STATIC_WORKS == 1
-      const real r  = HINTLIB_MN sqrt (real(3) / real(5));
-   #else
-      real r;
-   #endif
+#if HINTLIB_STATIC_WORKS == 1
+   const real r  = HINTLIB_MN sqrt (real(3) / real(5));
+#else
+   real r;
+#endif
 }
 
 /**
@@ -67,15 +67,15 @@ namespace
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule5Hammer::Rule5Hammer (unsigned d)
+L::Rule5Hammer::Rule5Hammer (int d)
   : OrbitRule (d),
     lamda (d),
     b0 ((real(25) * sqr(d) - real(115) * d + real(162)) / real(162)),
     b1 ((real(70) - real(25) * d) / real(162))
 {
-   #if HINTLIB_STATIC_WORKS == 0
-      r  = HINTLIB_MN sqrt (real(3) / real(5));
-   #endif
+#if HINTLIB_STATIC_WORKS == 0
+   r  = HINTLIB_MN sqrt (real(3) / real(5));
+#endif
 
    checkDimensionNotZero (d);
    checkDimensionGeq<2> (d);
@@ -112,7 +112,7 @@ L::real L::Rule5Hammer::eval (Integrand &f, const Hypercube &h)
    const real* width  = h.getWidth();
    const real* center = h.getCenter();
 
-   for (unsigned i = 0; i < dim; i++)  lamda[i] = width[i] * r;
+   for (int i = 0; i < dim; i++)  lamda[i] = width[i] * r;
 
    setCenter (center);
 

@@ -35,9 +35,9 @@
 #include <HIntLib/exception.h>
 
 #ifdef HINTLIB_PARALLEL
-   #define HINTLIB_NAME(x) x##StaticLB
+#  define HINTLIB_NAME(x) x##StaticLB
 #else
-   #define HINTLIB_NAME(x) x
+#  define HINTLIB_NAME(x) x
 #endif
 
 
@@ -94,8 +94,6 @@ L::MCIntegratorJob::MCIntegratorJob(
    : f(_f), n(0), nextCheck(minN),
      reqAbsError(_reqAbsError), reqRelError(_reqRelError)
 {}
-
-// #include <iostream>
 
 bool
 L::MCIntegratorJob::operator() (const real* point)
@@ -194,7 +192,7 @@ L::HINTLIB_NAME(MCIntegrator)::integrate (
       stat.reduce();
 
       if (slb.getRank() > 0) return WRONG_NODE;
- #endif
+#endif
 
       ee.set (stat.getMean() * h.getVolume(),
               stat.getStdDevSample() * h.getVolume()

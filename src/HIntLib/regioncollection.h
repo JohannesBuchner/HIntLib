@@ -22,8 +22,8 @@
  *  RegionCollection
  */
 
-#ifndef HINTLIB_REGIONCOLLECTION_H
-#define HINTLIB_REGIONCOLLECTION_H 1
+#ifndef HINTLIB_REGION_COLLECTION_H
+#define HINTLIB_REGION_COLLECTION_H 1
 
 #include <HIntLib/defaults.h>
 

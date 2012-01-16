@@ -28,9 +28,9 @@
 #endif
 
 #ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
+#  include <sstream>
 #else
-  #include <HIntLib/fallback_sstream.h>
+#  include <HIntLib/fallback_sstream.h>
 #endif
 
 namespace HIntLib

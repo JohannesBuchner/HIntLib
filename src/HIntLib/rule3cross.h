@@ -53,15 +53,15 @@ namespace HIntLib
    class Rule3Cross : public CubatureRule, private OrbitRule
    {
    public:
-      Rule3Cross (unsigned dim);
+      Rule3Cross (int dim);
 
       virtual real eval (Integrand &, const Hypercube &);
 
-      virtual unsigned getDimension()   const { return dim; }
-      virtual Index getNumPoints ()     const { return numR0_0fs(); }
-      virtual unsigned getDegree ()     const { return 3; }
-      virtual bool isAllPointsInside () const { return dim <= 3; }
-      virtual real getSumAbsWeight ()   const { return 1.0; }
+      virtual int   getDimension()      const { return dim; }
+      virtual Index getNumPoints()      const { return numR0_0fs(); }
+      virtual int   getDegree()         const { return 3; }
+      virtual bool  isAllPointsInside() const { return dim <= 3; }
+      virtual real  getSumAbsWeight()   const { return 1.0; }
 
       static CubatureRuleFactory* getFactory();
  

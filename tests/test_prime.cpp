@@ -22,16 +22,6 @@
 #include <iostream>
 #include <iomanip>
 
-#include <HIntLib/defaults.h>
-
-#ifdef HINTLIB_HAVE_CSTDLIB
-  #include <cstdlib>
-  #define HINTLIB_SLN std::
-#else
-  #include <stdlib.h>
-  #define HINTLIB_SLN
-#endif
-
 #include <HIntLib/prime.h>
 #include <HIntLib/gcd.h>
 
@@ -61,7 +51,7 @@ bool opt (int c, const char* s)
 {
    switch (c)
    {
-   case 'n':  SIZE = HINTLIB_SLN atoi(s) + 1; return true;
+   case 'n':  SIZE = parseInt(s) + 1; return true;
    }
 
    return false;

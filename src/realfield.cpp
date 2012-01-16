@@ -27,9 +27,9 @@
 #endif
 
 #ifdef HINTLIB_HAVE_OSTREAM
-  #include <ostream>
+#  include <ostream>
 #else
-  #include <iostream>
+#  include <iostream>
 #endif
 
 #include <HIntLib/polynomial.h>

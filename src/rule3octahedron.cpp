@@ -42,9 +42,9 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 #include <HIntLib/integrand.h>
+#include <HIntLib/hypercube.h>
 
 
 namespace L = HIntLib;
@@ -67,7 +67,7 @@ namespace
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule3Octahedron::Rule3Octahedron (unsigned d)
+L::Rule3Octahedron::Rule3Octahedron (int d)
    : dim(d), dim2(d * 2), r(d * d * 2), p(d)
 {
    checkDimensionNotZero (dim);
@@ -79,9 +79,9 @@ L::Rule3Octahedron::Rule3Octahedron (unsigned d)
 
    // Initialze r
 
-   for (unsigned i = 0; i < dim2; ++i)
+   for (int i = 0; i < dim2; ++i)
    {
-      for (unsigned k = 0; k < dim / 2; ++k)
+      for (int k = 0; k < dim / 2; ++k)
       {
          real t = (2*k + 1) * (i+1) * Constants<real>::pi() / dim;
 
@@ -110,9 +110,9 @@ real L::Rule3Octahedron::eval (Integrand &f, const Hypercube &h)
    const real* center = h.getCenter();
    const real* width  = h.getWidth();
 
-   for (unsigned i = 0; i < dim2; i++)
+   for (int i = 0; i < dim2; i++)
    {
-      for (unsigned k = 0; k < dim; k++)
+      for (int k = 0; k < dim; k++)
       {
          p [k] = center [k] + r [i * dim + k] * width [k];
       }

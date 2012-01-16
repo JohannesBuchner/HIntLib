@@ -37,9 +37,9 @@ namespace HIntLib
     */
 
    template<typename Bi>
-      void packMatrix (const unsigned char*, unsigned numCols, Bi,Bi);
+      void packMatrix (const unsigned char*, int numCols, Bi,Bi);
    template<typename Bi>
-      void unpackMatrix (Bi,Bi, unsigned numCols, unsigned char*);
+      void unpackMatrix (Bi,Bi, int numCols, unsigned char*);
 
    template<typename Bi> bool isZeroMatrix          (Bi,Bi);
    template<typename Bi> bool isIdentityMatrix      (Bi,Bi);
@@ -52,9 +52,9 @@ namespace HIntLib
       vectorMatrixMul (typename std::iterator_traits<Bi>::value_type, Bi, Bi);
 
    template<typename Bi> bool isLinearlyIndependent (Bi,Bi);
-   template<typename Bi> unsigned matrixRank        (Bi,Bi);
-   template<typename Bi> unsigned nullSpace  (Bi, Bi, unsigned, Bi);
-   template<typename Bi> unsigned nullSpaceT (Bi, Bi, Bi);
+   template<typename Bi> int matrixRank        (Bi,Bi);
+   template<typename Bi> int nullSpace  (Bi, Bi, int, Bi);
+   template<typename Bi> int nullSpaceT (Bi, Bi, Bi);
 
 }  // namespace HIntLib
 

@@ -36,7 +36,7 @@ namespace HIntLib
 template<class A, typename S>
 DigitalNetGen<A,S>::DigitalNetGen (
    const A &_arith, const GeneratorMatrix &_c, const Hypercube &_h,
-   unsigned _m, Index index, bool equi, Truncation _trunc) 
+   int _m, Index index, bool equi, Truncation _trunc) 
 : QRNSequenceBase (_h),
   DigitalNet (_c.getBase(), _m),
   arith (_arith),
@@ -44,13 +44,14 @@ DigitalNetGen<A,S>::DigitalNetGen (
   base (_c.getBase()),
   prec (min4 (
      (_trunc == FULL) ? _c.getPrec() : m,  // what we want
-     digitsRepresentable (S(scalArith.size())), // what we can get for this S
-     unsigned (HINTLIB_MN ceil (
+     int(digitsRepresentable (S(scalArith.size()))),
+                            // what we can get for this S
+     int (HINTLIB_MN ceil (
            HINTLIB_MN log(2.0) / HINTLIB_MN log(double(scalArith.size()))
                * double(std::numeric_limits<real>::digits - 1))),
                                                 // what can be stored in real
-     _c.getPrec()  // what's in the matrix
-     )),
+     _c.getPrec())  // what's in the matrix
+     ),
   c (AdjustPrec (prec, DiscardDimensions (getDimension(),
               NetFromSequence (m, equi, _c))),
      arith.dimension()),
@@ -62,8 +63,8 @@ DigitalNetGen<A,S>::DigitalNetGen (
   ss (h),  // will be initialized later
   trivialScale (1.0 / HINTLIB_MN pow(real(base), int (prec)))
 {
-   if (arith.size() != c.getVecBase())  throw FIXME (__FILE__, __LINE__);
-   if (arith.dimension() != c.getVec())
+   if (int(arith.size()) != c.getVecBase())  throw FIXME (__FILE__, __LINE__);
+   if (int(arith.dimension()) != c.getVec())
          throw FIXME (__FILE__, __LINE__);
 
    setCube (h);
@@ -74,9 +75,9 @@ DigitalNetGen<A,S>::DigitalNetGen (
       << " Prec 1: " << ((_trunc == FULL) ? _c.getPrec() : m) << "\n"
          " Prec 2: " << digitsRepresentable (S(scalArith.size())) << "\n"
          " Prec 3: "
-      << unsigned (HINTLIB_MN ceil (
+      << HINTLIB_MN ceil (
             HINTLIB_MN log(2.0) / HINTLIB_MN log(double(scalArith.size()))
-               * double(std::numeric_limits<real>::digits - 1))) << "\n"
+               * double(std::numeric_limits<real>::digits - 1)) << "\n"
          " Prec 4: " << _c.getPrec() << "\n\n"
          " base=" << int (base)
       << " prec=" << prec
@@ -96,12 +97,12 @@ DigitalNetGen<A,S>::DigitalNetGen (
 #if 0
    const int dd = equi;
 
-   unsigned i = m;
+   int i = m;
    while (index)
    {
       if (index & 1)
       {
-         for (unsigned d = dd; d < c.getDimension(); ++d)
+         for (int d = dd; d < c.getDimension(); ++d)
          {
             xStart [d] ^= c(d-dd,i);
          }
@@ -135,7 +136,7 @@ void DigitalNetGen<A,S>::setCube (const Hypercube &h)
 template<class A, typename S>
 void DigitalNetGen<A,S>::randomize (PRNG &g)
 {
-   for (unsigned i = 0; i < vecPrec * getDimension(); ++i)
+   for (int i = 0; i < vecPrec * getDimension(); ++i)
    {
       xStart [i] = g.equidist (int (vecBase));
    }
@@ -151,11 +152,11 @@ void DigitalNetGen<A,S>::randomize (PRNG &g)
 template<class A, typename S>
 void DigitalNetGen<A,S>::copyXtoP (real* point)
 {
-   for (unsigned d = 0; d < getDimension(); ++d)
+   for (int d = 0; d < getDimension(); ++d)
    {
       S sum = 0;
 
-      for (unsigned b = 0; b < vecPrec; ++b)
+      for (int b = 0; b < vecPrec; ++b)
       {
          sum = vecBase * sum + x[d * vecPrec + b];
       }
@@ -167,11 +168,11 @@ void DigitalNetGen<A,S>::copyXtoP (real* point)
 template<class A, typename S>
 void DigitalNetGen<A,S>::copyXtoPDontScale (real* point)
 {
-   for (unsigned d = 0; d < getDimension(); ++d)
+   for (int d = 0; d < getDimension(); ++d)
    {
       S sum = 0;
 
-      for (unsigned b = 0; b < vecPrec; ++b)
+      for (int b = 0; b < vecPrec; ++b)
       {
          sum = vecBase * sum + x[d * vecPrec + b];
       }
@@ -190,19 +191,19 @@ void DigitalNetGen<A,S>::resetX (Index nn)
 {
    std::copy (&xStart[0], &xStart[getDimension() * vecPrec], &x[0]);
    const Index bas = base;
-   const unsigned p = vecPrec;
+   const int p = vecPrec;
 
-   for (unsigned r = 0; nn != 0; ++r)
+   for (int r = 0; nn != 0; ++r)
    {
       typename A::scalar_type digit = nn % bas; nn /= bas;
 
       if (! scalArith.is0(digit))
       {
-         for (unsigned d = 0; d < getDimension(); ++d)
+         for (int d = 0; d < getDimension(); ++d)
          {
             // x [d] ^= c(d,r);
 
-            for (unsigned b = 0; b < p; ++b)
+            for (int b = 0; b < p; ++b)
             {
                arith.addTo (x [d * p + b], arith.mul(c(d,r,b), digit));
             }
@@ -240,20 +241,20 @@ void HIntLib::DigitalNetGenNormal<A,S>::updateX ()
    Index n1 = this->n;
    Index n2 = ++(this->n);
    const Index bas = this->base;
-   const unsigned p = this->vecPrec;
-   const unsigned DIM = this->getDimension();
+   const int p = this->vecPrec;
+   const int DIM = this->getDimension();
 
-   for (unsigned r = 0; n1 != n2; ++r)
+   for (int r = 0; n1 != n2; ++r)
    {
       typename A::scalar_type digit = this->scalArith.sub (n2 % bas, n1 % bas);
 
       n1 /= bas; n2 /= bas;
 
-      for (unsigned d = 0; d != DIM; ++d)
+      for (int d = 0; d != DIM; ++d)
       {
          // x [d] ^= c(d,r);
 
-         for (unsigned b = 0; b != p; ++b)
+         for (int b = 0; b != p; ++b)
          {
             this->arith.addTo (this->x [d * p + b],
 			       this->arith.mul(this->c(d,r,b), digit));
@@ -277,8 +278,8 @@ template<class A, typename S>
 void HIntLib::DigitalNetGenGray<A,S>::updateX ()
 {
    const Index bas = this->base;
-   const unsigned p = this->vecPrec;
-   const unsigned DIM = this->getDimension();
+   const int p = this->vecPrec;
+   const int DIM = this->getDimension();
    Index n1 = this->n;
    Index n2 = ++(this->n);
 
@@ -295,11 +296,11 @@ void HIntLib::DigitalNetGenGray<A,S>::updateX ()
 
    const typename A::scalar_type digit = this->scalArith.sub (rem2, rem1);
    
-   for (unsigned d = 0; d != DIM; ++d)
+   for (int d = 0; d != DIM; ++d)
    {
       // x [d] ^= c(d,r);
 
-      for (unsigned b = 0; b != p; ++b)
+      for (int b = 0; b != p; ++b)
       {
          this->arith.addTo (this->x [d * p + b],
 			    this->arith.mul(this->c(d,r,b), digit));
@@ -322,22 +323,22 @@ template<class A, typename S>
 void HIntLib::DigitalNetGenCyclicGray<A,S>::updateX ()
 {
    const Index bas = this->base;
-   const unsigned p = this->vecPrec;
-   const unsigned DIM = this->getDimension();
+   const int p = this->vecPrec;
+   const int DIM = this->getDimension();
    Index n1 = this->n;
    Index n2 = ++(this->n);
 
-   unsigned r = 0;
+   int r = 0;
 
    // Determine digit that has to be incremented 
 
    while ((n1 /= bas) != (n2 /= bas))  ++r;
 
-   for (unsigned d = 0; d != DIM; ++d)
+   for (int d = 0; d != DIM; ++d)
    {
       // x [d] ^= c(d,r);
 
-      for (unsigned b = 0; b != p; ++b)
+      for (int b = 0; b != p; ++b)
       {
          this->arith.addTo (this->x [d * p + b], this->c(d,r,b));
       }

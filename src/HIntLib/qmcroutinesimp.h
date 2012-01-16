@@ -19,8 +19,8 @@
  */
 
 
-#ifndef HINTLIB_QMCROUTINESIMP_H
-#define HINTLIB_QMCROUTINESIMP_H 1
+#ifndef HINTLIB_QMC_ROUTINES_IMP_H
+#define HINTLIB_QMC_ROUTINES_IMP_H 1
  
 #include <HIntLib/defaults.h>
 

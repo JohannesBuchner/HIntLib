@@ -82,7 +82,7 @@ real L::PseudoEmbeddedRule::getSumAbsWeight() const
  *  evalError()
  */
 
-unsigned L::PseudoEmbeddedRule::evalError (Integrand &f,
+int L::PseudoEmbeddedRule::evalError (Integrand &f,
    const Hypercube &h, EstErr &ee)
 {
    real result1 = r1->eval(f, h);
@@ -95,10 +95,10 @@ unsigned L::PseudoEmbeddedRule::evalError (Integrand &f,
 }
 
 
-unsigned L::PseudoDoubleEmbeddedRule::evalError (Integrand &f,
+int L::PseudoDoubleEmbeddedRule::evalError (Integrand &f,
    const Hypercube &h, EstErr &ee)
 {
-   unsigned split = PseudoEmbeddedRule::evalError (f, h, ee);
+   int split = PseudoEmbeddedRule::evalError (f, h, ee);
 
    real result3 = r3->eval (f, h);
 
@@ -120,7 +120,7 @@ L::PseudoEmbeddedRuleFactory* L::PseudoEmbeddedRuleFactory::clone() const
    return new PseudoEmbeddedRuleFactory (factory1->clone(), factory2->clone());
 }
 
-L::PseudoEmbeddedRule* L::PseudoEmbeddedRuleFactory::create (unsigned dim)
+L::PseudoEmbeddedRule* L::PseudoEmbeddedRuleFactory::create (int dim)
 {
    return new PseudoEmbeddedRule (dim, factory1.get(), factory2.get());
 }
@@ -138,7 +138,7 @@ L::PseudoDoubleEmbeddedRuleFactory::clone() const
 }
 
 L::PseudoDoubleEmbeddedRule*
-L::PseudoDoubleEmbeddedRuleFactory::create (unsigned dim)
+L::PseudoDoubleEmbeddedRuleFactory::create (int dim)
 {
    return new PseudoDoubleEmbeddedRule (
          dim, factory1.get(), factory2.get(), factory3.get());

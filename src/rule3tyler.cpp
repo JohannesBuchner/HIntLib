@@ -42,11 +42,10 @@
 
 #include <HIntLib/defaultcubaturerulefactory.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hypercube.h>
 
 
 namespace L = HIntLib;
-
-using L::real;
 
 
 /**
@@ -56,15 +55,15 @@ using L::real;
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule3Tyler::Rule3Tyler (unsigned dim)
-   : OrbitRule (dim), b0 (real (3 - int(dim)) / real(3))
+L::Rule3Tyler::Rule3Tyler (int dim)
+   : OrbitRule (dim), b0 (real (3 - dim) / real(3))
 {
    checkDimensionNotZero (dim);
 }
 
 namespace
 {
-   const real b1 = real(1) / real(6);
+   const L::real b1 = L::real(1) / L::real(6);
 }
 
 
@@ -72,7 +71,8 @@ namespace
  *  getSumAbsWeight()
  */
 
-real L::Rule3Tyler::getSumAbsWeight() const
+L::real
+L::Rule3Tyler::getSumAbsWeight() const
 {
    // Multiply each weight with the number of sampling points it is used for.
    // Don't forget to take the absolute value for weights that meight be
@@ -81,13 +81,15 @@ real L::Rule3Tyler::getSumAbsWeight() const
    return num0_0() * abs(b0) + numR0_0fs() * b1;
 }
 
+
 /**
  *  eval()
  *
  *  Do the actual function evaluation
  */
 
-real L::Rule3Tyler::eval (Integrand &f, const Hypercube &h)
+L::real
+L::Rule3Tyler::eval (Integrand &f, const Hypercube &h)
 {
    const real* center = h.getCenter();
 
@@ -99,8 +101,83 @@ real L::Rule3Tyler::eval (Integrand &f, const Hypercube &h)
    );
 }
 
+L::real
+L::Rule3TylerDim3::eval (Integrand &f, const Hypercube &h)
+{
+   const real* center = h.getCenter();
+   const real* width  = h.getWidth();
+
+   real result = 0;
+   real point[3];
+
+   point[0] = center[0];
+   point[1] = center[1];
+   point[2] = center[2] + width[2];
+
+   result += f(point);
+
+   point[2] = center[2] - width[2];
+
+   result += f(point);
+
+   point[2] = center[2];
+   point[1] = center[1] + width[1];
+
+   result += f(point);
+
+   point[1] = center[1] - width[1];
+
+   result += f(point);
+
+   point[1] = center[1];
+   point[0] = center[0] + width[0];
+
+   result += f(point);
+
+   point[0] = center[0] - width[0];
+
+   result += f(point);
+
+   return result * h.getVolume() / 6;
+}
+
+
+/**
+ *  Declare a CubatureRuleFactory which returns the proper class depending on
+ *  the dimension.
+ */
+
+namespace
+{
+   class Rule3TylerCubatureRuleFactory : public L::CubatureRuleFactory
+   {
+   public:
+      virtual L::CubatureRule* create (int dim);
+      virtual Rule3TylerCubatureRuleFactory* clone () const;
+   };
+
+   L::CubatureRule*
+   Rule3TylerCubatureRuleFactory::create (int dim)
+   {
+      return (dim == 3)
+         ? static_cast<L::CubatureRule*> (new L::Rule3TylerDim3())
+         : static_cast<L::CubatureRule*> (new L::Rule3Tyler(dim));
+   }
+
+   Rule3TylerCubatureRuleFactory*
+   Rule3TylerCubatureRuleFactory::clone () const
+   {
+      return new Rule3TylerCubatureRuleFactory();
+   }
+}
+
+
+/**
+ *  getFactory()
+ */
+
 L::CubatureRuleFactory* L::Rule3Tyler::getFactory()
 {
-   return new DefaultCubatureRuleFactory<L::Rule3Tyler> ();
+   return new Rule3TylerCubatureRuleFactory();
 }
 

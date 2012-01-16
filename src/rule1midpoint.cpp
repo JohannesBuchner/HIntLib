@@ -37,6 +37,7 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
+#include <HIntLib/hypercube.h>
 #include <HIntLib/integrand.h>
 
 namespace L = HIntLib;

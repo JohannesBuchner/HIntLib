@@ -28,8 +28,8 @@
  *  The *Est version used EmbeddedRules and produeces an error estimate.
  */
 
-#ifndef HINTLIB_COMPRULEINTEGRATOR_H
-#define HINTLIB_COMPRULEINTEGRATOR_H 1
+#ifndef HINTLIB_COMP_RULE_INTEGRATOR_H
+#define HINTLIB_COMP_RULE_INTEGRATOR_H 1
 
 #include <HIntLib/defaults.h>
 

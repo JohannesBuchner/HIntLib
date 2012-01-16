@@ -36,9 +36,17 @@
 #endif
 
 #ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
+#  include <sstream>
 #else
-  #include <HIntLib/fallback_sstream.h>
+#  include <HIntLib/fallback_sstream.h>
+#endif
+
+#ifdef HINTLIB_HAVE_CSTRING
+#  include <cstring>
+#  define HINTLIB_SSN std::
+#else
+#  include <string.h>
+#  define HINTLIB_SSN
 #endif
 
 #include <memory>
@@ -111,7 +119,7 @@ namespace
 }  // end anomymous namespace
 
 
-GM2* L::Make::generatorMatrix2 (int n, unsigned dim)
+GM2* L::Make::generatorMatrix2 (int n, int dim)
 {
    init();
 
@@ -146,10 +154,10 @@ GM2* L::Make::generatorMatrix2 (int n, unsigned dim)
       {
          GM2* m = new GM2 (dim);
 
-         for (unsigned d = 0; d < m->getDimension(); ++d)
+         for (int d = 0; d < m->getDimension(); ++d)
          {
-            for (unsigned r = 0; r < m->getM(); ++r)
-               for (unsigned b = 0; b < m->getPrec(); ++b)
+            for (int r = 0; r < m->getM(); ++r)
+               for (int b = 0; b < m->getPrec(); ++b)
                   m->setd(d, r, b, mt->equidist (2));
          }
          return m;
@@ -197,7 +205,7 @@ const char* L::Make::getGeneratorMatrix2Name (int n)
 /*****************************************************************************/
 
 
-GMGen* L::Make::generatorMatrixGen (int n, unsigned dim, int m)
+GMGen* L::Make::generatorMatrixGen (int n, int dim, int m)
 {
    init();
 
@@ -220,7 +228,7 @@ GMGen* L::Make::generatorMatrixGen (int n, unsigned dim, int m)
    {
    case 0:  // Faure
       {
-         const unsigned b = Prime::next (dim);
+         const int b = Prime::next (dim);
          GMGen* p = (m == -1 ) ? new GMGen (b, dim) : new GMGen (b, dim, m);
          initFaure (*p);
          return p;
@@ -228,6 +236,7 @@ GMGen* L::Make::generatorMatrixGen (int n, unsigned dim, int m)
    case 1:  // Sobol
       {
          if (dim > gm64[0]->getDimension())  throw InvalidDimension(dim);
+         if (m   > int(gm64[0]->getM()))     throw GM_CopyM(m, gm64[0]->getM());
 
          return new GMGen (DiscardDimensions (dim, AdjustM (m, *gm64 [0])));
       }
@@ -235,10 +244,10 @@ GMGen* L::Make::generatorMatrixGen (int n, unsigned dim, int m)
       {
          if (dim == 0) return new GMGen (2, 0);
 
-         GMGen* p = loadNiederreiterXing (dim < 4 ? 4 : dim);
+         std::auto_ptr<GMGen> p (loadNiederreiterXing (dim < 4 ? 4 : dim));
+         if (m > int(p->getM()))  throw GM_CopyM(m, p->getM());
 
          GMGen* pp = new GMGen (DiscardDimensions (dim, AdjustM (m, *p)));
-         delete p;
 
          return pp;
       }
@@ -249,7 +258,7 @@ GMGen* L::Make::generatorMatrixGen (int n, unsigned dim, int m)
       }
    case 12:  // generalized faure
       {
-         unsigned b = dim;
+         int b = dim;
          while (! Prime::isPrimePower (b))  ++b;
          GMGen* p = (m == -1 ) ? new GMGen (b, dim) : new GMGen (b, dim, m);
          initFaure (*p);
@@ -259,10 +268,10 @@ GMGen* L::Make::generatorMatrixGen (int n, unsigned dim, int m)
       {
          GMGen* p = (m == -1 ) ? new GMGen (2, dim) : new GMGen (2, dim, m);
 
-         for (unsigned d = 0; d < p->getDimension(); ++d)
+         for (int d = 0; d < p->getDimension(); ++d)
          {
-            for (unsigned r = 0; r < p->getM(); ++r)
-               for (unsigned b = 0; b < p->getPrec(); ++b)
+            for (int r = 0; r < p->getM(); ++r)
+               for (int b = 0; b < p->getPrec(); ++b)
                   p->setd(d, r, b, mt->equidist (2));
          }
          return p;
@@ -272,7 +281,7 @@ GMGen* L::Make::generatorMatrixGen (int n, unsigned dim, int m)
    default:
       if (n >= 1 && n < 100 && Prime::isPrimePower (n))  // Niederreiter
       {
-         GMGen* p = (m == -1 ) ? new GMGen (n, dim) : new GMGen (n, dim, m);
+         GMGen* p = (m == -1 ) ? new GMGen (n, dim) : new GMGen (n, dim, m, m);
          initNiederreiter (*p);
          return p;
       }
@@ -311,9 +320,7 @@ const char* L::Make::getGeneratorMatrixGenName (int n)
 
    if (n >= 1 && n < 100)
    {
-      unsigned prime, power;
-
-      if (Prime::isPrimePower (n, prime, power))
+      if (Prime::isPrimePower (n))
       {
          static char s[100];
 
@@ -321,7 +328,7 @@ const char* L::Make::getGeneratorMatrixGenName (int n)
          ss << generatorNames [1] << "_base" << n;
 
          std::string str = ss.str();
-         strcpy (s, str.c_str());
+         HINTLIB_SSN strcpy (s, str.c_str());
          return s;
       }
    }
@@ -417,10 +424,10 @@ L::QRNSequence* L::Make::qrnSequence (int n, const Hypercube &h)
       int type = nn % 10; nn /= 10;
       if (type >= 3)  throw QRNSequenceDoesNotExist (n);
 
-      unsigned base = gm->getBase();
+      int base = gm->getBase();
       bool prime = Prime::test (base);
 
-      unsigned vec = digitsRepresentable(static_cast<unsigned char>(base));
+      int vec = digitsRepresentable(static_cast<unsigned char>(base));
 
       QRNSequence* seq;
 
@@ -601,7 +608,7 @@ const char* L::Make::getQrnSequenceName (int n)
       ss << genName << '_' << typeNames3 [type];
 
       std::string str = ss.str();
-      strcpy (s, str.c_str());
+      HINTLIB_SSN strcpy (s, str.c_str());
       return s;
    }
 
@@ -637,7 +644,7 @@ const char* L::Make::getQrnSequenceName (int n)
       ss << genName << '_' << typeNames3 [type];
 
       std::string str = ss.str();
-      strcpy (s, str.c_str());
+      HINTLIB_SSN strcpy (s, str.c_str());
       return s;
    }
 
@@ -663,7 +670,7 @@ const char* L::Make::getQrnSequenceName (int n)
 
 namespace
 {
-   const unsigned indices [10] = { 0, 1, 2, 16, 100, 0, 0, 0, 0, 0 };
+   const int indices [10] = { 0, 1, 2, 16, 100, 0, 0, 0, 0, 0 };
 
    const DigitalNet::Truncation truncs [3]
       = { DigitalNet::TRUNCATE,
@@ -721,7 +728,7 @@ L::QRNSequence* L::Make::qrnNet (int n, const Hypercube &h, Index size)
       DigitalNet::Truncation trunc = truncs [nn % 5]; nn /= 5;
 
       bool equi = nn % 2; nn /= 2;
-      unsigned index = nn % 10; nn /= 10;
+      int index = nn % 10; nn /= 10;
       if (index > 4 && index < 9)  throw QRNSequenceDoesNotExist (n);
 
       typedef DigitalNet2Gray<u64> DN2G;
@@ -763,7 +770,7 @@ L::QRNSequence* L::Make::qrnNet (int n, const Hypercube &h, Index size)
       int type = nn % 10; nn /= 10;
       if (type >= 3)  throw QRNSequenceDoesNotExist (n);
 
-      unsigned base = gm->getBase();
+      int base = gm->getBase();
       QRNSequence* seq;
 
       typedef LookupField<unsigned char> Ring;
@@ -818,9 +825,9 @@ L::QRNSequence* L::Make::qrnNet (int n, const Hypercube &h, Index size)
       {
          throw QRNSequenceDoesNotExist (n);
       }
-      unsigned base = gm->getBase();
+      int base = gm->getBase();
 
-      unsigned m = logInt (size, Index (base));
+      int m = logInt (size, Index (base));
       GMGen gm2 (AdjustM (m, AdjustPrec (m, *gm)));
 
       int fix = nn % 10; nn /= 10;
@@ -917,11 +924,11 @@ const char* L::Make::getQrnNetName (int n)
          throw QRNSequenceDoesNotExist (n);
       }
 
-      unsigned trunc = nn % 5; nn /= 5;
+      int trunc = nn % 5; nn /= 5;
       if (trunc >= 3)  throw QRNSequenceDoesNotExist (n);
 
       bool equi = nn % 2; nn /= 2;
-      unsigned index = nn % 10; nn /= 10;
+      int index = nn % 10; nn /= 10;
       if (index > 4 && index < 9)  throw QRNSequenceDoesNotExist (n);
 
       std::ostringstream ss;
@@ -932,7 +939,7 @@ const char* L::Make::getQrnNetName (int n)
       if (equi)        ss << "_Equi";
 
       std::string str = ss.str();
-      strcpy (s, str.c_str());
+      HINTLIB_SSN strcpy (s, str.c_str());
       return s;
    }
 
@@ -962,11 +969,11 @@ const char* L::Make::getQrnNetName (int n)
          throw QRNSequenceDoesNotExist (n);
       }
 
-      unsigned trunc = nn % 10; nn /= 10;
+      int trunc = nn % 10; nn /= 10;
       if (trunc >= 3)  throw QRNSequenceDoesNotExist (n);
 
       bool equi = nn % 2; nn /= 2;
-      unsigned index = nn % 10; nn /= 10;
+      int index = nn % 10; nn /= 10;
       if (index > 4 && index < 9)  throw QRNSequenceDoesNotExist (n);
 
       std::ostringstream ss;
@@ -977,7 +984,7 @@ const char* L::Make::getQrnNetName (int n)
       if (equi)        ss << "_Equi";
 
       std::string str = ss.str();
-      strcpy (s, str.c_str());
+      HINTLIB_SSN strcpy (s, str.c_str());
       return s;
    }
 #endif
@@ -1013,7 +1020,7 @@ const char* L::Make::getQrnNetName (int n)
       else if (fix == 2)  ss << "_fix2dim";
 
       std::string str = ss.str();
-      strcpy (s, str.c_str());
+      HINTLIB_SSN strcpy (s, str.c_str());
       return s;
    }
 

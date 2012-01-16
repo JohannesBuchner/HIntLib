@@ -37,11 +37,11 @@ void testLookupField (unsigned size)
 {
    typedef unsigned char u8;
 
-   unsigned maxDim   = logInt (256u, size);
-   unsigned maxDim32 = logInt (std::numeric_limits<unsigned>::max(), size);
+   int maxDim   = logInt (256u, size);
+   int maxDim32 = logInt (std::numeric_limits<unsigned>::max(), size);
 
    unsigned p;
-   unsigned e;
+   int e;
 
    if (Prime::isPrimePower (size, p, e))
    {
@@ -65,7 +65,7 @@ void testLookupField (unsigned size)
          doTests (OneDimVectorSpace<F> (f),
                   "OneDimVectorSpace<LookupField<> >");
 
-         for (unsigned j = 1; j <= maxDim; ++j)
+         for (int j = 1; j <= maxDim; ++j)
          {
             doTests (LookupVectorSpace<u8,u8>(f, j), "LookupVectorSpace<>");
          }
@@ -98,13 +98,13 @@ void testLookupField (unsigned size)
          doTests (OneDimVectorSpace<F> (f),
                   "OneDimVectorSpace<LookupFieldPow2<> >");
 
-         for (unsigned j = 1; j <= maxDim; ++j)
+         for (int j = 1; j <= maxDim; ++j)
          {
             doTests (LookupVectorSpacePow2<u8,u8>(f,j),
                      "LookupVectorSpacePow2<>");
          }
 
-         for (unsigned j = 1; j <= maxDim32; ++j)
+         for (int j = 1; j <= maxDim32; ++j)
          {
             doTests (VectorSpacePow2<u32>(f,j), "VectorSpacePow2<>");
          }

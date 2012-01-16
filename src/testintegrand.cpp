@@ -46,7 +46,7 @@ using L::real;
  *  Integrand
  */
 
-real L::Integrand::derivative (const real [], unsigned)
+real L::Integrand::derivative (const real [], int)
 {
    throw DerivativeNotSupported ();
 }
@@ -69,7 +69,7 @@ real L::DomainCheckerIntegrand::operator() (const real p [])
    return f(p);
 }
 
-real L::DomainCheckerIntegrand::derivative (const real p [], unsigned a)
+real L::DomainCheckerIntegrand::derivative (const real p [], int a)
 {
    allInside = allInside && isPointInside (h, p);
 

@@ -36,9 +36,9 @@ namespace P = L::Private;
 
 template<class T>
 void
-L::makeGaloisField (T &r, unsigned base, unsigned exponent)
+L::makeGaloisField (T &r, unsigned base, int exponent)
 {
-        if (exponent == 0)  throw GaloisFieldExponent ();
+        if (exponent <= 0)  throw GaloisFieldExponent ();
    else if (exponent == 1)
    {
       ModularArithmeticField<typename T::type> field (base);
@@ -57,7 +57,7 @@ L::makeGaloisField (T &r, unsigned base, unsigned exponent)
  */
 
 template<class T>
-L::LookupGaloisField<T>::LookupGaloisField (unsigned prime, unsigned power)
+L::LookupGaloisField<T>::LookupGaloisField (unsigned prime, int power)
    : LookupField<T> (powInt (prime, power))
 {
    if (this->getRefCount())  makeGaloisField (*this, prime, power);
@@ -69,7 +69,8 @@ L::LookupGaloisField<T>::LookupGaloisField (unsigned size)
 {
    if (this->getRefCount())
    {
-      unsigned prime, power;
+      unsigned prime;
+      int power;
       Prime::factorPrimePower (size, prime, power);
       makeGaloisField (*this, prime, power);
    }
@@ -81,8 +82,7 @@ L::LookupGaloisField<T>::LookupGaloisField (unsigned size)
  */
 
 template<class T>
-L::LookupGaloisFieldPow2<T>::LookupGaloisFieldPow2
-   (unsigned prime, unsigned power)
+L::LookupGaloisFieldPow2<T>::LookupGaloisFieldPow2 (unsigned prime, int power)
    : LookupFieldPow2<T> (1 << power)
 {
    if (prime != 2)  throw FIXME (__FILE__, __LINE__);
@@ -93,7 +93,8 @@ template<class T>
 L::LookupGaloisFieldPow2<T>::LookupGaloisFieldPow2 (unsigned size)
    : LookupFieldPow2<T> (size)
 {
-   unsigned prime, power;
+   unsigned prime;
+   int power;
 
    if (this->getRefCount())
    {
@@ -114,8 +115,7 @@ L::LookupGaloisFieldPow2<T>::LookupGaloisFieldPow2 (unsigned size)
  */
 
 template<class T>
-L::LookupGaloisFieldPrime<T>::LookupGaloisFieldPrime
-   (unsigned prime, unsigned power)
+L::LookupGaloisFieldPrime<T>::LookupGaloisFieldPrime (unsigned prime, int power)
    : LookupFieldPrime<T> (prime)
 {
    if (power != 1)  throw FIXME (__FILE__, __LINE__);
@@ -205,9 +205,9 @@ namespace HIntLib
    template void copy (LookupField<X> &, const ModularArithmeticField<X>);\
    template void copy (Private::LookupFieldMulOnly<X> &, const GaloisField<X>); \
    template void copy (Private::LookupFieldMulOnly<X> &, const ModularArithmeticField<X>);\
-   template void makeGaloisField(LookupGaloisField<X>&,unsigned,unsigned); \
-   template void makeGaloisField(LookupGaloisFieldPow2<X>&,unsigned,unsigned);\
-   template void makeGaloisField(LookupGaloisFieldPrime<X>&,unsigned,unsigned);\
+   template void makeGaloisField(LookupGaloisField<X>&,unsigned,int); \
+   template void makeGaloisField(LookupGaloisFieldPow2<X>&,unsigned,int);\
+   template void makeGaloisField(LookupGaloisFieldPrime<X>&,unsigned,int);\
    template class LookupGaloisField<X>; \
    template class LookupGaloisFieldPow2<X>; \
    template class LookupGaloisFieldPrime<X>;

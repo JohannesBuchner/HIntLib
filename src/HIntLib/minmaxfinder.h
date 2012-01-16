@@ -26,8 +26,8 @@
  *  Determines the minimum/maximum of a sequence of values
  */
 
-#ifndef HINTLIB_MINMAXFINDER_H
-#define HINTLIB_MINMAXFINDER_H 1
+#ifndef HINTLIB_MIN_MAX_FINDER_H
+#define HINTLIB_MIN_MAX_FINDER_H 1
  
 #include <HIntLib/defaults.h>
 
@@ -36,9 +36,9 @@
 #endif
 
 #ifdef HINTLIB_HAVE_LIMITS
-  #include <limits>
+#  include <limits>
 #else
-  #include <HIntLib/fallback_limits.h>
+#  include <HIntLib/fallback_limits.h>
 #endif
 
 namespace HIntLib

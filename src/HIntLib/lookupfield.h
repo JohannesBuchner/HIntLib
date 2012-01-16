@@ -30,11 +30,11 @@
 #include <iosfwd>
 
 #ifdef HINTLIB_HAVE_CSTDDEF
-  #include <cstddef>
-  #define HINTLIB_SN std::
+#  include <cstddef>
+#  define HINTLIB_SN std::
 #else
-  #include <stddef.h>
-  #define HINTLIB_SN
+#  include <stddef.h>
+#  define HINTLIB_SN
 #endif
 
 #include <HIntLib/algebra.h>
@@ -415,13 +415,13 @@ public:
  */
 
 template<class T>
-void makeGaloisField (T &, unsigned base, unsigned exponent);
+void makeGaloisField (T &, unsigned base, int exponent);
 
 template<typename T>
 class LookupGaloisField : public LookupField<T>
 {
 public:
-   LookupGaloisField (unsigned prime, unsigned power);
+   LookupGaloisField (unsigned prime, int power);
    explicit LookupGaloisField (unsigned size);
 };
 
@@ -429,7 +429,7 @@ template<typename T>
 class LookupGaloisFieldPow2 : public LookupFieldPow2<T>
 {
 public:
-   LookupGaloisFieldPow2 (unsigned prime, unsigned power);
+   LookupGaloisFieldPow2 (unsigned prime, int power);
    explicit LookupGaloisFieldPow2 (unsigned size);
 };
 
@@ -437,7 +437,7 @@ template<typename T>
 class LookupGaloisFieldPrime : public LookupFieldPrime<T>
 {
 public:
-   LookupGaloisFieldPrime (unsigned prime, unsigned power);
+   LookupGaloisFieldPrime (unsigned prime, int power);
    explicit LookupGaloisFieldPrime (unsigned size);
 };
 
@@ -472,7 +472,7 @@ public:
    typedef finite_tag size_category;
 
    unsigned size() const  { return s; }
-   unsigned dimension() const  { return dim; }
+   int dimension() const  { return dim; }
 
 protected:
    LookupVectorSpaceBB (unsigned _s, unsigned _dim, unsigned memory)
@@ -489,7 +489,7 @@ protected:
 
 private:
    unsigned s;
-   unsigned dim;
+   int dim;
 };
 
 
@@ -503,7 +503,7 @@ class LookupVectorSpaceBase : public LookupVectorSpaceBB
 protected:
    T* mulTable;
 
-   LookupVectorSpaceBase (unsigned aSize, unsigned _dim, unsigned numData);
+   LookupVectorSpaceBase (unsigned aSize, int _dim, unsigned numData);
    LookupVectorSpaceBase (const LookupVectorSpaceBase<T,C> &r)
       : LookupVectorSpaceBB (r) {}
 
@@ -589,21 +589,21 @@ public:
 
    template<typename I> void toCoord (T a, I p) const
    {
-      unsigned DIM = this->dimension();
-      for (unsigned i = 0; i != DIM; ++i, a /= shift)
+      int DIM = this->dimension();
+      for (int i = 0; i != DIM; ++i, a /= shift)
          *p++ = C (a % shift);
    }
    template<typename I> void fromCoord (T& a, I p) const
    {
-      unsigned DIM = this->dimension();
+      int DIM = this->dimension();
       a = 0;
       p += DIM;
-      for (unsigned i = 0; i != DIM; ++i)  a = (a * shift) + (*--p);
+      for (int i = 0; i != DIM; ++i)  a = (a * shift) + (*--p);
    }
 
-   C coord (const T& a, unsigned k) const
+   C coord (const T& a, int k) const
       { return (a / (powInt(unsigned (shift), k))) % shift; }
-   scalar_reference coord (T& a, unsigned k) const
+   scalar_reference coord (T& a, int k) const
       { return scalar_reference (&a, powInt (unsigned (shift), k), shift); }
 
    bool is0 (T a) const  { return !a; }
@@ -709,20 +709,20 @@ public:
 
    template<typename I> void toCoord (T a, I p) const
    {
-      unsigned DIM = this->dimension();
-      for (unsigned i = 0; i != DIM; ++i, a>>=shift)  *p++ = C (a & mask);
+      int DIM = this->dimension();
+      for (int i = 0; i != DIM; ++i, a>>=shift)  *p++ = C (a & mask);
    }
    template<typename I> void fromCoord (T& a, I p) const
    {
-      unsigned DIM = this->dimension();
+      int DIM = this->dimension();
       a = 0;
       p += DIM;
-      for (unsigned i = 0; i != DIM; ++i) a = (a << shift) | (*--p);
+      for (int i = 0; i != DIM; ++i) a = (a << shift) | (*--p);
    }
 
-   C coord (const T& a, unsigned k) const
+   C coord (const T& a, int k) const
       { return (a >> (k * shift)) & mask; }
-   scalar_reference coord (T& a, unsigned k) const
+   scalar_reference coord (T& a, int k) const
       { return scalar_reference (&a, mask << (k * shift), k * shift); }
 
    void dump (std::ostream &o) const
@@ -802,37 +802,37 @@ public:
 private:
    scalar_algebra algebra;
    LookupVectorSpacePow2<scalar_type,scalar_type> vecalg;
-   unsigned baseBits;
-   unsigned vecBits;
+   int baseBits;
+   int vecBits;
    T baseMask;
    T vecMask;
-   unsigned dim;
-   unsigned vecDim;
+   int dim;
+   int vecDim;
 
 public:
    scalar_algebra getScalarAlgebra() const  { return algebra; }
 
-   VectorSpacePow2 (const scalar_algebra&, unsigned);
+   VectorSpacePow2 (const scalar_algebra&, int);
    // default copy and assignment just all right
 
    unsigned size() const;
-   unsigned dimension() const  { return dim; }
+   int dimension() const  { return dim; }
 
    template<typename I> void toCoord (T a, I p) const
    {
-      for (unsigned i = 0; i != dimension(); ++i, a>>=baseBits)
+      for (int i = 0; i != dimension(); ++i, a>>=baseBits)
          *p++ = scalar_type(a & baseMask);
    }
    template<typename I> void fromCoord (T& a, I p) const
    {
       a = 0;
       p += dimension();
-      for (unsigned i = 0; i != dimension(); ++i) a = (a << baseBits) | (*--p);
+      for (int i = 0; i != dimension(); ++i) a = (a << baseBits) | (*--p);
    }
 
-   scalar_type coord (const T& a, unsigned k) const
+   scalar_type coord (const T& a, int k) const
       { return (a >> (k * baseBits)) & baseMask; }
-   scalar_reference coord (T& a, unsigned k) const
+   scalar_reference coord (T& a, int k) const
       { return scalar_reference (&a, baseMask << (k*baseBits), k*baseBits); }
 
    T element(unsigned i) const  { return T(i); }

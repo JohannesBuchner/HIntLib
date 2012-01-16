@@ -35,21 +35,26 @@
 #include <HIntLib/counter.h>
 
 namespace L = HIntLib;
-using L::real;
 
-real L::OrbitRule::evalRRR0_0fs (Integrand &f, const real*c, const real* r)
+
+/**
+ *  eval RRR 0_0 fs ()
+ */
+
+L::real
+L::OrbitRule::evalRRR0_0fs (Integrand &f, const real*c, const real* r)
 {
    real sum = 0;
 
-   for (unsigned i = 0; i != dim - 2; ++i)
+   for (int i = 0; i != dim - 2; ++i)
    {
       p[i] = c[i] - r[i];
 
-      for (unsigned j = i + 1; j != dim - 1; ++j)
+      for (int j = i + 1; j != dim - 1; ++j)
       {
          p[j] = c[j] - r[j];
 
-         for (unsigned k = j + 1; k != dim; ++k)
+         for (int k = j + 1; k != dim; ++k)
          {
             // Process 2^3 Points defined by changing the sign of r in
             // position i, j, and k.
@@ -75,23 +80,29 @@ real L::OrbitRule::evalRRR0_0fs (Integrand &f, const real*c, const real* r)
    return sum;
 }
 
-real L::OrbitRule::evalRRRR0_0fs (Integrand &f, const real*c, const real* r)
+
+/**
+ *  eval RRRR 0_0 fs ()
+ */
+
+L::real
+L::OrbitRule::evalRRRR0_0fs (Integrand &f, const real*c, const real* r)
 {
    real sum = 0;
 
-   for (unsigned i = 0; i != dim - 3; ++i)
+   for (int i = 0; i != dim - 3; ++i)
    {
       p[i] = c[i] - r[i];
 
-      for (unsigned j = i + 1; j != dim - 2; ++j)
+      for (int j = i + 1; j != dim - 2; ++j)
       {
          p[j] = c[j] - r[j];
 
-         for (unsigned k = j + 1; k != dim - 1; ++k)
+         for (int k = j + 1; k != dim - 1; ++k)
          {
             p[k] = c[k] - r[k];
 
-            for (unsigned l = k + 1; l != dim; ++l)
+            for (int l = k + 1; l != dim; ++l)
             {
                // Process 2^4=16 Points defined by changing the sign of r in
                // position i, j, k and l.
@@ -129,13 +140,16 @@ real L::OrbitRule::evalRRRR0_0fs (Integrand &f, const real*c, const real* r)
 
 
 /**
+ *  eval R_R fs ()
+ *
  *  Evaluate the integral on all 2^n points (+/-r,...+/-r)
  *
  *  A gray-code ordering is used to minimize the number of coordinate updates
  *  in p.
  */
 
-real L::OrbitRule::evalR_Rfs (Integrand &f, const real* c, const real* r)
+L::real
+L::OrbitRule::evalR_Rfs (Integrand &f, const real* c, const real* r)
 {
    real sum = 0;
 
@@ -148,7 +162,7 @@ real L::OrbitRule::evalR_Rfs (Integrand &f, const real* c, const real* r)
    // We start with the point where r is ADDed in every coordinate
    //   (This implies signs=0)
 
-   for (unsigned i = 0; i != dim; ++i)   p [i] = c [i] + r [i];
+   for (int i = 0; i != dim; ++i)   p [i] = c [i] + r [i];
 
    // Loop through the points in gray-code ordering
 
@@ -160,7 +174,7 @@ real L::OrbitRule::evalR_Rfs (Integrand &f, const real* c, const real* r)
 
       // determine, which sign has to be flipped
 
-      unsigned d = ls0(i);
+      int d = ls0(i);
 
       // Do we have this coordinate? If not, we are done.
 
@@ -182,7 +196,7 @@ real L::OrbitRule::evalR_Rfs (Integrand &f, const real* c, const real* r)
 
 
 /**
- *  eval3powS ()
+ *  eval 3 pow S ()
  *
  *
  *  Evaluate  f  at the 3^dim points  (r_i_1,...,r_i_dim) with
@@ -197,41 +211,39 @@ real L::OrbitRule::evalR_Rfs (Integrand &f, const real* c, const real* r)
  *  enumerating the abscissas in base-3 Gray-code order would be faster.
  */
 
-real L::OrbitRule::eval3powS (
+L::real
+L::OrbitRule::eval3powS (
       Integrand &f, const real* c, const real* r, real w0, real w1)
 {
    real sum = 0;
-   Counter counter (dim, 3);
+   GrayCounter counter (dim, 3);
+   real weights [std::numeric_limits<Index>::digits];
+   weights[dim] = 1.0;
+   setCenter (c);
+   int pos = dim - 1;
 
-   do
+   for(;;)
    {
-      real weight = 1.0;
-
-      for (unsigned d = 0; d < dim; ++d)
+      for (int i = pos; i >= 0; --i)
       {
-         switch (counter[d])
-         {
-         case 0:
-            p[d] = c[d] - r[d];
-            weight *= w1;
-            break;
-         case 1:
-            p[d] = c[d];
-            weight *= w0;
-            break;
-         case 2:
-            p[d] = c[d] + r[d];
-            weight *= w1;
-            break;
-         }
+         weights[i] = (counter[i] ? w1 : w0) * weights[i + 1];
       }
 
-      sum += weight * f(p);
+      sum += weights[0] * f(p);
+
+      unsigned newDigit;
+      pos = counter.nextDigit(&newDigit);
+
+      if (pos == dim)  break;
+
+      switch (newDigit)
+      {
+      case 0: p[pos] = c[pos];          break;
+      case 1: p[pos] = c[pos] - r[pos]; break;
+      case 2: p[pos] = c[pos] + r[pos]; break;
+      }
    }
-   while (counter.next());
 
    return sum;
 }
-
-
 

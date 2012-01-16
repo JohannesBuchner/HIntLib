@@ -38,8 +38,8 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hypercube.h>
 
 
 namespace L = HIntLib;
@@ -61,15 +61,15 @@ namespace
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule3Gauss::Rule3Gauss (unsigned dim)
+L::Rule3Gauss::Rule3Gauss (int dim)
    : OrbitRule (dim), a (dim), oneDivTwoPowDim (real(1) / (Index(1) << dim))
 {
    checkDimensionNotZero (dim);
    checkDimensionLeq<std::numeric_limits<Index>::digits - 1> (dim);
 
-   #if HINTLIB_STATIC_WORKS == 0
-      r = real(1) / HINTLIB_MN sqrt(real(3));
-   #endif
+#if HINTLIB_STATIC_WORKS == 0
+   r = real(1) / HINTLIB_MN sqrt(real(3));
+#endif
 }
 
 
@@ -81,7 +81,7 @@ real L::Rule3Gauss::eval (Integrand &f, const Hypercube &h)
 {
    const real* width = h.getWidth();
 
-   for (unsigned i = 0; i < dim; ++i)  a [i] = width [i] * r;
+   for (int i = 0; i < dim; ++i)  a [i] = width [i] * r;
 
    return h.getVolume() * evalR_Rfs (f, h.getCenter(), a) * oneDivTwoPowDim;
 }

@@ -44,7 +44,7 @@ L::CubatureRuleBasedIntegrator::~CubatureRuleBasedIntegrator()
    delete factory;
 }
 
-L::CubatureRule* L::CubatureRuleBasedIntegrator::getRule (unsigned dim) const
+L::CubatureRule* L::CubatureRuleBasedIntegrator::getRule (int dim) const
 {
    return factory->create(dim);
 }
@@ -63,7 +63,7 @@ L::EmbeddedRuleBasedIntegrator::~EmbeddedRuleBasedIntegrator()
    delete factory;
 }
 
-L::EmbeddedRule* L::EmbeddedRuleBasedIntegrator::getRule (unsigned dim) const
+L::EmbeddedRule* L::EmbeddedRuleBasedIntegrator::getRule (int dim) const
 {
    return factory->create(dim);
 }

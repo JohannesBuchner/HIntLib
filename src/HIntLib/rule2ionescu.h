@@ -49,15 +49,15 @@ namespace HIntLib
    class Rule2Ionescu : public CubatureRule
    {
    public:
-      Rule2Ionescu (unsigned dim);
+      Rule2Ionescu (int dim);
 
       virtual real eval (Integrand &, const Hypercube &);
 
-      virtual unsigned getDimension()  const  { return 2; }
-      virtual Index getNumPoints()     const  { return 6; }
-      virtual unsigned getDegree()     const  { return 2; }
-      virtual bool isAllPointsInside() const  { return true; }
-      virtual real getSumAbsWeight()   const  { return 1.0; }
+      virtual int   getDimension()      const  { return 2; }
+      virtual Index getNumPoints()      const  { return 6; }
+      virtual int   getDegree()         const  { return 2; }
+      virtual bool  isAllPointsInside() const  { return true; }
+      virtual real  getSumAbsWeight()   const  { return 1.0; }
 
       static CubatureRuleFactory* getFactory();
    };

@@ -44,7 +44,7 @@ class GaloisField
    : public FactorField<PolynomialRing<ModularArithmeticField<B> > >
 {
 public:
-   GaloisField (unsigned base, unsigned exponent, bool xPrim = false);
+   GaloisField (unsigned base, int exponent, bool xPrim = false);
    GaloisField (unsigned size, bool xPrim = false);
 
 private:
@@ -53,7 +53,7 @@ private:
    typedef FactorField<Poly> ExtensionField;
    typedef typename Poly::type T;
 
-   T findPoly (unsigned base, unsigned exponent, bool xPrim);
+   T findPoly (unsigned base, int exponent, bool xPrim);
    T findPoly (unsigned size, bool xPrim);
 };
 

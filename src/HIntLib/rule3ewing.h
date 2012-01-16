@@ -49,15 +49,15 @@ namespace HIntLib
    class Rule3Ewing : public CubatureRule, private OrbitRule
    {
    public:
-      Rule3Ewing (unsigned dim);
+      Rule3Ewing (int dim);
 
       virtual real eval (Integrand &, const Hypercube &);
 
-      virtual unsigned getDimension()   const { return dim; }
-      virtual Index getNumPoints ()     const { return numR_Rfs() + 1; }
-      virtual unsigned getDegree ()     const { return 3; }
-      virtual bool isAllPointsInside () const { return true; }
-      virtual real getSumAbsWeight ()   const { return 1.0; }
+      virtual int   getDimension()      const  { return dim; }
+      virtual Index getNumPoints()      const  { return numR_Rfs() + 1; }
+      virtual int   getDegree()         const  { return 3; }
+      virtual bool  isAllPointsInside() const  { return true; }
+      virtual real  getSumAbsWeight()   const  { return 1.0; }
 
       static CubatureRuleFactory* getFactory();
  

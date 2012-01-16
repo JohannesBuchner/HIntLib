@@ -24,9 +24,9 @@
 #include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
+#  include <sstream>
 #else
-  #include <HIntLib/fallback_sstream.h>
+#  include <HIntLib/fallback_sstream.h>
 #endif
 
 enum Type { ASCII = 1, LATIN1 = 2, WGL4 = 3, UNICODE = 4 };

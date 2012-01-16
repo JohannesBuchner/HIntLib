@@ -25,10 +25,18 @@
 #include <HIntLib/defaults.h>
 
 #if defined(HINTLIB_HAVE_OSTREAM) && defined(HINTLIB_HAVE_ISTREAM)
-  #include <ostream>
-  #include <istream>
+#  include <ostream>
+#  include <istream>
 #else
-  #include <iostream>
+#  include <iostream>
+#endif
+
+#ifdef HINTLIB_HAVE_CSTRING
+#  include <cstring>
+#  define HINTLIB_SSN std::
+#else
+#  include <string.h>
+#  define HINTLIB_SSN
 #endif
 
 #include <iomanip>
@@ -67,40 +75,40 @@ L::loadLibSeq (std::istream &str)
 
    t.expectName (keyBeginMatrix);
 
-   unsigned base = 0, dim = 0, prec = 0;
+   int base = 0, dim = 0, prec = 0;
 
    for (;;)
    {
       t.expectName ();
       const char* token = t.getName();
 
-      if (strcmp (token, keyName) == 0)
+      if (HINTLIB_SSN strcmp (token, keyName) == 0)
       {
          t.ignoreLine();
       }
-      else if (strcmp (token, keyRingName) == 0)
+      else if (HINTLIB_SSN strcmp (token, keyRingName) == 0)
       {
          t.ignoreLine();
       }
-      else if (strcmp (token, keyBase) == 0)
+      else if (HINTLIB_SSN strcmp (token, keyBase) == 0)
       {
          t.expectNumber ();
          if (base != 0)  t.throwException ("C_MATRIX_RING_CARD defined twice");
          base = t.getNumber();
       }
-      else if (strcmp (token, keyPrecision) == 0)
+      else if (HINTLIB_SSN strcmp (token, keyPrecision) == 0)
       {
          t.expectNumber ();
          if (prec != 0)  t.throwException ("DIGIT_ACCURACY defined twice");
          prec = t.getNumber();
       }
-      else if (strcmp (token, keyDimension) == 0)
+      else if (HINTLIB_SSN strcmp (token, keyDimension) == 0)
       {
          t.expectNumber ();
          if (dim != 0)  t.throwException ("MAX_DIMENSION defined twice");
          dim = t.getNumber();
       }
-      else if (strcmp (token, keyBeginDim) == 0)
+      else if (HINTLIB_SSN strcmp (token, keyBeginDim) == 0)
       {
          t.putBack ();
          break;
@@ -112,13 +120,13 @@ L::loadLibSeq (std::istream &str)
    if (dim == 0)   t.throwException ("MAX_DIMENSION missing");
    if (prec == 0)  t.throwException ("DIGIT_ACCURACY missing");
 
-   unsigned m = 0;
+   int m = 0;
 
    GeneratorMatrixGen<unsigned char>* gm = 0;
 
    try
    {
-      for (unsigned d = 0; d < dim; ++d)
+      for (int d = 0; d < dim; ++d)
       {
          t.expectName (keyBeginDim);
          t.expectNumber ();
@@ -127,7 +135,7 @@ L::loadLibSeq (std::istream &str)
             t.throwException ("Another dimension expected");
          }
 
-         for (unsigned b = 0; b < prec; ++b)
+         for (int b = 0; b < prec; ++b)
          {
             if (d == 0 && b == 0)
             {
@@ -135,7 +143,7 @@ L::loadLibSeq (std::istream &str)
 
                while (t.next() == Tokenizer::NUMBER)
                {
-                  unsigned x = t.getNumber();
+                  int x = t.getNumber();
                   if (x >= base)  t.throwException ("Entry larger than base");
                   v.push_back (x);
                }
@@ -146,14 +154,14 @@ L::loadLibSeq (std::istream &str)
                m = v.size();
                gm = new GeneratorMatrixGen<unsigned char> (base, dim, m, prec);
 
-               for (unsigned r = 0; r < m; ++r)  gm->setd (d, r, b, v[r]);
+               for (int r = 0; r < m; ++r)  gm->setd (d, r, b, v[r]);
             }
             else
             {
-               for (unsigned r = 0; r < m; ++r)
+               for (int r = 0; r < m; ++r)
                {
                   t.expectNumber ();
-                  unsigned x = t.getNumber();
+                  int x = t.getNumber();
                   if (x >= base)  t.throwException ("Entry larger than base");
                   gm->setd (d, r, b, x);
                }
@@ -190,13 +198,13 @@ void L::GeneratorMatrix::libSeqExport (std::ostream &o) const
       keyPrecision  << ' ' << getPrec() << '\n' <<
       keyDimension  << ' ' << getDimension() << "\n\n";
 
-   for (unsigned d = 0; d < getDimension(); ++d)
+   for (int d = 0; d < getDimension(); ++d)
    {
       o << keyBeginDim << ' ' << d << '\n';
 
-      for (unsigned b = 0; b < getPrec(); ++b)
+      for (int b = 0; b < getPrec(); ++b)
       {
-         for (unsigned r = 0; r < getM(); ++r)
+         for (int r = 0; r < getM(); ++r)
          {
             o << getDigit (d, r, b) << ' ';
          }

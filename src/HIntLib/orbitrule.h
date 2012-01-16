@@ -24,8 +24,8 @@
  *  Baseclass for all Cubature Rules using some kind of orbits as abscissa sets
  */
 
-#ifndef HINTLIB_ORBITRULE_H
-#define HINTLIB_ORBITRULE_H 1
+#ifndef HINTLIB_ORBIT_RULE_H
+#define HINTLIB_ORBIT_RULE_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -44,68 +44,71 @@ namespace HIntLib
 
 class OrbitRule
 {
-public:
-   OrbitRule (unsigned dim) : dim(dim), p(dim) {}
-
 protected:
+   OrbitRule (int dim) : dim(dim), p(dim) {}
+
+   // No copy constructor or assignment, because these operations are private
+   // for Point
 
    class Scaler
    {
    public:
       Scaler (const real* w, real s) : scale(s), width(w) {}
-      real operator[] (unsigned i) const { return width[i] * scale; }
+      real operator[] (int i) const { return width[i] * scale; }
    private:
       const real scale;
       const real *width;
    };
 
-   // define some methods that are used for evaluating the integrand on
-   // certain (fully) symmetric point sets
-
-   real eval0_0      (Integrand &f);
-   template<class T>
-   real evalR0_0fs   (Integrand &f, const real* c, T r);
-   real evalR0_0fs   (Integrand &f, const real* c, Point& a);
-   template<class T1, class T2>
-   unsigned evalR0_0fs4d (Integrand &f, const real* c,
-      real &sum0, T1 r1, real &sum1, T2 r2, real &sum2);
-   real evalRR0_0fs  (Integrand &f, const real* c, const real* r);
-   real evalRS0_0fs  (Integrand &f, const real* c,
-                                   const real* r, const real* s);
-   real evalRRR0_0fs (Integrand &f, const real* c, const real* r);
-   real evalRRRR0_0fs(Integrand &f, const real* c, const real* r);
-   real evalRR0_0s   (Integrand &f, const real* c, const real* r);
-   real evalRS0_0s   (Integrand &f, const real* c,
-                                   const real* r, const real* s);
-   real evalR_Rfs    (Integrand &f, const real* c, const real* r);
-   real eval3powS    (Integrand &f, const real* c, const real* r,
-                                    real w0, real w1);
+   // Sets p to the given center.
+   // This method must be called before any of the following evalXXX() methods
+   // are used.
 
    void setCenter (const real* center);
 
+   // define some methods that are used for evaluating the integrand on
+   // certain (fully) symmetric point sets.
+
+   real eval0_0      (Integrand &);
+   template<class T>
+   real evalR0_0fs   (Integrand &, const real*, T r);
+   real evalR0_0fs   (Integrand &, const real*, Point& a);
+   template<class T1, class T2>
+   int evalR0_0fs4d (Integrand &, const real*,
+      real &sum0, T1 r1, real &sum1, T2 r2, real &sum2);
+   real evalRR0_0fs  (Integrand &, const real*, const real*);
+   real evalRS0_0fs  (Integrand &, const real*, const real*, const real*);
+   real evalRRR0_0fs (Integrand &, const real*, const real*);
+   real evalRRRR0_0fs(Integrand &, const real*, const real*);
+   real evalRR0_0s   (Integrand &, const real*, const real*);
+   real evalRS0_0s   (Integrand &, const real*, const real*, const real*);
+   real evalR_Rfs    (Integrand &, const real*, const real*);
+   real eval3powS    (Integrand &, const real*, const real*, real w0, real w1);
+
    // The following functions calculate the number of sampling points used
-   // in each of these cubature formulas
+   // in each of these cubature formulas.
 
-   // The formulas are structured sucht that none of the intermediate results
-   // may overflow
+   // The formulas are structured such that none of the intermediate results
+   // can overflow.
 
-   Index num0_0      () const { return Index(1); }
-   Index numR0_0fs   () const { return Index(2) * dim; }
-   Index numRR0_0fs  () const { return Index(2) * dim * (dim-1); }
-   Index numRS0_0fs  () const { return Index(4) * dim * (dim-1); }
-   Index numRRR0_0fs () const { return Index(dim) * (dim-1) * (dim-2) / 3 * 4; }
-   Index numRRRR0_0fs() const
+   Index num0_0       () const { return Index(1); }
+   Index numR0_0fs    () const { return Index(2) * dim; }
+   Index numRR0_0fs   () const { return Index(2) * dim * (dim-1); }
+   Index numRS0_0fs   () const { return Index(4) * dim * (dim-1); }
+   Index numRRR0_0fs  () const
+      { return Index(dim) * (dim-1) * (dim-2) / 3 * 4; }
+   Index numRRRR0_0fs () const
       { return Index(dim) * (dim-1) * (dim-2) / 3 * (dim-3) * 2; }
-   Index numRR0_0s   () const
+   Index numRR0_0s    () const
       { return (dim & 1) ? Index(dim) * ((dim-1) / 2) 
                          : Index(dim / 2) * (dim-1); }
-   Index numRS0_0s   () const { return Index(dim) * (dim-1); }
-   Index numR_Rfs    () const { return Index(1) << dim; }
-   Index num3powS    () const { return powInt (3, dim); }
+   Index numRS0_0s    () const { return Index(dim) * (dim-1); }
+   Index numR_Rfs     () const { return Index(1) << dim; }
+   Index num3powS     () const { return powInt (Index(3), dim); }
 
 protected:
 
-   const unsigned dim;
+   const int dim;
    mutable Point p;
 };
 
@@ -119,7 +122,7 @@ inline
 void
 HIntLib::OrbitRule::setCenter (const real* center)
 {
-   for (unsigned i = 0; i != dim; ++i)  p[i] = center[i];
+   for (int i = 0; i != dim; ++i)  p[i] = center[i];
 }
 
 inline
@@ -136,7 +139,7 @@ HIntLib::OrbitRule::evalR0_0fs (Integrand &f, const real* c, const T r)
 {
    real sum = 0;
 
-   for (unsigned i = 0; i != dim; ++i)
+   for (int i = 0; i != dim; ++i)
    {
       p[i] = c[i] + r[i]; sum += f(p);
       p[i] = c[i] - r[i]; sum += f(p);
@@ -155,13 +158,13 @@ HIntLib::OrbitRule::evalR0_0fs (Integrand &f, const real* c, Point& a)
 
 template<class T1, class T2>
 inline
-unsigned
+int
 HIntLib::OrbitRule::evalR0_0fs4d (
    Integrand &f, const real* c,
    real &sum0_, T1 r1, real &sum1, T2 r2, real &sum2)
 {
    MaxFinder<real> mf;
-   unsigned dimDiffMax = 0;
+   int dimDiffMax = 0;
 
    // Keep a local sum0
    // This is required in the case that sum0 and sum1/sum2 reference the same
@@ -173,7 +176,7 @@ HIntLib::OrbitRule::evalR0_0fs4d (
    real ratio = r1[0] / r2[0];
    ratio *= ratio;
 
-   for (unsigned i = 0; i < dim; i++)
+   for (int i = 0; i < dim; i++)
    {
       real f1a, f1b, f2a, f2b;
  
@@ -199,11 +202,11 @@ HIntLib::OrbitRule::evalRR0_0fs (Integrand &f, const real*c, const real* r)
 {
    real sum = 0;
 
-   for (unsigned i = 0; i != dim - 1; ++i)
+   for (int i = 0; i != dim - 1; ++i)
    {
       p[i] = c[i] - r[i];
 
-      for (unsigned j = i + 1; j != dim; ++j)
+      for (int j = i + 1; j != dim; ++j)
       {
          p[j] = c[j] - r[j]; sum += f(p);
          p[i] = c[i] + r[i]; sum += f(p);
@@ -225,11 +228,11 @@ HIntLib::OrbitRule::evalRS0_0fs (
 {
    real sum = 0;
  
-   for (unsigned i = 0; i != dim; ++i)
+   for (int i = 0; i != dim; ++i)
    {
       p[i] = c[i] - r[i];
 
-      for (unsigned j = 0; j != dim; ++j)
+      for (int j = 0; j != dim; ++j)
       {
          if (i != j)
          {
@@ -254,11 +257,11 @@ HIntLib::OrbitRule::evalRR0_0s (Integrand &f, const real*c, const real* r)
 {
    real sum = 0;
 
-   for (unsigned i = 0; i != dim - 1; ++i)
+   for (int i = 0; i != dim - 1; ++i)
    {
       p[i] = c[i] + r[i];
 
-      for (unsigned j = i + 1; j != dim; ++j)
+      for (int j = i + 1; j != dim; ++j)
       {
          p[j] = c[j] + r[j]; sum += f(p);
          p[j] = c[j];
@@ -276,11 +279,11 @@ HIntLib::OrbitRule::evalRS0_0s (
 {
    real sum = 0;
 
-   for (unsigned i = 0; i != dim; ++i)
+   for (int i = 0; i != dim; ++i)
    {
       p[i] = c[i] + r[i];
 
-      for (unsigned j = 0; j != dim; ++j)
+      for (int j = 0; j != dim; ++j)
       {
          if (i != j)
          {

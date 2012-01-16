@@ -24,8 +24,8 @@
  *  Shifts and scales a point in space
  */
 
-#ifndef HINTLIB_SHIFTSCALE_H
-#define HINTLIB_SHIFTSCALE_H 1
+#ifndef HINTLIB_SHIFT_SCALE_H
+#define HINTLIB_SHIFT_SCALE_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -76,7 +76,7 @@ private:
 class ShiftScale
 {
 public:
-   explicit ShiftScale (unsigned dim);
+   explicit ShiftScale (int dim);
    
    ShiftScale (const Hypercube &);
    ShiftScale (const Hypercube &, real ub);
@@ -88,7 +88,7 @@ public:
    void set (const Hypercube &, real lb, real ub);
    void set (const Hypercube &, const Hypercube &);
 
-   const ShiftScale1& operator[] (unsigned i) const  { return t[i]; }
+   const ShiftScale1& operator[] (int i) const  { return t[i]; }
 private:
    Array<ShiftScale1> t;
 };

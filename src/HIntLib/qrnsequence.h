@@ -24,8 +24,8 @@
  *  This is the abstract base class for Quasi Random Number sequences.
  */
   
-#ifndef HINTLIB_QRNSEQUENCE_H
-#define HINTLIB_QRNSEQUENCE_H 1
+#ifndef HINTLIB_QRN_SEQUENCE_H
+#define HINTLIB_QRN_SEQUENCE_H 1
 
 #include <HIntLib/defaults.h>
 

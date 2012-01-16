@@ -25,9 +25,9 @@
 #include <HIntLib/hlmath.h>
 
 #ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
+#  include <sstream>
 #else
-  #include <HIntLib/fallback_sstream.h>
+#  include <HIntLib/fallback_sstream.h>
 #endif
 
 #include <HIntLib/exception.h>
@@ -109,8 +109,8 @@ struct CacheBase
    unsigned numUnits;
    unsigned numNilpotents;
    unsigned characteristic;
-   unsigned extensionDegree;
-   unsigned dimension;
+   int extensionDegree;
+   int dimension;
    unsigned baseSize;
 
    // one element
@@ -2494,7 +2494,7 @@ void doTest (Cache<R>& c, gf_tag)
 
    doTest (c, field_tag());
 
-   unsigned extensionDegree = c().extensionDegree();
+   int extensionDegree = c().extensionDegree();
 
    DEB1  COUT << "  Degree: " << extensionDegree << endl;
 
@@ -2616,7 +2616,7 @@ void doTest (Cache<V>& c, vectorspace_tag)
    T x = T();
    c().toCoord (x, &coords[0]);
 
-   for (unsigned i = 0; i < c.dimension; ++i)
+   for (int i = 0; i < c.dimension; ++i)
    {
       if (! alg.is0 (coords[i]))  error ("zero has non-zero coordinates");
    }
@@ -2642,7 +2642,7 @@ void doTest (Cache<V>& c, const typename V::type& a, vectorspace_tag)
    DEB2
    {
       COUT << ", coord = [";
-      for (unsigned i = 0; i < c.dimension; ++i)
+      for (int i = 0; i < c.dimension; ++i)
       {
          if (i > 0)  COUT << ';';
          alg.printShort (COUT, coords[i]);
@@ -2650,7 +2650,7 @@ void doTest (Cache<V>& c, const typename V::type& a, vectorspace_tag)
       COUT << ']';
    }
 
-   for (unsigned i = 0; i < c.dimension; ++i)
+   for (int i = 0; i < c.dimension; ++i)
    {
       checkIndex (c.baseSize, alg.index(coords[i]), "coords");
       if (! (coords[i] == c().coord(a,i)))
@@ -2670,7 +2670,7 @@ void doTest (Cache<V>& c, const typename V::type& a, vectorspace_tag)
    // coords()
 
    b = T();
-   for (unsigned i = 0; i < c.dimension; ++i)  c().coord(b, i) = coords[i];
+   for (int i = 0; i < c.dimension; ++i)  c().coord(b, i) = coords[i];
    if (! (a == b))  error ("Assignment to coord() broken");
 
    b = T();
@@ -2692,7 +2692,7 @@ void doTest (Cache<V>& c, const typename V::type& a, vectorspace_tag)
    //  neg()
 
    b = c.neg;
-   for (unsigned i = 0; i < c.dimension; ++i)
+   for (int i = 0; i < c.dimension; ++i)
    {
       if (! (c().coord(b,i) == alg.neg (c().coord(a,i))))
       {
@@ -2713,7 +2713,7 @@ void doTest (Cache<V>& c, const typename V::type& a, vectorspace_tag)
 
          b = c().mul (a, scal);
 
-         for (unsigned i = 0; i < c.dimension; ++i)
+         for (int i = 0; i < c.dimension; ++i)
          {
             if (! (c().coord(b,i) == alg.mul (c().coord(a,i), scal)))
             {
@@ -2770,7 +2770,7 @@ void doTest
 
    // add()
 
-   for (unsigned i = 0; i < c.dimension; ++i)
+   for (int i = 0; i < c.dimension; ++i)
    {
       if (! (c().coord(c.add, i) == alg.add (c().coord(a,i), c().coord(b,i))))
       {

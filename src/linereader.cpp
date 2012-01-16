@@ -23,9 +23,17 @@
 #include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
+#  include <sstream>
 #else
-  #include <HIntLib/fallback_sstream.h>
+#  include <HIntLib/fallback_sstream.h>
+#endif
+
+#ifdef HINTLIB_HAVE_CSTRING
+#  include <cstring>
+#  define HINTLIB_SSN std::
+#else
+#  include <string.h>
+#  define HINTLIB_SSN
 #endif
 
 #include <HIntLib/linereader.h>
@@ -195,7 +203,7 @@ L::Tokenizer::expectName ()
 void
 L::Tokenizer::expectName (const char* name)
 {
-   if (next() != NAME || strcmp (getName(), name) != 0)
+   if (next() != NAME || HINTLIB_SSN strcmp (getName(), name) != 0)
    {
       std::ostringstream ss;
       ss << "Expected name \"" << name << "\" not found";

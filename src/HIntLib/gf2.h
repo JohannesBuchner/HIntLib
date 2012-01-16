@@ -39,7 +39,7 @@ namespace HIntLib
 /**
  *  GF2
  *
- *  The field with two elements - 0 and 1.
+ *  The field with two elements, 0 and 1.
  */
 
 class GF2 : public BitOpBasedAddition<unsigned char>

@@ -51,16 +51,16 @@ namespace HIntLib
 class Integrand
 {
 public:
-   explicit Integrand (unsigned dim) : dim (dim) {}
+   explicit Integrand (int dim) : dim (dim) {}
    virtual ~Integrand () {};
 
    virtual real operator() (const real []) = 0;    // evaluate Integrand
-   virtual real derivative (const real [], unsigned);
+   virtual real derivative (const real [], int);
 
-   unsigned getDimension () const  { return dim; }
+   int getDimension () const  { return dim; }
 
 protected:
-   const unsigned dim;
+   const int dim;
 };
 
 }  // namespace HIntLib

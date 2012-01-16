@@ -40,7 +40,7 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
+#include <HIntLib/hypercube.h>
 #include <HIntLib/exception.h>
 
 
@@ -54,7 +54,7 @@ using L::Index;
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule9Stenger::Rule9Stenger (unsigned dim)
+L::Rule9Stenger::Rule9Stenger (int dim)
    : OrbitRule (dim), aU (dim), aV (dim)
 {
    // Check for valid dimension
@@ -79,9 +79,9 @@ L::Rule9Stenger::Rule9Stenger (unsigned dim)
    const real u4 = sqr(u2); real v4 = sqr(v2);
    const real u8 = sqr(u4); real v8 = sqr(v4);
 
-   const real dimMin1 = int(dim) - 1;
-   const real dimMin2 = int(dim) - 2;
-   const real dimMin3 = int(dim) - 3;
+   const real dimMin1 = dim - 1;
+   const real dimMin2 = dim - 2;
+   const real dimMin3 = dim - 3;
 
    weightF = real(1) / (real(525) * u2 * v2 * sqr(u2MinV2));
 
@@ -178,7 +178,7 @@ real L::Rule9Stenger::eval (Integrand &f, const Hypercube &h)
    // Calculate offsets from the center for points U and V
 
    const real* width = h.getWidth();
-   for (unsigned i = 0; i != dim; ++i)
+   for (int i = 0; i != dim; ++i)
    {
       aU [i] = width [i] * rU;
       aV [i] = width [i] * rV;

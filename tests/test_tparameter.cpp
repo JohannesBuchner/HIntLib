@@ -26,11 +26,11 @@
 #include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_CSTDLIB
-  #include <cstdlib>
-  #define HINTLIB_SLN std::
+#  include <cstdlib>
+#  define HINTLIB_SLN std::
 #else
-  #include <stdlib.h>
-  #define HINTLIB_SLN
+#  include <stdlib.h>
+#  define HINTLIB_SLN
 #endif
 
 #include <HIntLib/make.h>
@@ -53,8 +53,12 @@ const char option_msg[] =
    "  -e     Add equidistributed coordinate\n"
    "  -r     Test restricted t parameter\n"
    "  -b     Do tests without optimized bounds\n"
-   "  -m n   Maximum m (default: 25)\n"
-   "  -d n   Maximum dimension (default: 55)\n"
+   "  -m m_max\n"
+   "  -m m_min-m_max\n"
+   "         Range for m (default: 1 - 25)\n"
+   "  -d d_max\n"
+   "  -d d_min-d_max\n"
+   "         Range for the dimension (default: 1 - 55)\n"
    "  -k     Print strength instead of t-parameter\n";
 const char testProgramParameters[] = "[OPTIONS] net";
 const char testProgramUsage[] =
@@ -66,10 +70,10 @@ bool ADD_EQUI = false;
 bool RESTRICTED = false;
 bool NO_BOUNDS = false;
 bool PRINT_STRENGTH = false;
-const unsigned MIN_M = 1;
-const unsigned MIN_S = 1;
-unsigned MAX_S = 55 + 1;
-unsigned MAX_M = 25 + 1;
+int MIN_M = 1;
+int MIN_S = 1;
+int MAX_S = 55;
+int MAX_M = 25;
 
 bool opt(int c, const char* s)
 {
@@ -78,8 +82,8 @@ bool opt(int c, const char* s)
    case 'e':  ADD_EQUI = true; return true;
    case 'r':  RESTRICTED = true; return true;
    case 'b':  NO_BOUNDS = true; return true;
-   case 'm':  MAX_M = HINTLIB_SLN atoi (s) + 1; return true;
-   case 'd':  MAX_S = HINTLIB_SLN atoi (s) + 1; return true;
+   case 'm':  parseRange (s, MIN_M, MIN_M, MAX_M); return true;
+   case 'd':  parseRange (s, MIN_S, MIN_S, MAX_S); return true;
    case 'k':  PRINT_STRENGTH = true; return true;
    }
 
@@ -97,7 +101,7 @@ typedef GeneratorMatrixGen<unsigned char> Matrix;
  */
 
 void determineT (
-      unsigned s, unsigned m, const Matrix& matrix, int* t_matrix,
+      int s, int m, const Matrix& matrix, int* t_matrix,
       const Matrix* lowDimMatrix)
 {
    int ub = m;  // trivial upper bound
@@ -106,7 +110,10 @@ void determineT (
    // With some thought, you see that it also works for the
    // equidistributed case.
 
-   if (t_matrix [(m-1) * MAX_S + s] >= 0) ub = t_matrix [(m-1) * MAX_S + s] + 1;
+   if (t_matrix [(m-1) * (MAX_S + 1) + s] >= 0)
+   {
+      ub = t_matrix [(m-1) * (MAX_S + 1) + s] + 1;
+   }
 
    int lb = 0;  // trivial lower bound
    TOption opts = DEFAULT;
@@ -123,7 +130,7 @@ void determineT (
       {
          // t cannot decrease compared to s-1
 
-         lb = std::max (lb, t_matrix [m * MAX_S + (s-1)]);
+         lb = std::max (lb, t_matrix [m * (MAX_S + 1) + (s-1)]);
          opts = LOWER_DIM_OK;
       }
    }
@@ -131,7 +138,7 @@ void determineT (
    Matrix g (DiscardDimensions (s, NetFromSequence (m, ADD_EQUI,
                            AdjustPrec (m, matrix))));
 
-   int t = t_matrix [m * MAX_S + s] = tParameter (g, lb, ub, opts);
+   int t = t_matrix [m * (MAX_S + 1) + s] = tParameter (g, lb, ub, opts);
 
    if (NO_BOUNDS)
    {
@@ -142,16 +149,16 @@ void determineT (
 
    if (RESTRICTED)
    {
-      Array<int> t_restricted (MAX_M + 1);
+      Array<int> t_restricted (MAX_M + 2);
 
-      for (unsigned i = 0; i <= m; ++i)
+      for (int i = 0; i <= m; ++i)
       {
           t_restricted [i] = tParameterRestricted (g, 0, m, i, DEFAULT);
       }
 
       if (t_restricted[0] != 0)  error ("t_res(0) != 0");
       if (t_restricted[m] != t)  error ("t_res(m) != t");
-      for (unsigned i = 0; i < m; ++i)
+      for (int i = 0; i < m; ++i)
       {
          if (t_restricted[i] > t_restricted[i+1])
          {
@@ -162,7 +169,7 @@ void determineT (
       NORMAL
       {
          cout << setw(3) << s << setw(3) << m << setw(4) << t;
-         for (unsigned i = 0; i <= m; ++i)
+         for (int i = 0; i <= m; ++i)
          {
             cout << setw(3) << t_restricted[i];
          }
@@ -189,20 +196,20 @@ void test (int argc, char** argv)
    char* endptr; 
    int matrixNumber = HINTLIB_SLN strtol (argv[0], &endptr, 10);
 
-   Array<Matrix*> matrices (MAX_S, 0);    // The fullsized matrix for each s
-   Array<int> t_matrix (MAX_S * MAX_M, -1);
+   Array<Matrix*> matrices (MAX_S + 1, 0);    // The fullsized matrix for each s
+   Array<int> t_matrix ((MAX_S + 1) * (MAX_M + 1), -1);
 
    if (endptr != argv[0] && *endptr == '\0')
    { 
       NORMAL cout << Make::getGeneratorMatrixGenName (matrixNumber) << "\n\n";
       NORMAL if (! RESTRICTED)  cout << "   s=";
 
-      for (unsigned s = MIN_S; s < MAX_S; ++s)
+      for (int s = MIN_S; s <= MAX_S; ++s)
       {
          try
          {
             matrices [s]
-               = Make::generatorMatrixGen (matrixNumber, s - ADD_EQUI);
+               = Make::generatorMatrixGen (matrixNumber, s - ADD_EQUI, MAX_M);
             NORMAL if (! RESTRICTED)  cout << setw(3) << s << flush;
          }
          catch (InvalidDimension &)
@@ -224,9 +231,9 @@ void test (int argc, char** argv)
       NORMAL cout << "Matrix from file '" << argv[0] << "'\n\n";
       NORMAL if (! RESTRICTED)  cout << "   s=";
 
-      for (unsigned s = MIN_S; s < MAX_S; ++s)
+      for (int s = MIN_S; s <= MAX_S; ++s)
       {
-         unsigned ss = s - ADD_EQUI;
+         int ss = s - ADD_EQUI;
 
          if (ss <= gm->getDimension())
          {
@@ -246,11 +253,11 @@ void test (int argc, char** argv)
       }
    }
 
-   for (unsigned m = MIN_M; m < MAX_M; ++m)
+   for (int m = MIN_M; m <= MAX_M; ++m)
    {
       NORMAL if (! RESTRICTED)  cout << "m=" << setw(2) << m << ' ';
 
-      for (unsigned s = MIN_S; s < MAX_S; ++s)
+      for (int s = MIN_S; s <= MAX_S; ++s)
       {
          Matrix* matrix = matrices [s];
 
@@ -266,6 +273,6 @@ void test (int argc, char** argv)
       NORMAL  if (! RESTRICTED)  cout << endl;
    }
 
-   purge (&matrices[0], &matrices[MAX_S]);
+   purge (&matrices[0], &matrices[MAX_S + 1]);
 }
 

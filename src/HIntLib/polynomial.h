@@ -1005,7 +1005,7 @@ private:
 public:
    typedef typename PRBA<A>::type type;
    typedef typename PRBA<A>::coeff_type unit_type;
-   typedef std::vector<std::pair<type,unsigned> > Factorization;
+   typedef std::vector<std::pair<type,int> > Factorization;
 
    typedef polyoverfield_tag algebra_category;
    typedef noprimedetection_tag primedetection_category;

@@ -24,8 +24,8 @@
  *  Templates for executing the inner loop of Monte Carlo integration routines
  */
 
-#ifndef HINTLIB_MCINTEGRATION_H
-#define HINTLIB_MCINTEGRATION_H 1
+#ifndef HINTLIB_MC_INTEGRATION_H
+#define HINTLIB_MC_INTEGRATION_H 1
 
 #include <HIntLib/defaults.h>
 

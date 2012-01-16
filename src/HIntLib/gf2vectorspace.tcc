@@ -39,7 +39,7 @@ HIntLib::GF2VectorSpace<T>::printShort (std::ostream& o, const type& v) const
    Private::Printer ss (o);
 
    ss << '(';
-   for (unsigned i = 0; i < dim; ++i)
+   for (int i = 0; i < dim; ++i)
    {
       if (i > 0)  ss << ',';
       ss << unsigned (coord(v, i));
@@ -55,7 +55,7 @@ HIntLib::GF2VectorSpace<T>::printShort (std::wostream& o, const type& v) const
    Private::WPrinter ss (o);
 
    ss << L'(';
-   for (unsigned i = 0; i < dim; ++i)
+   for (int i = 0; i < dim; ++i)
    {
       if (i > 0)  ss << L',';
       ss << unsigned (coord(v, i));

@@ -38,8 +38,8 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hypercube.h>
 
 
 namespace L = HIntLib;
@@ -51,7 +51,7 @@ using L::real;
  *  constaints
  */
 
-L::Rule3Ewing::Rule3Ewing (unsigned dim)
+L::Rule3Ewing::Rule3Ewing (int dim)
    : OrbitRule (dim),
      b1 (real(1) / (real(3) * real (Index(1) << dim)))
 {

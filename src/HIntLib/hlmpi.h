@@ -19,17 +19,17 @@
  */
 
 
-#ifndef HINTLIB_HLMPI_H
-#define HINTLIB_HLMPI_H 1
+#ifndef HINTLIB_HL_MPI_H
+#define HINTLIB_HL_MPI_H 1
 
 #include <mpi.h>
 
 #include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_LIMITS
-  #include <limits>
+#  include <limits>
 #else
-  #include <HIntLib/fallback_limits.h>
+#  include <HIntLib/fallback_limits.h>
 #endif
 
 #define HINTLIB_PARALLEL 1

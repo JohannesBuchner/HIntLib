@@ -59,8 +59,8 @@ bool opt (int c, const char* s)
 {
    switch (c)
    {
-   case 'x':  SEED = atoi (s); return true;
-   case 'n':  NUM_TESTS = atoi (s); return true;
+   case 'x':  SEED = parseInt (s); return true;
+   case 'n':  NUM_TESTS = parseInt (s); return true;
    }
 
    return false;
@@ -72,13 +72,13 @@ bool opt (int c, const char* s)
  *  printSquareMatrix()
  */
 
-void printMatrix (const unsigned char* m, unsigned numRows, unsigned numCols)
+void printMatrix (const unsigned char* m, int numRows, int numCols)
 {
    cout << '\n';
 
-   for (unsigned row = 0; row < numRows; ++row)
+   for (int row = 0; row < numRows; ++row)
    {
-      for (unsigned col = 0; col < numCols; ++col)
+      for (int col = 0; col < numCols; ++col)
       {
          cout << setw (3) << int (*m++);
       }
@@ -88,7 +88,7 @@ void printMatrix (const unsigned char* m, unsigned numRows, unsigned numCols)
 }
 
 inline
-void printSquareMatrix (const unsigned char* m, unsigned size)
+void printSquareMatrix (const unsigned char* m, int size)
 {
    printMatrix (m, size, size);
 }
@@ -101,7 +101,7 @@ void printSquareMatrix (const unsigned char* m, unsigned size)
 void doTest (const int b, const unsigned char* m, const int size)
 {
    const bool base2 = (b == 2) && (size <= 64);
-   const unsigned size2 = sqr (size);
+   const int size2 = sqr (size);
    std::auto_ptr<LinearAlgebra> la (LinearAlgebra::make (b));
 
    Array<unsigned char> temp (size2);
@@ -213,7 +213,7 @@ void doTest (const int b, const unsigned char* m, const int size)
    NORMAL cout << "Determining rank..." << flush;
 
    std::copy (m, m + size2, copy.begin());
-   unsigned rank = la->matrixRank (copy.begin(), size, size);
+   int rank = la->matrixRank (copy.begin(), size, size);
 
    NORMAL cout << rank << endl;
 
@@ -232,8 +232,7 @@ void doTest (const int b, const unsigned char* m, const int size)
                << flush;
 
    std::copy (m, m + size2, copy.begin());
-   unsigned numLi
-      = la->numLinearlyIndependentVectors (copy, size, size);
+   int numLi = la->numLinearlyIndependentVectors (copy, size, size);
 
    NORMAL cout << numLi << endl;
 
@@ -248,12 +247,12 @@ void doTest (const int b, const unsigned char* m, const int size)
 
    NORMAL cout << (indep ? "independent" : "singular") << endl;
 
-   if ((rank == unsigned (size)) != indep)
+   if ((rank == size) != indep)
    {
       error ("matrixRank() and isLinearlyIndependent() do not match");
    }
 
-   if ((numLi == unsigned (size)) != indep)
+   if ((numLi == size) != indep)
    {
       error ("numLinearlyIndependentVectors() and isLinearlyIndependent() "
              "do not match!");
@@ -273,7 +272,7 @@ void doTest (const int b, const unsigned char* m, const int size)
    NORMAL cout << "Determining basis supplement..." << flush;
 
    std::copy (m, m + size2, copy.begin());
-   unsigned bs = la->basisSupplement (copy, size, size);
+   int bs = la->basisSupplement (copy, size, size);
 
    NORMAL cout << " " << bs << " vectors valid" << endl;
    DEB1 printSquareMatrix (copy, size);
@@ -299,7 +298,7 @@ void doTest (const int b, const unsigned char* m, const int size)
    NORMAL cout << "Determining null space..." << flush;
 
    std::copy (m, m + size2, copy.begin());
-   unsigned dimNS = la->nullSpace (copy, size, size, temp);
+   int dimNS = la->nullSpace (copy, size, size, temp);
 
    NORMAL cout << " dim = " << dimNS << endl;
 
@@ -307,7 +306,7 @@ void doTest (const int b, const unsigned char* m, const int size)
 
    if (dimNS != size - rank)  error ("rank and dim(nullspace) do not match");
 
-   for (unsigned i = 0; i < dimNS; ++i)
+   for (int i = 0; i < dimNS; ++i)
    {
       la->matrixVectorMul (m, &temp[i * size], size, size, copy);
       if (! la->isZeroMatrix (copy, size, 1))
@@ -322,7 +321,7 @@ void doTest (const int b, const unsigned char* m, const int size)
 
       std::copy (m2.begin(), m2.begin() + size, copy2.begin());
 
-      unsigned dimNS2 =
+      int dimNS2 =
          nullSpace (copy2.begin(), copy2.begin() + size, size, temp2.begin());
 
       if (dimNS != dimNS2)
@@ -343,7 +342,7 @@ void doTest (const int b, const unsigned char* m, const int size)
             printMatrix (copy.begin(), dimNS, size);
          }
 
-         for (unsigned i = 0; i < dimNS; ++i)
+         for (int i = 0; i < dimNS; ++i)
          {
             if (matrixVectorMul (m2.begin(), m2.begin() + size, temp2 [i]) != 0)
             {
@@ -377,7 +376,7 @@ void doTest (const int b, const unsigned char* m, const int size)
             printMatrix (copy.begin(), dimNS, size);
          }
 
-         for (unsigned i = 0; i < dimNS; ++i)
+         for (int i = 0; i < dimNS; ++i)
          {
             if (matrixVectorMul (m2.begin(), m2.begin() + size, temp2 [i]) != 0)
             {

@@ -46,15 +46,15 @@ namespace HIntLib
    {
    public:
 
-      Rule75GenzMalik (unsigned dim);
+      Rule75GenzMalik (int dim);
 
-      virtual unsigned evalError (Integrand &f, const Hypercube &, EstErr &);
+      virtual int evalError (Integrand &f, const Hypercube &, EstErr &);
 
-      virtual unsigned getDimension()      const  { return dim; }
-      virtual Index    getNumPoints()      const;
-      virtual unsigned getDegree()         const  { return 7; }
-      virtual bool     isAllPointsInside() const  { return true; }
-      virtual real     getSumAbsWeight()   const;
+      virtual int   getDimension()      const  { return dim; }
+      virtual Index getNumPoints()      const;
+      virtual int   getDegree()         const  { return 7; }
+      virtual bool  isAllPointsInside() const  { return true; }
+      virtual real  getSumAbsWeight()   const;
 
       static EmbeddedRuleFactory* getFactory();
 

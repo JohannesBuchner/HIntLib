@@ -69,7 +69,7 @@ public:
 
    typedef T type;
    typedef int unit_type;
-   typedef std::vector<std::pair<type,unsigned> > Factorization;
+   typedef std::vector<std::pair<type,int> > Factorization;
 
    // Algebra traits
 

@@ -86,17 +86,18 @@ am__objects_1 = adaptintegrator.lo builtinprng.lo \
 	makeqrnsequence.lo mcintegrator.lo mcpointset.lo \
 	mersennetwister.lo miser.lo niederreitermatrix.lo orbitrule.lo \
 	pointset.lo polynomial_gf.lo polynomial_rational.lo \
-	polynomial_real.lo polynomial_ring.lo pseudoembeddedrule.lo \
-	qmcintegrator.lo qrnsequencebase.lo quotientfield.lo \
-	realfield.lo regioncollection.lo rule1midpoint.lo \
-	rule1trapezoidal.lo rule2ionescu.lo rule2simplex.lo \
-	rule2thacher.lo rule3cross.lo rule3ewing.lo rule3gauss.lo \
-	rule3octahedron.lo rule3simpson.lo rule3tyler.lo rule5gauss.lo \
-	rule5hammer.lo rule5stroud.lo rule75genzmalik.lo \
+	polynomial_real.lo polynomial_ring.lo productrule.lo \
+	pseudoembeddedrule.lo qmcintegrator.lo qrnsequencebase.lo \
+	quotientfield.lo realfield.lo regioncollection.lo \
+	rule1midpoint.lo rule1trapezoidal.lo rule2ionescu.lo \
+	rule2simplex.lo rule2thacher.lo rule3cross.lo rule3ewing.lo \
+	rule3gauss.lo rule3octahedron.lo rule3simpson.lo rule3tyler.lo \
+	rule5gauss.lo rule5hammer.lo rule5mustardlynessblatt.lo \
+	rule5stroud.lo rule5stroud2.lo rule75genzmalik.lo \
 	rule7phillips.lo rule9stenger.lo rulebasedintegrator.lo \
-	ruleintegrator.lo shiftnet.lo shiftscale.lo sobolmatrix.lo \
-	stardiscrepancy.lo testintegrand.lo tparameter.lo vegas.lo \
-	virtualprng.lo
+	rulegauss.lo ruleintegrator.lo shiftnet.lo shiftscale.lo \
+	sobolmatrix.lo stardiscrepancy.lo testintegrand.lo \
+	tparameter.lo vegas.lo virtualprng.lo
 am__objects_2 = $(am__objects_1) region.lo staticloadbalancer.lo
 am_libhintlib_la_OBJECTS = $(am__objects_2)
 libhintlib_la_OBJECTS = $(am_libhintlib_la_OBJECTS)
@@ -338,6 +339,7 @@ ALLSRC = \
    polynomial_rational.cpp \
    polynomial_real.cpp \
    polynomial_ring.cpp \
+   productrule.cpp \
    pseudoembeddedrule.cpp \
    qmcintegrator.cpp \
    qrnsequencebase.cpp \
@@ -357,11 +359,14 @@ ALLSRC = \
    rule3tyler.cpp \
    rule5gauss.cpp \
    rule5hammer.cpp \
+   rule5mustardlynessblatt.cpp \
    rule5stroud.cpp \
+   rule5stroud2.cpp \
    rule75genzmalik.cpp \
    rule7phillips.cpp \
    rule9stenger.cpp \
    rulebasedintegrator.cpp \
+   rulegauss.cpp \
    ruleintegrator.cpp \
    shiftnet.cpp \
    shiftscale.cpp \
@@ -580,6 +585,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/polynomialbase.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prime_generated.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/productrule.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pseudoembeddedrule.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qmcintegrator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qmcintegrator_MPI.Plo@am__quote@
@@ -602,11 +608,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule3tyler.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule5gauss.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule5hammer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule5mustardlynessblatt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule5stroud.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule5stroud2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule75genzmalik.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule7phillips.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rule9stenger.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rulebasedintegrator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rulegauss.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ruleintegrator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shiftnet.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shiftscale.Plo@am__quote@

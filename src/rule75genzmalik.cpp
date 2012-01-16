@@ -35,7 +35,7 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
+#include <HIntLib/hypercube.h>
 #include <HIntLib/exception.h>
 
 
@@ -70,14 +70,14 @@ namespace
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule75GenzMalik::Rule75GenzMalik (unsigned dim)
+L::Rule75GenzMalik::Rule75GenzMalik (int dim)
    : OrbitRule (dim),
      widthLamda (dim),
-     weight1 (real(12824 - 9120*int(dim) + 400*sqr(int(dim))) / real(19683)),
-     weight3 (real( 1820 -  400*int(dim)) / real(19683)),
+     weight1 (real(12824 - 9120*dim + 400*sqr(dim)) / real(19683)),
+     weight3 (real( 1820 -  400*dim) / real(19683)),
      weight5 (real(6859) / real(19683) / real(Index(1) << dim)),
-     weightE1(real(  729 -  950*int(dim) +  50*sqr(int(dim))) / real(729)),
-     weightE3(real(  265 -  100*int(dim)) / real(1458))
+     weightE1(real(  729 -  950*dim +  50*sqr(dim)) / real(729)),
+     weightE3(real(  265 -  100*dim) / real(1458))
 {
    checkDimensionNotZero (dim);
    checkDimensionGeq<2> (dim);
@@ -116,7 +116,7 @@ Index L::Rule75GenzMalik::getNumPoints () const
  *  Do the actual function evaluation
  */
 
-unsigned L::Rule75GenzMalik::evalError
+int L::Rule75GenzMalik::evalError
    (Integrand &f, const Hypercube &h, EstErr &ee)
 {
    // Initialize
@@ -128,7 +128,7 @@ unsigned L::Rule75GenzMalik::evalError
 
    Scaler scalerLamda2 (width, lamda2);
 
-   for (unsigned i = 0; i != dim; ++i)  widthLamda [i] = width [i] * lamda4;
+   for (int i = 0; i != dim; ++i)  widthLamda [i] = width [i] * lamda4;
 
    // Evaluate function in the center, in f (lamda2,0,...,0) and
    // f (lamda3=lamda4, 0,...,0)
@@ -136,7 +136,7 @@ unsigned L::Rule75GenzMalik::evalError
 
    real sum1 = 0.0, sum2 = 0.0, sum3 = 0.0;
 
-   unsigned dimDiffMax =
+   int dimDiffMax =
       evalR0_0fs4d (f, center, sum1, scalerLamda2, sum2,
                     static_cast<real*> (widthLamda), sum3);
 
@@ -146,7 +146,7 @@ unsigned L::Rule75GenzMalik::evalError
 
    // Calculate sum5 for f (lamda5, lamda5, ..., lamda5)
 
-   for (unsigned i = 0; i != dim; ++i)  widthLamda [i] = width [i] * lamda5;
+   for (int i = 0; i != dim; ++i)  widthLamda [i] = width [i] * lamda5;
 
    real sum5 = evalR_Rfs (f, center, widthLamda);
 

@@ -31,9 +31,9 @@
 #include <iosfwd>
 
 #ifdef HINTLIB_HAVE_LIMITS
-  #include <limits>
+#  include <limits>
 #else
-  #include <HIntLib/fallback_limits.h>
+#  include <HIntLib/fallback_limits.h>
 #endif
 
 
@@ -72,7 +72,7 @@ public:
       = std::numeric_limits<Index>::digits - 1 < 47
       ? std::numeric_limits<Index>::digits - 1 : 47 };
 
-   static unsigned getDefaultM (unsigned base) HINTLIB_GNU_CONST;
+   static int getDefaultM (int base) HINTLIB_GNU_CONST;
 
    /**
      * Default for prec
@@ -86,36 +86,36 @@ public:
 
    enum { DEFAULT_TOTALPREC_BASE2 = std::numeric_limits<real>::digits - 1 };
 
-   static unsigned getDefaultPrec (unsigned base) HINTLIB_GNU_CONST;
+   static int getDefaultPrec (int base) HINTLIB_GNU_CONST;
 
    
    // no public constructor!
    virtual ~GeneratorMatrix() {};
 
-   unsigned getBase() const      { return base; }
-   unsigned getDimension() const { return dim; }
-   unsigned getM() const         { return m; }
-   unsigned getPrec() const      { return prec; }
+   int getBase() const      { return base; }
+   int getDimension() const { return dim; }
+   int getM() const         { return m; }
+   int getPrec() const      { return prec; }
 
    // virtual get/set
 
-   virtual void     setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const = 0;
+   virtual void setDigit (int d, int r, int b, int x);
+   virtual int getDigit  (int d, int r, int b) const = 0;
 
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const = 0;
-   virtual void vSetPackedRowVector (unsigned d, unsigned b, u64 x);
+   virtual u64  vGetPackedRowVector (int d, int b) const = 0;
+   virtual void vSetPackedRowVector (int d, int b, u64 x);
 
    // Print (parts of) the matrices
 
    void print (std::ostream &) const;
-   void printDimension    (std::ostream &, unsigned d) const;
-   void printRowVector    (std::ostream &, unsigned d, unsigned b) const;
-   void printColumnVector (std::ostream &, unsigned d, unsigned r) const;
+   void printDimension    (std::ostream &, int d) const;
+   void printRowVector    (std::ostream &, int d, int b) const;
+   void printColumnVector (std::ostream &, int d, int r) const;
 #ifdef HINTLIB_BUILD_WCHAR
    void print (std::wostream &) const;
-   void printDimension    (std::wostream &, unsigned d) const;
-   void printRowVector    (std::wostream &, unsigned d, unsigned b) const;
-   void printColumnVector (std::wostream &, unsigned d, unsigned r) const;
+   void printDimension    (std::wostream &, int d) const;
+   void printRowVector    (std::wostream &, int d, int b) const;
+   void printColumnVector (std::wostream &, int d, int r) const;
 #endif
 
    // Export in special formats
@@ -130,8 +130,8 @@ public:
          const GeneratorMatrix &, const GeneratorMatrix &, int offset = 0);
 
 protected:
-   GeneratorMatrix (unsigned _base,
-                    unsigned _dim, unsigned _m, unsigned _prec)
+   GeneratorMatrix (int _base,
+                    int _dim, int _m, int _prec)
       : base (_base),
         dim  (_dim),
         m    (_m),
@@ -141,10 +141,10 @@ protected:
 
    void setParameters (const GeneratorMatrix &);
 
-   unsigned base;
-   unsigned dim;
-   unsigned m;
-   unsigned prec;
+   int base;
+   int dim;
+   int m;
+   int prec;
 
 private:
    GeneratorMatrix& operator= (const GeneratorMatrix&);
@@ -157,7 +157,7 @@ bool operator== (const GeneratorMatrix &, const GeneratorMatrix &);
  *  assign()
  */
 
-void assign (const GeneratorMatrix &, unsigned, GeneratorMatrix &, unsigned);
+void assign (const GeneratorMatrix &, int, GeneratorMatrix &, int);
 void assign (const GeneratorMatrix &, GeneratorMatrix &);
 
 }  // namespace HIntLib

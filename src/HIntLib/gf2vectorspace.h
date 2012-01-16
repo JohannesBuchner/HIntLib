@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef HINTLIB_GF2VECTORSPACE_H
-#define HINTLIB_GF2VECTORSPACE_H 1
+#ifndef HINTLIB_GF2_VECTORSPACE_H
+#define HINTLIB_GF2_VECTORSPACE_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -49,7 +49,7 @@ public:
    GF2 getScalarAlgebra() const  { return GF2(); }
 
    unsigned size() const  { return 1u << dim; }
-   unsigned dimension() const  { return dim; }
+   int dimension() const  { return dim; }
 
    void printSuffix (std::ostream &o) const { GF2().printSuffix (o); }
 #ifdef HINTLIB_BUILD_WCHAR
@@ -57,9 +57,9 @@ public:
 #endif
 
 protected:
-   GF2VectorSpaceBase (unsigned _dim) : dim(_dim) {}
+   GF2VectorSpaceBase (int _dim) : dim(_dim) {}
 
-   const unsigned dim;
+   const int dim;
 };
 
 std::ostream& operator<< (std::ostream&, const GF2VectorSpaceBase&);
@@ -88,9 +88,9 @@ public:
    typedef T type;
    typedef BitRef<T> scalar_reference;
 
-   GF2VectorSpace (unsigned _dim) : Private::GF2VectorSpaceBase (_dim)
+   GF2VectorSpace (int _dim) : Private::GF2VectorSpaceBase (_dim)
    {
-      if (dim < 1 || dim > unsigned (std::numeric_limits<T>::digits))
+      if (dim < 1 || dim > std::numeric_limits<T>::digits)
       {
          throw FIXME (__FILE__, __LINE__);
       }
@@ -98,18 +98,18 @@ public:
 
    template<typename I> void toCoord (type a, I p) const
    {
-      for (unsigned i = 0; i != dim; ++i,a>>=1)  *p++ = scalar_type (a & 1);
+      for (int i = 0; i != dim; ++i,a>>=1)  *p++ = scalar_type (a & 1);
    }
    template<typename I> void fromCoord (type& a, I p) const
    {
       a = 0;
       p += dim;
-      for (unsigned i = 0; i != dim; ++i) a = (a << 1) | (*--p);
+      for (int i = 0; i != dim; ++i) a = (a << 1) | (*--p);
    }
 
-   scalar_type coord (const type& a, unsigned k) const
+   scalar_type coord (const type& a, int k) const
       { return (a >> k) & 1; }
-   scalar_reference coord (type& a, unsigned k) const
+   scalar_reference coord (type& a, int k) const
       { return BitRef<T> (&a, k); }
    
    type element(unsigned i) const  { return type(i); }

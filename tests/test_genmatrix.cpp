@@ -47,7 +47,7 @@ bool opt (int c, const char* s)
 {
    switch (c)
    {
-      case 'd': DIM = atoi (s); return true;
+      case 'd': DIM = parseInt (s); return true;
    }
 
    return false;

@@ -42,7 +42,7 @@
 template<typename Bi>
 void
 HIntLib::packMatrix (
-      const unsigned char* m, unsigned numCols, Bi first, Bi last)
+      const unsigned char* m, int numCols, Bi first, Bi last)
 {
    typedef typename std::iterator_traits<Bi>::value_type T;
 
@@ -51,7 +51,7 @@ HIntLib::packMatrix (
       T mask = 1;
       *first = 0;
 
-      for (unsigned col = 0; col < numCols; ++col)
+      for (int col = 0; col < numCols; ++col)
       {
          if (*m++)  *first |= mask;
          mask <<= 1;
@@ -68,7 +68,7 @@ HIntLib::packMatrix (
 
 template<typename Bi>
 void
-HIntLib::unpackMatrix (Bi first, Bi last, unsigned numCols, unsigned char* res)
+HIntLib::unpackMatrix (Bi first, Bi last, int numCols, unsigned char* res)
 {
    typedef typename std::iterator_traits<Bi>::value_type T;
 
@@ -76,7 +76,7 @@ HIntLib::unpackMatrix (Bi first, Bi last, unsigned numCols, unsigned char* res)
    {
       T row = *first++;
 
-      for (unsigned col = 0; col < numCols; ++col)
+      for (int col = 0; col < numCols; ++col)
       {
          *res++ = row & 1;
          row >>= 1;
@@ -190,12 +190,12 @@ HIntLib::vectorMatrixMul (
  */
 
 template<typename Bi>
-unsigned
+int
 HIntLib::matrixRank (Bi first, Bi last)
 {
    typedef typename std::iterator_traits<Bi>::value_type T;
 
-   unsigned rank = 0;
+   int rank = 0;
 
    for (; first != last; ++first)
    {
@@ -307,8 +307,8 @@ HIntLib::isLinearlyIndependent (Bi first, Bi last)
  */
 
 template<typename Bi>
-unsigned
-HIntLib::nullSpace (Bi first, Bi last, unsigned numCols, Bi result)
+int
+HIntLib::nullSpace (Bi first, Bi last, int numCols, Bi result)
 {
    typedef typename std::iterator_traits<Bi>::value_type T;
 
@@ -324,7 +324,7 @@ HIntLib::nullSpace (Bi first, Bi last, unsigned numCols, Bi result)
       // find pivot row in current column
 
       Bi rowI = first;
-      unsigned row = 0;
+      int row = 0;
 
       while (rowI != last && (((*rowI & colMask) == 0) || rowSelected[row]))
       {
@@ -354,10 +354,10 @@ HIntLib::nullSpace (Bi first, Bi last, unsigned numCols, Bi result)
 
    // output base of null space
 
-   unsigned dimNullSpace = 0;
+   int dimNullSpace = 0;
 
    T kMask = 1;
-   for (unsigned k = 0; k < numCols; ++k)
+   for (int k = 0; k < numCols; ++k)
    {
       if (col2row[k] == -1)
       {
@@ -366,7 +366,7 @@ HIntLib::nullSpace (Bi first, Bi last, unsigned numCols, Bi result)
          *result = kMask;
          T mask = 1;
 
-         for (unsigned i = 0; i < numCols; ++i)
+         for (int i = 0; i < numCols; ++i)
          {
             if (col2row[i] >= 0)
             {
@@ -385,7 +385,7 @@ HIntLib::nullSpace (Bi first, Bi last, unsigned numCols, Bi result)
 }
 
 template<typename Bi>
-unsigned
+int
 HIntLib::nullSpaceT (Bi first, Bi last, Bi result)
 {
    typedef typename std::iterator_traits<Bi>::value_type T;
@@ -428,7 +428,7 @@ HIntLib::nullSpaceT (Bi first, Bi last, Bi result)
 
    // output base of null space
 
-   unsigned dimNullSpace = 0;
+   int dimNullSpace = 0;
 
    col2rowP = col2row;
    for (Bi col = first; col != last; ++col)
@@ -458,18 +458,18 @@ HIntLib::nullSpaceT (Bi first, Bi last, Bi result)
 }
 
 #define HINTLIB_INSTANTIATE_LINEARALGEBRA2(X) \
-   template void packMatrix (const unsigned char*,unsigned,X,X);\
-   template void unpackMatrix (X,X,unsigned,unsigned char*);\
-   template bool isZeroMatrix         (X,X);\
-   template bool isIdentityMatrix     (X,X);\
+   template void packMatrix (const unsigned char*,int,X,X);\
+   template void unpackMatrix (X,X,int,unsigned char*);\
+   template bool isZeroMatrix    (X,X);\
+   template bool isIdentityMatrix(X,X);\
    template std::iterator_traits<X >::value_type \
       matrixVectorMul (X,X,std::iterator_traits<X >::value_type); \
    template std::iterator_traits<X >::value_type \
       vectorMatrixMul (std::iterator_traits<X >::value_type,X,X); \
    template bool isLinearlyIndependent(X,X);\
-   template unsigned matrixRank       (X,X);\
-   template unsigned nullSpace  (X,X,unsigned,X); \
-   template unsigned nullSpaceT (X,X,X);
+   template int matrixRank (X,X);\
+   template int nullSpace  (X,X,int,X); \
+   template int nullSpaceT (X,X,X);
 
 #endif
 

@@ -27,10 +27,10 @@
  *
  *  The following interface is provided:
  *
- *  Constructor QRNGenerator (unsigned int dim)
+ *  Constructor QRNGenerator (int dim)
  *     Creates a generator for a given dimension
  *
- *  unsigned int getDimension()
+ *  int int getDimension()
  *     Returns the dimension of the sequence
  *
  *  T getOtimalNumber (T max)
@@ -45,8 +45,8 @@
  *     Copies the next quasi random vector into the specified array.
  */
   
-#ifndef HINTLIB_QRNSEQUENCEBASE_H
-#define HINTLIB_QRNSEQUENCEBASE_H 1
+#ifndef HINTLIB_QRN_SEQUENCE_BASE_H
+#define HINTLIB_QRN_SEQUENCE_BASE_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -64,7 +64,7 @@ class QRNSequenceBase
 public:
    QRNSequenceBase (const Hypercube &);
 
-   unsigned getDimension() const  { return h.getDimension(); }
+   int getDimension() const  { return h.getDimension(); }
    const Hypercube& getRegion() const  { return h; }
    Index getIndex() const  { return n; }   // last generated point
 
@@ -88,13 +88,13 @@ private:
 class DigitalNet
 {
 protected:
-   DigitalNet (unsigned base, unsigned m);  // implemented in digitalnetgen.cpp
+   DigitalNet (int base, int m);  // implemented in digitalnetgen.cpp
 
-   const unsigned m;
+   const int m;
    const Index size;
 public:
    Index getSize() const  { return size; }
-   unsigned getM() const  { return m; }
+   int getM() const  { return m; }
    typedef enum {TRUNCATE, CENTER, FULL} Truncation;
 };
 

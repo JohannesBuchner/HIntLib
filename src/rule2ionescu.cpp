@@ -39,6 +39,7 @@
 
 #include <HIntLib/defaultcubaturerulefactory.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hypercube.h>
 #include <HIntLib/integrand.h>
 
 
@@ -51,7 +52,7 @@ using L::real;
  *  Constructor
  */
 
-L::Rule2Ionescu::Rule2Ionescu (unsigned dim)
+L::Rule2Ionescu::Rule2Ionescu (int dim)
 {
    checkDimensionNotZero (dim);
 

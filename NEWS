@@ -2,18 +2,55 @@
 NEWS
 ====
 
+0.0.13   March 14, 2008         End of University Edition
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     52725  174721 1304686 total
+
+Cubature rules:
+
++ RuleGauss for arbitrary degree Gauss rules in arbitrary dimensions
++ Rule5Stroud2
++ Rule5MustardLynessBlatt
++ Rule3TylerDim3 is an improved version (6 instead of 7 evaluations) of
+  Rule3Tyler for dimension 3.  The CubatureRuleFactory returned by
+  Rule3Tyler::getFactory() creates the appropriate object automatically.
++ FourthDiff does not waste evaluations for one-dimensional integrands
+
+Miscellaneous:
+
++ GrayCounter.  operator<<(ostream&, const CounterBase&);
++ logInt<T>() implementation depends on the signedness of T
+/ Many occurences of "unsigned" replaced by "int"
+
+Build system:
+
+- Fortran tests ported to GNU Fortran 4
+- HIntLib ported to GCC 4.3
+
+
+
 0.0.12   December 31, 2006	New Year's Eve Edition
 
    wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
      51491  170572 1283308 total
 
+Integration:
+
 + MCIntegrator: Can use requested error as termination criterion
 + MCIntegrator: setMinNumEval(), setMinPercEval()
 + Some convenience functions for Integrators: checkPercentageRange() and
   checkTerminationCriteria()
+/ EstErr::operator*() instead of EstErr::scale()
+
+Algebraic structures:
+
 + Improved algorithm for PolynomialRing<>::factor() and
   PolynomialRing2<>::factor().
-/ EstErr::operator*() instead of EstErr::scale()
+
+Manual:
+
++ Chapter about Integrators
 
 
 

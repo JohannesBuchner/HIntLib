@@ -45,35 +45,35 @@ public:
    virtual ~LinearAlgebra() {}
 
    virtual bool isLinearlyIndependent (
-      unsigned char*, unsigned numRows, unsigned numCols) = 0;
-   virtual unsigned matrixRank (
-      unsigned char*, unsigned numRows, unsigned numCols) = 0;
-   virtual unsigned numLinearlyIndependentVectors (
-      unsigned char*, unsigned numRows, unsigned numCols) = 0;
-   virtual unsigned nullSpace (
-      unsigned char*, unsigned numRows, unsigned numCols, unsigned char*) = 0;
-   virtual unsigned basisSupplement (
-      unsigned char*, unsigned numRows, unsigned numCols, unsigned*) = 0;
-   virtual unsigned basisSupplement (
-      unsigned char*, unsigned numRows, unsigned numCols) = 0;
-   virtual bool matrixInverse  (unsigned char*, unsigned num) = 0;
+      unsigned char*, int numRows, int numCols) = 0;
+   virtual int matrixRank (
+      unsigned char*, int numRows, int numCols) = 0;
+   virtual int numLinearlyIndependentVectors (
+      unsigned char*, int numRows, int numCols) = 0;
+   virtual int nullSpace (
+      unsigned char*, int numRows, int numCols, unsigned char*) = 0;
+   virtual int basisSupplement (
+      unsigned char*, int numRows, int numCols, int*) = 0;
+   virtual int basisSupplement (
+      unsigned char*, int numRows, int numCols) = 0;
+   virtual bool matrixInverse  (unsigned char*, int num) = 0;
    virtual void matrixMul (
       const unsigned char*, const unsigned char*,
-      unsigned numRows1, unsigned numRowsCols, unsigned numCols2,
+      int numRows1, int numRowsCols, int numCols2,
       unsigned char*) = 0;
    virtual void matrixVectorMul (
       const unsigned char*, const unsigned char*,
-      unsigned numRows, unsigned numCols, unsigned char* res) = 0;
+      int numRows, int numCols, unsigned char* res) = 0;
    virtual void vectorMatrixMul (
       const unsigned char*, const unsigned char*,
-      unsigned numRows, unsigned numCols, unsigned char* res) = 0;
+      int numRows, int numCols, unsigned char* res) = 0;
 
-   bool isIdentityMatrix (const unsigned char*, unsigned num);
-   bool isZeroMatrix (const unsigned char*, unsigned numCols, unsigned numRows);
+   bool isIdentityMatrix (const unsigned char*, int num);
+   bool isZeroMatrix (const unsigned char*, int numCols, int numRows);
 
    void matrixMul (
       const unsigned char* m1, const unsigned char* m2,
-      unsigned num, unsigned char* res)
+      int num, unsigned char* res)
    {
       matrixMul (m1, m2, num, num, num, res);
    }

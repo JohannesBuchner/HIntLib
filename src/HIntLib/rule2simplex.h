@@ -29,8 +29,8 @@
  *  as formula Cn: 2-1
  */
 
-#ifndef HINTLIB_RULE2SIMPLEX_H
-#define HINTLIB_RULE2SIMPLEX_H 1
+#ifndef HINTLIB_RULE_2_SIMPLEX_H
+#define HINTLIB_RULE_2_SIMPLEX_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -49,21 +49,21 @@ namespace HIntLib
    class Rule2Simplex : public CubatureRule
    {
    public:
-      Rule2Simplex (unsigned dim);
+      Rule2Simplex (int dim);
 
       virtual real eval (Integrand &, const Hypercube &);
 
-      virtual unsigned getDimension()  const  { return dim; }
-      virtual Index getNumPoints()     const  { return dim + 1; }
-      virtual unsigned getDegree()     const  { return (dim == 1) ? 3 : 2; }
-      virtual bool isAllPointsInside() const  { return true; }
-      virtual real getSumAbsWeight()   const  { return 1.0; }
+      virtual int   getDimension()      const  { return dim; }
+      virtual Index getNumPoints()      const  { return dim + 1; }
+      virtual int   getDegree()         const  { return (dim == 1) ? 3 : 2; }
+      virtual bool  isAllPointsInside() const  { return true; }
+      virtual real  getSumAbsWeight()   const  { return 1.0; }
 
       static CubatureRuleFactory* getFactory();
 
    private:
  
-      const unsigned dim;
+      const int dim;
 
       // Dimension dependent constants
 

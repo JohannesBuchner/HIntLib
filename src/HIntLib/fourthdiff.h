@@ -22,8 +22,8 @@
  *  FourthDiff
  */
 
-#ifndef HINTLIB_FOURTHDIFF_H
-#define HINTLIB_FOURTHDIFF_H 1
+#ifndef HINTLIB_FOURTH_DIFF_H
+#define HINTLIB_FOURTH_DIFF_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -34,8 +34,6 @@
 
 #include <algorithm>
 
-#include <HIntLib/array.h>
-#include <HIntLib/hlmath.h>
 #include <HIntLib/integrand.h>
 #include <HIntLib/hypercube.h>
 #include <HIntLib/minmaxfinder.h>
@@ -59,7 +57,7 @@ public:
    FourthDiff (unsigned _dim) : dim (_dim), p (_dim) {};
 
    unsigned getDimension() const  { return dim; }
-   unsigned getNumPoints() const  { return 4 * dim + 1; }
+   unsigned getNumPoints() const  { return (dim == 1) ? 0 : 4 * dim + 1; }
 
    unsigned operator() (Integrand &, const Hypercube &);
    unsigned operator() (Integrand &, const real* c, const real* w);
@@ -72,6 +70,8 @@ private:
 inline
 unsigned FourthDiff::operator() (Integrand &f, const real* c, const real* w)
 {
+   if (dim == 1)  return 0;
+
    std::copy (&c[0], &c[dim],  &p[0]);
 
    MaxFinder<real> mf;

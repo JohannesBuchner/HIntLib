@@ -59,7 +59,7 @@
 template<class A>
 bool
 HIntLib::isZeroMatrix (
-      const A& a, const typename A::type* m, unsigned numRows, unsigned numCols)
+      const A& a, const typename A::type* m, int numRows, int numCols)
 {
    const typename A::type* end = m + numRows * numCols;
    while (m != end)  if (! a.is0 (*m++))  return false;
@@ -77,10 +77,10 @@ HIntLib::isZeroMatrix (
 
 template<class A>
 bool
-HIntLib::isIdentityMatrix (const A& a, const typename A::type* m, unsigned size)
+HIntLib::isIdentityMatrix (const A& a, const typename A::type* m, int size)
 {
    const typename A::type* end = m + size * size;
-   unsigned pos = 0;
+   int pos = 0;
 
    while (m != end)
    {
@@ -107,13 +107,12 @@ HIntLib::isIdentityMatrix (const A& a, const typename A::type* m, unsigned size)
 
 template<typename T>
 void
-HIntLib::matrixTranspose (
-      const T* in, unsigned numRows, unsigned numCols, T* out)
+HIntLib::matrixTranspose (const T* in, int numRows, int numCols, T* out)
 {
-   for (unsigned r = 0; r < numRows; ++r)
+   for (int r = 0; r < numRows; ++r)
    {
       T* p = out++;
-      for (unsigned c = 0; c < numCols; ++c)
+      for (int c = 0; c < numCols; ++c)
       {
          *p = *in++;
          p += numRows;
@@ -143,16 +142,16 @@ void
 HIntLib::matrixMul (
    const A &a,
    const typename A::type *m1, const typename A::type *m2,
-   unsigned numRows1, unsigned numRowsCols, unsigned numCols2,
+   int numRows1, int numRowsCols, int numCols2,
    typename A::type *dest)
 {
    typedef typename A::type T;
 
-   for (unsigned row = 0; row < numRows1; ++row)
+   for (int row = 0; row < numRows1; ++row)
    {
       const T* const m1end = &m1 [row * numRowsCols + numRowsCols];
 
-      for (unsigned col = 0; col < numCols2; ++col)
+      for (int col = 0; col < numCols2; ++col)
       {
          const T* m1i   = &m1 [row * numRowsCols + 0];
          const T* m2i   = &m2 [0 * numCols2 + col];
@@ -188,7 +187,7 @@ void
 HIntLib::matrixVectorMul (
    const A &a,
    const typename A::type* m, const typename A::type* v,
-   unsigned numRows, unsigned numCols,
+   int numRows, int numCols,
    typename A::type *dest)
 {
    typedef typename A::type T;
@@ -225,7 +224,7 @@ void
 HIntLib::vectorMatrixMul (
    const A &a,
    const typename A::type* v, const typename A::type* m,
-   unsigned numRows, unsigned numCols,
+   int numRows, int numCols,
    typename A::type *dest)
 {
    typedef typename A::type T;
@@ -263,7 +262,7 @@ HIntLib::vectorMatrixMul (
 template<class A>
 bool
 HIntLib::isLinearlyIndependent (
-   const A &a, typename A::type *m, unsigned numRows, unsigned numCols)
+   const A &a, typename A::type *m, int numRows, int numCols)
 {
    typedef typename A::type T;
 
@@ -271,7 +270,7 @@ HIntLib::isLinearlyIndependent (
 
    // Loop over all rows
 
-   for (unsigned col = 0, row = 0; row != numRows; ++col, ++row)
+   for (int col = 0, row = 0; row != numRows; ++col, ++row)
    {
       // I have tried two different implementations. The second one seems to be
       // slightly faster.
@@ -279,7 +278,7 @@ HIntLib::isLinearlyIndependent (
 #if 0
       // find a pivot element in the current row
 
-      unsigned pivotCol = col;
+      int pivotCol = col;
 
       while (a.is0 (m [row * numCols + pivotCol]))
       {
@@ -290,7 +289,7 @@ HIntLib::isLinearlyIndependent (
       
       const T recip = a.recip (m [row * numCols + pivotCol]);
       
-      for (unsigned r = row + 1; r < numRows; ++r)
+      for (int r = row + 1; r < numRows; ++r)
       {
          const T lc = m [r * numCols + pivotCol];
 
@@ -298,7 +297,7 @@ HIntLib::isLinearlyIndependent (
          {
             const T x = a.neg (a.mul (lc, recip));
 
-            for (unsigned c = pivotCol + 1; c < numCols; ++c)
+            for (int c = pivotCol + 1; c < numCols; ++c)
             {
                a.addTo (m [r * numCols + c], a.mul (x, m [row * numCols + c]));
             }
@@ -309,7 +308,7 @@ HIntLib::isLinearlyIndependent (
 
       if (pivotCol != col)
       {
-         for (unsigned r = row + 1; r < numRows; ++r)
+         for (int r = row + 1; r < numRows; ++r)
          {
             m [r * numCols + pivotCol] = m [r * numCols + col];
          }
@@ -317,7 +316,7 @@ HIntLib::isLinearlyIndependent (
 #else
       // find pivot element in current column (or the next...)
       
-      unsigned pivotRow = row;
+      int pivotRow = row;
 
       while (a.is0 (m [pivotRow * numCols + col]))
       {
@@ -333,7 +332,7 @@ HIntLib::isLinearlyIndependent (
       
       const T recip = a.recip (m [pivotRow * numCols + col]);
       
-      for (unsigned r = pivotRow + 1; r < numRows; ++r)
+      for (int r = pivotRow + 1; r < numRows; ++r)
       {
          const T lc = m [r * numCols + col];
 
@@ -341,7 +340,7 @@ HIntLib::isLinearlyIndependent (
          {
             const T x = a.neg (a.mul (lc, recip));
 
-            for (unsigned c = col + 1; c < numCols; ++c)
+            for (int c = col + 1; c < numCols; ++c)
             {
                a.addTo (m [r * numCols + c],
                         a.mul (x, m [pivotRow * numCols + c]));
@@ -353,7 +352,7 @@ HIntLib::isLinearlyIndependent (
 
       if (pivotRow != row)
       {
-         for (unsigned c = col + 1; c < numCols; ++c)
+         for (int c = col + 1; c < numCols; ++c)
          {
             m [pivotRow * numCols + c] = m [row * numCols + c];
          }
@@ -374,20 +373,19 @@ HIntLib::isLinearlyIndependent (
  */
 
 template<class A>
-unsigned
-HIntLib::matrixRank (
-   const A& a, typename A::type* m, unsigned numRows, unsigned numCols)
+int
+HIntLib::matrixRank (const A& a, typename A::type* m, int numRows, int numCols)
 {
    typedef typename A::type T;
 
-   unsigned col = 0;
-   unsigned row = 0;
+   int col = 0;
+   int row = 0;
    
    while (row < numRows && col < numCols)  // Any rows/columns left?
    {
       // find pivot row
       
-      unsigned i = row;
+      int i = row;
           
       while (a.is0 (m [i * numCols + col]))  // if the coefficient is 0, go on
       {
@@ -403,13 +401,13 @@ HIntLib::matrixRank (
       
       T recip = a.recip (m [i * numCols + col]);
       
-      for (unsigned j = i + 1; j < numRows; ++j)
+      for (int j = i + 1; j < numRows; ++j)
       {
          T lc = m [j * numCols + col];
          if (! a.is0 (lc))
          {
             T x = a.neg (a.mul (lc, recip));
-            for (unsigned k = col + 1; k < numCols; ++k)
+            for (int k = col + 1; k < numCols; ++k)
             {
                a.addTo (m [j * numCols + k], a.mul (x, m [i * numCols + k]));
             }
@@ -420,7 +418,7 @@ HIntLib::matrixRank (
 
       if (i != row)
       {
-         for (unsigned k = col + 1; k < numCols; ++k)
+         for (int k = col + 1; k < numCols; ++k)
          {
             m [i * numCols + k] = m [row * numCols + k];
          }
@@ -446,9 +444,9 @@ HIntLib::matrixRank (
  */
 
 template<class A>
-unsigned
+int
 HIntLib::numLinearlyIndependentVectors (
-   const A& a, typename A::type* m, unsigned numRows, unsigned numCols)
+   const A& a, typename A::type* m, int numRows, int numCols)
 {
    typedef typename A::type T;
 
@@ -456,11 +454,11 @@ HIntLib::numLinearlyIndependentVectors (
 
    // Loop over all rows
 
-   for (unsigned col = 0, row = 0; ; ++col, ++row)
+   for (int col = 0, row = 0; ; ++col, ++row)
    {
       // find a pivot element in the current row
 
-      unsigned pivotCol = col;
+      int pivotCol = col;
 
       while (a.is0 (m [row * numCols + pivotCol]))
       {
@@ -469,7 +467,7 @@ HIntLib::numLinearlyIndependentVectors (
 
       // is this the last row?
 
-      unsigned r = row + 1;
+      int r = row + 1;
       if (r == numRows)  return numRows;
 
       // subtract pivot from all remaining rows
@@ -484,7 +482,7 @@ HIntLib::numLinearlyIndependentVectors (
          {
             const T x = a.neg (a.mul (lc, recip));
 
-            for (unsigned c = pivotCol + 1; c < numCols; ++c)
+            for (int c = pivotCol + 1; c < numCols; ++c)
             {
                a.addTo (m [r * numCols + c], a.mul (x, m [row * numCols + c]));
             }
@@ -521,9 +519,9 @@ HIntLib::numLinearlyIndependentVectors (
  */
 
 template<class A>
-unsigned
+int
 HIntLib::nullSpace (
-   const A& a, typename A::type* m, unsigned numRows, unsigned numCols,
+   const A& a, typename A::type* m, int numRows, int numCols,
    typename A::type* result)
 {
    typedef typename A::type T;
@@ -534,11 +532,11 @@ HIntLib::nullSpace (
    Array<int> col2row (numCols);
    int* col2rowP = col2row.begin();
 
-   for (unsigned col = 0; col < numCols; ++col)
+   for (int col = 0; col < numCols; ++col)
    {
       // find pivot row in current column
       
-      unsigned row = 0;
+      int row = 0;
 
       while (   row < numRows
              && (a.is0 (m [row * numCols + col]) || rowSelected[row]))
@@ -555,7 +553,7 @@ HIntLib::nullSpace (
          T recip = a.neg (a.recip (m [row * numCols + col]));
          m [row * numCols + col] = minusOne;
       
-         for (unsigned c = col + 1; c < numCols; ++c) 
+         for (int c = col + 1; c < numCols; ++c) 
          {
             a.mulBy (m [row * numCols + c], recip);
          }
@@ -563,7 +561,7 @@ HIntLib::nullSpace (
          // subtract pivot row from all remaining rows to clear out 1s in
          // current column
 
-         for (unsigned r = 0; r < numRows; ++r) 
+         for (int r = 0; r < numRows; ++r) 
          {
             if (r == row)  continue;
    
@@ -573,7 +571,7 @@ HIntLib::nullSpace (
             {
                m [r * numCols + col] = T();
 
-               for (unsigned c = col + 1; c < numCols; ++c) 
+               for (int c = col + 1; c < numCols; ++c) 
                {
                   a.addTo (m [r * numCols + c],
                            a.mul (t, m [row * numCols + c]));
@@ -592,15 +590,15 @@ HIntLib::nullSpace (
 
    // output base of null space
 
-   unsigned dimNullSpace = 0;
+   int dimNullSpace = 0;
 
-   for (unsigned k = 0; k < numCols; ++k)
+   for (int k = 0; k < numCols; ++k)
    {
       if (col2row[k] == -1)
       {
          ++ dimNullSpace;
 
-         for (unsigned i = 0; i < numCols; ++i)
+         for (int i = 0; i < numCols; ++i)
          {
             if (col2row[i] >= 0) *result = m [col2row[i] * numCols + k];
             else if (k == i)     *result = a.one();
@@ -632,27 +630,26 @@ HIntLib::nullSpace (
  */
 
 template<class A>
-unsigned
+int
 HIntLib::basisSupplement (
-   const A& a, typename A::type* m, unsigned numRows, unsigned n,
-   unsigned* result)
+   const A& a, typename A::type* m, int numRows, int n, int* result)
 {
    typedef typename A::type T;
 
    // set result to identity matrix
 
-   for (unsigned i = 0; i < n; ++i)  result [i] = i;
+   for (int i = 0; i < n; ++i)  result [i] = i;
 
    // process all rows
 
    T* mrow = m;
    const T* ub = m + n * numRows;
 
-   for (unsigned row = 0; row < numRows; mrow += n, ++row)
+   for (int row = 0; row < numRows; mrow += n, ++row)
    {
       // find non-zero element in current row
 
-      unsigned col = row;
+      int col = row;
 
       while (a.is0 (mrow [col]))  if (++col == n)  return row;
 
@@ -669,7 +666,7 @@ HIntLib::basisSupplement (
          if (row != col)  std::swap (mr [col], mr [row]); 
          a.mulBy (mr [row], d);
 
-         for (unsigned c = 0; c < n; ++c)
+         for (int c = 0; c < n; ++c)
          {
             if (c != row && c != col)
             {
@@ -699,9 +696,8 @@ HIntLib::basisSupplement (
  */
 
 template<class A>
-unsigned
-HIntLib::basisSupplement (
-   const A& a, typename A::type* m, unsigned numRows, unsigned n)
+int
+HIntLib::basisSupplement (const A& a, typename A::type* m, int numRows, int n)
 {
    typedef typename A::type T;
 
@@ -710,11 +706,11 @@ HIntLib::basisSupplement (
    Array<T> work (numRows * n);
    std::copy (m, m + n * numRows, work.begin());
 
-   Array<unsigned> result (n);
+   Array<int> result (n);
 
    // Determine the vectors that have to be replaced by canonical basis vectors
 
-   unsigned validRows =
+   int validRows =
       basisSupplement (a, work.begin(), numRows, n, result.begin());
 
    // fill remaining vectors with zero
@@ -724,8 +720,8 @@ HIntLib::basisSupplement (
 
    // set ones at appropriate places
 
-   const unsigned* ub = &result[n];
-   for (unsigned* i = &result[validRows]; i != ub; ++i)
+   const int* ub = &result[n];
+   for (int* i = &result[validRows]; i != ub; ++i)
    {
       m [*i] = a.one();
       m += n;
@@ -752,20 +748,20 @@ HIntLib::basisSupplement (
 
 template<class A>
 bool
-HIntLib::matrixInverse (const A &a, typename A::type *m, unsigned num)
+HIntLib::matrixInverse (const A &a, typename A::type *m, int num)
 {
    // This array records where each column can be found in the output matrix
 
-   Array<unsigned> permutation (num);
+   Array<int> permutation (num);
 
    typedef typename A::type T;
 
-   for (unsigned pos = 0; pos < num; ++pos)
+   for (int pos = 0; pos < num; ++pos)
    {
       {
          // search for pivot row
 
-         unsigned row = pos;
+         int row = pos;
 
          while (a.is0 (m[row * num + pos]))  if (++row == num)  return false;
 
@@ -775,7 +771,7 @@ HIntLib::matrixInverse (const A &a, typename A::type *m, unsigned num)
 
          if (row != pos)
          {
-            for (unsigned col = 0; col < num; ++col)
+            for (int col = 0; col < num; ++col)
             {
                std::swap (m [pos * num + col], m [row * num + col]);
             }
@@ -787,14 +783,14 @@ HIntLib::matrixInverse (const A &a, typename A::type *m, unsigned num)
       T pivot = a.recip (m[pos * num + pos]);
       m[pos * num + pos] = a.one();
 
-      for (unsigned col = 0; col < num; ++col)
+      for (int col = 0; col < num; ++col)
       {
          a.mulBy (m[pos * num + col], pivot);
       }
 
       // update remaining rows
 
-      for (unsigned row = 0; row < num; ++row)
+      for (int row = 0; row < num; ++row)
       {
          if (row == pos)  continue;
 
@@ -803,7 +799,7 @@ HIntLib::matrixInverse (const A &a, typename A::type *m, unsigned num)
 
          if (! a.is0 (lc))
          {
-            for (unsigned col = 0; col < num; ++col)
+            for (int col = 0; col < num; ++col)
             {
                a.addTo (m [row * num + col], a.mul (lc, m [pos * num + col]));
             }
@@ -817,7 +813,7 @@ HIntLib::matrixInverse (const A &a, typename A::type *m, unsigned num)
    {
       if (int (permutation[col]) == col)  continue;
 
-      for (unsigned row = 0; row < num; ++row)
+      for (int row = 0; row < num; ++row)
       {
          std::swap (m[row * num + col], m[row * num + permutation[col]]);
       }
@@ -828,28 +824,24 @@ HIntLib::matrixInverse (const A &a, typename A::type *m, unsigned num)
 
 
 #define HINTLIB_INSTANTIATE_LINEARALGEBRAGEN(X) \
-   template bool isIdentityMatrix (const X&, const X::type*, unsigned); \
-   template bool isZeroMatrix (const X&, const X::type*, unsigned, unsigned); \
-   template bool matrixInverse        (const X&, X::type*, unsigned); \
-   template bool isLinearlyIndependent(const X&, X::type*, unsigned, unsigned);\
-   template unsigned matrixRank       (const X&, X::type*, unsigned, unsigned);\
-   template unsigned numLinearlyIndependentVectors (\
-      const X&, X::type*, unsigned, unsigned);\
-   template unsigned nullSpace ( \
-      const X&, X::type*, unsigned, unsigned, X::type*);\
-   template unsigned basisSupplement (const X&, X::type*, unsigned, unsigned);\
-   template unsigned basisSupplement ( \
-      const X&, X::type*, unsigned, unsigned, unsigned*);\
+   template bool isIdentityMatrix (const X&, const X::type*, int); \
+   template bool isZeroMatrix (const X&, const X::type*, int, int); \
+   template bool matrixInverse(const X&, X::type*, int); \
+   template bool isLinearlyIndependent(const X&, X::type*, int, int);\
+   template int matrixRank(const X&, X::type*, int, int);\
+   template int numLinearlyIndependentVectors (const X&, X::type*, int, int); \
+   template int nullSpace (const X&, X::type*, int, int, X::type*); \
+   template int basisSupplement (const X&, X::type*, int, int);\
+   template int basisSupplement (const X&, X::type*, int, int, int*);\
    template void matrixMul ( \
-      const X&, const X::type*, const X::type*, \
-      unsigned, unsigned, unsigned, X::type*); \
+      const X&, const X::type*, const X::type*, int, int, int, X::type*); \
    template void matrixVectorMul ( \
-      const X&, const X::type*, const X::type*, unsigned, unsigned, X::type*);\
+      const X&, const X::type*, const X::type*, int, int, X::type*);\
    template void vectorMatrixMul ( \
-      const X&, const X::type*, const X::type*, unsigned, unsigned, X::type*);
+      const X&, const X::type*, const X::type*, int, int, X::type*);
 
 #define HINTLIB_INSTANTIATE_LINEARALGEBRAGEN_T(X) \
-   template void matrixTranspose (const X*, unsigned, unsigned, X*);
+   template void matrixTranspose (const X*, int, int, X*);
 
 #endif
 

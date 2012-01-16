@@ -6,7 +6,7 @@
 
 # autoconf setup
 
-AC_INIT([HIntLib], 0.0.12, [rudolf.schuerer@sbg.ac.at], [HIntLib])
+AC_INIT([HIntLib], 0.0.13, [rudolf.schuerer@sbg.ac.at], [HIntLib])
 
 dnl SHARED_VERSION_NUMBER is the libtool library version used in connection
 dnl with the -version-info option.
@@ -15,7 +15,10 @@ dnl 0.0. 9:             1
 dnl 0.0.10:             2
 dnl 0.0.11:             3
 dnl 0.0.12.beta1,final: 4
-SHARED_VERSION_NUMBER=4
+dnl 0.0.13.beta1:       5
+dnl 0.0.13.beta2:       6
+dnl 0.0.13:             7
+SHARED_VERSION_NUMBER=7
 AC_SUBST(SHARED_VERSION_NUMBER)
 AC_CONFIG_SRCDIR([src/HIntLib/integrator.h])
 AC_CONFIG_HEADERS(config.h)

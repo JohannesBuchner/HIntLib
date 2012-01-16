@@ -45,13 +45,13 @@ using L::approx;
  *  Constructors
  *****************************************************************************/
 
-L::Hypercube::Hypercube (unsigned _dim)
+L::Hypercube::Hypercube (int _dim)
    : dim (_dim), data (2 * _dim, 0.5), volume (1.0) {}
 
-L::Hypercube::Hypercube (unsigned _dim, const real a [], const real b [])
+L::Hypercube::Hypercube (int _dim, const real a [], const real b [])
    : dim (_dim), data (2 * _dim)
 {
-   for (unsigned i = 0; i < dim; ++i)
+   for (int i = 0; i < dim; ++i)
    {
       center (i) =     (b [i] + a [i]) * 0.5;
       width (i)  = abs (b [i] - a [i]) * 0.5;
@@ -60,13 +60,13 @@ L::Hypercube::Hypercube (unsigned _dim, const real a [], const real b [])
    calcVolume ();
 }
 
-L::Hypercube::Hypercube (unsigned _dim, real a, real b)
+L::Hypercube::Hypercube (int _dim, real a, real b)
    : dim (_dim), data (2 * _dim)
 {
    const real c =     (b + a) * 0.5;
    const real w = abs (b - a) * 0.5;
 
-   for (unsigned i = 0; i < dim; ++i)
+   for (int i = 0; i < dim; ++i)
    {
       center (i) = c;
       width (i)  = w;
@@ -124,7 +124,7 @@ bool L::unite (Hypercube &h, const Hypercube &hh)
   int found = -1;
   bool which = false;
 
-  for (unsigned i = 0; i < h.getDimension(); ++i)
+  for (int i = 0; i < h.getDimension(); ++i)
   {
     // Check for identity
 
@@ -187,7 +187,7 @@ bool L::operator== (const Hypercube &h1, const Hypercube &h2)
 {
    if (h1.getDimension() != h2.getDimension())  return false;
 
-   for (unsigned i = 0; i < h1.getDimension(); ++i)
+   for (int i = 0; i < h1.getDimension(); ++i)
    {
       if (! approx (h1.getCenter(i), h2.getCenter(i))
        || ! approx (h1.getWidth (i), h2.getWidth (i)))  return false;
@@ -205,7 +205,7 @@ bool L::operator== (const Hypercube &h1, const Hypercube &h2)
 
 bool L::isUnitCube (const Hypercube &h)
 {
-   for (unsigned i = 0; i < h.getDimension(); ++i)
+   for (int i = 0; i < h.getDimension(); ++i)
    {
       if (! approx (h.getCenter(i), real(.5))
        || ! approx (h.getWidth(i),  real(.5)))  return false;
@@ -225,7 +225,7 @@ bool L::isUnitCube (const Hypercube &h)
 
 bool L::isPointInside (const Hypercube &h, const real x [])
 {
-   for (unsigned i = 0; i < h.getDimension(); ++i)
+   for (int i = 0; i < h.getDimension(); ++i)
    {
       if (x [i] < h.getLowerBound (i) || x [i] > h.getUpperBound (i))
          return false;
@@ -252,13 +252,13 @@ L::Hypercube::Location L::whereIsPoint (const Hypercube &h, const real x[])
    const real eps
       = std::numeric_limits<real>::epsilon() * h.getDiameter(0) * 3.0;
 
-   for (unsigned i = 0; i < h.getDimension(); ++i)
+   for (int i = 0; i < h.getDimension(); ++i)
    {
       if (h.getLowerBound(i) - x[i] > eps || x[i] - h.getUpperBound(i) > eps)
          return Hypercube::OUTSIDE;
    }
 
-   for (unsigned i = 0; i < h.getDimension(); ++i)
+   for (int i = 0; i < h.getDimension(); ++i)
    {
       if (x[i] - h.getLowerBound(i) <= eps || h.getUpperBound(i) - x[i] <= eps)
          return Hypercube::BORDER;

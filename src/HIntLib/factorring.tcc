@@ -345,7 +345,7 @@ order (const type& u) const
 {
    throwIfZero (u);
 
-   if (facNMinus1.empty())  Prime::factor (facNMinus1, this->size() -1);
+   if (facNMinus1.empty())  Prime::factor (facNMinus1, this->size() - 1);
 
    //  Order of an element in a finite group.
    //  See Algorithm 1.4.3 in H.Kohen, CANT

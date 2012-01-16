@@ -39,8 +39,8 @@
  *      volume.
  */
 
-#ifndef HINTLIB_CUBEPARTITIONER_H
-#define HINTLIB_CUBEPARTITIONER_H 1
+#ifndef HINTLIB_CUBE_PARTITIONER_H
+#define HINTLIB_CUBE_PARTITIONER_H 1
 
 #include <HIntLib/defaults.h>
 

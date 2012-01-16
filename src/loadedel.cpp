@@ -25,9 +25,9 @@
 #include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_ISTREAM
-  #include <istream>
+#  include <istream>
 #else
-  #include <iostream>
+#  include <iostream>
 #endif
 
 #include <HIntLib/linereader.h>
@@ -43,7 +43,7 @@ namespace L = HIntLib;
  */
 
 L::GeneratorMatrixGen<unsigned char>*
-L::loadEdel (std::istream &str, unsigned base)
+L::loadEdel (std::istream &str, int base)
 {
    LineReader lr (str);
 
@@ -63,7 +63,7 @@ L::loadEdel (std::istream &str, unsigned base)
 
    // Read the first column vector in order to determin  prec
 
-   unsigned prec = 0;
+   int prec = 0;
    while (isdigit (lr.get()))  ++prec;
 
    if (prec == 0)  lr.throwException ("expecting digits");
@@ -72,11 +72,11 @@ L::loadEdel (std::istream &str, unsigned base)
 
    // Read first line in order to determin  s
 
-   unsigned dim = 1;
+   int dim = 1;
 
    while (lr.get() == '*')
    {
-      for (unsigned b = 0; b < prec; ++b)
+      for (int b = 0; b < prec; ++b)
       {
          if (! isdigit (lr.get()))  lr.throwException ("digit expected");
       }
@@ -88,7 +88,7 @@ L::loadEdel (std::istream &str, unsigned base)
 
    // read all lines
    
-   unsigned size = prec * dim;
+   int size = prec * dim;
    std::vector<unsigned char*> lines;
    unsigned char* line = 0;
 
@@ -110,12 +110,12 @@ L::loadEdel (std::istream &str, unsigned base)
          line = new unsigned char [size];
          unsigned char* p = line;
 
-         for (unsigned d = 0; d < dim; ++d)
+         for (int d = 0; d < dim; ++d)
          {
-            for (unsigned b = 0; b < prec; ++b)
+            for (int b = 0; b < prec; ++b)
             {
                int c = lr.get();
-               unsigned digit = c - '0';
+               int digit = c - '0';
                if (digit >= base)  lr.throwException ("digit larger than base");
                *p++ = digit;
             }
@@ -142,20 +142,20 @@ L::loadEdel (std::istream &str, unsigned base)
 
    // create matrix of appropriate size
 
-   unsigned m = lines.size();
+   int m = lines.size();
 
    GeneratorMatrixGen<unsigned char>* gm =
       new GeneratorMatrixGen<unsigned char> (base, dim, m, prec);
 
    // copy content into matrix
 
-   for (unsigned r = 0; r < m; ++r)
+   for (int r = 0; r < m; ++r)
    {
       unsigned char* currentLine = lines[r];
 
-      for (unsigned d = 0; d < dim; ++d)
+      for (int d = 0; d < dim; ++d)
       {
-         for (unsigned b = 0; b < prec; ++b)
+         for (int b = 0; b < prec; ++b)
          {
             gm->setd (d, r, b, *currentLine++);
          }

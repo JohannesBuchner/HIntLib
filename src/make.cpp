@@ -27,9 +27,9 @@
 #include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
+#  include <sstream>
 #else
-  #include <HIntLib/fallback_sstream.h>
+#  include <HIntLib/fallback_sstream.h>
 #endif
 
 #include <HIntLib/make.h>

@@ -155,9 +155,11 @@ namespace HIntLib
  *  logInt(0, base)  := -1
  */
 
-template<class T> int L::logInt (T x, T base)
+template<class T> int L::Private::LogIntHelper<T,true>::logInt (T x, T base)
 {
    if (base < 2)  throw InvalidLogBase (base);
+   if (x < 0)  throw DivisionByZero();
+
    if (x == 0)  return -1;
    x /= base;
 
@@ -173,17 +175,35 @@ template<class T> int L::logInt (T x, T base)
    return result;
 }
 
-namespace HIntLib
+template<class T> int L::Private::LogIntHelper<T,false>::logInt (T x, T base)
 {
-#define HINTLIB_INSTANTIATE(X) template int logInt (X, X);
+   if (base < 2)  throw InvalidLogBase (base);
 
-   HINTLIB_INSTANTIATE (unsigned)
-   HINTLIB_INSTANTIATE (unsigned long)
+   if (x == 0)  return -1;
+   x /= base;
+
+   int result = 0;
+   T test = 1;
+
+   while (test <= x)
+   {
+      test *= base;
+      ++ result;
+   }
+
+   return result;
+}
+
+#define HINTLIB_INSTANTIATE(X,Y) \
+   template int HIntLib::Private::LogIntHelper<X,Y>::logInt(X, X);
+
+   HINTLIB_INSTANTIATE (int, true)
+   HINTLIB_INSTANTIATE (unsigned, false)
+   HINTLIB_INSTANTIATE (unsigned long, false)
 #ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
-   HINTLIB_INSTANTIATE (unsigned long long)
+   HINTLIB_INSTANTIATE (unsigned long long, false)
 #endif
 #undef HINTLIB_INSTANTIATE
-}
 
 
 /**

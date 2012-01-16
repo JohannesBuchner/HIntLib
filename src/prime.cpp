@@ -169,7 +169,7 @@ L::isPrimitiveRoot (unsigned a, unsigned p)
  */
 
 bool
-L::Prime::isPrimePower (unsigned n, unsigned &_prime, unsigned &_power)
+L::Prime::isPrimePower (unsigned n, unsigned &_prime, int &_power)
 {
    if (Prime::test (n))
    {
@@ -187,7 +187,7 @@ L::Prime::isPrimePower (unsigned n, unsigned &_prime, unsigned &_power)
          prime = Prime::next (prime + 1);
       }
 
-      unsigned power = 0;
+      int power = 0;
       unsigned s = n;
 
       do
@@ -205,7 +205,7 @@ L::Prime::isPrimePower (unsigned n, unsigned &_prime, unsigned &_power)
 }
 
 void
-L::Prime::factorPrimePower (unsigned n, unsigned &prime, unsigned &power)
+L::Prime::factorPrimePower (unsigned n, unsigned &prime, int &power)
 {
    if (! isPrimePower (n, prime, power))  throw NotAPrimePower (n);
 }
@@ -279,7 +279,7 @@ unsigned L::PrimeDivisors::next()
    return prime;
 }
 
-unsigned L::PrimeDivisors::next (unsigned& e)
+unsigned L::PrimeDivisors::next (int& e)
 {
    if (n < 2)  return 0;
    prime = Prime::nextPrimeDivisor (n, prime);
@@ -298,7 +298,7 @@ void
 L::Prime::factor (Factorization& f, unsigned n)
 {
    PrimeDivisors pd (n);
-   unsigned e;
+   int e;
    while (unsigned prime = pd.next(e))
    {
       f.push_back (std::make_pair (prime, e));

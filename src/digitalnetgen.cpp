@@ -30,10 +30,10 @@
  *  Digital Net
  */
 
-HIntLib::DigitalNet::DigitalNet (unsigned base, unsigned _m)
+HIntLib::DigitalNet::DigitalNet (int base, int _m)
    : m (std::min (
         _m,
-        unsigned(logInt (std::numeric_limits<Index>::max(), Index(base))))),
+        logInt (std::numeric_limits<Index>::max(), Index(base)))),
      size (powInt (base, m))
 {}
 

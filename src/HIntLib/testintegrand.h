@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef HINTLIB_TESTFUNCTION_H
-#define HINTLIB_TESTFUNCTION_H 1
+#ifndef HINTLIB_TEST_INTEGRAND_H
+#define HINTLIB_TEST_INTEGRAND_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -44,7 +44,7 @@ class Hypercube;
 class TestIntegrand : public Integrand
 {
 public:
-   TestIntegrand (unsigned dim) : Integrand (dim) {}
+   TestIntegrand (int dim) : Integrand (dim) {}
 
    virtual real getExactResult (const Hypercube &) const = 0;
 };
@@ -63,9 +63,9 @@ class CStyleTestIntegrand : public TestIntegrand
 {
 public:
 
-   typedef real F (unsigned, const real*);
+   typedef real F (int, const real*);
 
-   CStyleTestIntegrand (unsigned dim, F *f, real exactResult)
+   CStyleTestIntegrand (int dim, F *f, real exactResult)
       : TestIntegrand (dim), f(f), exactResult(exactResult) {}
 
    virtual real operator() (const real* p)  { return f (dim, p); }
@@ -92,7 +92,7 @@ public:
       : TestIntegrand (f->getDimension()), f (*f), counter (0) {}
 
    virtual real operator() (const real* p)  { ++counter; return f(p); }
-   virtual real derivative (const real* p, unsigned a)
+   virtual real derivative (const real* p, int a)
       { ++counter; return f.derivative (p, a); }
    virtual real getExactResult (const Hypercube &h) const
       { return f.getExactResult (h); }
@@ -119,7 +119,7 @@ public:
    DomainCheckerIntegrand (TestIntegrand *, const Hypercube *);
 
    virtual real operator() (const real p []);
-   virtual real derivative (const real* p, unsigned);
+   virtual real derivative (const real* p, int);
    virtual real getExactResult (const Hypercube &hh) const
       { return f.getExactResult (hh); }
 

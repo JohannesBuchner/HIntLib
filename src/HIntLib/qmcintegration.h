@@ -24,8 +24,8 @@
  *  Templates for executing the inner loop of Monte Carlo integration routines
  */
 
-#ifndef HINTLIB_QMCINTEGRATION_H
-#define HINTLIB_QMCINTEGRATION_H 1
+#ifndef HINTLIB_QMC_INTEGRATION_H
+#define HINTLIB_QMC_INTEGRATION_H 1
 
 #include <HIntLib/defaults.h>
 

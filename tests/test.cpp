@@ -31,6 +31,18 @@
 #include <stdexcept>
 #include <unistd.h>
 
+#if defined HINTLIB_HAVE_CSTRING && defined HINTLIB_HAVE_CSTDLIB
+  // For strchr
+#  include <cstring>
+  // For strtol
+#  include <cstdlib>
+#  define HINTLIB_SLN std::
+#else
+#  include <string.h>
+#  include <stdlib.h>
+#  define HINTLIB_SLN
+#endif
+
 #include <HIntLib/exception.h>
 #include <HIntLib/output.h>
 
@@ -40,7 +52,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-enum { CURRENT_YEAR = 2006 };
+enum { CURRENT_YEAR = 2008 };
 
 int verbose = 1;
 int status  = 0;
@@ -200,6 +212,42 @@ void usage(const char* msg)
            "  -h     Display usage information\n\n";
 
    exit (1);
+}
+
+
+/**
+ *  parseInt()
+ */
+
+int parseInt (const char* s)
+{
+   char* endptr;
+   const int result = HINTLIB_SLN strtol (s, &endptr, 0);
+   if (*endptr != '\0')  usage ("Invalid numeric argument!");
+   return result;
+}
+
+
+/**
+ *  parseRange()
+ */
+
+void parseRange (const char* s, int minDefault, int& min, int& max)
+{
+   const char* i = HINTLIB_SLN strchr(s, '-');
+   char* endptr;
+
+   if (i)
+   {
+      min = HINTLIB_SLN strtol(s, &endptr, 0);
+      if (endptr != i)  usage ("Invalid numeric argument!");
+      max = parseInt(i + 1);
+   }
+   else
+   {
+      min = minDefault;
+      max = parseInt(s);
+   }
 }
 
 

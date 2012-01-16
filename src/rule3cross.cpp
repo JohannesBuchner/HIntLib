@@ -42,8 +42,8 @@
 #endif
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hypercube.h>
 
 
 namespace L = HIntLib;
@@ -54,7 +54,7 @@ namespace L = HIntLib;
  *  constatns and to allocate (dimension dependent) memory
  */
 
-L::Rule3Cross::Rule3Cross (unsigned dim)
+L::Rule3Cross::Rule3Cross (int dim)
    : OrbitRule (dim),
      r (HINTLIB_MN sqrt (real(dim) / real(3))),
      oneOver2Dim (real(1) / real(2 * dim))

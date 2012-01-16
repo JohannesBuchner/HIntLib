@@ -33,8 +33,8 @@
  *  as formula Cn: 5-3
  */
 
-#ifndef HINTLIB_RULE5STROUD_H
-#define HINTLIB_RULE5STROUD_H 1
+#ifndef HINTLIB_RULE_5_STROUD_H
+#define HINTLIB_RULE_5_STROUD_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -53,15 +53,15 @@ namespace HIntLib
    class Rule5Stroud : public CubatureRule, private OrbitRule
    {
    public:
-      Rule5Stroud (unsigned dim);
+      Rule5Stroud (int dim);
 
       virtual real eval (Integrand &, const Hypercube &);
 
-      virtual unsigned getDimension()      const  { return dim; }
-      virtual Index    getNumPoints()      const;
-      virtual unsigned getDegree()         const  { return 5; }
-      virtual bool     isAllPointsInside() const  { return true; }
-      virtual real     getSumAbsWeight()   const;
+      virtual int   getDimension()      const  { return dim; }
+      virtual Index getNumPoints()      const;
+      virtual int   getDegree()         const  { return 5; }
+      virtual bool  isAllPointsInside() const  { return true; }
+      virtual real  getSumAbsWeight()   const;
 
       static CubatureRuleFactory* getFactory();
 

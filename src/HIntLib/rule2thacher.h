@@ -49,20 +49,20 @@ namespace HIntLib
    class Rule2Thacher : public CubatureRule
    {
    public:
-      Rule2Thacher (unsigned dim);
+      Rule2Thacher (int dim);
 
       virtual real eval (Integrand &, const Hypercube &);
 
-      virtual unsigned getDimension()  const  { return dim; }
-      virtual Index getNumPoints()     const  { return 2 * dim + 1; }
-      virtual unsigned getDegree()     const  { return 2; }
-      virtual bool isAllPointsInside() const  { return true; }
-      virtual real getSumAbsWeight()   const;
+      virtual int   getDimension()      const  { return dim; }
+      virtual Index getNumPoints()      const  { return 2 * dim + 1; }
+      virtual int   getDegree()         const  { return 2; }
+      virtual bool  isAllPointsInside() const  { return true; }
+      virtual real  getSumAbsWeight()   const;
 
       static CubatureRuleFactory* getFactory();
 
    private:
-      const unsigned dim;
+      const int dim;
       Point p;
    };
 

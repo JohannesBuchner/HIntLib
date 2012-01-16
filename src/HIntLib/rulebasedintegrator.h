@@ -22,8 +22,8 @@
  *  RuleBasedIntegrator
  */
 
-#ifndef HINTLIB_RULEBASEDINTEGRATOR_H
-#define HINTLIB_RULEBASEDINTEGRATOR_H 1
+#ifndef HINTLIB_RULE_BASED_INTEGRATOR_H
+#define HINTLIB_RULE_BASED_INTEGRATOR_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -45,7 +45,7 @@ namespace HIntLib
    protected:
       CubatureRuleBasedIntegrator (const CubatureRuleFactory *);
 
-      CubatureRule* getRule (unsigned) const;
+      CubatureRule* getRule (int) const;
 
    public:
       virtual ~CubatureRuleBasedIntegrator();
@@ -59,7 +59,7 @@ namespace HIntLib
    protected:
       EmbeddedRuleBasedIntegrator (const EmbeddedRuleFactory *);
 
-      EmbeddedRule* getRule (unsigned) const;
+      EmbeddedRule* getRule (int) const;
 
    public:
       virtual ~EmbeddedRuleBasedIntegrator();

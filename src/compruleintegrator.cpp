@@ -38,6 +38,7 @@
 #pragma implementation
 #endif
 
+#include <HIntLib/hypercube.h>
 #include <HIntLib/cubaturerule.h>
 #include <HIntLib/cubepartitioner.h>
 #include <HIntLib/kahanadd.h>
@@ -93,12 +94,12 @@ Integrator::Status L::CompRuleIntegrator::integrate (
 
    if (numSections == 0)
    {
-      #ifdef HINTLIB_NO_EXCEPTIONS
+#ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
-      #else
+#else
          throw NoEvaluationsPossible (maxEval);
-      #endif
+#endif
    }
 
    // Use CubePartitioner to perform action() an every sub-cube
@@ -166,12 +167,12 @@ Integrator::Status L::CompRuleIntegratorErr::integrate (
 
    if (numSections == 0)
    {
-      #ifdef HINTLIB_NO_EXCEPTIONS
+#ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
-      #else
+#else
          throw NoEvaluationsPossible (maxEval);
-      #endif
+#endif
    }
 
    // Use CubePartitioner to perform action an every sub-cube

@@ -68,13 +68,13 @@ void L::initFaure (GeneratorMatrixGen<unsigned char> &gm)
 
    // Create Pascal's Triangle in Matrix d=1
 
-   for (unsigned r = 0; r < gm.getM(); ++r)  gm.setd (1, r, 0, a.one());
+   for (int r = 0; r < gm.getM(); ++r)  gm.setd (1, r, 0, a.one());
 
-   for (unsigned b = 1; b < gm.getPrec(); ++b)
+   for (int b = 1; b < gm.getPrec(); ++b)
    {
       unsigned char x = 0;
 
-      for (unsigned r = b; r < gm.getM(); ++r)
+      for (int r = b; r < gm.getM(); ++r)
       {
          a.addTo (x, gm (1, r-1, b-1));
          gm.setd (1,r,b, x);
@@ -83,11 +83,11 @@ void L::initFaure (GeneratorMatrixGen<unsigned char> &gm)
 
    // initialize Faure-matrices for d =  2,...,dim-1
 
-   for (unsigned d = 2; d < gm.getDimension(); ++d)
+   for (int d = 2; d < gm.getDimension(); ++d)
    {
-      for (unsigned r = 0; r < gm.getM(); ++r)
+      for (int r = 0; r < gm.getM(); ++r)
       {
-         for (unsigned b = 0; b < std::min (r, gm.getPrec()); ++b)
+         for (int b = 0; b < std::min (r, gm.getPrec()); ++b)
          {
             gm.setd (d,r,b, a.mul (gm (1,r,b), a.power (d, r-b)));
          }

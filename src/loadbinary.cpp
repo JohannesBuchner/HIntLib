@@ -23,10 +23,10 @@
 #include <HIntLib/defaults.h>
 
 #if defined(HINTLIB_HAVE_OSTREAM) && defined(HINTLIB_HAVE_ISTREAM)
-  #include <ostream>
-  #include <istream>
+#  include <ostream>
+#  include <istream>
 #else
-  #include <iostream>
+#  include <iostream>
 #endif
 
 #include <fstream>
@@ -34,9 +34,9 @@
 #include <algorithm>
 
 #ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
+#  include <sstream>
 #else
-  #include <HIntLib/fallback_sstream.h>
+#  include <HIntLib/fallback_sstream.h>
 #endif
 
 #include <HIntLib/generatormatrixgen.h>
@@ -69,11 +69,11 @@ L::GeneratorMatrixGen<unsigned char>* L::loadBinary (std::istream &str)
       throw FIXME (__FILE__, __LINE__);
    }
 
-   unsigned base = str.get();
-   unsigned dim  = str.get();
+   int base = str.get();
+   int dim  = str.get();
    dim |= str.get() << numeric_limits<char>::digits;
-   unsigned m    = str.get();
-   unsigned prec = str.get();
+   int m    = str.get();
+   int prec = str.get();
 
    if (! str)  throw FIXME (__FILE__, __LINE__);
 
@@ -82,11 +82,11 @@ L::GeneratorMatrixGen<unsigned char>* L::loadBinary (std::istream &str)
 
    char check = 0;
 
-   for (unsigned d = 0; d < gm->getDimension(); ++d)
+   for (int d = 0; d < gm->getDimension(); ++d)
    {
-      for (unsigned b = 0; b < gm->getPrec(); ++b)
+      for (int b = 0; b < gm->getPrec(); ++b)
       {
-         for (unsigned r = 0; r < gm->getM(); ++r)
+         for (int r = 0; r < gm->getM(); ++r)
          {
             char digit = str.get ();
             gm->setd (d, r, b, digit);
@@ -111,10 +111,10 @@ L::GeneratorMatrixGen<unsigned char>* L::loadBinary (std::istream &str)
 
 void L::GeneratorMatrix::binaryExport (std::ostream &o) const
 {
-   if (   getBase ()     > numeric_limits<unsigned char>::max()
-       || getDimension() > (1u << 2 * numeric_limits<char>::digits)
-       || getM ()        > numeric_limits<unsigned char>::max()
-       || getPrec()      > numeric_limits<unsigned char>::max())
+   if (   unsigned(getBase()) > numeric_limits<unsigned char>::max()
+       || getDimension()      > (1 << 2 * numeric_limits<char>::digits)
+       || unsigned(getM ())   > numeric_limits<unsigned char>::max()
+       || unsigned(getPrec()) > numeric_limits<unsigned char>::max())
    {
       throw FIXME (__FILE__, __LINE__);
    }
@@ -128,11 +128,11 @@ void L::GeneratorMatrix::binaryExport (std::ostream &o) const
 
    char check = 0;
 
-   for (unsigned d = 0; d < getDimension(); ++d)
+   for (int d = 0; d < getDimension(); ++d)
    {
-      for (unsigned b = 0; b < getPrec(); ++b)
+      for (int b = 0; b < getPrec(); ++b)
       {
-         for (unsigned r = 0; r < getM(); ++r)
+         for (int r = 0; r < getM(); ++r)
          {
             char digit = getDigit (d, r, b);
             o.put (digit);
@@ -158,9 +158,9 @@ namespace
    };
 }
 
-L::GeneratorMatrixGen<unsigned char>* L::loadNiederreiterXing (unsigned dim)
+L::GeneratorMatrixGen<unsigned char>* L::loadNiederreiterXing (int dim)
 {
-   for (unsigned i = 0; i < 2; ++i)
+   for (int i = 0; i < 2; ++i)
    {
       std::ostringstream ss;
       ss << nxFileNames [i]

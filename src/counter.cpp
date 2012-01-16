@@ -26,9 +26,43 @@
 #pragma implementation
 #endif
 
+#include <HIntLib/output.h>
+
 namespace L = HIntLib;
 
-bool L::Counter::next()
+std::ostream& L::operator<< (std::ostream& o, const CounterBase & c)
+{
+   Private::Printer ss (o);
+   for (const unsigned* p = c.array() + c.getNumDigits() - 1;
+        p >= c.array(); --p)
+   {
+      ss << *p;
+   }
+
+   return o;
+}
+#ifdef HINTLIB_BUILD_WCHAR
+std::wostream& L::operator<< (std::wostream& o, const CounterBase & c)
+{
+   Private::WPrinter ss (o);
+   for (const unsigned* p = c.array() + c.getNumDigits() - 1;
+        p >= c.array(); --p)
+   {
+      ss << *p;
+   }
+
+   return o;
+}
+#endif
+
+void
+L::CounterBase::reset()
+{
+   std::fill (index.begin(), index.begin() + digits, 0);
+}
+
+bool
+L::Counter::next()
 {
    for (unsigned i = 0; i < digits; ++i)
    {
@@ -46,7 +80,8 @@ bool L::Counter::next()
    return false;
 }
 
-bool L::CounterMixedBase::next()
+bool
+L::CounterMixedBase::next()
 {
    for (unsigned i = 0; i < digits; ++i)
    {
@@ -64,4 +99,77 @@ bool L::CounterMixedBase::next()
    return false;
 }
 
+bool
+L::GrayCounter::next()
+{
+   for (unsigned i = 0; i < digits; ++i)
+   {
+      unsigned& pos = index[i];
+      int&      dir = direction[i];
+
+      if (   (pos != baseMinusOne && dir == 1) || (pos == 0 && dir == -1))
+      {
+         pos += dir;
+         return true;
+      }
+      else
+      {
+         dir = - dir;
+      }
+   }
+
+   return false;
+}
+
+unsigned
+L::GrayCounter::nextDigit()
+{
+   for (unsigned i = 0; i < digits; ++i)
+   {
+      unsigned& pos = index[i];
+      int&      dir = direction[i];
+
+      if (   (pos != baseMinusOne && dir == 1) || (pos == 0 && dir == -1))
+      {
+         pos += dir;
+         return i;
+      }
+      else
+      {
+         dir = - dir;
+      }
+   }
+
+   return digits;
+}
+
+unsigned
+L::GrayCounter::nextDigit(unsigned* newDigit)
+{
+   for (unsigned i = 0; i < digits; ++i)
+   {
+      unsigned& pos = index[i];
+      int&      dir = direction[i];
+
+      if (   (pos != baseMinusOne && dir == 1) || (pos != 0 && dir == -1))
+      {
+         *newDigit = pos += dir;
+         return i;
+      }
+      else
+      {
+         dir = - dir;
+      }
+   }
+
+   return digits;
+}
+
+void
+L::GrayCounter::reset()
+{
+   CounterBase::reset();
+
+   std::fill (direction.begin(), direction.begin() + digits, 1);
+}
 

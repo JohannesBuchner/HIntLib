@@ -52,13 +52,13 @@ using L::Index;
 template<class T>
 L::DigitalNet2<T>::DigitalNet2 (
    const GeneratorMatrix2<T> &_c, const Hypercube &_h,
-   unsigned _m, Index index, bool equi, Truncation _trunc)
+   int _m, Index index, bool equi, Truncation _trunc)
 : QRNSequenceBase(_h),
   DigitalNet (_c.getBase(), _m),
   prec (min3(
-     (_trunc == FULL) ? _c.getPrec() : m,              // what we want
-     unsigned (std::numeric_limits<real>::digits - 1), // what makes sense
-     _c.getPrec()                                      // what's in the matrix
+     (_trunc == FULL) ? _c.getPrec() : m,   // what we want
+     std::numeric_limits<real>::digits - 1, // what makes sense
+     _c.getPrec()                           // what's in the matrix
   )),
   alg (prec),
   scalAlg (alg.getScalarAlgebra()),
@@ -84,7 +84,7 @@ L::DigitalNet2<T>::DigitalNet2 (
 
    {
       const int dd = equi;
-      unsigned i = m;
+      int i = m;
       Index indexCopy = index;
       int shift = _c.getPrec() - c.getPrec();
 
@@ -97,7 +97,7 @@ L::DigitalNet2<T>::DigitalNet2 (
 
          if (index & 1)
          {
-            for (unsigned d = dd; d < c.getDimension(); ++d)
+            for (int d = dd; d < c.getDimension(); ++d)
             {
                alg.addTo (xStart [d], (_c(d-dd, i) >> shift));
             }
@@ -119,7 +119,7 @@ L::DigitalNet2<T>::DigitalNet2 (
       union { floatType f; T i; } x;
       x.f = 1.;
 
-      for (unsigned d = 0; d < getDimension(); ++d)
+      for (int d = 0; d < getDimension(); ++d)
       {
          xStart [d] = (xStart[d] << shift) | x.i;
       }
@@ -166,7 +166,7 @@ void L::DigitalNet2<T>::setDigitalShift (const T* vectors)
    xx.f = 1.;
 #endif
 
-   for (unsigned d = 0; d < getDimension(); ++d)
+   for (int d = 0; d < getDimension(); ++d)
    {
       T x = vectors[d];
 
@@ -197,10 +197,10 @@ void L::DigitalNet2<T>::randomize (PRNG &g)
    xx.f = 1.;
 #endif
 
-   for (unsigned d = 0; d < getDimension(); ++d)
+   for (int d = 0; d < getDimension(); ++d)
    {
       T x = 0;
-      for (unsigned b = 0; b < prec; ++b)
+      for (int b = 0; b < prec; ++b)
       {
          x = (x << 1) | g.equidist(scalAlg.size());
       }
@@ -230,13 +230,13 @@ void L::DigitalNet2<T>::resetX (Index nn)
 
    // Recalculate x
 
-   for (unsigned r = 0; nn != 0; ++r, nn >>= 1)
+   for (int r = 0; nn != 0; ++r, nn >>= 1)
    {
       const unsigned char digit = nn & 1;
 
       if (! scalAlg.is0 (digit))
       {
-         for (unsigned d = 0; d < getDimension(); ++d)
+         for (int d = 0; d < getDimension(); ++d)
          {
             alg.addTo (x [d], alg.mul (c(d,r), digit));
          }

@@ -60,9 +60,9 @@ public:
       REL_ERROR_REACHED,  // Estimated error <= reqRelError
       MAX_EVAL_REACHED,   // #integ evaluations reached
       ERROR               // Non of these, but some result was returned
-   #ifdef HINTLIB_PARALLEL
+#ifdef HINTLIB_PARALLEL
      ,WRONG_NODE          // In parallel mode, only node 0 returns a result
-   #endif
+#endif
    };
 
    // A virtual destructor is required by many child classes

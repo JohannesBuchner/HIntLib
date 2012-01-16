@@ -63,7 +63,7 @@ void L::GeneratorMatrix::setParameters (const GeneratorMatrix& gm)
  *  getDefaultM ()
  */
 
-unsigned L::GeneratorMatrix::getDefaultM (unsigned base)
+int L::GeneratorMatrix::getDefaultM (int base)
 {
    const Index maxNetSize
       = std::numeric_limits<Index>::digits <= 49
@@ -77,9 +77,9 @@ unsigned L::GeneratorMatrix::getDefaultM (unsigned base)
  *  getDefaultPrec ()
  */
 
-unsigned L::GeneratorMatrix::getDefaultPrec (unsigned base)
+int L::GeneratorMatrix::getDefaultPrec (int base)
 {
-   return unsigned (HINTLIB_MN ceil(
+   return int (HINTLIB_MN ceil(
       HINTLIB_MN log(2.0) / HINTLIB_MN log(double(base))
                           * double(std::numeric_limits<real>::digits - 1)));
 }
@@ -92,12 +92,12 @@ unsigned L::GeneratorMatrix::getDefaultPrec (unsigned base)
  *  By default, a Generator Matrix cannot be written to.
  */
 
-void L::GeneratorMatrix::setDigit (unsigned, unsigned, unsigned, unsigned)
+void L::GeneratorMatrix::setDigit (int, int, int, int)
 {
    throw InternalError (__FILE__, __LINE__);
 }
 
-void L::GeneratorMatrix::vSetPackedRowVector (unsigned, unsigned, u64)
+void L::GeneratorMatrix::vSetPackedRowVector (int, int, u64)
 {
    throw InternalError (__FILE__, __LINE__);
 }
@@ -114,7 +114,7 @@ void L::GeneratorMatrix::print (std::ostream &o) const
      << " m=" << getM()
      << " prec=" << getPrec() << '\n';
 
-   for (unsigned d = 0; d < getDimension(); ++d)
+   for (int d = 0; d < getDimension(); ++d)
    {
       o << "Dimension " << d << ":\n";
 
@@ -130,7 +130,7 @@ void L::GeneratorMatrix::print (std::wostream &o) const
      << L" m=" << getM()
      << L" prec=" << getPrec() << L'\n';
 
-   for (unsigned d = 0; d < getDimension(); ++d)
+   for (int d = 0; d < getDimension(); ++d)
    {
       o << L"Dimension " << d << L":\n";
 
@@ -144,9 +144,9 @@ void L::GeneratorMatrix::print (std::wostream &o) const
  *  printDimension()
  */
 
-void L::GeneratorMatrix::printDimension (std::ostream &o, unsigned d) const
+void L::GeneratorMatrix::printDimension (std::ostream &o, int d) const
 {
-   for (unsigned b = 0; b < getPrec(); ++b)
+   for (int b = 0; b < getPrec(); ++b)
    {
       printRowVector (o, d, b);
       o << '\n';
@@ -154,9 +154,9 @@ void L::GeneratorMatrix::printDimension (std::ostream &o, unsigned d) const
 }
 
 #ifdef HINTLIB_BUILD_WCHAR
-void L::GeneratorMatrix::printDimension (std::wostream &o, unsigned d) const
+void L::GeneratorMatrix::printDimension (std::wostream &o, int d) const
 {
-   for (unsigned b = 0; b < getPrec(); ++b)
+   for (int b = 0; b < getPrec(); ++b)
    {
       printRowVector (o, d, b);
       o << L'\n';
@@ -169,12 +169,11 @@ void L::GeneratorMatrix::printDimension (std::wostream &o, unsigned d) const
  *  printRowVector ()
  */
 
-void L::GeneratorMatrix::printRowVector (
-      std::ostream &o, unsigned d, unsigned b) const
+void L::GeneratorMatrix::printRowVector (std::ostream &o, int d, int b) const
 {
-   unsigned size = (base < 10) ? 0 : logInt (base, 10u) + 2;
+   int size = (base < 10) ? 0 : logInt (base, 10) + 2;
 
-   for (unsigned r = 0; r < getM(); ++r)
+   for (int r = 0; r < getM(); ++r)
    {
       if (size)  o << std::setw (size - (r == 0));
       o << getDigit (d,r,b);
@@ -182,12 +181,11 @@ void L::GeneratorMatrix::printRowVector (
 }
 
 #ifdef HINTLIB_BUILD_WCHAR
-void L::GeneratorMatrix::printRowVector (
-      std::wostream &o, unsigned d, unsigned b) const
+void L::GeneratorMatrix::printRowVector (std::wostream &o, int d, int b) const
 {
-   unsigned size = (base < 10) ? 0 : logInt (base, 10u) + 2;
+   int size = (base < 10) ? 0 : logInt (base, 10) + 2;
 
-   for (unsigned r = 0; r < getM(); ++r)
+   for (int r = 0; r < getM(); ++r)
    {
       if (size)  o << std::setw (size - (r == 0));
       o << getDigit (d,r,b);
@@ -200,12 +198,11 @@ void L::GeneratorMatrix::printRowVector (
  *  printColumnVector ()
  */
 
-void L::GeneratorMatrix::printColumnVector (
-      std::ostream &o, unsigned d, unsigned r) const
+void L::GeneratorMatrix::printColumnVector (std::ostream &o, int d, int r) const
 {
-   unsigned size = (base < 10) ? 1 : logInt (base, 10u) + 2;
+   int size = (base < 10) ? 1 : logInt (base, 10) + 2;
 
-   for (unsigned b = 0; b < getPrec(); ++b)
+   for (int b = 0; b < getPrec(); ++b)
    {
       o << std::setw (size) << getDigit (d,r,b);
    }
@@ -213,11 +210,11 @@ void L::GeneratorMatrix::printColumnVector (
 
 #ifdef HINTLIB_BUILD_WCHAR
 void L::GeneratorMatrix::printColumnVector (
-      std::wostream &o, unsigned d, unsigned r) const
+      std::wostream &o, int d, int r) const
 {
-   unsigned size = (base < 10) ? 1 : logInt (base, 10u) + 2;
+   int size = (base < 10) ? 1 : logInt (base, 10) + 2;
 
-   for (unsigned b = 0; b < getPrec(); ++b)
+   for (int b = 0; b < getPrec(); ++b)
    {
       o << std::setw (size) << getDigit (d,r,b);
    }
@@ -240,11 +237,11 @@ bool L::operator== (const L::GeneratorMatrix &gm1,
       return false;
    }
 
-   for (unsigned d = 0; d < gm1.getDimension(); ++d)
+   for (int d = 0; d < gm1.getDimension(); ++d)
    {
-      for (unsigned r = 0; r < gm1.getM(); ++r)
+      for (int r = 0; r < gm1.getM(); ++r)
       {
-         for (unsigned b = 0; b < gm1.getPrec(); ++b)
+         for (int b = 0; b < gm1.getPrec(); ++b)
          {
             if (gm1.getDigit(d, r, b) != gm2.getDigit(d, r, b)) return false;
          }
@@ -277,7 +274,7 @@ void L::GeneratorMatrix::checkCopyDim (
 {
    checkCopy (o, n);
 
-   if (int (o.getDimension()) + offset < int (n.getDimension()))
+   if (o.getDimension() + offset < n.getDimension())
       throw GM_CopyDim (n.getDimension(), o.getDimension());
 }
 
@@ -289,8 +286,8 @@ void L::GeneratorMatrix::checkCopyDim (
  */
 
 void L::assign (
-   const GeneratorMatrix & src, unsigned srcDim,
-         GeneratorMatrix & dst, unsigned dstDim)
+   const GeneratorMatrix & src, int srcDim,
+         GeneratorMatrix & dst, int dstDim)
 {
    GeneratorMatrix::checkCopy (src, dst);
 
@@ -304,9 +301,9 @@ void L::assign (
       throw DimensionTooHigh (dstDim, dst.getDimension() - 1);
    }
 
-   for (unsigned r = 0; r < dst.getM(); ++r)
+   for (int r = 0; r < dst.getM(); ++r)
    {
-      for (unsigned b = 0; b < dst.getPrec(); ++b)
+      for (int b = 0; b < dst.getPrec(); ++b)
       {
          dst.setDigit (dstDim, r, b, src.getDigit (srcDim, r, b));
       }
@@ -316,6 +313,6 @@ void L::assign (
 
 void L::assign (const GeneratorMatrix &src, GeneratorMatrix &dst)
 {
-   for (unsigned d = 0; d < dst.getDimension(); ++d)  assign (src, d, dst, d);
+   for (int d = 0; d < dst.getDimension(); ++d)  assign (src, d, dst, d);
 }
 

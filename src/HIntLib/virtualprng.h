@@ -29,11 +29,11 @@
 #endif
 
 #ifdef HINTLIB_HAVE_CSTDDEF
-  #include <cstddef>
-  #define HINTLIB_SDN ::std::
+#  include <cstddef>
+#  define HINTLIB_SDN ::std::
 #else
-  #include <stddef.h>
-  #define HINTLIB_SDN ::
+#  include <stddef.h>
+#  define HINTLIB_SDN ::
 #endif
 
 namespace HIntLib

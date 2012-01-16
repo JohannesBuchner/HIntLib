@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05,06,07  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,16 +30,6 @@
 #include <iomanip>
 #include <memory>
 
-#include <HIntLib/defaults.h>
-
-#ifdef HINTLIB_HAVE_CSTDLIB
-  #include <cstdlib>
-  #define HINTLIB_SLN std::
-#else
-  #include <stdlib.h>
-  #define HINTLIB_SLN
-#endif
-
 #include <HIntLib/cubaturerule.h>
 #include <HIntLib/make.h>
 #include <HIntLib/testintegrand.h>
@@ -62,14 +52,16 @@ const char* deltaString;
  *  User-tuneable constants
  */
 
-      Index    MAX_NUM_POINTS = 3000; // do not check rules with more points
-      unsigned NUM_TESTS = 3;         // number of test-polynomials / dimesnion
-const unsigned FIRST_TEST_DIM =  1;
-      unsigned  LAST_TEST_DIM = 100;
-      unsigned FIRST_RULE = 1;
-      unsigned  LAST_RULE = 100;
-const unsigned NUM_MON = 130;        // Number of monomials in each polynomial
-const real     MAX_COEFF = 10.0;     // Maximal coefficient in each polynomial
+Index    MAX_NUM_POINTS = 3000; // do not check rules with more points
+int NUM_TESTS      =   3;         // number of test-polynomials / dimesnion
+int FIRST_TEST_DIM =   1;
+int LAST_TEST_DIM  = 100;
+int FIRST_RULE     =   1;
+int LAST_RULE      = 200;
+
+const int  NUM_MON = 130;        // Number of monomials in each polynomial
+const real MAX_COEFF = 10.0;     // Maximal coefficient in each polynomial
+bool STANDARD_UNIT_CUBE = false;
 
 
 /**
@@ -113,13 +105,13 @@ class TestPolynomial : public TestIntegrand
 {
 public:
 
-   TestPolynomial (unsigned dim, unsigned degree);
+   TestPolynomial (int dim, int degree);
 
    real operator() (const real *);
-   real derivative (const real *, unsigned);
+   real derivative (const real *, int);
 
    real getExactResult (const Hypercube &) const;
-   real getPartialResult (const Hypercube &, unsigned) const;
+   real getPartialResult (const Hypercube &, int) const;
    real getErrorOfExactResult (const Hypercube&) const;
    real getErrorOfEvaluation (const Hypercube&) const;
 
@@ -133,35 +125,32 @@ private:
       Dummy ();
    } dummy;
 
-   const unsigned degree;
+   const int degree;
 
    real coef [NUM_MON];
 
    Array<unsigned char> exponents;  // [NUM_MON][dim]
 
-   unsigned char& getExponent (unsigned i, unsigned d)
+   unsigned char& getExponent (int i, int d)
       { return exponents [d + i * dim]; }
-   unsigned char getExponent (unsigned i, unsigned d) const
+   unsigned char getExponent (int i, int d) const
       { return exponents [d + i * dim]; }
 
    /*
     * Static monomial table
     */
 
-   static const unsigned MAX_DEGREE = 10; // Highest degree in use
-   static const unsigned NUM_MONOMIALS;   // Size of the following three tables
+   enum { MAX_DEGREE = 10 }; // Highest degree in use
+   static const int NUM_MONOMIALS;   // Size of the following three tables
 
    static const unsigned char monomials [][MAX_DEGREE]; // monomials
-   static unsigned monomialsDim [];                     // # differnt variables
-   static unsigned monomialsDeg [];                     // degree
+   static int monomialsDim [];                     // # differnt variables
+   static int monomialsDeg [];                     // degree
 
    // Formatted output
 
    friend ostream& operator<< (ostream&, const TestPolynomial&);
 };
-
-
-const unsigned TestPolynomial::MAX_DEGREE;
 
 
 /**
@@ -345,14 +334,182 @@ const unsigned char TestPolynomial::monomials [][MAX_DEGREE] =
    { 2, 2, 2, 1, 1, 1, 1, 0, 0, 0},
    { 2, 2, 1, 1, 1, 1, 1, 1, 0, 0},
    { 2, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-   { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+   { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+
+   // the only rules requiring degrees >= 11 are only two-dimensional
+   // Therefore only the monomials (d-i,i,0,...,0) are required
+
+   {11, 0, 0, 0, 0, 0, 0, 0, 0, 0},  // deg 11  (incomplete, only dim <= 3)
+   {10, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 2, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 1, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 3, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 2, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 4, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 3, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 2, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 6, 5, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 6, 4, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 6, 3, 2, 0, 0, 0, 0, 0, 0, 0},
+   {12, 0, 0, 0, 0, 0, 0, 0, 0, 0},  // deg 12  (incomplete, only dim <= 3)
+   {11, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+   {10, 2, 0, 0, 0, 0, 0, 0, 0, 0},
+   {10, 1, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 3, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 2, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 4, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 3, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 2, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 5, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 4, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 3, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 6, 6, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 6, 5, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 6, 4, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 6, 3, 3, 0, 0, 0, 0, 0, 0, 0},
+   {13, 0, 0, 0, 0, 0, 0, 0, 0, 0},  // deg 13  (incomplete, only dim <= 3)
+   {12, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+   {11, 2, 0, 0, 0, 0, 0, 0, 0, 0},
+   {11, 1, 1, 0, 0, 0, 0, 0, 0, 0},
+   {10, 3, 0, 0, 0, 0, 0, 0, 0, 0},
+   {10, 2, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 4, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 3, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 2, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 5, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 4, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 3, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 6, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 5, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 4, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 3, 3, 0, 0, 0, 0, 0, 0, 0},
+   {14, 0, 0, 0, 0, 0, 0, 0, 0, 0},  // deg 14  (incomplete, only dim <= 3)
+   {13, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+   {12, 2, 0, 0, 0, 0, 0, 0, 0, 0},
+   {12, 1, 1, 0, 0, 0, 0, 0, 0, 0},
+   {11, 3, 0, 0, 0, 0, 0, 0, 0, 0},
+   {11, 2, 1, 0, 0, 0, 0, 0, 0, 0},
+   {10, 4, 0, 0, 0, 0, 0, 0, 0, 0},
+   {10, 3, 1, 0, 0, 0, 0, 0, 0, 0},
+   {10, 2, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 5, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 4, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 3, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 6, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 5, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 4, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 3, 3, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 7, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 6, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 5, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 7, 4, 3, 0, 0, 0, 0, 0, 0, 0},
+   {15, 0, 0, 0, 0, 0, 0, 0, 0, 0},  // deg 15  (incomplete, only dim <= 3)
+   {14, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+   {13, 2, 0, 0, 0, 0, 0, 0, 0, 0},
+   {13, 1, 1, 0, 0, 0, 0, 0, 0, 0},
+   {12, 3, 0, 0, 0, 0, 0, 0, 0, 0},
+   {12, 2, 1, 0, 0, 0, 0, 0, 0, 0},
+   {11, 4, 0, 0, 0, 0, 0, 0, 0, 0},
+   {11, 3, 1, 0, 0, 0, 0, 0, 0, 0},
+   {11, 2, 2, 0, 0, 0, 0, 0, 0, 0},
+   {10, 5, 0, 0, 0, 0, 0, 0, 0, 0},
+   {10, 4, 1, 0, 0, 0, 0, 0, 0, 0},
+   {10, 3, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 6, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 5, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 4, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 3, 3, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 7, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 6, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 5, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 4, 3, 0, 0, 0, 0, 0, 0, 0},
+   {16, 0, 0, 0, 0, 0, 0, 0, 0, 0},  // deg 16  (incomplete, only dim <= 3)
+   {15, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+   {14, 2, 0, 0, 0, 0, 0, 0, 0, 0},
+   {14, 1, 1, 0, 0, 0, 0, 0, 0, 0},
+   {13, 3, 0, 0, 0, 0, 0, 0, 0, 0},
+   {13, 2, 1, 0, 0, 0, 0, 0, 0, 0},
+   {12, 4, 0, 0, 0, 0, 0, 0, 0, 0},
+   {12, 3, 1, 0, 0, 0, 0, 0, 0, 0},
+   {12, 2, 2, 0, 0, 0, 0, 0, 0, 0},
+   {11, 5, 0, 0, 0, 0, 0, 0, 0, 0},
+   {11, 4, 1, 0, 0, 0, 0, 0, 0, 0},
+   {11, 3, 2, 0, 0, 0, 0, 0, 0, 0},
+   {10, 6, 0, 0, 0, 0, 0, 0, 0, 0},
+   {10, 5, 1, 0, 0, 0, 0, 0, 0, 0},
+   {10, 4, 2, 0, 0, 0, 0, 0, 0, 0},
+   {10, 3, 3, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 7, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 6, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 5, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 4, 3, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 8, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 7, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 6, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 5, 3, 0, 0, 0, 0, 0, 0, 0},
+   { 8, 4, 4, 0, 0, 0, 0, 0, 0, 0},
+   {17, 0, 0, 0, 0, 0, 0, 0, 0, 0},  // deg 17  (incomplete, only dim <= 3)
+   {16, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+   {15, 2, 0, 0, 0, 0, 0, 0, 0, 0},
+   {15, 1, 1, 0, 0, 0, 0, 0, 0, 0},
+   {14, 3, 0, 0, 0, 0, 0, 0, 0, 0},
+   {14, 2, 1, 0, 0, 0, 0, 0, 0, 0},
+   {13, 4, 0, 0, 0, 0, 0, 0, 0, 0},
+   {13, 3, 1, 0, 0, 0, 0, 0, 0, 0},
+   {13, 2, 2, 0, 0, 0, 0, 0, 0, 0},
+   {12, 5, 0, 0, 0, 0, 0, 0, 0, 0},
+   {12, 4, 1, 0, 0, 0, 0, 0, 0, 0},
+   {12, 3, 2, 0, 0, 0, 0, 0, 0, 0},
+   {11, 6, 0, 0, 0, 0, 0, 0, 0, 0},
+   {11, 5, 1, 0, 0, 0, 0, 0, 0, 0},
+   {11, 4, 2, 0, 0, 0, 0, 0, 0, 0},
+   {11, 3, 3, 0, 0, 0, 0, 0, 0, 0},
+   {10, 7, 0, 0, 0, 0, 0, 0, 0, 0},
+   {10, 6, 1, 0, 0, 0, 0, 0, 0, 0},
+   {10, 5, 2, 0, 0, 0, 0, 0, 0, 0},
+   {10, 4, 3, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 8, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 7, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 6, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 5, 3, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 4, 4, 0, 0, 0, 0, 0, 0, 0},
+   {18, 0, 0, 0, 0, 0, 0, 0, 0, 0},  // deg 18  (incomplete, only dim <= 3)
+   {17, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+   {16, 2, 0, 0, 0, 0, 0, 0, 0, 0},
+   {16, 1, 1, 0, 0, 0, 0, 0, 0, 0},
+   {15, 3, 0, 0, 0, 0, 0, 0, 0, 0},
+   {15, 2, 1, 0, 0, 0, 0, 0, 0, 0},
+   {14, 4, 0, 0, 0, 0, 0, 0, 0, 0},
+   {14, 3, 1, 0, 0, 0, 0, 0, 0, 0},
+   {14, 2, 2, 0, 0, 0, 0, 0, 0, 0},
+   {13, 5, 0, 0, 0, 0, 0, 0, 0, 0},
+   {13, 4, 1, 0, 0, 0, 0, 0, 0, 0},
+   {13, 3, 2, 0, 0, 0, 0, 0, 0, 0},
+   {12, 6, 0, 0, 0, 0, 0, 0, 0, 0},
+   {12, 5, 1, 0, 0, 0, 0, 0, 0, 0},
+   {12, 4, 2, 0, 0, 0, 0, 0, 0, 0},
+   {12, 3, 3, 0, 0, 0, 0, 0, 0, 0},
+   {11, 7, 0, 0, 0, 0, 0, 0, 0, 0},
+   {11, 6, 1, 0, 0, 0, 0, 0, 0, 0},
+   {11, 5, 2, 0, 0, 0, 0, 0, 0, 0},
+   {11, 4, 3, 0, 0, 0, 0, 0, 0, 0},
+   {10, 8, 0, 0, 0, 0, 0, 0, 0, 0},
+   {10, 7, 1, 0, 0, 0, 0, 0, 0, 0},
+   {10, 6, 2, 0, 0, 0, 0, 0, 0, 0},
+   {10, 5, 3, 0, 0, 0, 0, 0, 0, 0},
+   {10, 4, 4, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 8, 1, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 7, 2, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 6, 3, 0, 0, 0, 0, 0, 0, 0},
+   { 9, 5, 4, 0, 0, 0, 0, 0, 0, 0},
 };
 
-const unsigned TestPolynomial::NUM_MONOMIALS
+const int TestPolynomial::NUM_MONOMIALS
      = sizeof (monomials) / sizeof (monomials [0]);
 
-unsigned TestPolynomial::monomialsDim [NUM_MONOMIALS];
-unsigned TestPolynomial::monomialsDeg [NUM_MONOMIALS];
+int TestPolynomial::monomialsDim [NUM_MONOMIALS];
+int TestPolynomial::monomialsDeg [NUM_MONOMIALS];
 TestPolynomial::Dummy TestPolynomial::dummy;
 
 
@@ -362,12 +519,12 @@ TestPolynomial::Dummy TestPolynomial::dummy;
 
 TestPolynomial::Dummy::Dummy ()
 {
-   for (unsigned i = 0; i < NUM_MONOMIALS; ++i)
+   for (int i = 0; i < NUM_MONOMIALS; ++i)
    {
-      unsigned sum = 0;
-      unsigned dim = 0;
+      int sum = 0;
+      int dim = 0;
 
-      for (unsigned j = 0; j < MAX_DEGREE; ++j)
+      for (int j = 0; j < MAX_DEGREE; ++j)
       {
          if (! monomials [i][j])  break;
 
@@ -385,37 +542,40 @@ TestPolynomial::Dummy::Dummy ()
  *  Constructor
  */
 
-TestPolynomial::TestPolynomial (unsigned dim, unsigned degree)
+TestPolynomial::TestPolynomial (int dim, int degree)
    : TestIntegrand (dim), degree (degree), exponents (NUM_MON * dim)
 {
-   unsigned int m = 0;
+   int m = NUM_MONOMIALS;
 
-   for (unsigned i = 0; i < NUM_MON; ++i)
+   for (int i = 0; i < NUM_MON; ++i)
    {
+      // Find next monomial with acceptable degree and dimension
+
+      do
+      {
+         if (m == 0)  m = NUM_MONOMIALS;
+         --m;
+      }
+      while (monomialsDeg [m] > degree || monomialsDim [m] > dim);
+
+      // Determine coefficient
+
       coef [i] = uniform (mt, -MAX_COEFF, MAX_COEFF);
 
       // Copy monomomial
 
-      for (unsigned j = 0; j < min (dim, MAX_DEGREE); ++j)
+      for (int j = 0; j < min (dim, int(MAX_DEGREE)); ++j)
       {
          getExponent(i, j) = monomials [m][j];
       }
 
       // Fill remaining exponents with 0
 
-      for (unsigned j = MAX_DEGREE; j < dim; ++j)  getExponent(i, j) = 0;
+      for (int j = MAX_DEGREE; j < dim; ++j)  getExponent(i, j) = 0;
 
       // Shuffle Exponents
 
       random_shuffle (&getExponent (i,0), &getExponent (i,dim), mt);
-
-      // Find next monomial with acceptable degree and dimension
-
-      do
-      {
-         m = (m + 1) % NUM_MONOMIALS;
-      }
-      while (monomialsDeg [m] > degree || monomialsDim [m] > dim);
    }
 }
 
@@ -428,11 +588,11 @@ real TestPolynomial::getExactResult (const Hypercube &h) const
 {
    real sum = 0;
 
-   for (unsigned i = 0; i < NUM_MON; ++i)
+   for (int i = 0; i < NUM_MON; ++i)
    {
       real prod = coef[i];
 
-      for (unsigned d = 0; d < dim; ++d)
+      for (int d = 0; d < dim; ++d)
       {
          int e = getExponent (i, d) + 1;
 
@@ -455,19 +615,19 @@ real TestPolynomial::getExactResult (const Hypercube &h) const
  *  Returns the integral, considering only monimials with degree _deg_.
  */
 
-real TestPolynomial::getPartialResult (const Hypercube &h, unsigned deg) const
+real TestPolynomial::getPartialResult (const Hypercube &h, int deg) const
 {
    real sum = 0;
 
-   for (unsigned i = 0; i < NUM_MON; ++i)
+   for (int i = 0; i < NUM_MON; ++i)
    {
       real prod = coef [i];
 
-      unsigned thisDegree = 0;
-      for (unsigned d = 0; d < dim; ++d)  thisDegree += getExponent (i, d);
+      int thisDegree = 0;
+      for (int d = 0; d < dim; ++d)  thisDegree += getExponent (i, d);
       if (thisDegree != deg)  continue;
 
-      for (unsigned d = 0; d < dim; ++d)
+      for (int d = 0; d < dim; ++d)
       {
          int e = getExponent (i, d) + 1;
 
@@ -495,13 +655,13 @@ real TestPolynomial::getErrorOfExactResult (const Hypercube &h) const
    const real onePlusEpsilon = 1.0 + numeric_limits<real>::epsilon();
    real sum = 0;
 
-   for (unsigned i = 0; i < NUM_MON; ++i)
+   for (int i = 0; i < NUM_MON; ++i)
    {
       real realProd = 1;
       real prod     = onePlusEpsilon;
       real factor = coef [i];
 
-      for (unsigned d = 0; d < dim; ++d)
+      for (int d = 0; d < dim; ++d)
       {
          int e = getExponent (i, d) + 1;
 
@@ -532,7 +692,7 @@ real TestPolynomial::getErrorOfExactResult (const Hypercube &h) const
 
             prod *= v1 - v2;
             
-            factor /= real (e);
+            factor /= real(e);
          }
       }
 
@@ -551,11 +711,11 @@ real TestPolynomial::operator() (const real *x)
 {
    real sum = 0;
 
-   for (unsigned i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
+   for (int i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
    {
       real prod = coef [i];
 
-      for (unsigned d = 0; d < dim; ++d)
+      for (int d = 0; d < dim; ++d)
       {
          const int exponent = getExponent (i,d);
          if (exponent)  prod *= HINTLIB_MN pow (x[d], exponent);
@@ -564,6 +724,17 @@ real TestPolynomial::operator() (const real *x)
       sum += prod;
    }
 
+   DEB4
+   {
+      cout << "      f(";
+      for (int d = 0; d < dim; ++d)
+      {
+         cout << x[d];
+         if (d + 1 < dim)  cout << ',';
+      }
+      cout << ") = " << sum << '\n';
+   }
+   
    return sum;
 }
 
@@ -579,7 +750,7 @@ real TestPolynomial::getErrorOfEvaluation (const Hypercube &h) const
 {
    Array<real> maxCoordinate (h.getDimension());
 
-   for (unsigned i = 0; i < h.getDimension(); ++i)
+   for (int i = 0; i < h.getDimension(); ++i)
    {
       maxCoordinate [i]
          = max (L::abs (h.getLowerBound(i)), L::abs (h.getUpperBound(i)));
@@ -587,13 +758,13 @@ real TestPolynomial::getErrorOfEvaluation (const Hypercube &h) const
 
    real sum = 0.0;
 
-   for (unsigned i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
+   for (int i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
    {
       real prod = L::abs (coef [i]);
 
-      unsigned degreeOfMonomial = 0;
+      int degreeOfMonomial = 0;
 
-      for (unsigned d = 0; d < dim; ++d)
+      for (int d = 0; d < dim; ++d)
       {
          degreeOfMonomial += getExponent (i, d);
          prod *= HINTLIB_MN pow (maxCoordinate [d], getExponent (i, d));
@@ -605,17 +776,17 @@ real TestPolynomial::getErrorOfEvaluation (const Hypercube &h) const
    return sum;
 }
 
-real TestPolynomial::derivative (const real *x, unsigned a)
+real TestPolynomial::derivative (const real *x, int a)
 {
    real sum = 0.0;
 
-   for (unsigned i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
+   for (int i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
    {
       if (getExponent (i, a) == 0)  continue;
 
       real prod = coef [i];
 
-      for (unsigned d = 0; d < dim; ++d)
+      for (int d = 0; d < dim; ++d)
       {
          if (d == a)
          {
@@ -635,23 +806,23 @@ real TestPolynomial::derivative (const real *x, unsigned a)
 }
 
 #if 0
-real TestPolynomial::derivative (const real *x, unsigned a, unsigned b)
+real TestPolynomial::derivative (const real *x, int a, int b)
 {
    real sum = 0.0;
 
    if (a == b)
    {
-      for (unsigned i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
+      for (int i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
       {
          if (getExponent (i, a) <= 1)  continue;
 
          real prod = coef [i];
 
-         for (unsigned d = 0; d < dim; ++d)
+         for (int d = 0; d < dim; ++d)
          {
             if (d == a)
             {
-               unsigned exponent = getExponent (i, a);
+               int exponent = getExponent (i, a);
                prod = exponent * (exponent - 1)
                     * prod * HINTLIB_MN pow (x[d], exponent - 2);
             }
@@ -666,14 +837,14 @@ real TestPolynomial::derivative (const real *x, unsigned a, unsigned b)
    }
    else   // a != b
    {
-      for (unsigned i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
+      for (int i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
       {
          if (getExponent (i, a) == 0)  continue;
          if (getExponent (i, b) == 0)  continue;
 
          real prod = coef [i];
 
-         for (unsigned d = 0; d < dim; ++d)
+         for (int d = 0; d < dim; ++d)
          {
             if (d == a || d == b)
             {
@@ -700,7 +871,7 @@ ostream& operator<< (ostream& os, const TestPolynomial &p)
    HIntLib::Private::Printer ss (os);
    ss << setprecision (3);
 
-   for (unsigned i = 0; i < NUM_MON; ++i)
+   for (int i = 0; i < NUM_MON; ++i)
    {
       ss << ' ';
       if (p.coef [i] > 0.0)  ss << '+';
@@ -708,7 +879,7 @@ ostream& operator<< (ostream& os, const TestPolynomial &p)
       ss << ' ' << L::abs (p.coef [i]);
       bool spacePrinted = false;
 
-      for (unsigned d = 0; d < p.dim; ++d)
+      for (int d = 0; d < p.dim; ++d)
       {
          if (p.getExponent (i, d) > 0)
          {
@@ -746,14 +917,14 @@ ostream& operator<< (ostream& os, const TestPolynomial &p)
  *  failures in the degree of the CubatureRule.
  */
 
-bool checkDegree (
-   CubatureRule& r, unsigned degree, unsigned numTests, bool disproof)
+bool checkDegree (CubatureRule& r, int degree, int numTests, bool disproof)
 {
-   const unsigned dim = r.getDimension ();
+   const int dim = r.getDimension ();
 
-   const Hypercube h (dim, -0.2, 1.7);
+   const Hypercube h (dim, STANDARD_UNIT_CUBE ? -1 : -.2,
+                           STANDARD_UNIT_CUBE ?  1 : 1.7);
 
-   for (unsigned i = 0; i < numTests; ++i)
+   for (int i = 0; i < numTests; ++i)
    {
       TestPolynomial p (r.getDimension (), degree);
 
@@ -801,10 +972,10 @@ bool checkDegree (
       DEB2
       {
          cout.setf (ostream::left, ostream::adjustfield);
-         cout << setprecision (10)
-              << "     Q(f)=" << setw (13) << result
-              << "I(f)="   << setw (13) << correct
-              << setprecision (4)
+         cout << setprecision(10)
+              << "     Q(f)=" << setw(13) << result
+              << "I(f)="   << setw(13) << correct
+              << setprecision(4)
               << deltaString << '=' << setw(10) << error
               << epsilonString << '=' << setw(10) << threshold
               << epsilonString << "_exact=" << setw(10) << expectedExactError
@@ -812,14 +983,14 @@ bool checkDegree (
               << "probl.=" << problem << endl;
       }
       
-      if (error > 25.0 * threshold)
+      if (error > 25. * threshold)
       {
          DEB1 cout << "     Error is " << error << ", exceeding " << threshold
                    << " by a factor of " << error / threshold << ".\n";
          return false;
       }
 
-      if (disproof && threshold > problem / 1000.0)
+      if (disproof && threshold > problem / 1400.)
       {
          DEB1 cout << "Cannot determine degree due to numerical instabilities!"
                    << endl;
@@ -839,7 +1010,7 @@ bool checkDegree (
  *  calling checkDegree().
  */
 
-void testRule (CubatureRule& r, unsigned dim)
+void testRule (CubatureRule& r, int dim)
 {
    // Reset random number generator
 
@@ -865,11 +1036,20 @@ void testRule (CubatureRule& r, unsigned dim)
       cout << dim << ' ' << flush;
    }
 
-   unsigned degree = r.getDegree ();
+   const int degree = r.getDegree ();
+
+#if 0
+   DEB1
+   {
+      cout << "   Degree " << degree << ", " << num_points
+           << " points, sum |w| = " << r.getSumAbsWeight() << ", "
+           << (r.isAllPointsInside() ? "" : "not ") << "all points inside.\n";
+   }
+#endif
 
    bool allright = true;
 
-   for (unsigned d = 0; d <= degree; ++d)
+   for (int d = 0; d <= degree; ++d)
    {
       if (checkDegree (r, d, NUM_TESTS, false))
       {
@@ -911,15 +1091,17 @@ void testRule (CubatureRule& r, unsigned dim)
  *  -v     2     + Error
  *  -vv    3     + Error statistic for each polynomial
  *  -vvv   4     + each evaluated polynomial
+ *  -vvvv  5     + each integrand evaluation
  */
 
-const char options[] = "n:p:d:r:";
+const char options[] = "n:p:d:r:u";
 const char option_msg[] =
    "  -n n   Number of testruns to be performed (default = 3)\n"
    "  -p n   Tests requiring more that _p_ points are skipped"
          " (default = 3000)\n"
-   "  -d n   Maximal dimension (default = 100)\n"
-   "  -r n   Tests only rule number _n_\n";
+   "  -d [nmin-]nmax   Range of dimensions (default nmin = 1, nmax = 100)\n"
+   "  -r n   Tests only rule number _n_\n"
+   "  -u     Use standard unit cube [-1,1]^s\n";
 const char testProgramParameters[] = "[OPTION]...";
 const char testProgramUsage[] =
    "Tests whether cubature rules work correctly.\n\n";
@@ -930,10 +1112,11 @@ bool opt(int c, const char* s)
 {
    switch (c)
    {
-      case 'n':  NUM_TESTS      = HINTLIB_SLN atoi (s); return true;
-      case 'p':  MAX_NUM_POINTS = HINTLIB_SLN atoi (s); return true;
-      case 'd':  LAST_TEST_DIM  = HINTLIB_SLN atoi (s); return true;
-      case 'r':  LAST_RULE = FIRST_RULE = HINTLIB_SLN atoi (s); return true;
+      case 'n':  NUM_TESTS      = parseInt (s); return true;
+      case 'p':  MAX_NUM_POINTS = parseInt (s); return true;
+      case 'd':  parseRange (s, 1, FIRST_TEST_DIM, LAST_TEST_DIM); return true;
+      case 'r':  LAST_RULE = FIRST_RULE = parseInt (s); return true;
+      case 'u':  STANDARD_UNIT_CUBE = true; return true;
    }
 
    return false;
@@ -956,7 +1139,7 @@ void test(int argc, char**)
    // GREEK SMALL LETTER EPSILON
    epsilonString = Wgl4Ascii ("\xce\xb5", "eps");
 
-   for (unsigned rule = FIRST_RULE; rule <= LAST_RULE; ++rule)
+   for (int rule = FIRST_RULE; rule <= LAST_RULE; ++rule)
    {
       const char* name;
       try
@@ -975,7 +1158,7 @@ void test(int argc, char**)
          cout << (verbose == -1 ? "..." : ":") << endl;
       }
 
-      for (unsigned dim = FIRST_TEST_DIM; dim <= LAST_TEST_DIM; ++dim)
+      for (int dim = FIRST_TEST_DIM; dim <= LAST_TEST_DIM; ++dim)
       {
          NORMAL  cout << "Dimension: " << dim << endl;
 

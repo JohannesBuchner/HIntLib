@@ -48,7 +48,7 @@ namespace HIntLib
 
       const A& getScalarAlgebra() const  { return *this; }
 
-      unsigned dimension() const  { return 1; }
+      int dimension() const  { return 1; }
 
       using A::size;
       using A::element;
@@ -78,8 +78,8 @@ namespace HIntLib
       void print      (std::wostream&, const type&) const;
 #endif
 
-      scalar_type coord (const type& x, unsigned) const  { return x; }
-      scalar_reference coord  (type& x, unsigned) const  { return x; }
+      scalar_type coord (const type& x, int) const  { return x; }
+      scalar_reference coord  (type& x, int) const  { return x; }
 
       template<typename I> void toCoord (const type& x, I p) const  {  *p = x; }
       template<typename I> void fromCoord (type& x, I p) const  { x = *p; }

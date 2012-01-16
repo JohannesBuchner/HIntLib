@@ -33,9 +33,9 @@
 #include <memory>
 
 #ifdef HINTLIB_HAVE_LIMITS
-  #include <limits>
+#  include <limits>
 #else
-  #include <HIntLib/fallback_limits.h>
+#  include <HIntLib/fallback_limits.h>
 #endif
 
 #include <HIntLib/adaptintegrator.h>
@@ -260,12 +260,12 @@ L::AdaptIntegrator::integrate (
 
    if (initialRegions == 0)
    {
-      #ifdef HINTLIB_NO_EXCEPTIONS
+#     ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
-      #else
+#     else
          throw NoEvaluationsPossible(maxEval);
-      #endif
+#     endif
    }
 
    // Do initial split

@@ -32,8 +32,8 @@
  *         and Richard J. Wagner.
  */
 
-#ifndef HINTLIB_MERSENNETWISTER_H
-#define HINTLIB_MERSENNETWISTER_H 1
+#ifndef HINTLIB_MERSENNE_TWISTER_H
+#define HINTLIB_MERSENNE_TWISTER_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -42,11 +42,11 @@
 #endif
 
 #ifdef HINTLIB_HAVE_CSTDDEF
-  #include <cstddef>
-  #define HINTLIB_SDN ::std::
+#  include <cstddef>
+#  define HINTLIB_SDN ::std::
 #else
-  #include <stddef.h>
-  #define HINTLIB_SDN ::
+#  include <stddef.h>
+#  define HINTLIB_SDN ::
 #endif
 
 
@@ -64,13 +64,13 @@ private:
 
    void reload();
 
-   #if HINTLIB_STATIC_WORKS == 1
-      static HINTLIB_DLL_IMPORT const real RANGE;
-      static HINTLIB_DLL_IMPORT const real RESOLUTION;
-   #else
-      static real RANGE;
-      static real RESOLUTION;
-   #endif
+#if HINTLIB_STATIC_WORKS == 1
+   static HINTLIB_DLL_IMPORT const real RANGE;
+   static HINTLIB_DLL_IMPORT const real RESOLUTION;
+#else
+   static real RANGE;
+   static real RESOLUTION;
+#endif
 
 public:
 

@@ -29,8 +29,8 @@
  *  See Krommer, Ueberhuber. Computational Integration. p 333 vor details
  */
 
-#ifndef HINTLIB_KAHANADD_H
-#define HINTLIB_KAHANADD_H 1
+#ifndef HINTLIB_KAHAN_ADD_H
+#define HINTLIB_KAHAN_ADD_H 1
 
 #include <HIntLib/defaults.h>
 

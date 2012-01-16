@@ -45,33 +45,30 @@ namespace HIntLib
 class GeneratorMatrixVecBase : public GeneratorMatrix
 {
 public:
-   unsigned getVec()     const  { return vec; }
-   unsigned getVecBase() const  { return vecBase; }
-   unsigned getVecPrec() const  { return vecPrec; }
+   int getVec()     const  { return vec; }
+   int getVecBase() const  { return vecBase; }
+   int getVecPrec() const  { return vecPrec; }
 
-   unsigned getNumOfLeadingDigits() const
-      { return prec - (vec * (vecPrec - 1)); }
-   unsigned getNumOfMissingDigits() const { return vecPrec * vec - prec; }
+   int getNumOfLeadingDigits() const { return prec - (vec * (vecPrec - 1)); }
+   int getNumOfMissingDigits() const { return vecPrec * vec - prec; }
 
    // no public constructor!
 
 protected:
    // Constructor with direct initialization
 
-   GeneratorMatrixVecBase
-      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec,
-       unsigned _vec);
+   GeneratorMatrixVecBase (int _base, int _dim, int _m, int _prec, int _vec);
 
    // protected copy constructor
 
-   GeneratorMatrixVecBase (const GeneratorMatrix&, unsigned _vec);
+   GeneratorMatrixVecBase (const GeneratorMatrix&, int _vec);
    GeneratorMatrixVecBase (const GeneratorMatrixVecBase&);
 
-   const unsigned vec;
-   const unsigned vecBase;
-   const unsigned vecPrec;
+   const int vec;
+   const int vecBase;
+   const int vecPrec;
 
-   const unsigned dimPrec;
+   const int dimPrec;
 };
 
 
@@ -89,12 +86,9 @@ public:
 
    // Constructors
 
-   GeneratorMatrixVec (unsigned _base, unsigned _dim, unsigned _vec);
-   GeneratorMatrixVec
-      (unsigned _base, unsigned _dim, unsigned _m, unsigned _vec);
-   GeneratorMatrixVec
-      (unsigned _base, 
-       unsigned _dim, unsigned _m, unsigned _prec, unsigned _vec)
+   GeneratorMatrixVec (int _base, int _dim, int _vec);
+   GeneratorMatrixVec (int _base, int _dim, int _m, int _vec);
+   GeneratorMatrixVec (int _base, int _dim, int _m, int _prec, int _vec)
     : GeneratorMatrixVecBase (_base, _dim, _m, _prec, _vec)
       { checkVecBase(); allocate(); }
 
@@ -102,7 +96,7 @@ public:
 
    GeneratorMatrixVec (const GeneratorMatrixVec<T>&);
    GeneratorMatrixVec (const GeneratorMatrix&);
-   GeneratorMatrixVec (const GeneratorMatrix&, unsigned _vec);
+   GeneratorMatrixVec (const GeneratorMatrix&, int _vec);
 
    ~GeneratorMatrixVec ()  { delete[] c; }
 
@@ -110,33 +104,31 @@ public:
 
    const T* getMatrix() const  { return c; }
 
-   const T* operator() (unsigned r) const  { return &c[r*dimPrec]; }
-   const T* operator() (unsigned d, unsigned r) const
+   const T* operator() (int r) const  { return &c[r*dimPrec]; }
+   const T* operator() (int d, int r) const
       { return &c[r*dimPrec + d*vecPrec]; }
-   T operator() (unsigned d, unsigned r, unsigned b) const
+   T operator() (int d, int r, int b) const
       { return c[r*dimPrec + d*vecPrec + b]; }
-   D getd (unsigned d, unsigned r, unsigned b) const;
-   void setv (unsigned d, unsigned r, unsigned b, T x)
-      { c[r*dimPrec + d*vecPrec + b] = x; }
-   void setd (unsigned d, unsigned r, unsigned b,
-              typename GeneratorMatrixVec<T>::D x);
+   D getd (int d, int r, int b) const;
+   void setv (int d, int r, int b, T x) { c[r*dimPrec + d*vecPrec + b] = x; }
+   void setd (int d, int r, int b, typename GeneratorMatrixVec<T>::D x);
    
-   u64  getPackedRowVector (unsigned d, unsigned b) const;
-   void setPackedRowVector (unsigned d, unsigned b, u64 x);
+   u64  getPackedRowVector (int d, int b) const;
+   void setPackedRowVector (int d, int b, u64 x);
 
    // Virtual set/get
 
-   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual void setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
+   virtual int  getDigit (int d, int r, int b) const;
+   virtual void setDigit (int d, int r, int b, int x);
 
-   virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
-   virtual void vSetPackedRowVector (unsigned d, unsigned b, u64 x);
+   virtual u64  vGetPackedRowVector (int d, int b) const;
+   virtual void vSetPackedRowVector (int d, int b, u64 x);
 
    // Manipulation
 
-   void makeHammersley (unsigned);
-   void makeIdentityMatrix (unsigned);
-   void makeZeroMatrix (unsigned);
+   void makeHammersley (int);
+   void makeIdentityMatrix (int);
+   void makeZeroMatrix (int);
    void makeZeroMatrix ();
 
 private:
@@ -157,8 +149,7 @@ bool operator== (const GeneratorMatrixVec<T> &, const GeneratorMatrixVec<T> &);
  */
 
 template<typename T>
-void assign (
-   const GeneratorMatrix &, unsigned, GeneratorMatrixVec<T> &, unsigned);
+void assign (const GeneratorMatrix &, int, GeneratorMatrixVec<T> &, int);
 
 template<typename T>
 void assign (const GeneratorMatrix &, GeneratorMatrixVec<T> &);

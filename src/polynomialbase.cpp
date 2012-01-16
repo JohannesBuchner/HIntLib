@@ -29,9 +29,9 @@
 #include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_OSTREAM
-  #include <ostream>
+#  include <ostream>
 #else
-  #include <iostream>
+#  include <iostream>
 #endif
 
 #include <HIntLib/polynomialbase.h>

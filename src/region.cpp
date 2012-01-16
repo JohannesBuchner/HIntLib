@@ -113,7 +113,7 @@ std::ostream & L::operator<< (std::ostream &o, const Hypercube &h)
 
    ss << '[' << h.getLowerBound (0) << ',' << h.getUpperBound (0) << ']';
 
-   for (unsigned i = 1; i < h.getDimension (); ++i)
+   for (int i = 1; i < h.getDimension (); ++i)
    {
 #if defined(HINTLIB_UTF8_SELECT)
       // MULTIPLICATION SIGN
@@ -133,7 +133,7 @@ std::wostream & L::operator<< (std::wostream &o, const Hypercube &h)
 
    ss << L'[' << h.getLowerBound (0) << L',' << h.getUpperBound (0) << L']';
 
-   for (unsigned i = 1; i < h.getDimension (); ++i)
+   for (int i = 1; i < h.getDimension (); ++i)
    {
 #if HINTLIB_CHARACTER_SET >= 2
       ss << L'\x00d7';  // MULTIPLICATION SIGN

@@ -34,7 +34,7 @@ namespace L = HIntLib;
  *  Constructor
  */
 
-L::ShiftScale::ShiftScale (unsigned dim) : t (dim) {}
+L::ShiftScale::ShiftScale (int dim) : t (dim) {}
 
 L::ShiftScale::ShiftScale (const Hypercube &h)
    : t (h.getDimension())
@@ -67,7 +67,7 @@ L::ShiftScale::ShiftScale (const Hypercube &dest, const Hypercube &src)
 
 void L::ShiftScale::set (const Hypercube &h)
 {
-   for (unsigned i = 0; i != h.getDimension(); ++i)
+   for (int i = 0; i != h.getDimension(); ++i)
    {
       t[i].set (h.getLowerBound(i), h.getDiameter(i));
    }
@@ -75,7 +75,7 @@ void L::ShiftScale::set (const Hypercube &h)
 
 void L::ShiftScale::set (const Hypercube &h, real ub)
 {
-   for (unsigned i = 0; i != h.getDimension(); ++i)
+   for (int i = 0; i != h.getDimension(); ++i)
    {
       t[i].set (h.getLowerBound(i), h.getDiameter(i) / ub);
    }
@@ -83,7 +83,7 @@ void L::ShiftScale::set (const Hypercube &h, real ub)
 
 void L::ShiftScale::set (const Hypercube &h, real lb, real ub)
 {
-   for (unsigned i = 0; i != h.getDimension(); ++i)
+   for (int i = 0; i != h.getDimension(); ++i)
    {
       t[i].set (h.getLowerBound(i) - lb * h.getDiameter(i) / (ub-lb),
                 h.getDiameter(i) / (ub-lb));
@@ -94,7 +94,7 @@ void L::ShiftScale::set (const Hypercube &dest, const Hypercube &src)
 {
    checkDimensionEqual (dest.getDimension(), src.getDimension());
 
-   for (unsigned i = 0; i != dest.getDimension(); ++i)
+   for (int i = 0; i != dest.getDimension(); ++i)
    {
       t[i].set (
            dest.getLowerBound(i)

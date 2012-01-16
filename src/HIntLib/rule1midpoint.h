@@ -28,8 +28,8 @@
  *  as formula Cn: 1-1
  */
 
-#ifndef HINTLIB_RULE1MIDPOINT_H
-#define HINTLIB_RULE1MIDPOINT_H 1
+#ifndef HINTLIB_RULE_1_MIDPOINT_H
+#define HINTLIB_RULE_1_MIDPOINT_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -46,20 +46,20 @@ namespace HIntLib
    class Rule1Midpoint : public CubatureRule
    {
    public:
-      Rule1Midpoint (unsigned d) : dim(d) {}
+      Rule1Midpoint (int d) : dim(d) {}
 
       virtual real eval (Integrand &, const Hypercube &);
 
-      virtual unsigned getDimension()   const { return dim; }
-      virtual Index getNumPoints ()     const { return 1; }
-      virtual unsigned getDegree ()     const { return 1; }
-      virtual bool isAllPointsInside () const { return true; }
-      virtual real getSumAbsWeight ()   const { return 1.0; }
+      virtual int   getDimension()       const { return dim; }
+      virtual Index getNumPoints ()      const { return 1; }
+      virtual int   getDegree ()         const { return 1; }
+      virtual bool  isAllPointsInside () const { return true; }
+      virtual real  getSumAbsWeight ()   const { return 1.0; }
 
       static CubatureRuleFactory* getFactory();
 
    private:
-      const unsigned dim;
+      const int dim;
    };
 
 }  // namespace HIntLib

@@ -19,8 +19,8 @@
  */
 
 
-#ifndef HINTLIB_PSEUDOEMBEDRULE_H
-#define HINTLIB_PSEUDOEMBEDRULE_H 1
+#ifndef HINTLIB_PSEUDO_EMBED_RULE_H
+#define HINTLIB_PSEUDO_EMBED_RULE_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -45,18 +45,18 @@ class PseudoEmbeddedRule : public EmbeddedRule
 {
 public:
    PseudoEmbeddedRule (
-      unsigned d,
+      int d,
       CubatureRuleFactory *fac1,
       CubatureRuleFactory *fac2)
    : r1 (fac1->create(d)), r2 (fac2->create(d)), fd(d) {}
 
-   virtual unsigned evalError (Integrand &, const Hypercube &, EstErr &);
+   virtual int evalError (Integrand &, const Hypercube &, EstErr &);
 
-   virtual unsigned getDimension()      const  { return fd.getDimension(); }
-   virtual Index    getNumPoints()      const;
-   virtual unsigned getDegree()         const  { return r1->getDegree(); }
-   virtual bool     isAllPointsInside() const;
-   virtual real     getSumAbsWeight()   const;
+   virtual int   getDimension()      const  { return fd.getDimension(); }
+   virtual Index getNumPoints()      const;
+   virtual int   getDegree()         const  { return r1->getDegree(); }
+   virtual bool  isAllPointsInside() const;
+   virtual real  getSumAbsWeight()   const;
 
 protected:
    const std::auto_ptr<CubatureRule> r1;
@@ -73,13 +73,13 @@ class PseudoDoubleEmbeddedRule : public PseudoEmbeddedRule
 {
 public:
    PseudoDoubleEmbeddedRule (
-      unsigned dim,
+      int dim,
       CubatureRuleFactory *fac1,
       CubatureRuleFactory *fac2,
       CubatureRuleFactory *fac3)
    : PseudoEmbeddedRule(dim, fac1, fac2), r3 (fac3->create(dim)) {}
 
-   virtual unsigned evalError (Integrand &f, const Hypercube &, EstErr &);
+   virtual int evalError (Integrand &f, const Hypercube &, EstErr &);
 
    virtual Index getNumPoints() const;
    virtual bool isAllPointsInside() const;
@@ -103,7 +103,7 @@ public:
    : factory1 (fac1), factory2 (fac2) {}
 
    virtual PseudoEmbeddedRuleFactory* clone() const;
-   virtual PseudoEmbeddedRule* create (unsigned dim);
+   virtual PseudoEmbeddedRule* create (int dim);
 
 private:
    const std::auto_ptr<CubatureRuleFactory> factory1;
@@ -127,7 +127,7 @@ public:
    : factory1(fac1), factory2(fac2), factory3(fac3) {}
 
    virtual PseudoDoubleEmbeddedRuleFactory* clone() const;
-   virtual PseudoDoubleEmbeddedRule* create (unsigned dim);
+   virtual PseudoDoubleEmbeddedRule* create (int dim);
 
 private:
    const std::auto_ptr<CubatureRuleFactory> factory1;

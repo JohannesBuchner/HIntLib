@@ -36,15 +36,14 @@ namespace L = HIntLib;
  * Zero Matrices
  */
 
-unsigned
-L::ZeroMatrices::getDigit (
-      unsigned /* d */, unsigned /* r */, unsigned /* b */) const
+int
+L::ZeroMatrices::getDigit (int /* d */, int /* r */, int /* b */) const
 {
    return 0;
 }
 
 L::u64
-L::ZeroMatrices::vGetPackedRowVector (unsigned /* d */, unsigned /* b */) const
+L::ZeroMatrices::vGetPackedRowVector (int /* d */, int /* b */) const
 {
    return 0;
 }
@@ -54,14 +53,14 @@ L::ZeroMatrices::vGetPackedRowVector (unsigned /* d */, unsigned /* b */) const
  * Identity Matrices
  */
 
-unsigned
-L::IdentityMatrices::getDigit  (unsigned /* d */, unsigned r, unsigned b) const
+int
+L::IdentityMatrices::getDigit (int /* d */, int r, int b) const
 {
-   return unsigned (r == b);
+   return int (r == b);
 }
 
 L::u64
-L::IdentityMatrices::vGetPackedRowVector (unsigned /* d */, unsigned b) const
+L::IdentityMatrices::vGetPackedRowVector (int /* d */, int b) const
 {
    return powInt (u64 (base), b);
 }
@@ -71,14 +70,14 @@ L::IdentityMatrices::vGetPackedRowVector (unsigned /* d */, unsigned b) const
  * Adjust Total Precision
  */
 
-unsigned
-L::AdjustPrec::getDigit  (unsigned d, unsigned r, unsigned b) const
+int
+L::AdjustPrec::getDigit  (int d, int r, int b) const
 {
    return (b < oldPrec) ? gm->getDigit (d, r, b) : 0;
 }
 
 L::u64
-L::AdjustPrec::vGetPackedRowVector (unsigned d, unsigned b) const
+L::AdjustPrec::vGetPackedRowVector (int d, int b) const
 {
    return (b < oldPrec) ? gm->vGetPackedRowVector (d,b) : 0;
 }
@@ -88,8 +87,8 @@ L::AdjustPrec::vGetPackedRowVector (unsigned d, unsigned b) const
  *  Add Last Row
  */
 
-unsigned
-L::AddLastRow::getDigit  (unsigned d, unsigned r, unsigned b) const
+int
+L::AddLastRow::getDigit  (int d, int r, int b) const
 {
    if (b == prec - 1)
    {
@@ -101,7 +100,7 @@ L::AddLastRow::getDigit  (unsigned d, unsigned r, unsigned b) const
 }
 
 L::u64
-L::AddLastRow::vGetPackedRowVector (unsigned d, unsigned b) const
+L::AddLastRow::vGetPackedRowVector (int d, int b) const
 {
    if (b == prec - 1)
    {
@@ -126,14 +125,14 @@ L::AdjustM::AdjustM (int _m, const GeneratorMatrix& _gm)
    if (_m >= 0)  m = _m;
 }
 
-unsigned
-L::AdjustM::getDigit  (unsigned d, unsigned r, unsigned b) const
+int
+L::AdjustM::getDigit  (int d, int r, int b) const
 {
    return (r < oldM) ? gm->getDigit (d, r, b) : 0;
 }
 
 L::u64
-L::AdjustM::vGetPackedRowVector (unsigned d, unsigned b) const
+L::AdjustM::vGetPackedRowVector (int d, int b) const
 {
    return gm->vGetPackedRowVector (d, b) % bToTheM;
 }
@@ -143,7 +142,7 @@ L::AdjustM::vGetPackedRowVector (unsigned d, unsigned b) const
  *  MReduction
  */
 
-L::MReduction::MReduction (unsigned _m, const GeneratorMatrix& _gm)
+L::MReduction::MReduction (int _m, const GeneratorMatrix& _gm)
    : GeneratorMatrix (_gm),
      gm (&_gm),
      identityDim (0),
@@ -155,8 +154,7 @@ L::MReduction::MReduction (unsigned _m, const GeneratorMatrix& _gm)
    m = _m;
 }
 
-L::MReduction::MReduction (
-      unsigned _m, unsigned _identityDim,const GeneratorMatrix& _gm)
+L::MReduction::MReduction (int _m, int _identityDim, const GeneratorMatrix& _gm)
    : GeneratorMatrix (_gm),
      gm (&_gm),
      identityDim (_identityDim),
@@ -169,12 +167,12 @@ L::MReduction::MReduction (
    m = _m;
 }
 
-unsigned
-L::MReduction::getDigit  (unsigned d, unsigned r, unsigned b) const
+int
+L::MReduction::getDigit (int d, int r, int b) const
 {
    if (d == identityDim)
    {
-      const unsigned bb = b + diff;
+      const int bb = b + diff;
       return (bb >= prec) ? 0 : gm->getDigit (d, r + diff, bb);
    }
    else
@@ -184,11 +182,11 @@ L::MReduction::getDigit  (unsigned d, unsigned r, unsigned b) const
 }
 
 L::u64
-L::MReduction::vGetPackedRowVector (unsigned d, unsigned b) const
+L::MReduction::vGetPackedRowVector (int d, int b) const
 {
    if (d == identityDim)
    {
-      const unsigned bb = b + diff;
+      const int bb = b + diff;
       return (bb >= prec) ? 0 :
                  (gm->vGetPackedRowVector (d, bb) / bToTheDiff);
    }
@@ -203,15 +201,15 @@ L::MReduction::vGetPackedRowVector (unsigned d, unsigned b) const
  *  Net From Sequence
  */
 
-unsigned
-L::NetFromSequence::getDigit  (unsigned d, unsigned r, unsigned b) const
+int
+L::NetFromSequence::getDigit (int d, int r, int b) const
 {
-   if (equi && d == 0)  return unsigned (r + b + 1 == m);
+   if (equi && d == 0)  return int (r + b + 1 == m);
    else return gm->getDigit (d - equi, r, b);
 }
 
 L::u64
-L::NetFromSequence::vGetPackedRowVector (unsigned d, unsigned b) const
+L::NetFromSequence::vGetPackedRowVector (int d, int b) const
 {
    if (equi && d == 0)
    {
@@ -225,14 +223,14 @@ L::NetFromSequence::vGetPackedRowVector (unsigned d, unsigned b) const
  *  Discard Dimensions
  */
 
-unsigned
-L::DiscardDimensions::getDigit  (unsigned d, unsigned r, unsigned b) const
+int
+L::DiscardDimensions::getDigit  (int d, int r, int b) const
 {
    return gm->getDigit (d, r, b);
 }
 
 L::u64
-L::DiscardDimensions::vGetPackedRowVector (unsigned d, unsigned b) const
+L::DiscardDimensions::vGetPackedRowVector (int d, int b) const
 {
    return gm->vGetPackedRowVector (d, b);
 }
@@ -243,37 +241,37 @@ L::DiscardDimensions::vGetPackedRowVector (unsigned d, unsigned b) const
  */
 
 L::SelectDimensions::SelectDimensions (
-      unsigned _dim, const GeneratorMatrix& _gm)
+      int _dim, const GeneratorMatrix& _gm)
    : GeneratorMatrix (_gm), gm (&_gm), dimensions (_dim)
 {
    dim = _dim;
-   for (unsigned d = 0; d < _dim; ++d)  dimensions [d] = d;
+   for (int d = 0; d < _dim; ++d)  dimensions [d] = d;
 }
 
 L::SelectDimensions::SelectDimensions (
-      unsigned dim1, unsigned dim2, const GeneratorMatrix& _gm)
+      int dim1, int dim2, const GeneratorMatrix& _gm)
    : GeneratorMatrix (_gm), gm (&_gm), dimensions (dim2 - dim1)
 {
    dim = dim2 - dim1;
-   for (unsigned d = 0; d < dim; ++d)  dimensions [d] = dim1++;
+   for (int d = 0; d < dim; ++d)  dimensions [d] = dim1++;
 }
 
 L::SelectDimensions::SelectDimensions (
-   const unsigned* begin, const unsigned* end, const GeneratorMatrix& _gm)
+   const int* begin, const int* end, const GeneratorMatrix& _gm)
    : GeneratorMatrix (_gm), gm (&_gm), dimensions (end - begin)
 {
    dim = end - begin;
    std::copy (begin, end, dimensions.begin());
 }
 
-unsigned
-L::SelectDimensions::getDigit  (unsigned d, unsigned r, unsigned b) const
+int
+L::SelectDimensions::getDigit  (int d, int r, int b) const
 {
    return gm->getDigit (dimensions [d], r, b);
 }
 
 L::u64
-L::SelectDimensions::vGetPackedRowVector (unsigned d, unsigned b) const
+L::SelectDimensions::vGetPackedRowVector (int d, int b) const
 {
    return gm->vGetPackedRowVector (dimensions[d], b);
 }

@@ -21,16 +21,6 @@
 #include <iostream>
 #include <iomanip>
 
-#include <HIntLib/defaults.h>
-
-#ifdef HINTLIB_HAVE_CSTDLIB
-  #include <cstdlib>
-  #define HINTLIB_SLN std::
-#else
-  #include <stdlib.h>
-  #define HINTLIB_SLN
-#endif
-
 #include <HIntLib/tparameter.h>
 #include <HIntLib/generatormatrixgen.h>
 #include <HIntLib/shiftnet.h>
@@ -65,8 +55,8 @@ bool opt(int c, const char* s)
 {
    switch (c)
    {
-   case 'm':  MAX_M = HINTLIB_SLN atoi (s); return true;
-   case 'i':  MIN_M = HINTLIB_SLN atoi (s); return true;
+   case 'm':  MAX_M = parseInt (s); return true;
+   case 'i':  MIN_M = parseInt (s); return true;
    }
 
    return false;

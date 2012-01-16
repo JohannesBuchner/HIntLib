@@ -29,8 +29,8 @@
  *  as formula Cn: 3-6
  */
 
-#ifndef HINTLIB_RULE3SIMPSON_H
-#define HINTLIB_RULE3SIMPSON_H 1
+#ifndef HINTLIB_RULE_3_SIMPSON_H
+#define HINTLIB_RULE_3_SIMPSON_H 1
 
 #include <HIntLib/defaults.h>
 
@@ -49,15 +49,15 @@ namespace HIntLib
    class Rule3Simpson : public CubatureRule, private OrbitRule
    {
    public:
-      Rule3Simpson (unsigned dim);
+      Rule3Simpson (int dim);
 
       virtual real eval (Integrand &, const Hypercube &);
 
-      virtual unsigned getDimension()   const { return dim; }
-      virtual Index getNumPoints ()     const { return num3powS(); }
-      virtual unsigned getDegree ()     const { return 3; }
-      virtual bool isAllPointsInside () const { return true; }
-      virtual real getSumAbsWeight ()   const { return 1.0; }
+      virtual int getDimension()       const  { return dim; }
+      virtual Index getNumPoints()     const  { return num3powS(); }
+      virtual int getDegree()          const  { return 3; }
+      virtual bool isAllPointsInside() const  { return true; }
+      virtual real getSumAbsWeight()   const  { return 1.0; }
 
       static CubatureRuleFactory* getFactory();
  
