@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <HIntLib/output.h>
 #include <HIntLib/linearalgebra2.h>
 #include <HIntLib/prime.h>
+#include <HIntLib/polynomialbase.h>
 #include <HIntLib/gcd.tcc>
 
 
@@ -33,6 +34,8 @@
 
 
 /**
+ *  printShort()
+ *
  *  Prints a polynomial to an output stream.
  */
 
@@ -80,13 +83,11 @@ HIntLib::Polynomial2<T>::printShort (
       {
          if (needPlus) ss << '+';
 
-         switch (i)
+         if (i == 0)  ss << '1';
+         else
          {
-         case 0:  ss << '1'; break;
-         case 1:  ss << var; break;
-         case 2:  ss << var << '\262'; break;
-         case 3:  ss << var << '\263'; break;
-         default: ss << var << '^' << unsigned(i);  // avoid sign from showpos
+            ss <<var;
+            if (i >= 2)  ss.power (i);
          }
 
          needPlus = true;
@@ -95,6 +96,67 @@ HIntLib::Polynomial2<T>::printShort (
 
    if ((f & FIT_FOR_MUL) && nonZeroTerms >= 2)  ss << ')';
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename T>
+void
+HIntLib::Polynomial2<T>::printShort (
+      std::wostream& o, wchar_t wvar, PrintShortFlag f) const
+{
+   // The zero-polynomial is a special case
+
+   if (is0())
+   {
+      o << L"0";
+      return;
+   }
+
+   // count non-zero terms
+
+   int nonZeroTerms = 0;
+   T dd = d;
+
+   while (dd && nonZeroTerms < 2)
+   {
+      if (dd & 1)  ++nonZeroTerms;
+      dd >>= 1;
+   }
+
+   Private::WPrinter ss (o);
+
+   bool needPlus = o.flags() & o.showpos;
+
+   if ((f & FIT_FOR_MUL) && nonZeroTerms >= 2)
+   {
+      if (needPlus)
+      {
+         ss << L'+';
+         needPlus = false;
+      }
+      ss << L'(';
+   }
+
+   for (int i = degree(); i >= 0; --i)
+   {
+      if ((*this)[i])
+      {
+         if (needPlus) ss << L'+';
+
+         if (i == 0)  ss << L'1';
+         else
+         {
+            ss << wvar;
+            if (i >= 2)  ss.power (i);
+         }
+
+         needPlus = true;
+      }
+   }
+
+   if ((f & FIT_FOR_MUL) && nonZeroTerms >= 2)  ss << L')';
+}
+#endif
+
 
 /**
  *  Multiply two polynomials
@@ -340,16 +402,7 @@ template<typename T>
 unsigned char
 HIntLib::Polynomial2<T>::evaluate (unsigned char x) const
 {
-   if (x == 0)  return d & 1;
-
-   unsigned char res = 0;
-   T dd = d;
-   while (dd)
-   {
-      res ^= (dd & 1);
-      dd >>= 1;
-   }
-   return res;
+   return (x == 0) ? (d & 1) : parity (d);
 }
 
 
@@ -394,6 +447,11 @@ HIntLib::powerMod (Polynomial2<T> x, unsigned exponent, Polynomial2<T> m)
 
 /**********************  Polynomial 2 Ring  **********************************/
 
+
+/**
+ *  print()
+ */
+
 template<typename T>
 void
 HIntLib::Polynomial2Ring<T>::print (std::ostream& o, const type& p) const
@@ -403,6 +461,18 @@ HIntLib::Polynomial2Ring<T>::print (std::ostream& o, const type& p) const
    printShort (ss, p);
    ss << " (2)";
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename T>
+void
+HIntLib::Polynomial2Ring<T>::print (std::wostream& o, const type& p) const
+{
+   Private::WPrinter ss (o);
+
+   printShort (ss, p);
+   ss << L" (2)";
+}
+#endif
 
 /**
  *  next()
@@ -646,7 +716,18 @@ end:
 /********************  Instantiations  ***************************************/
 
 
+#ifdef HINTLIB_BUILD_WCHAR
+#define HINTLIB_INSTANTIATE_POLYNOMIAL2_W(X) \
+   template void Polynomial2<X >::printShort \
+      (std::wostream &, wchar_t, PrintShortFlag) const; \
+   template void Polynomial2Ring<X >::print \
+      (std::wostream&, const type&) const;
+#else
+#define HINTLIB_INSTANTIATE_POLYNOMIAL2_W(X)
+#endif
+
 #define HINTLIB_INSTANTIATE_POLYNOMIAL2(X) \
+   HINTLIB_INSTANTIATE_POLYNOMIAL2_W(X) \
    template Polynomial2<X > Polynomial2<X >::operator* \
       (const Polynomial2<X >) const; \
    template Polynomial2<X > sqr(Polynomial2<X >); \

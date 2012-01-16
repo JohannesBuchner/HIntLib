@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,19 +18,43 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/quotientfield.tcc>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
+#pragma implementation
+#endif
 
 #include <HIntLib/integerring.h>
 #include <HIntLib/realfield.h>
 #include <HIntLib/lookupfield.h>
 #include <HIntLib/polynomial2.h>
 #include <HIntLib/polynomial.h>
+
+void
+HIntLib::Private::printDoubleStruckCapitalQ (std::ostream& o)
+{
+#if HINTLIB_CHARACTER_SET == 4 && defined (HINTLIB_UTF8_SELECT)
+   HINTLIB_UTF8_SELECT(utf8Support(o),
+      o << "\xe2\x84\x9a",  // DOUBLE-STRUCK CAPITAL Q
+      o << "Q")
+#else
+   o << "Q";
+#endif
+}
+
+#ifdef HINTLIB_BUILD_WCHAR
+void
+HIntLib::Private::printDoubleStruckCapitalQ (std::wostream& o)
+{
+#if HINTLIB_CHARACTER_SET == 4
+   o << L"\x211a";  // DOUBLE-STRUCK CAPITAL Q
+#else
+   o << L"Q";
+#endif
+}
+#endif
 
 namespace HIntLib
 {

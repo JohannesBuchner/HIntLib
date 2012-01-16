@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,20 +18,9 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <HIntLib/output.h>
 
-#include <iostream>
-#include <string>
-
-#include "test.h"
-
-#ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
-#else
-  #include <HIntLib/fallback_sstream.h>
-#endif
-
-using std::string;
-using std::cout;
+#include "test_arithmetic.h"
 
 /*
  *  Global variables
@@ -43,9 +32,9 @@ unsigned SIZE = 100;
 bool FLUSH = false;
 unsigned W = 15;
 
-string selectedCategory;
-string selectedName;
-string selectedType;
+STRING selectedCategory;
+STRING selectedName;
+std::string selectedType;
 
 // counters
 
@@ -55,12 +44,22 @@ unsigned primitivesCounter;
 unsigned lastNorm;
 int lastDegree;
 
-
 /**
  *  Comamnd line arguments
  */
 
-const char* options = "n:fc:m:t:";
+const char option_msg[] =
+      "  -n n   Uses tables of size _n_ for the tests (default = 1000).\n"
+      "  -f     Flush the output stream at regular times.\n"
+      "  -c str Perform only tests for given algebra category.\n"
+      "  -m str Perform only tests for given structure name.\n"
+      "  -t str Perform only tests for given structure type.\n";
+const char options[] = "n:fc:m:t:";
+const char testProgramParameters[] = "[OPTION]...";
+const char testProgramUsage[] = "Tests all kinds of rings and fields.\n\n";
+const char testProgramName[] = "test_arithmetic";
+const int  testProgramCopyright = 2003;
+
 
 bool opt (int c, const char* s)
 {
@@ -68,28 +67,32 @@ bool opt (int c, const char* s)
    {
    case 'n':  SIZE = atoi (s); return true;
    case 'f':  FLUSH = true; return true;
-   case 'c':  selectedCategory = s; return true;
-   case 'm':  selectedName = s; return true;
+   case 'c':
+      {
+#ifdef USE_WCHAR
+         STRINGSTREAM ss;
+         ss << s;
+         selectedCategory = ss.str();
+#else
+         selectedCategory = s;
+#endif
+         return true;
+      }
+   case 'm':
+      {
+#ifdef USE_WCHAR
+         STRINGSTREAM ss;
+         ss << s;
+         selectedName = ss.str();
+#else
+         selectedName = s;
+#endif
+         return true;
+      }
    case 't':  selectedType = s; return true;
    }
 
    return false;
-}
-
-void usage()
-{
-   std::cerr <<
-      "Usage: test_arithmetic [OPTION]...\n\n"
-      "Tests all kinds of rings and fields.\n\n"
-      << option_msg <<
-      "  -n n   Uses tables of size _n_ for the tests (default = 1000).\n"
-      "  -f     Flush the output stream at regular times.\n"
-      "  -c str Perform only tests for given algebra category.\n"
-      "  -m str Perform only tests for given structure name.\n"
-      "  -t str Perform only tests for given structure type.\n"
-      "\n";
-
-   exit (1);
 }
 
 
@@ -97,23 +100,25 @@ void usage()
  *  performTest()
  */
 
-bool performTest (const string& cat, const string& name, const string& type)
+bool performTest (
+      const STRING& cat, const STRING& name, const std::string& type)
 {
-   if (((   selectedCategory == ""
-         || cat .find (selectedCategory) != string::npos) &&
-        (   selectedName == ""
-         || name.find (selectedName)     != string::npos) &&
-        (   selectedType == ""
-         || type.find (selectedType)     != string::npos)))
+   if (((   selectedCategory.empty()
+         || cat .find (selectedCategory) != STRING::npos) &&
+        (   selectedName.empty()
+         || name.find (selectedName)     != STRING::npos) &&
+        (   selectedType.empty()
+         || type.find (selectedType)     != std::string::npos)))
    {
       NORMAL
       {
-         cout << "Testing " << cat
-              << " \"" << name << "\" (" << type << ")..." << std::endl;
+         COUT << "Testing " << cat << ' ';
+         doubleQuote (COUT, name.c_str());
+         COUT << " (" << type.c_str() << ")..." << std::endl;
       }
       else if (verbose == 0)
       {
-         cout << '.' << std::flush;
+         COUT << '.' << std::flush;
       }
 
       return true;
@@ -124,13 +129,31 @@ bool performTest (const string& cat, const string& name, const string& type)
 
 
 /**
+ * printInfinity ()
+ */
+
+void printInfinity ()
+{
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 3
+   COUT << L"\x221e";
+# else
+   COUT << L"inf";
+# endif
+#else
+   COUT << Wgl4Ascii ("\xe2\x88\x9e", "inf");
+#endif
+}
+
+
+/**
  * printNumberOrInf ()
  */
 
 void printNumberOrInf (unsigned n)
 {
-   if (n)  cout << n;
-   else    cout << "inf";
+   if (n)  COUT << n;
+   else printInfinity();
 }
 
 
@@ -219,7 +242,15 @@ namespace HIntLib
 
 void test (int argc, char**)
 {
-   if (argc)  usage();
+   if (argc)  usage("Too many arguments!");
+
+#ifdef USE_WCHAR
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCALE
+   COUT.imbue (std::cout.getloc());
+#endif
+#endif
+
+   NORMAL printHeader (COUT);
 
    HIntLib::testComplex();
    HIntLib::testReal();
@@ -249,6 +280,6 @@ void test (int argc, char**)
 
    HIntLib::testModularArithmeticShort (1999);
 
-   if (verbose == 0)  cout << std::endl;
+   if (verbose == 0)  COUT << std::endl;
 }
 

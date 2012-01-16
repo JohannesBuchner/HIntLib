@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,19 +29,14 @@
 using std::cout;
 using std::endl;
 
-const char* options = "";
+const char options[] = "";
+const char option_msg[] = "";
+const char testProgramParameters[] = "[OPTION]...";
+const char testProgramUsage[] = "";
+const char testProgramName[] = "test_abs";
+const int  testProgramCopyright = 2003;
 
 bool opt(int, const char*) { return false; }
-
-void usage()
-{
-   std::cerr <<
-      "Usage: test_abs [OPTION]...\n\n"
-      << option_msg <<
-      "\n";
-
-   exit (1);
-}
 
 // Constants
 
@@ -73,7 +68,9 @@ template<> int type (const long double&)  { return 3; }
 
 void test(int argc, char**)
 {
-   if (argc)  usage();
+   if (argc)  usage("Too many arguments!");
+
+   NORMAL printHeader (cout);
 
    cout << std::setprecision (25);
 
@@ -87,8 +84,8 @@ void test(int argc, char**)
              << "   expected = " << pFloat
              << "   type is " << t << endl;
 
-   if (L::abs (mFloat) != pFloat)  error ("accuracy failed!");
-   if (t != 1)  error ("type failed!");
+   if (L::abs (mFloat) != pFloat)  error ("accuracy failed");
+   if (t != 1)  error ("type failed");
    
    // double
 
@@ -100,8 +97,8 @@ void test(int argc, char**)
              << "   expected = " << pDouble
              << "   type is " << t << endl;
 
-   if (L::abs (mDouble) != pDouble)  error ("accuracy failed!");
-   if (t != 2)  error ("type failed!");
+   if (L::abs (mDouble) != pDouble)  error ("accuracy failed");
+   if (t != 2)  error ("type failed");
    
    // long double
 
@@ -113,7 +110,7 @@ void test(int argc, char**)
              << "   expected = " << pLong
              << "   type is " << t << endl;
 
-   if (L::abs (mLong) != pLong) error ("accuracy failed!");
-   if (t != 3)  error ("type failed!");
+   if (L::abs (mLong) != pLong) error ("accuracy failed");
+   if (t != 3)  error ("type failed");
 }
 

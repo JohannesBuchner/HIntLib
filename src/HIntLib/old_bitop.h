@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,7 +27,9 @@
 #ifndef HINTLIB_OLD_BITOP_H
 #define HINTLIB_OLD_BITOP_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -53,9 +55,9 @@ namespace NormalBitOp
  */
 
 template<class T>
-inline unsigned ls0 (T n)
+inline int ls0 (T n)
 {
-   unsigned result = 0;
+   int result = 0;
 
    while (n & 1)
    {

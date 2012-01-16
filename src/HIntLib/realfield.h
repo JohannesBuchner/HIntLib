@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 #ifndef HINTLIB_REAL_FIELD_H
 #define HINTLIB_REAL_FIELD_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -42,8 +44,12 @@ namespace Private
    class RRing { protected: RRing() {} };
    class CRing { protected: CRing() {} };
 
-   std::ostream& operator<< (std::ostream&, const RRing&);
-   std::ostream& operator<< (std::ostream&, const CRing&);
+   std:: ostream& operator<< (std:: ostream&, const RRing&);
+   std:: ostream& operator<< (std:: ostream&, const CRing&);
+#ifdef HINTLIB_BUILD_WCHAR
+   std::wostream& operator<< (std::wostream&, const RRing&);
+   std::wostream& operator<< (std::wostream&, const CRing&);
+#endif
 
    /**
     *  Number Field
@@ -97,6 +103,9 @@ namespace Private
       // I/O
 
       static void printSuffix (std::ostream&)  {}
+#ifdef HINTLIB_BUILD_WCHAR
+      static void printSuffix (std::wostream&)  {}
+#endif
    };
 
 }  // namespace Private
@@ -247,9 +256,15 @@ public:
    // I/O
 
    static void print (std::ostream &o, const type& a)  { o << a.x; }
-   static void printShort (
-         std::ostream &o, const type& a, PrintShortFlag = PrintShortFlag())
+   static void printShort (std::ostream &o, const type& a)  { print (o, a); }
+   static void printShort (std::ostream &o, const type& a, PrintShortFlag)
       { print (o, a); }
+#ifdef HINTLIB_BUILD_WCHAR
+   static void print (std::wostream &o, const type& a)  { o << a.x; }
+   static void printShort (std::wostream &o, const type& a)  { print (o, a); }
+   static void printShort (std::wostream &o, const type& a, PrintShortFlag)
+      { print (o, a); }
+#endif
 
    HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };
@@ -300,9 +315,15 @@ public:
    // I/O
 
    static void print (std::ostream &, const type&);
-   static void printShort (
-         std::ostream &o, const type& a, PrintShortFlag = PrintShortFlag())
+   static void printShort (std::ostream &o, const type& a)  { print (o, a); }
+   static void printShort (std::ostream &o, const type& a, PrintShortFlag)
       { print (o, a); }
+#ifdef HINTLIB_BUILD_WCHAR
+   static void print (std::wostream &, const type&);
+   static void printShort (std::wostream &o, const type& a)  { print (o, a); }
+   static void printShort (std::wostream &o, const type& a, PrintShortFlag)
+      { print (o, a); }
+#endif
 
    HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };

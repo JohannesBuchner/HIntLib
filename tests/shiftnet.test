@@ -2,13 +2,13 @@
 
 echo "RUNNING: shiftnet.test"
 
-./test_shiftnet -m 19 2 || { (exit 1); exit 1; }
-./test_shiftnet -m 15 3 || { (exit 1); exit 1; }
-./test_shiftnet -m 15 4 || { (exit 1); exit 1; }
-./test_shiftnet -m 15 5 || { (exit 1); exit 1; }
-./test_shiftnet       7 || { (exit 1); exit 1; }
-./test_shiftnet       8 || { (exit 1); exit 1; }
-./test_shiftnet       9 || { (exit 1); exit 1; }
+./test_shiftnet -s -m 20 2 || { (exit 1); exit 1; }
+./test_shiftnet -s -m 15 3 || { (exit 1); exit 1; }
+./test_shiftnet -s -m 15 4 || { (exit 1); exit 1; }
+./test_shiftnet -s -m 14 5 || { (exit 1); exit 1; }
+./test_shiftnet -s -m 12 7 || { (exit 1); exit 1; }
+./test_shiftnet -s -m 13 8 || { (exit 1); exit 1; }
+./test_shiftnet -s -m 12 9 || { (exit 1); exit 1; }
 
 exit 0
 

@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 #ifndef HINTLIB_FACTOR_RING_H
 #define HINTLIB_FACTOR_RING_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -80,6 +82,10 @@ public:
    using A::printShort;
    void print (std::ostream &, const type&) const;
    void printSuffix (std::ostream &) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   void print (std::wostream &, const type&) const;
+   void printSuffix (std::wostream &) const;
+#endif
 };
 
 
@@ -90,6 +96,10 @@ public:
 template<typename A>
 std::ostream& operator<< (std::ostream &, const FactorBB<A> &);
 
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename A>
+std::wostream& operator<< (std::wostream &, const FactorBB<A> &);
+#endif
 
 /**
  *  Factor Poly B
@@ -242,7 +252,7 @@ template<class A>
 class FactorRingB<A,integer_tag> : public FactorInteger<A>
 {
 public:
-   typedef char_non char_category;
+   typedef char_none char_category;
 
    unsigned additiveOrder (const typename A::type& u) const;
    unsigned numNilpotents () const

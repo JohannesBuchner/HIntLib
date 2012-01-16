@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,15 +27,15 @@
 #ifndef HINTLIB_BUFFER_H
 #define HINTLIB_BUFFER_H 1
 
+#include <HIntLib/defaults.h>
+
 #ifndef HINTLIB_PARALLEL
 #error "buffer.h can only be used in PARALLEL mode"
 #endif
 
-#ifdef __GNUG__
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
-
-#include <HIntLib/defaults.h>
 
 
 namespace HIntLib
@@ -50,7 +50,7 @@ namespace HIntLib
 class PackBuffer
 {
 public:
-   static const int SIZE = 128000;
+   enum { SIZE = 128000 };
 protected:
    PackBuffer (MPI_Comm comm) : comm (comm), pos (0) {}
 

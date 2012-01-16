@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 #ifndef HINTLIB_INTEGER_RING_H
 #define HINTLIB_INTEGER_RING_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -48,6 +50,9 @@ namespace Private
    class ZRing { protected: ZRing() {} };
 
    std::ostream& operator<< (std::ostream&, const ZRing&);
+#ifdef HINTLIB_BUILD_WCHAR
+   std::wostream& operator<< (std::wostream&, const ZRing&);
+#endif
 
 }  // namespace Private
 
@@ -157,6 +162,13 @@ public:
          std::ostream &o, const T& a, PrintShortFlag = PrintShortFlag())
       { print (o, a); }
    static void printSuffix (std::ostream &)  {}
+#ifdef HINTLIB_BUILD_WCHAR
+   static void print (std::wostream &o, const T& a)  {  o << a; }
+   static void printShort (
+         std::wostream &o, const T& a, PrintShortFlag = PrintShortFlag())
+      { print (o, a); }
+   static void printSuffix (std::wostream &)  {}
+#endif
 
    // units
 

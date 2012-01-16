@@ -61,7 +61,7 @@ exit (0);
 
 if test x"$hl_cv_unreachable_calls_removed" = xyes; then
    AC_DEFINE([UNREACHABLE_CALLS_REMOVED],1,
-      [define if unreachable calls are removed by the optimizer])
+      [Define to 1 if unreachable calls are removed by the optimizer.])
 fi
 ])
 
@@ -128,7 +128,7 @@ if test translit([$hl_cv_abs_for_$2_num],[ ],[_]) -eq 0 ; then
 AC_MSG_ERROR([No appropriate function found!])
 fi
 AC_DEFINE_UNQUOTED(translit([ABS_FOR_$2],[ a-z],[_A-Z]),translit([$hl_cv_abs_for_$2],[ ],[_]),
-   [function to use for abs($2)])
+   [Function to use for `abs($2)'.])
 ])dnl AC_DEFUN
 
 
@@ -190,11 +190,11 @@ done
 if test translit([$hl_cv_$1_for_$3_num],[ ],[_]) -ne 0 ; then
    AC_DEFINE_UNQUOTED(translit([$1_FOR_$3],[ a-z],[_A-Z]),
                       translit([$hl_cv_$1_for_$3],[ ],[_]),
-   [function to use for $1($3)])
+   [Function to use for `$1($3)'.])
 fi
 AC_DEFINE_UNQUOTED(translit([$1_FOR_$3_NUM],[ a-z],[_A-Z]),
                    translit([$hl_cv_$1_for_$3_num],[ ],[_]),
-   [function number to use for $1($3)])
+   [Function number to use for `$1($3)'.])
 ])dnl AC_DEFUN
 
 
@@ -214,7 +214,7 @@ AC_DEFUN([HL_FLT_ROUNDS_CONST],
 hl_cv_flt_rounds_const=yes, hl_cv_flt_rounds_const=no)])
 
 if test x"$hl_cv_flt_rounds_const" = xyes; then
-   AC_DEFINE([FLT_ROUNDS_CONST],1,[define if FLT_ROUNDS is constant])
+   AC_DEFINE([FLT_ROUNDS_CONST],1,[Define to 1 if `FLT_ROUNDS' is a constant.])
 fi
 ])
 
@@ -235,7 +235,7 @@ v1 == v2;
 hl_cv_equal_bug=no, hl_cv_equal_bug=yes)])
 
 if test x"$hl_cv_equal_bug" = xyes; then
-   AC_DEFINE([EQUAL_BUG],1,[define if STL has the equal()-bug])
+   AC_DEFINE([EQUAL_BUG],1,[Define to 1 if the STL has the equal()-bug.])
 fi
 ])
 
@@ -262,10 +262,28 @@ if (std::abs(std::pow (x, 1)) < .5)  STD exit (1);
 hl_cv_complex_pow_bug=no, hl_cv_complex_pow_bug=yes)])
 
 if test x"$hl_cv_complex_pow_bug" = xyes; then
-   AC_DEFINE([COMPLEX_POW_BUG],1,[define whether std::pow(std::complex<long double>,int) is broken])
+   AC_DEFINE([COMPLEX_POW_BUG],1,[Define to 1 if `std::pow(std::complex<long double>,int)' is broken.])
 fi
 ])
 
+
+# HL_TEST_BUILTIN
+# ---------------
+# Check whether __builtin_XXX(int) is available
+#
+# It is not sufficient to only try to compile, because Intel's compiler declares
+# one of these functions without actually defining it anywhere.
+AC_DEFUN([HL_TEST_BUILTIN],
+[AC_CACHE_CHECK([for __builtin_$1()], hl_cv_have_builtin_$1,
+[AC_LINK_IFELSE(AC_LANG_PROGRAM([[]],[[
+   return __builtin_$1(7);
+]]),
+hl_cv_have_builtin_$1=yes, hl_cv_have_builtin_$1=no)])
+
+if test x"$hl_cv_have_builtin_$1" = xyes; then
+   AC_DEFINE(translit([HAVE_BUILTIN_$1],[a-z],[A-Z]),1,[Define to 1 if `__builtin_$1()' is available.])
+fi
+])
 
 # HL_IEEE_MAGIC_WORKS
 # -------------------
@@ -331,50 +349,92 @@ hl_cv_ieee_magic_works=yes, hl_cv_ieee_magic_works=no,
 hl_cv_ieee_magic_works=no)])
 
 if test x"$hl_cv_ieee_magic_works" = xyes; then
-   AC_DEFINE([IEEE_MAGIC_WORKS],1,[define if IEEE magic works])
+   AC_DEFINE([IEEE_MAGIC_WORKS],1,[Define to 1 if IEEE magic works.])
 fi
 ])
 
 
-# HL_STREAMS_SUPPORT_LOCAL
+# HL_STREAMS_SUPPORT_LOCALE
 # ------------------------
-# Check if streams support local
-AC_DEFUN([HL_STREAMS_SUPPORT_LOCAL],
+# Check if streams support locale
+AC_DEFUN([HL_STREAMS_SUPPORT_LOCALE],
 [
-AC_CACHE_CHECK([whether streams support local], hl_cv_streams_support_local,
+AC_CACHE_CHECK([whether streams support locale], hl_cv_streams_support_locale,
 [AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[
 #include <iostream>
 ]],[[
    std::cin.imbue (std::cout.getloc());
 ]]),
-hl_cv_streams_support_local=yes, hl_cv_streams_support_local=no)])
+hl_cv_streams_support_locale=yes, hl_cv_streams_support_locale=no)])
 
-if test x"$hl_cv_streams_support_local" = xyes; then
-   AC_DEFINE(STREAMS_SUPPORT_LOCAL,1,[define if streams support local])
+if test x"$hl_cv_streams_support_locale" = xyes; then
+   AC_DEFINE(STREAMS_SUPPORT_LOCALE,1,[Define to 1 if C++ streams support locales.])
 fi
 ])
 
-# HL_NAMEPSPACE_REL_OPS
-# ---------------------
-# Check if the namespace std::rel_ops exists
-AC_DEFUN([HL_NAMESPACE_REL_OPS],
+# HL_OSTREAM_IS_BASIC_OSTREAM
+# ---------------------------
+# Check if std::ostream is a typedef for std::basic_ostream<char>.
+AC_DEFUN([HL_OSTREAM_IS_BASIC_OSTREAM],
 [
-AC_CACHE_CHECK([whether the namespace std::rel_ops exists],
-hl_cv_namespace_rel_ops,
+AC_CACHE_CHECK([whether std::ostream is a typedef for std::basic_ostream<char>],
+hl_cv_ostream_is_basic_ostream,
 [AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[
-#include <utility>
-using namespace std::rel_ops;      
-struct A { A (int aa) : a(aa) {} int a;};
-bool operator==(const A& x1, const A& x2)  { return x1.a == x2.a; }
+   #include<iostream>
+   void f (std::basic_ostream<char>&);
 ]],[[
-   A s1 (3);
-   A s2 (4);
-   s1 != s2;
+   f (std::cout);
 ]]),
-hl_cv_namespace_rel_ops=yes, hl_cv_namespace_rel_ops=no)])
+hl_cv_ostream_is_basic_ostream=yes, hl_cv_ostream_is_basic_ostream=no)])
 
-if test x"$hl_cv_namespace_rel_ops" = xyes; then
-   AC_DEFINE(NAMESPACE_REL_OPS,1,[define if namespace std::rel_ops exists])
+if test x"$hl_cv_ostream_is_basic_ostream" = xyes; then
+   AC_DEFINE(OSTREAM_IS_BASIC_OSTREAM,1,[Define to 1 if std::ostream is a typedef for std::basic_ostream<char>.])
+fi
+])
+
+# HL_UNICODE
+# ----------
+# Check if wchar_t is supported and stores UNICODE-characters
+AC_DEFUN([HL_UNICODE],
+[
+AC_CACHE_CHECK([whether wchar_t uses UNICODE characters],
+hl_cv_unicode,
+[AC_RUN_IFELSE(AC_LANG_PROGRAM([[
+#ifdef HAVE_CSTDLIB
+  #include <cstdlib>
+  #define STD std::
+#else
+  #include <stdlib.h>
+  #define STD
+#endif
+
+#include<iostream>
+#include<string>
+#include<sstream>
+#ifndef __STDC_ISO_10646__
+#error "Macro __STDC_ISO_10646__ is not defined."
+#endif
+#if SIZEOF_WCHAR_T <= 1
+#error "wchar_t seems to be as small as char."
+#endif
+]],[[
+   std::wstring s = L"A wide String";
+   std::wostringstream ss;
+   ss << L"A wide C string\x2212" << "a C string" << s << L'x' << 'x'
+      << L'\x2212' << wchar_t(200) << '\n';
+   if (ss)
+   {
+      STD exit(0);
+   }
+   else
+   {
+      STD exit(1);
+   }
+]]),
+hl_cv_unicode=yes, hl_cv_unicode=no)])
+
+if test x"$hl_cv_unicode" = xyes; then
+   AC_DEFINE(UNICODE,1,[Define to 1 if `wchar_t' is available and uses UNICODE characters.])
 fi
 ])
 

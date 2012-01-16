@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 #ifndef HINTLIB_RATIONAL_FUNCTION_FIELD_H
 #define HINTLIB_RATIONAL_FUNCTION_FIELD_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -171,6 +173,12 @@ public:
    void printShort (
          std::ostream &, const type&, PrintShortFlag = PrintShortFlag()) const;
    void printSuffix (std::ostream &o) const  { a.printSuffix(o); }
+#ifdef HINTLIB_BUILD_WCHAR
+   void print (std::wostream &, const type&) const;
+   void printShort (
+         std::wostream &, const type&, PrintShortFlag = PrintShortFlag()) const;
+   void printSuffix (std::wostream &o) const  { a.printSuffix(o); }
+#endif
 
    HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 
@@ -195,6 +203,10 @@ template<typename A, typename AC> class QFB2;
 
 template<class A, typename AC>
 std::ostream& operator<< (std::ostream &, const QFB2<A,AC> &);
+#ifdef HINTLIB_BUILD_WCHAR
+template<class A, typename AC>
+std::wostream& operator<< (std::wostream &, const QFB2<A,AC> &);
+#endif
 
 // integers
 
@@ -210,11 +222,36 @@ public:
    type dbl (const type&) const;
    void times2 (type&) const;
    type times (const type&, unsigned) const;
+
+   void printShort (
+         std::ostream &, const type&, PrintShortFlag = PrintShortFlag()) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   void printShort (
+         std::wostream &, const type&, PrintShortFlag = PrintShortFlag()) const;
+#endif
 };
+
+void printDoubleStruckCapitalQ (std::ostream&);
+#ifdef HINTLIB_BUILD_WCHAR
+void printDoubleStruckCapitalQ (std::wostream&);
+#endif
 
 template<class A>
 std::ostream&
-operator<< (std::ostream&, const QFB2<A,integer_tag>&);
+operator<< (std::ostream &o, const QFB2<A,integer_tag>&)
+{
+   printDoubleStruckCapitalQ (o);
+   return o;
+}
+#ifdef HINTLIB_BUILD_WCHAR
+template<class A>
+std::wostream&
+operator<< (std::wostream &o, const QFB2<A,integer_tag>&)
+{
+   printDoubleStruckCapitalQ (o);
+   return o;
+}
+#endif
 
 // polynomials over a field
 
@@ -251,11 +288,23 @@ public:
       if (this->characteristic() == 2) u = type();
       else this->a.times2 (u.num);
    }
+
+   void printShort (
+         std::ostream &, const type&, PrintShortFlag = PrintShortFlag()) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   void printShort (
+         std::wostream &, const type&, PrintShortFlag = PrintShortFlag()) const;
+#endif
 };
 
 template<class A>
 std::ostream&
 operator<< (std::ostream&, const QFB2<A,polyoverfield_tag>&);
+#ifdef HINTLIB_BUILD_WCHAR
+template<class A>
+std::wostream&
+operator<< (std::wostream&, const QFB2<A,polyoverfield_tag>&);
+#endif
 
 
 /**
@@ -296,9 +345,15 @@ public:
    typedef nopolynomial_tag polynomial_category;
    typedef infinite_tag size_category;
    typedef nozerodivisor_tag zerodivisor_category;
+   typedef typename Private::QFB2<A,typename A::algebra_category>::type type;
 
    QuotientField (const A& _a)
       : Private::QFB2<A,typename A::algebra_category> (_a) {}
+
+   void print (std::ostream &,  const type&) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   void print (std::wostream &, const type&) const;
+#endif
 };
 
 } // namespace HIntLib

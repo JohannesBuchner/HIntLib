@@ -17,6 +17,7 @@ pkginclude_HEADERS = \
    defaults.h \
    digitalnet2.h \
    digitalnetgen.h digitalnetgen.tcc \
+   discrepancy.h \
    distribution.h \
    eratosthenes.h \
    esterr.h \
@@ -116,7 +117,7 @@ pkginclude_HEADERS = \
    virtualprng.h
 
 CLEANFILES = defaults.h prime_generated.h
-AM_CXXFLAGS = @COMPILERWARNINGS@
+AM_CXXFLAGS = @COMPILERWARNINGS@ -I..
 
 noinst_HEADERS = _defaults1.h _defaults2.h
 

@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-
 #include <iostream>
 #include <iomanip>
 
@@ -32,7 +31,14 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-const char* options = "r:";
+const char options[] = "r:";
+const char option_msg[] =
+   "  -r n   Restrict to partitions with no more than n items per slot\n";
+const char testProgramParameters[] = "[OPTIONS] slots items";
+const char testProgramUsage[] =
+   "Lists all partitions of _items_ items partitioned into _slots_ slots.\n\n";
+const char testProgramName[] = "test_partition";
+const int  testProgramCopyright = 2003;
 
 int RESTRICTION = -1;
 
@@ -46,34 +52,34 @@ bool opt(int c, const char* s)
    return false;
 }
 
-void usage()
+void print (const int* begin, const int* end)
 {
-   cerr <<
-      "Usage: test_partition slots items [OPTION]...\n\n"
-      "Lists all partitions of _items_ items partitioned into _slots_ slots.\n\n"
-      << option_msg <<
-      "  -r n   Restrict to partitions with no more than n items per slot\n"
-      "\n";
-
-   exit (1);
+   DEB1
+   {
+      for (;;)
+      {
+         cout << *begin;
+         if (++begin == end)  break;
+         cout << '+';
+      }
+   }
 }
 
 void test(int argc, char** argv)
 {
-   if (argc != 2)  usage();
+   if (argc != 2)  usage("Invalid number of arguments!");
 
    const int slots = atoi (argv [0]);
    const int items = atoi (argv [1]);
    
-   if (slots < 1 || items < 0)  usage();
+   if (slots < 1)  usage("Number of slots must be positive!");
+   if (items < 0)  usage("Number of items must be non-negative!");
 
    if (RESTRICTION < 0)  RESTRICTION = items;
 
-   if (items > RESTRICTION * slots)
-   {
-      cerr << "Restriction too low!" << endl;
-      usage();
-   }
+   if (items > RESTRICTION * slots)  usage("Restriction too low!");
+
+   NORMAL printHeader (cout);
 
    L::Array<int> partition (slots);
    L::initial_partition (&partition[0], &partition[slots], items);
@@ -87,19 +93,23 @@ void test(int argc, char** argv)
    {
       int count = 0;
       bool restricted = true;
+      print (&partition[0], &partition[slots]);
       for (int i = 0; i < slots; ++i)
       {
-         int x = partition[i];
-         DEB1 cout << x << ' ';
+         const int x = partition[i];
          count += x;
-         if (x < 0)  error ("Value < 0!");
+         if (x < 0)  error ("Value < 0");
          if (x > RESTRICTION)  restricted = false;
       }
       DEB1 cout << endl;
       partitionCount ++;
       if (restricted)  restrictedPartitionCount++;
 
-      if (count != items)  error ("Total number of items wrong!");
+      if (count != items)
+      {
+         error ("Number of items in the slots does not sum up to "
+                "the total number of items!");
+      }
    }
    while (L::next_partition (&partition[0], &partition[slots]));
 
@@ -113,12 +123,12 @@ void test(int argc, char** argv)
     * these  slots+items-1  things be arranged?
     */
 
-   NORMAL cout << "# partitions = " << partitionCount << endl;
+   NORMAL cout << "Number of partitions = " << partitionCount << endl;
    if (partitionCount != L::choose (slots + items - 1, items))
    {
-      error ("Number of partitions is wrong!");
+      error ("Number of generated partitions is wrong");
    }
-   DEB1 cout << "# restricted partitions = "
+   DEB1 cout << "Number of restricted partitions = "
              << restrictedPartitionCount << endl;
 
    // Create restricted partitions
@@ -130,27 +140,31 @@ void test(int argc, char** argv)
    do
    {
       int count = 0;
+      print (&partition[0], &partition[slots]);
       for (int i = 0; i < slots; ++i)
       {
-         int x = partition[i];
-         DEB1 cout << x << ' ';
+         const int x = partition[i];
          count += x;
-         if (x < 0)  error ("Value < 0!");
-         if (x > RESTRICTION)  error ("Restriction not obeyed!");
+         if (x < 0)  error ("Value < 0");
+         if (x > RESTRICTION)  error ("Restriction not obeyed");
       }
       DEB1 cout << endl;
       partitionCount ++;
 
-      if (count != items)  error ("Total number of items wrong!");
+      if (count != items)
+      {
+         error ("Number of items in the slots does not sum up to "
+                "the total number of items!");
+      }
    }
    while (L::next_partition (&partition[0], &partition[slots], RESTRICTION));
 
    // Compare number with previous count
  
-   NORMAL cout << "# restricted partitions = " << partitionCount << endl;
+   NORMAL cout << "Number of restricted partitions = " << partitionCount << endl;
    if (partitionCount != restrictedPartitionCount)
    {
-      error ("Number of partitions is wrong!");
+      error ("Number of partitions is wrong");
    }
 }
 

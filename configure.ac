@@ -6,14 +6,15 @@
 
 # autoconf setup
 
-AC_INIT([HIntLib], 0.0.10, [rudolf.schuerer@sbg.ac.at], [HIntLib])
+AC_INIT([HIntLib], 0.0.11, [rudolf.schuerer@sbg.ac.at], [HIntLib])
 
 dnl SHARED_VERSION_NUMBER is the libtool library version used in connection
-dnl the -version-info option.
+dnl with the -version-info option.
 dnl
 dnl 0.0. 9: 1
 dnl 0.0.10: 2
-SHARED_VERSION_NUMBER=2
+dnl 0.0.11: 3
+SHARED_VERSION_NUMBER=3
 AC_SUBST(SHARED_VERSION_NUMBER)
 AC_CONFIG_SRCDIR([src/HIntLib/integrator.h])
 AC_CONFIG_HEADERS(config.h)
@@ -146,7 +147,7 @@ library (--disable-shared --endable-static) or only a DLL (default).
 -------------------------------------------------------------------------------
 ])
       else
-        AC_DEFINE(STATIC_LIB_ONLY,1,[Define if only a static library is built on Cygwin])
+        AC_DEFINE(STATIC_LIB_ONLY,1,[Define to 1 if only a static library is built on Cygwin.])
       fi
    fi
    ;;
@@ -156,28 +157,26 @@ esac
 
 AC_MSG_CHECKING([compiler flags to turn on warnings])
 
-if test "$GXX" = yes; then
+case $host/$CXX in
+*/g++*)
    COMPILERWARNINGS="-ffor-scope -ftemplate-depth-25 -Wall -W -Wno-unused -Wctor-dtor-privacy -Wnon-virtual-dtor -Wreorder -Woverloaded-virtual -Wsign-promo"
 # A number of GCC-options we do NOT use for various reasons
 # -malign-double    # breaks ifstream!!!
 # -Wold-style-cast  # Produces many warnings in the STL
 # -fast-math        # Problems with NaN handling in EstErr::getRelErr()
-
-else
-  case $host/$CXX in
+   ;;
 *-sgi-irix*/CC | *-sgi-irix*/CC\ * )
    COMPILERWARNINGS="-fullwarn -woff 3439,3626,3649,3625,1424,1468,1209,1375,1210,1174,1506"
    ;;
-*-linux-*/icpc | *-linux-*/icpc\ * )
+*-linux*/icpc | *-linux*/icpc\ * )
    # COMPILERWARNINGS="-w1"
    # COMPILERWARNINGS="-w2 -Wall -wd981,383,810,530,279,488"
-   COMPILERWARNINGS="-w2 -Wall -wd981,383,810,530,279,488,1418,1419,444"
+   COMPILERWARNINGS="-w2 -Wall -wd981,383,810,530,279,488,1418,1419,444,1683"
    ;;
 *)
    COMPILERWARNINGS=""
    ;;
 esac
-fi
 
 AC_MSG_RESULT($COMPILERWARNINGS)
 AC_SUBST(COMPILERWARNINGS)
@@ -232,10 +231,11 @@ if test $hl_found = no; then
    AC_MSG_ERROR([Header file mising:  We need either sstream or streambuf or streambuf.h!!!])
 fi
 
-# Optional header files: ostream
+# Optional header files: ostream, istream, locale
 
 AC_CHECK_HEADERS([ostream],,,[ ])
 AC_CHECK_HEADERS([istream],,,[ ])
+AC_CHECK_HEADERS([locale],,,[ ])
 
 # Do we have MPI?
 
@@ -259,6 +259,22 @@ AC_SUBST(LIB_HINTLIB_MPI)
 
 dnl AC_CHECK_FUNCS([floor modf pow sqrt])
 
+HL_TEST_BUILTIN(parity)
+HL_TEST_BUILTIN(parityl)
+HL_TEST_BUILTIN(parityll)
+HL_TEST_BUILTIN(popcount)
+HL_TEST_BUILTIN(popcountl)
+HL_TEST_BUILTIN(popcountll)
+HL_TEST_BUILTIN(ffs)
+HL_TEST_BUILTIN(ffsl)
+HL_TEST_BUILTIN(ffsll)
+HL_TEST_BUILTIN(clz)
+HL_TEST_BUILTIN(clzl)
+HL_TEST_BUILTIN(clzll)
+HL_TEST_BUILTIN(ctz)
+HL_TEST_BUILTIN(ctzl)
+HL_TEST_BUILTIN(ctzll)
+
 ###############################################################################
 # Checks for types
 ###############################################################################
@@ -266,25 +282,24 @@ dnl AC_CHECK_FUNCS([floor modf pow sqrt])
 # Checks for typedefs, structures
 
 AC_TYPE_SIZE_T
-AC_CHECK_TYPES([ptrdiff_t,long long int, unsigned long long int,long double])
+AC_CHECK_TYPES([ptrdiff_t,long long int,unsigned long long int,long double,wchar_t])
 
 # Size checks
 
 AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(unsigned long int)
 AC_CHECK_SIZEOF(unsigned long long int)
+AC_CHECK_SIZEOF(wchar_t)
 
-# --with-index=XXX
-
-hl_index=auto
+# --with-index=ARG
 
 AC_ARG_WITH([index],
-  AC_HELP_STRING([--with-index=XX],
-     [determines the type of Index. Valid values are 32 (use u32), 64 (use u64), or auto (use u64 if unsigned long is at least 64 bits wide) [[auto]]]),
+  AC_HELP_STRING([--with-index=ARG],
+     [determines the type of Index. Valid values for ARG are `32' (use u32), `64' (use u64), and `auto' (use u64 if unsigned long is at least 64 bits wide) [[default=auto]]]),
   AC_MSG_CHECKING([with-index argument])
   hl_index="$withval"
   AC_MSG_RESULT($hl_index)
-,)
+,hl_index=auto)
 
 if test x"$hl_index" = x32; then
   AC_MSG_NOTICE([Index is set to u32.])
@@ -306,15 +321,13 @@ fi
 fi
 fi
    
-AC_DEFINE_UNQUOTED(INDEX,$hl_index,[Size of Index data type.])
+AC_DEFINE_UNQUOTED(INDEX,$hl_index,[Size of `Index' type.])
 
-# --with-real=XXX
-
-hl_real=2
+# --with-real=ARG
 
 AC_ARG_WITH([real],
-  AC_HELP_STRING([--with-real=XX],
-     [determines the type of real. Valid values are float, double, or long (uses long double) [[double]]]),
+  AC_HELP_STRING([--with-real=ARG],
+     [determines the type of real. Valid values for ARG are `float', `double', or `long' (uses long double) [[default=double]]]),
   AC_MSG_CHECKING([with-real argument])
 
   if test x"$withval" = xfloat; then
@@ -334,23 +347,126 @@ AC_ARG_WITH([real],
   fi
   fi
   fi
-,)
+, hl_real=2
+)
 
-AC_DEFINE_UNQUOTED(REAL,$hl_real,[Type of real data type.])
+AC_DEFINE_UNQUOTED(REAL,$hl_real,[Type of `real' type.])
 
 ###############################################################################
 # Do compile time and run time checks
 ###############################################################################
 
-HL_STREAMS_SUPPORT_LOCAL
+HL_STREAMS_SUPPORT_LOCALE
 HL_FLT_ROUNDS_CONST
-HL_NAMESPACE_REL_OPS
 HL_UNREACHABLE_CALLS_REMOVED
 HL_EQUAL_BUG
 if test "x$ac_cv_type_long_double" = xyes; then
 HL_COMPLEX_POW_BUG
 fi
 HL_IEEE_MAGIC_WORKS
+
+# Determine wether we use wchar_t and UNICODE
+
+hl_build_wchar=1
+
+AC_ARG_ENABLE(wchar,
+AS_HELP_STRING([--enable-wchar],[Turns on support for wchar_t with UNICODE, even if this capability is not detected])
+AS_HELP_STRING([--disable-wchar],[Turns off support for wchar_t, even if this capability is detected]),[
+  if test x"$enableval" != xyes -a x"$enableval" != xno; then
+    AC_MSG_ERROR([invalid argument to --enable-wchar=$enableval])
+  else
+    AC_MSG_CHECKING([whether support for wchar_t and UNICODE should be built])
+    hl_build_wchar=$enableval
+    AC_MSG_RESULT([(--enable-wchar) $hl_build_wchar])
+  fi],
+  HL_UNICODE
+  HL_OSTREAM_IS_BASIC_OSTREAM
+  AC_MSG_CHECKING([whether support for wchar_t and UNICODE should be built])
+  hl_build_wchar=yes
+  test x"$hl_cv_unicode" == xyes || hl_build_wchar=no
+  test x"$hl_cv_ostream_is_basic_ostream" == xyes || hl_build_wchar=no
+  AC_MSG_RESULT([(autodetect) $hl_build_wchar])
+)
+
+if test x"$hl_build_wchar" = xyes ; then
+  AC_DEFINE_UNQUOTED(BUILD_WCHAR,1,[Define to 1 if support for wchar_t should be built.])
+fi
+
+# --with-encoding-for-char=ARG
+
+AC_MSG_CHECKING([which encoding should be used for char])
+AC_ARG_WITH([encoding-for-char],
+  AC_HELP_STRING([--with-encoding-for-char=ARG],
+     [determines the character encoding used for char.  Valid values for ARG are `source' (only characters from the source character set), `latin1' (for Latin-1 or ISO-8859-1), `utf8' (for UTF-8 encoding), and `locale' (for switching between Latin-1 and UTF-8 depending on the locale of the stream at runtime).  The default value is `locale' if streams support locale, `latin1' for Cygwin, and `source' otherwise]),
+  [case x"$withval" in
+    xsource) AC_MSG_RESULT([only source character set])
+             ;;
+    xlatin1) hl_encoding_for_char=2
+             AC_MSG_RESULT([Latin-1 or ISO-8859-1])
+             ;;
+    xutf8)   AC_DEFINE(ENCODING_UTF8,1,[Define to 1 if char uses UTF-8 encoding.])
+             AC_MSG_RESULT([UTF-8])
+             ;;
+    xlocale) hl_encoding_for_char=4
+             AC_MSG_RESULT([determined by the locale of the stream])
+             if test x"$hl_cv_streams_support_locale" != xyes; then
+                AC_MSG_ERROR([Invalid argument --with-encoding-for-char=locale because streams do not support locale!])
+             fi
+             ;;
+    *) AC_MSG_ERROR([invalid argument --with-encoding-for-char=$withval]) ;;
+  esac],[
+  case $host in
+    *cygwin* )
+      hl_encoding_for_char=2
+      AC_MSG_RESULT([Latin-1 or ISO-8859-1 (default for Cygwin)])
+      ;;
+    *)
+      if test x"$hl_cv_streams_support_locale" = xyes; then
+         hl_encoding_for_char=4
+         AC_MSG_RESULT([determined by the locale of the stream (default)])
+      else
+         hl_encoding_for_char=1
+         AC_MSG_RESULT([only source character set (default, because streams do not support locale)])
+      fi
+      ;;
+  esac]
+)
+
+if test x"$hl_encoding_for_char" == x2 ; then
+  AC_DEFINE(ENCODING_LATIN1,1,[Define to 1 if char uses Latin-1 encoding.])
+fi
+if test x"$hl_encoding_for_char" == x4 ; then
+  AC_DEFINE(ENCODING_LOCALE,1,[Define to 1 if encoding of char should be determined by the locale.])
+fi
+
+
+# --with-character-set=ARG
+
+AC_MSG_CHECKING([which set of characters should be used])
+AC_ARG_WITH([character-set],
+  AC_HELP_STRING([--with-character-set=ARG],
+     [determines the set of characters used by HIntLib (independently of the encoding).  Valid values for ARG are `ascii' (for ASCII or ISO 646), `latin1' (for Latin-1 or ISO-8859-1), wgl4 (for all characters from the Windows Glyph List 4 (WGL4)), and `all' (for all UNICODE characters without restrictions) [[default=wgl4]]]),[
+case x"$withval" in
+  xascii)  hl_character_set=1
+           AC_MSG_RESULT([ASCII only])
+           ;;
+  xlatin1) hl_character_set=2
+           AC_MSG_RESULT([Latin-1 or ISO-8859-1])
+           ;;
+  xwgl4)   hl_character_set=3
+           AC_MSG_RESULT([WGL4])
+           ;;
+  xall)    hl_character_set=4
+           AC_MSG_RESULT([all])
+           ;;
+  *)       AC_MSG_ERROR([invalid argument --with-character_set=$withval]) ;;
+esac],
+  hl_character_set=3
+  AC_MSG_RESULT([WGL4 (default)])
+)
+
+AC_DEFINE_UNQUOTED(CHARACTER_SET,$hl_character_set,[The set of valid characters (1=ASCII, 2=Latin-1, 3=WGL4, 4=all).])
+
 
 # Which abs() do we use for floats?  Which one for ints?
 
@@ -404,7 +520,7 @@ else
 fi
 
 AC_DEFINE_UNQUOTED(ABS_STRATEGY,$hl_cv_abs_strategy,
-   [strategy to get abs() right])
+   [Strategy to get `abs()' right.])
 
 # Which sin() do we use for floats?
 # This result is also used for all other math functions covered by the C++
@@ -439,7 +555,7 @@ else
 fi
 
 AC_DEFINE_UNQUOTED(MATH_FUN_STRATEGY,$hl_cv_math_fun_strategy,
-   [strategy to get standard math functions right])
+   [Strategy to get standard math functions right.])
 
 # Which lgamma() shall we use?
 
@@ -456,12 +572,12 @@ dnl fi
 # Directories
 
 if test "x$prefix" != xNONE; then   
-   AC_DEFINE_UNQUOTED(DATADIR,"${prefix}/share/${PACKAGE}",[The directory which holds our data files])
+   AC_DEFINE_UNQUOTED(DATADIR,"${prefix}/share/${PACKAGE}",[The directory which holds the installed data files.])
 else
-   AC_DEFINE_UNQUOTED(DATADIR,"${ac_default_prefix}/share/${PACKAGE}",[The directory which holds our data files])
+   AC_DEFINE_UNQUOTED(DATADIR,"${ac_default_prefix}/share/${PACKAGE}",[The directory which holds the installed data files.])
 fi
 
-AC_DEFINE_UNQUOTED(SRCDATADIR,"`pwd`/share",[The directory which holds the uninstalled data files])
+AC_DEFINE_UNQUOTED(SRCDATADIR,"`pwd`/share",[The directory which holds the uninstalled data files.])
 
 AC_OUTPUT
 

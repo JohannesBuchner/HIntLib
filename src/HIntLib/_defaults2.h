@@ -1,7 +1,33 @@
 
+/**
+ *  Fix incompatible character set stuff
+ */
+
+#if HINTLIB_CHARACTER_SET == 1
+#undef HINTLIB_ENCODING_LATIN1
+#undef HINTLIB_ENCODING_UTF8
+#undef HINTLIB_ENCODING_LOCALE
+#endif
+
+#ifdef HINTLIB_ENCODING_LOCALE
+#define HINTLIB_UTF8_SELECT(cond,utf8,latin1) \
+      if(cond) { utf8;} else { latin1; }
+#endif
+#ifdef HINTLIB_ENCODING_LATIN1
+#define HINTLIB_UTF8_SELECT(cond,utf8,latin1) { latin1; }
+#endif
+#ifdef HINTLIB_ENCODING_UTF8
+#define HINTLIB_UTF8_SELECT(cond,utf8,latin1) { utf8; }
+#endif
+
+
+/**
+ *  GCC attributes noreturn and const
+ */
+
 #ifdef __GNUG__
-  #define HINTLIB_GNU_NORETURN __attribute((__noreturn__))
-  #define HINTLIB_GNU_CONST __attribute((__const))
+  #define HINTLIB_GNU_NORETURN __attribute__((noreturn))
+  #define HINTLIB_GNU_CONST __attribute__((const))
 #else
   #define HINTLIB_GNU_NORETURN
   #define HINTLIB_GNU_CONST

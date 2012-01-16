@@ -30,4 +30,5 @@ EOF
    rm hintlib_nied${p}.txt toms738_nied${p}.txt
 done
 
-exit 0
+{ (exit 0); exit 0; }
+

@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 #ifndef HINTLIB_MODULAR_ARITHMETIC_H
 #define HINTLIB_MODULAR_ARITHMETIC_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -48,9 +50,14 @@ public:
    unsigned modulus() const  { return m; }
 
    void printSuffix (std::ostream &) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   void printSuffix (std::wostream &) const;
+#endif
 
 protected:
    ModularArithmeticBase (unsigned modulus, unsigned max, bool field);
+   ModularArithmeticBase (const ModularArithmeticBase& mab)
+      : m(mab.m), nilradical(mab.nilradical), fac (mab.fac) {}
 
    static void invalidType();
 
@@ -72,6 +79,10 @@ protected:
 
    static void prnShort  (std::ostream &, unsigned);
           void prn       (std::ostream &, unsigned) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   static void prnShort  (std::wostream &, unsigned);
+          void prn       (std::wostream &, unsigned) const;
+#endif
 
    // state
 
@@ -83,6 +94,9 @@ protected:
 };
 
 std::ostream& operator<< (std::ostream &, const ModularArithmeticBase &);
+#ifdef HINTLIB_BUILD_WCHAR
+std::wostream& operator<< (std::wostream &, const ModularArithmeticBase &);
+#endif
 
 
 /**
@@ -150,6 +164,12 @@ public:
          std::ostream &o, const T& a, PrintShortFlag = PrintShortFlag()) const
       { prnShort (o, a); }
    void print (std::ostream &o, const T& a) const  { prn (o, a); }
+#ifdef HINTLIB_BUILD_WCHAR
+   void printShort (
+         std::wostream &o, const T& a, PrintShortFlag = PrintShortFlag()) const
+      { prnShort (o, a); }
+   void print (std::wostream &o, const T& a) const  { prn (o, a); }
+#endif
 };
 
 }  // namespace Private
@@ -167,7 +187,7 @@ class ModularArithmeticRing : public Private::ModularArithmetic<T>
 {
 public:
    typedef ring_tag algebra_category;
-   typedef char_non char_category;
+   typedef char_none char_category;
    typedef zerodivisor_tag zerodivisor_category;
    typedef T type;
    typedef T unit_type;

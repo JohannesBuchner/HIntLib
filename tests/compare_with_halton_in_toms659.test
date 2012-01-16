@@ -22,4 +22,5 @@ fi
 
 rm hintlib_halton.txt toms659_halton.txt
 
-exit 0
+{ (exit 0); exit 0; }
+

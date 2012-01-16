@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,10 +18,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/defaults.h>
@@ -35,6 +31,11 @@
 #include <iomanip>
 
 #include <HIntLib/generatormatrix.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
+#pragma implementation
+#endif
+
 #include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
 
@@ -121,6 +122,23 @@ void L::GeneratorMatrix::print (std::ostream &o) const
    }
 }
 
+#ifdef HINTLIB_BUILD_WCHAR
+void L::GeneratorMatrix::print (std::wostream &o) const
+{
+   o << L"Base=" << getBase()
+     << L" Dim=" << getDimension()
+     << L" m=" << getM()
+     << L" prec=" << getPrec() << L'\n';
+
+   for (unsigned d = 0; d < getDimension(); ++d)
+   {
+      o << L"Dimension " << d << L":\n";
+
+      printDimension (o, d);
+   }
+}
+#endif
+
 
 /**
  *  printDimension()
@@ -135,6 +153,17 @@ void L::GeneratorMatrix::printDimension (std::ostream &o, unsigned d) const
    }
 }
 
+#ifdef HINTLIB_BUILD_WCHAR
+void L::GeneratorMatrix::printDimension (std::wostream &o, unsigned d) const
+{
+   for (unsigned b = 0; b < getPrec(); ++b)
+   {
+      printRowVector (o, d, b);
+      o << L'\n';
+   }
+}
+#endif
+
 
 /**
  *  printRowVector ()
@@ -143,13 +172,28 @@ void L::GeneratorMatrix::printDimension (std::ostream &o, unsigned d) const
 void L::GeneratorMatrix::printRowVector (
       std::ostream &o, unsigned d, unsigned b) const
 {
-   unsigned size = (base < 10) ? 1 : logInt (base, 10u) + 2;
+   unsigned size = (base < 10) ? 0 : logInt (base, 10u) + 2;
 
    for (unsigned r = 0; r < getM(); ++r)
    {
-      o << std::setw (size) << getDigit (d,r,b);
+      if (size)  o << std::setw (size - (r == 0));
+      o << getDigit (d,r,b);
    }
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+void L::GeneratorMatrix::printRowVector (
+      std::wostream &o, unsigned d, unsigned b) const
+{
+   unsigned size = (base < 10) ? 0 : logInt (base, 10u) + 2;
+
+   for (unsigned r = 0; r < getM(); ++r)
+   {
+      if (size)  o << std::setw (size - (r == 0));
+      o << getDigit (d,r,b);
+   }
+}
+#endif
 
 
 /**
@@ -166,6 +210,19 @@ void L::GeneratorMatrix::printColumnVector (
       o << std::setw (size) << getDigit (d,r,b);
    }
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+void L::GeneratorMatrix::printColumnVector (
+      std::wostream &o, unsigned d, unsigned r) const
+{
+   unsigned size = (base < 10) ? 1 : logInt (base, 10u) + 2;
+
+   for (unsigned b = 0; b < getPrec(); ++b)
+   {
+      o << std::setw (size) << getDigit (d,r,b);
+   }
+}
+#endif
 
 
 /**

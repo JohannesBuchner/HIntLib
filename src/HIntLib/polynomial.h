@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 #ifndef HINTLIB_POLYNOMIAL_H
 #define HINTLIB_POLYNOMIAL_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 // #pragma interface
 #endif
 
@@ -39,13 +41,14 @@
 namespace HIntLib
 {
 
-/*
- *  Forward declarations
- */
+// Forward declaration of class Polynomial
 
 template<typename T> class Polynomial;
+
 namespace Private
 {
+   // Forward declarations of various base classes of polynomial rings
+
    template<class A> class PRBA;
    template<class A> class PRBA_Ring;
    template<class A> class PRBA_Domain;
@@ -71,7 +74,7 @@ namespace Private
    struct PG;
 
    /*
-    *  The following templates are used for the definition of various PG's:
+    *  The following templates are used for the definition of various PGs:
     *
     *  HINTLIB_PG_A      A PG remembering only the algebraic structure
     *  HINTLIB_PG_A_N    A PG remembering alg. struct. and an int
@@ -433,12 +436,12 @@ public:
                         Polynomial (Private::PG<Private::Neg<CC>,A,T>);
    template<typename A> Polynomial (Private::PG<Private::Neg<char_two>,A,T>);
    // Dbl
-   template<typename A> Polynomial (Private::PG<Private::Dbl<char_non>,A,T>);
+   template<typename A> Polynomial (Private::PG<Private::Dbl<char_none>,A,T>);
    template<typename A> Polynomial (Private::PG<Private::Dbl<char_zero>,A,T>);
    template<typename A> Polynomial (Private::PG<Private::Dbl<char_prime>,A,T>);
    template<typename A> Polynomial (Private::PG<Private::Dbl<char_two>,A,T>) {}
    // Times
-   template<typename A> Polynomial (Private::PG<Private::Times<char_non>,A,T>);
+   template<typename A> Polynomial (Private::PG<Private::Times<char_none>,A,T>);
    template<typename A> Polynomial (Private::PG<Private::Times<char_zero>,A,T>);
    template<typename A> Polynomial (Private::PG<Private::Times<char_prime>,A,T>);
    template<typename A> Polynomial (Private::PG<Private::Times<char_two>,A,T>);
@@ -493,9 +496,14 @@ public:
 
    void swap (P& p)  { c.swap (p.c); }
 
-   // Polynomials<> are assigned by using assignemt of vector<>
+   // Polynomial<>s are assigned by using assignemt of vector<>
+   // There is no need to guard against self-assignment because this is done by
+   // vector<>::operator=() anyway.  Since vector<>::operator() is non-inline
+   // in all implementation I know of, there is no problem with declaring
+   // Polynomial<>::operator() inline.
 
-   P& operator= (const P&);
+   P& operator= (const P& p)
+      { c = p.c; return *this; }
 
    // By default, PGs are assigned by constructing a temporary and swaping its
    // content.
@@ -768,7 +776,7 @@ private:
    void negateImp (type&, char_any) const;
    void negateImp (type&, char_two) const  {}
 
-   void times2Imp (type&, char_non) const;
+   void times2Imp (type&, char_none) const;
    void times2Imp (type&, char_prime) const;
    void times2Imp (type&, char_zero) const;
    void times2Imp (type& p, char_two) const  { p.makeZero(); }
@@ -824,8 +832,17 @@ public:
    void printShort (
       std::ostream &, const type&, PrintShortFlag = PrintShortFlag()) const;
    void printSuffix (std::ostream &o) const  { a.printSuffix(o); }
+#ifdef HINTLIB_BUILD_WCHAR
+   void print (std::wostream &, const type&) const;
+   void printShort (
+      std::wostream &, const type&, PrintShortFlag = PrintShortFlag()) const;
+   void printSuffix (std::wostream &o) const  { a.printSuffix(o); }
+#endif
 
 protected:
+#ifdef HINTLIB_BUILD_WCHAR
+   PRBA (const A& _a, char _var, wchar_t _wvar) : PRB (_var, _wvar), a(_a) {}
+#endif
    PRBA (const A& _a, char _var) : PRB (_var), a(_a) {}
 
    const A a;
@@ -833,6 +850,10 @@ protected:
 
 template<class A>
 std::ostream& operator<< (std::ostream &, const PRBA<A> &);
+#ifdef HINTLIB_BUILD_WCHAR
+template<class A>
+std::wostream& operator<< (std::wostream &, const PRBA<A> &);
+#endif
 
 
 /**
@@ -847,6 +868,10 @@ template<class A>
 class PRBA_Ring : public PRBA<A>
 {
 protected:
+#ifdef HINTLIB_BUILD_WCHAR
+   PRBA_Ring (const A& _a, char _var, wchar_t _wvar)
+      : PRBA<A> (_a, _var, _wvar) {}
+#endif
    PRBA_Ring (const A& _a, char _var) : PRBA<A> (_a, _var) {}
 
 public:
@@ -883,6 +908,10 @@ template<class A>
 class PRBA_Domain : public PRBA<A>
 {
 protected:
+#ifdef HINTLIB_BUILD_WCHAR
+   PRBA_Domain (const A& _a, char _var, wchar_t _wvar)
+      : PRBA<A> (_a, _var, _wvar) {}
+#endif
    PRBA_Domain (const A& _a, char _var) : PRBA<A> (_a, _var) {}
 
 public:
@@ -939,6 +968,10 @@ template<class A>
 class PRBA_UFD : public PRBA_Domain<A>
 {
 protected:
+#ifdef HINTLIB_BUILD_WCHAR
+   PRBA_UFD (const A& _a, char _var, wchar_t _wvar)
+      : PRBA_Domain<A> (_a, _var, _wvar) {}
+#endif
    PRBA_UFD (const A& _a, char _var) : PRBA_Domain<A> (_a, _var) {}
 
 public:
@@ -960,6 +993,10 @@ template<class A>
 class PRBA_Field : public PRBA<A>
 {
 protected:
+#ifdef HINTLIB_BUILD_WCHAR
+   PRBA_Field (const A& _a, char _var, wchar_t _wvar)
+      : PRBA<A> (_a, _var, _wvar) {}
+#endif
    PRBA_Field (const A& _a, char _var) : PRBA<A> (_a, _var) {}
 
 private:
@@ -1036,6 +1073,10 @@ template<class A>
 class PRBA_Rational : public PRBA_Field<A>
 {
 protected:
+#ifdef HINTLIB_BUILD_WCHAR
+   PRBA_Rational (const A& _a, char _var, wchar_t _wvar)
+      : PRBA_Field<A> (_a, _var, _wvar) {}
+#endif
    PRBA_Rational (const A& _a, char _var) : PRBA_Field<A> (_a, _var) {}
 
 public:
@@ -1073,10 +1114,14 @@ template<class A>
 class PRBA_Real : public PRBA_Field<A>
 {
 protected:
+#ifdef HINTLIB_BUILD_WCHAR
+   PRBA_Real (const A& _a, char _var, wchar_t _wvar)
+      : PRBA_Field<A> (_a, _var, _wvar) {}
+#endif
    PRBA_Real (const A& _a, char _var) : PRBA_Field<A> (_a, _var) {}
 
 public:
-   typedef typename PRBA_Field<A>::type          type;
+   typedef typename PRBA_Field<A>::type type;
 
    typedef factor_tag primedetection_category;
 
@@ -1112,6 +1157,10 @@ template<class A>
 class PRBA_Complex : public PRBA_Field<A>
 {
 protected:
+#ifdef HINTLIB_BUILD_WCHAR
+   PRBA_Complex (const A& _a, char _var, wchar_t _wvar)
+      : PRBA_Field<A> (_a, _var, _wvar) {}
+#endif
    PRBA_Complex (const A& _a, char _var) : PRBA_Field<A> (_a, _var) {}
 
 public:
@@ -1152,6 +1201,10 @@ template<class A>
 class PRBA_GF : public PRBA_Field<A>
 {
 protected:
+#ifdef HINTLIB_BUILD_WCHAR
+   PRBA_GF (const A& _a, char _var, wchar_t _wvar)
+      : PRBA_Field<A> (_a, _var, _wvar) {}
+#endif
    PRBA_GF (const A& _a, char _var) : PRBA_Field<A> (_a, _var) {}
 
 public:
@@ -1231,6 +1284,12 @@ class PolynomialRing
    : public Private::RingId<A,typename A::algebra_category::P>::base
 {
 public:
+#ifdef HINTLIB_BUILD_WCHAR
+   PolynomialRing (const A& _a, char _var, wchar_t _wvar)
+      : Private::RingId<A,typename A::algebra_category::P>
+             ::base (_a, _var, _wvar)
+   {}
+#endif
    explicit PolynomialRing (const A& _a, char _var = 'x')
       : Private::RingId<A,typename A::algebra_category::P>::base (_a, _var)
    {}

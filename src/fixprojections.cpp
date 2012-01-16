@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -104,10 +104,10 @@ L::withIdentityMatrix (GeneratorMatrixGenRow<unsigned char>& gm, unsigned d)
 
    // multiply with all matrices
 
-   for (unsigned d = 0; d < gm.getDimension(); ++d)
+   for (unsigned dd = 0; dd < gm.getDimension(); ++dd)
    {
-      std::copy (gm(d), gm(d) + m * numRows, scratch2);
-      la.matrixMul (scratch2, scratch1, numRows, m, m, gm(d));
+      std::copy (gm(dd), gm(dd) + m * numRows, scratch2);
+      la.matrixMul (scratch2, scratch1, numRows, m, m, gm(dd));
    }
 }
 

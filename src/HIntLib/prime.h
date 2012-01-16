@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,11 +21,11 @@
 #ifndef HINTLIB_PRIME_H
 #define HINTLIB_PRIME_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 // #pragma interface
 #endif
-
-#include <HIntLib/defaults.h>
 
 #include <vector>
 #include <utility>
@@ -57,9 +57,9 @@ public:
 
    #include <HIntLib/prime_generated.h>
 
-   template<class T> static bool  test (T n)  HINTLIB_GNU_CONST;
-   template<class T> static T     next (T n)  HINTLIB_GNU_CONST;
-   template<class T> static T eulerPhi (T n)  HINTLIB_GNU_CONST;
+   template<typename T> static bool  test (T n)  HINTLIB_GNU_CONST;
+   template<typename T> static T     next (T n)  HINTLIB_GNU_CONST;
+   template<typename T> static T eulerPhi (T n)  HINTLIB_GNU_CONST;
    static unsigned nth (unsigned n);
 
    // isPrimePower and relatives
@@ -84,7 +84,7 @@ public:
       return isPrimePower (n, prime, power);
    }
 
-   static unsigned nextPrimeDivisor (unsigned n, unsigned p);
+   template<typename T> static T nextPrimeDivisor (T n, T p);
 
    // factor()
 
@@ -93,8 +93,8 @@ public:
 
 private:
 
-   template<class T> static bool doPrimeTest        (T n)  HINTLIB_GNU_CONST;
-   template<class T> static T    searchForNextPrime (T n)  HINTLIB_GNU_CONST;
+   template<typename T> static bool doPrimeTest        (T n)  HINTLIB_GNU_CONST;
+   template<typename T> static T    searchForNextPrime (T n)  HINTLIB_GNU_CONST;
 
    static HINTLIB_DLL_IMPORT const unsigned short nextPrimeArray [MAX_N + 1];
    static HINTLIB_DLL_IMPORT const unsigned short nthPrimeArray [NUM_PRIMES];
@@ -121,7 +121,7 @@ bool isPrimitiveRoot (unsigned a, unsigned p);
  *     isPrime(17) = true
  */
 
-template<class T>
+template<typename T>
 inline
 bool HIntLib::Prime::test (T n)
 {
@@ -151,7 +151,7 @@ template<> inline bool HIntLib::Prime::test (unsigned short n)
  *          :
  */
 
-template<class T>
+template<typename T>
 inline
 T HIntLib::Prime::next (T n)
 {

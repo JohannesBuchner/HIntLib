@@ -2,6 +2,53 @@
 NEWS
 ====
 
+
+0.0.11   October 2, 2006
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     51225  169797 1276506 total
+     
+Build system:
+
++ HIntLib ported to GCC 4
+
+Extended character set support:
+
+- HIntLib source code is now completely 7-bit clean ASCII
++ Support for wchar_t
++ If ostream uses a UTF-8 locale, UTF-8 characters can be used
++ New test programs test_charset and test_charsetw
++ New configure options --(en|dis)able-wchar, --with-encoding-for-char=ARG,
+  and --with-character-set=ARG
+
+Discrepancy calculation:
+
++ l2Discrepancy()
++ starDiscrepancy()  (only for dimension 1 and 2)
+
+Basic algorithms:
+
++ initial_combination(), next_combination()
+  New test program test_combination
++ min4(), max4(), purgeArray() in hlalgorithm.h
++ popcount(), parity() in bitop.h
+/ divAndRoundUp() => div_ru()
+
+Miscellaneous:
+
++ Data for many new shift nets included
++ Polynomial2<>::evaluate() uses __builtin_parity[l[l]]() if available
+- tParameter?DimProjection(), tParameterMaxDimProjection()  returned strength
+  (i.e., k = m - t) instead of t-parameter
+- Bug in tParameter2DimProjection
+- DigitalNetGen<>, DigitalNet2<>: Do not produce more digits of precision than
+  what is available in the generator matrix
++ DigitalNet2<>::setDigitalShift()
+/ Timer can be stopped and restarted. Timer::reset(), restart(), stop()...
++ normalDistribution() in distribution.h
+
+
+
 0.0.10   February 17, 2005
 
    wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1

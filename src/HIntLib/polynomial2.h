@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 #ifndef HINTLIB_POLYNOMIAL_2_H
 #define HINTLIB_POLYNOMIAL_2_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 // #pragma interface
 #endif
 
@@ -159,6 +161,10 @@ public:
 
    void printShort (
          std::ostream&, char, PrintShortFlag = PrintShortFlag()) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   void printShort (
+         std::wostream&, wchar_t, PrintShortFlag = PrintShortFlag()) const;
+#endif
 
    template<typename TT>
    friend
@@ -198,6 +204,13 @@ std::ostream& operator<< (std::ostream &o, const Polynomial2<T> p)
 {
    p.printShort (o, 'x'); return o;
 }
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename T>
+std::wostream& operator<< (std::wostream &o, const Polynomial2<T> p)
+{
+   p.printShort (o, L'x'); return o;
+}
+#endif
 
 // functions for Polynomial<>s
 
@@ -232,7 +245,12 @@ public:
    typedef BitRef<T> coeff_reference;
    typedef std::vector<std::pair<type,unsigned> > Factorization;
 
-   Polynomial2Ring (char _var = 'x') : Private::Polynomial2RingBase (_var) {}
+   explicit Polynomial2Ring (char _var = 'x')
+      : Private::Polynomial2RingBase (_var) {}
+#ifdef HINTLIB_BUILD_WCHAR
+   Polynomial2Ring (char _var, wchar_t _wvar)
+      : Private::Polynomial2RingBase (_var, _wvar) {}
+#endif
 
    static coeff_algebra getCoeffAlgebra()  { return GF2(); }
 
@@ -343,6 +361,13 @@ public:
       { p.printShort (o, var); }
    void printShort (std::ostream &o, const type& p, PrintShortFlag f) const
       { p.printShort (o, var, f); }
+#ifdef HINTLIB_BUILD_WCHAR
+   void print (std::wostream &, const type&) const;
+   void printShort (std::wostream &o, const type& p) const
+      { p.printShort (o, wvar); }
+   void printShort (std::wostream &o, const type& p, PrintShortFlag f) const
+      { p.printShort (o, wvar, f); }
+#endif
 
    HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 }; 

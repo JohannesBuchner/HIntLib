@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,13 +18,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/realfield.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
+#pragma implementation
+#endif
 
 #ifdef HINTLIB_HAVE_OSTREAM
   #include <ostream>
@@ -49,8 +49,26 @@ namespace P = HIntLib::Private;
 std::ostream&
 P::operator<< (std::ostream &o, const RRing &)
 {
+#if HINTLIB_CHARACTER_SET == 4 && defined (HINTLIB_UTF8_SELECT)
+   HINTLIB_UTF8_SELECT(Private::utf8Support(o),
+      return o << "\xe2\x84\x9d",  // DOUBLE-STRUCK CAPITAL R
+      return o << "R")
+#else
    return o << "R";
+#endif
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+std::wostream&
+P::operator<< (std::wostream &o, const RRing &)
+{
+#if HINTLIB_CHARACTER_SET == 4
+   return o << L"\x211d";  // DOUBLE-STRUCK CAPITAL R
+#else
+   return o << L"R";
+#endif
+}
+#endif
 
 
 /**
@@ -170,8 +188,26 @@ L::operator== (const Polynomial<Real<T> >& p1, const Polynomial<Real<T> >& p2)
 std::ostream&
 P::operator<< (std::ostream &o, const CRing&)
 {
+#if HINTLIB_CHARACTER_SET == 4 && defined (HINTLIB_UTF8_SELECT)
+   HINTLIB_UTF8_SELECT(Private::utf8Support(o),
+      return o << "\xe2\x84\x82",  // DOUBLE-STRUCK CAPITAL C
+      return o << "C")
+#else
    return o << "C";
+#endif
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+std::wostream&
+P::operator<< (std::wostream &o, const CRing&)
+{
+#if HINTLIB_CHARACTER_SET == 4
+   return o << L"\x2102";  // DOUBLE-STRUCK CAPITAL C
+#else
+   return o << L"C";
+#endif
+}
+#endif
 
 
 /**
@@ -299,14 +335,18 @@ L::ComplexField<T>::print (std::ostream& o, const type& x)
          if (o.flags() & o.showpos)  o << "+i";
          else                        o << "i";
       }
-      else if (f.is1 (f.neg (x.x.imag())))
-      {
-         o << "-i";
-      }
       else
       {
          Private::Printer p (o);
-         p << x.x.imag() << 'i';
+         if (f.is1 (f.neg (x.x.imag())))
+         {
+            p.minusSign();
+            p << 'i';
+         }
+         else
+         {
+            p << x.x.imag() << 'i';
+         }
       }
    }
    else
@@ -317,7 +357,8 @@ L::ComplexField<T>::print (std::ostream& o, const type& x)
          p.unsetf (o.showpos);
          if (x.x.real() < 0 && x.x.imag() < 0)
          {
-            p << '-' << - x.x;
+            p.minusSign();
+            p << - x.x;
          }
          else
          {
@@ -330,6 +371,62 @@ L::ComplexField<T>::print (std::ostream& o, const type& x)
       }
    }
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename T>
+void
+L::ComplexField<T>::print (std::wostream& o, const type& x)
+{
+   RealField<T> f;
+
+   if (f.is0 (x.x.imag()))
+   {
+      o << x.x.real();
+   }
+   else if (f.is0 (x.x.real()))
+   {
+      if (f.is1 (x.x.imag()))
+      {
+         if (o.flags() & o.showpos)  o << L"+i";
+         else                        o << L"i";
+      }
+      else
+      {
+         Private::WPrinter p (o);
+         if (f.is1 (f.neg (x.x.imag())))
+         {
+            p.minusSign();
+            p << L'i';
+         }
+         else
+         {
+            p << x.x.imag() << L'i';
+         }
+      }
+   }
+   else
+   {
+      if (o.flags() & o.showpos)
+      {
+         Private::WPrinter p (o);
+         p.unsetf (o.showpos);
+         if (x.x.real() < 0 && x.x.imag() < 0)
+         {
+            p.minusSign();
+            p << (- x.x);
+         }
+         else
+         {
+            p << L'+' << x.x;
+         }
+      }
+      else
+      {
+         o << x.x;
+      }
+   }
+}
+#endif
 
 
 /**
@@ -396,7 +493,15 @@ namespace HIntLib
    HINTLIB_INSTANTIATE(real)
 #undef HINTLIB_INSTANTIATE
 
+#ifdef HINTLIB_BUILD_WCHAR
+#define HINTLIB_INSTANTIATE_W(X) \
+   template void ComplexField<X >::print(std::wostream&, const type&);
+#else
+#define HINTLIB_INSTANTIATE_W(X)
+#endif
+      
 #define HINTLIB_INSTANTIATE(X) \
+   HINTLIB_INSTANTIATE_W(X) \
    template ComplexField<X >::type ComplexField<X >::element(unsigned); \
    template unsigned ComplexField<X >::index(const type&); \
    template unsigned ComplexField<X >::order(const type&); \
@@ -407,5 +512,6 @@ namespace HIntLib
 
    HINTLIB_INSTANTIATE(real)
 #undef HINTLIB_INSTANTIATE
+#undef HINTLIB_INSTANTIATE_W
 }
 

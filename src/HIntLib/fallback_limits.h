@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
 #error "HIntLib/fallback_limits.h should not be included if limits is available"
 #endif
 
-#ifdef __GNUG__
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 // Implementation in hlmath.cpp
 #endif
@@ -147,11 +147,11 @@ struct real
 #endif
       
 
-   #ifdef HINTLIB_HAVE_REAL_INFINITY
+#ifdef HINTLIB_HAVE_REAL_INFINITY
       static const bool has_infinity = false;
-   #else
-      static const bool has_infinity = true;
-   #endif
+#else
+     static const bool has_infinity = true;
+#endif
 
    static const bool has_quiet_NaN = true;
 
@@ -194,9 +194,9 @@ public:
    inline static float min() throw()  { return FLT_MIN; }
    inline static float max() throw()  { return FLT_MAX; }
 
-   #ifndef HINTLIB_HAVE_REAL_INFINITY
-      inline static float infinity() throw()  { return FLT_MAX / FLT_MIN; }
-   #endif
+#ifndef HINTLIB_HAVE_REAL_INFINITY
+   inline static float infinity() throw()  { return FLT_MAX / FLT_MIN; }
+#endif
 
    inline static float epsilon() throw()  { return FLT_EPSILON; }
 
@@ -216,9 +216,9 @@ public:
    inline static double min() throw()  { return DBL_MIN; }
    inline static double max() throw()  { return DBL_MAX; }
 
-   #ifndef HINTLIB_HAVE_REAL_INFINITY
-      inline static float infinity() throw()  { return DBL_MAX / DBL_MIN; }
-   #endif
+#ifndef HINTLIB_HAVE_REAL_INFINITY
+   inline static float infinity() throw()  { return DBL_MAX / DBL_MIN; }
+#endif
    inline static double epsilon() throw()  { return DBL_EPSILON; }
 
    static const int min_exponent = DBL_MIN_EXP;
@@ -238,9 +238,9 @@ public:
    inline static long double min() throw()  { return LDBL_MIN; }
    inline static long double max() throw()  { return LDBL_MAX; }
 
-   #ifndef HINTLIB_HAVE_REAL_INFINITY
-      inline static float infinity() throw()  { return LDBL_MAX / LDBL_MIN; }
-   #endif
+#ifndef HINTLIB_HAVE_REAL_INFINITY
+   inline static float infinity() throw()  { return LDBL_MAX / LDBL_MIN; }
+#endif
 
    inline static long double epsilon() throw()  { return LDBL_EPSILON; }
 

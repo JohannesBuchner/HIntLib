@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,7 +22,9 @@
 #ifndef HINTLIB_GENERATOR_MATRIX_2_H
 #define HINTLIB_GENERATOR_MATRIX_2_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -47,6 +49,9 @@ public:
    ~GeneratorMatrix2Base () {}
 
    void CArrayDump (std::ostream &) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   void CArrayDump (std::wostream &) const;
+#endif
 
    unsigned getBase() const  { return 2; }
 
@@ -74,10 +79,10 @@ class GeneratorMatrix2 : public GeneratorMatrix2Base
 public:
    typedef T BaseType;
 
-   static const unsigned MAX_TOTALPREC = std::numeric_limits<T>::digits;
-   static const unsigned CORR_DEFAULT_TOTALPREC_BASE2 =
-        MAX_TOTALPREC < DEFAULT_TOTALPREC_BASE2 
-      ? MAX_TOTALPREC : DEFAULT_TOTALPREC_BASE2;
+   enum { MAX_TOTALPREC = std::numeric_limits<T>::digits };
+   enum { CORR_DEFAULT_TOTALPREC_BASE2 =
+        unsigned(MAX_TOTALPREC) < unsigned(DEFAULT_TOTALPREC_BASE2) 
+      ? unsigned(MAX_TOTALPREC) : unsigned(DEFAULT_TOTALPREC_BASE2) };
    
    // Constructors
 
@@ -126,7 +131,7 @@ private:
       { c[r*dim + d] |=  ma; }
    void setdiMask (unsigned d, unsigned r, T ma)
       { c[r*dim + d] ^=  ma; }
-   void setdMask (unsigned d, unsigned r, T ma, unsigned char x)
+   void setdMask (unsigned d, unsigned r, T ma, unsigned x)
       { if (x) setd1Mask (d, r, ma); else setd0Mask (d, r, ma); }
 
 public:

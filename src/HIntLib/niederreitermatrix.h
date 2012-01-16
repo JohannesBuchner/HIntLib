@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,11 +25,11 @@
 #ifndef HINTLIB_NIEDERREITER_MATRIX_H
 #define HINTLIB_NIEDERREITER_MATRIX_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
-
-#include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
@@ -50,13 +50,13 @@ public:
       setMatrix (v_mem[0]);
    }
 
-   static const unsigned MAX_DIM = 200;
+   enum { MAX_DIM = 200 };
 
 private:
 
    // Vectors used to calculate the sequence
 
-   static const u64 v_mem [DEFAULT_M_BASE2][MAX_DIM];
+   static HINTLIB_DLL_IMPORT const u64 v_mem [DEFAULT_M_BASE2][MAX_DIM];
    // static const unsigned t_s [MAX_DIM];
 };
 

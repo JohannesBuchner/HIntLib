@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,13 +18,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/prime.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
+#pragma implementation
+#endif
 
 #include <HIntLib/hlmath.h>
 
@@ -41,8 +41,9 @@ namespace L = HIntLib;
  *     isPrime(17) = true
  */
 
-template<class T>
-bool L::Prime::doPrimeTest (T n)
+template<typename T>
+bool
+L::Prime::doPrimeTest (T n)
 {
    for (T prime = T(2); ; prime = next(prime+1))
    {
@@ -66,8 +67,9 @@ template bool L::Prime::doPrimeTest (u64);
  *  used by next(), if n > MAX_NUM_FOR_NEXT_PRIME
  */
 
-template<class T>
-T L::Prime::searchForNextPrime (T n)
+template<typename T>
+T
+L::Prime::searchForNextPrime (T n)
 {
    for (T i = n; ;++i)  if (doPrimeTest(i))  return i;
 }
@@ -97,13 +99,14 @@ template L::u64   L::Prime::searchForNextPrime (u64);
  *         :
  */
 
-template<class T>
-T L::Prime::eulerPhi (T n)
+template<typename T>
+T
+L::Prime::eulerPhi (T n)
 {
    if (n == 0)  return 0;
 
-   unsigned phi = 1;
-   unsigned prime = 1;
+   T phi = 1;
+   T prime = 1;
 
    // test all primes
 
@@ -139,7 +142,8 @@ template L::u64   L::Prime::eulerPhi (u64);
  *  See TACP, vol 2, 3.2.1.2
  */
 
-bool L::isPrimitiveRoot (unsigned a, unsigned p)
+bool
+L::isPrimitiveRoot (unsigned a, unsigned p)
 {
    const unsigned q = p - 1;
 
@@ -164,7 +168,8 @@ bool L::isPrimitiveRoot (unsigned a, unsigned p)
  *  If  x  is not a prime power, NotAPrimePower is thrown.
  */
 
-bool L::Prime::isPrimePower (unsigned n, unsigned &_prime, unsigned &_power)
+bool
+L::Prime::isPrimePower (unsigned n, unsigned &_prime, unsigned &_power)
 {
    if (Prime::test (n))
    {
@@ -199,7 +204,8 @@ bool L::Prime::isPrimePower (unsigned n, unsigned &_prime, unsigned &_power)
    return true;
 }
 
-void L::Prime::factorPrimePower (unsigned n, unsigned &prime, unsigned &power)
+void
+L::Prime::factorPrimePower (unsigned n, unsigned &prime, unsigned &power)
 {
    if (! isPrimePower (n, prime, power))  throw NotAPrimePower (n);
 }
@@ -208,7 +214,8 @@ void L::Prime::factorPrimePower (unsigned n, unsigned &prime, unsigned &power)
  *  throwPrimeNumberNth ()
  */
 
-void L::Prime::throwPrimeNumberNth (unsigned n)
+void
+L::Prime::throwPrimeNumberNth (unsigned n)
 {
   throw PrimeNumberNth (n);
 }
@@ -221,7 +228,9 @@ void L::Prime::throwPrimeNumberNth (unsigned n)
  *  divisor <= prime.
  */
 
-unsigned L::Prime::nextPrimeDivisor (unsigned n, unsigned prime)
+template<typename T>
+T
+L::Prime::nextPrimeDivisor (T n, T prime)
 {
    // check all primes from the table
 
@@ -248,6 +257,14 @@ unsigned L::Prime::nextPrimeDivisor (unsigned n, unsigned prime)
       prime += 2;
    }
 }
+
+template unsigned L::Prime::nextPrimeDivisor (unsigned, unsigned);
+#ifdef HINTLIB_UNSIGNED_NOT_EQUAL_U32
+template L::u32   L::Prime::nextPrimeDivisor (u32,u32);
+#endif
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
+template L::u64   L::Prime::nextPrimeDivisor (u64,u64);
+#endif
 
 
 /**

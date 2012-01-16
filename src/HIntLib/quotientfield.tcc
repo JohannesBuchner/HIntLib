@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -429,53 +429,6 @@ HIntLib::Private::QFB<A>::reciprocal (type& u) const
 }
 
 
-/**
- *  print Short()
- */
-
-template<typename A>
-void
-HIntLib::Private::QFB<A>::
-printShort (std::ostream& o, const type& u, PrintShortFlag f) const
-{
-   if (! is0 (u) && ! a.is1 (u.den))
-   {
-      Printer ss (o);
-
-      if (f & FIT_FOR_MUL)
-      {
-         if (o.flags() & o.showpos)
-         {
-            ss << '+';
-            ss.unsetf (ss.showpos);
-         }
-         ss << '(';
-      }
-      // if showpos is set, keep it set
-      a.printShort (ss, u.num, PrintShortFlag (f | FIT_FOR_MUL));
-      ss << "/";
-      ss.unsetf (ss.showpos);
-      a.printShort (ss, u.den, PrintShortFlag (f | FIT_FOR_MUL));
-      if (f & FIT_FOR_MUL)  ss << ')';
-   }
-   else
-   {
-      a.printShort (o, u.num, f);
-   }
-}
-
-template<typename A>
-void
-HIntLib::Private::QFB<A>::print (std::ostream& o, const type& u) const
-{
-   Printer ss (o);
-
-   printShort (ss, u);
-   ss << ' ';
-   printSuffix (ss);
-}
-
-
 /************  Quotient Field Base 2  -  integers  ***************************/
 
 
@@ -540,17 +493,219 @@ times (const type& u, unsigned k) const
 
 
 /**
- *  operator<<
+ *  printShort()
  */
 
 template<typename A>
-std::ostream&
-HIntLib::Private::
-operator<< (std::ostream& o,
-            const HIntLib::Private::QFB2<A,HIntLib::integer_tag>&)
+void
+HIntLib::Private::QFB2<A,HIntLib::integer_tag>::
+printShort (std::ostream& o, const type& u, PrintShortFlag f) const
 {
-   return o << "Q";
+   const A& a (this->a);
+
+   if (is0 (u) || a.is1 (u.den))
+   {
+      a.printShort (o, u.num, f);
+      return;
+   }
+
+   Printer ss (o);
+#ifdef HINTLIB_ENCODING_LOCALE
+   const bool utf8 = ss.utf8();
+#endif
+
+#ifdef HINTLIB_UTF8_SELECT
+   typedef typename A::type base_type;
+   base_type posNum (u.num);
+   int sign = a.makeCanonical (posNum);
+   const base_type max = base_type(9);
+
+   if (u.den < max && posNum < u.den)
+   {
+      int num = int(posNum);
+      int den = int(u.den);
+      const char* x = 0;
+
+#ifdef HINTLIB_ENCODING_LOCALE
+      if (utf8)
+#endif
+#if defined(HINTLIB_ENCODING_LOCALE) || defined(HINTLIB_ENCODING_UTF8)
+      {
+         switch (num * 10 + den)
+         {
+         case 12: x = "\xc2\xbd";     break;
+
+#if HINTLIB_CHARACTER_SET >= 4
+         case 13: x = "\xe2\x85\x93"; break;
+         case 23: x = "\xe2\x85\x94"; break;
+#endif
+
+         case 14: x = "\xc2\xbc";     break;
+         case 34: x = "\xc2\xbe";     break;
+
+#if HINTLIB_CHARACTER_SET >= 4
+         case 15: x = "\xe2\x85\x95"; break;
+         case 25: x = "\xe2\x85\x96"; break;
+         case 35: x = "\xe2\x85\x97"; break;
+         case 45: x = "\xe2\x85\x98"; break;
+
+         case 16: x = "\xe2\x85\x99"; break;
+         case 56: x = "\xe2\x85\x9a"; break;
+#endif
+
+#if HINTLIB_CHARACTER_SET >= 3
+         case 18: x = "\xe2\x85\x9b"; break;
+         case 38: x = "\xe2\x85\x9c"; break;
+         case 58: x = "\xe2\x85\x9d"; break;
+         case 78: x = "\xe2\x85\x9e"; break;
+#endif
+         }
+      }
+#endif
+#ifdef HINTLIB_ENCODING_LOCALE
+      else
+#endif
+#if defined(HINTLIB_ENCODING_LOCALE) || defined(HINTLIB_ENCODING_LATIN1)
+      {
+         switch (num * 10 + den)
+         {
+         case 12: x = "\xbd"; break;
+         case 14: x = "\xbc"; break;
+         case 34: x = "\xbe"; break;
+         }
+      }
+#endif
+
+      if (x)
+      {
+         if (sign == -1)
+         {
+            ss.minusSign();
+         }
+         else if (ss.flags() & ss.showpos)  ss << '+';
+
+         ss << x;
+         return;
+      }
+   }
+#endif
+
+   if (f & FIT_FOR_MUL)
+   {
+      if (ss.flags() & ss.showpos)
+      {
+         ss << '+';
+         ss.unsetf (ss.showpos);
+      }
+      ss << '(';
+   }
+   // if showpos is set, keep it set
+   a.printShort (ss, u.num, PrintShortFlag (f | FIT_FOR_MUL));
+#if HINTLIB_CHARACTER_SET >= 3 && defined HINTLIB_UTF8_SELECT
+   // DIVISION SLASH
+   HINTLIB_UTF8_SELECT(ss.utf8(), ss << "\xe2\x88\x95", ss << '/' )
+#else
+   ss << '/';
+#endif
+   ss.unsetf (ss.showpos);
+   a.printShort (ss, u.den, PrintShortFlag (f | FIT_FOR_MUL));
+   if (f & FIT_FOR_MUL)  ss << ')';
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename A>
+void
+HIntLib::Private::QFB2<A,HIntLib::integer_tag>::
+printShort (std::wostream& o, const type& u, PrintShortFlag f) const
+{
+   const A& a (this->a);
+
+   if (is0 (u) || a.is1 (u.den))
+   {
+      a.printShort (o, u.num, f);
+      return;
+   }
+
+   WPrinter ss (o);
+
+#if HINTLIB_CHARACTER_SET >= 2
+   typedef typename A::type base_type;
+   base_type posNum (u.num);
+   int sign = a.makeCanonical (posNum);
+   const base_type max = base_type(9);
+
+   if (u.den < max && posNum < u.den)
+   {
+      int num = int(posNum);
+      int den = int(u.den);
+      wchar_t x = 0;
+
+      switch (num * 10 + den)
+      {
+      case 12: x = L'\x00bd'; break;
+
+#if HINTLIB_CHARACTER_SET >= 4
+      case 13: x = L'\x2153'; break;
+      case 23: x = L'\x2154'; break;
+#endif
+
+      case 14: x = L'\x00bc'; break;
+      case 34: x = L'\x00be'; break;
+
+#if HINTLIB_CHARACTER_SET >= 4
+      case 15: x = L'\x2155'; break;
+      case 25: x = L'\x2156'; break;
+      case 35: x = L'\x2157'; break;
+      case 45: x = L'\x2158'; break;
+
+      case 16: x = L'\x2159'; break;
+      case 56: x = L'\x215A'; break;
+#endif
+
+#if HINTLIB_CHARACTER_SET >= 3
+      case 18: x = L'\x215B'; break;
+      case 38: x = L'\x215C'; break;
+      case 58: x = L'\x215D'; break;
+      case 78: x = L'\x215E'; break;
+#endif
+      }
+
+      if (x)
+      {
+         if (sign == -1)
+         {
+            ss.minusSign();
+         }
+         else if (ss.flags() & ss.showpos)  ss << L'+';
+
+         ss << x;
+         return;
+      }
+   }
+#endif
+
+   if (f & FIT_FOR_MUL)
+   {
+      if (ss.flags() & ss.showpos)
+      {
+         ss << L'+';
+         ss.unsetf (ss.showpos);
+      }
+      ss << L'(';
+   }
+   // if showpos is set, keep it set
+   a.printShort (ss, u.num, PrintShortFlag (f | FIT_FOR_MUL));
+#if HINTLIB_CHARACTER_SET >= 3
+   ss << L'\x2215';  // DIVISION SLASH
+#else
+   ss << L'/';
+#endif
+   ss.unsetf (ss.showpos);
+   a.printShort (ss, u.den, PrintShortFlag (f | FIT_FOR_MUL));
+   if (f & FIT_FOR_MUL)  ss << L')';
+}
+#endif
+
 
 /************  Quotient Field Base 2  -  polynomials  ************************/
 
@@ -576,6 +731,88 @@ timesImp (const type& u, unsigned k, char_prime) const
 
 
 /**
+ *  printShort()
+ */
+
+template<typename A>
+void
+HIntLib::Private::QFB2<A,HIntLib::polyoverfield_tag>::
+printShort (std::ostream& o, const type& u, PrintShortFlag f) const
+{
+   const A& a (this->a);
+
+   if (! is0 (u) && ! a.is1 (u.den))
+   {
+      Printer ss (o);
+
+      if (f & FIT_FOR_MUL)
+      {
+         if (o.flags() & o.showpos)
+         {
+            ss << '+';
+            ss.unsetf (ss.showpos);
+         }
+         ss << '(';
+      }
+      // if showpos is set, keep it set
+      a.printShort (ss, u.num, PrintShortFlag (f | FIT_FOR_MUL));
+#if HINTLIB_CHARACTER_SET >= 3 && defined HINTLIB_UTF8_SELECT
+      // DIVISION SLASH
+      HINTLIB_UTF8_SELECT(ss.utf8(), ss << "\xe2\x88\x95", ss << '/' )
+#else
+      ss << '/';
+#endif
+      ss.unsetf (ss.showpos);
+      a.printShort (ss, u.den, PrintShortFlag (f | FIT_FOR_MUL));
+      if (f & FIT_FOR_MUL)  ss << ')';
+   }
+   else
+   {
+      a.printShort (o, u.num, f);
+   }
+}
+
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename A>
+void
+HIntLib::Private::QFB2<A,HIntLib::polyoverfield_tag>::
+printShort (std::wostream& o, const type& u, PrintShortFlag f) const
+{
+   const A& a (this->a);
+
+   if (! is0 (u) && ! a.is1 (u.den))
+   {
+      WPrinter ss (o);
+
+      if (f & FIT_FOR_MUL)
+      {
+         if (o.flags() & o.showpos)
+         {
+            ss << L'+';
+            ss.unsetf (ss.showpos);
+         }
+         ss << L'(';
+      }
+      // if showpos is set, keep it set
+      a.printShort (ss, u.num, PrintShortFlag (f | FIT_FOR_MUL));
+#if HINTLIB_CHARACTER_SET >= 3
+      ss << L'\x2215';  // DIVISION SLASH
+#else
+      ss << L'/';
+#endif
+      ss.unsetf (ss.showpos);
+      a.printShort (ss, u.den, PrintShortFlag (f | FIT_FOR_MUL));
+      if (f & FIT_FOR_MUL)  ss << L')';
+   }
+   else
+   {
+      a.printShort (o, u.num, f);
+   }
+}
+#endif
+
+
+/**
  *  operator<<
  */
 
@@ -595,46 +832,123 @@ operator<< (std::ostream& o,
    return o;
 }
 
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename A>
+std::wostream&
+HIntLib::Private::
+operator<< (std::wostream& o,
+            const HIntLib::Private::QFB2<A,HIntLib::polyoverfield_tag>& a)
+{
+   WPrinter ss (o);
+
+   const A& alg = a.getBaseAlgebra(); 
+   ss << alg.getCoeffAlgebra() << L'(';
+   alg.printVariable (ss);
+   ss << L')';
+
+   return o;
+}
+#endif
+
+
+/*****************  Quotient Field *******************************************/
+
+/**
+ *  print()
+ */
+
+template<typename A>
+void
+HIntLib::QuotientField<A>::print (std::ostream& o, const type& u) const
+{
+   Private::Printer ss (o);
+
+   printShort (ss, u);
+   ss << ' ';
+   this->printSuffix (ss);
+}
+
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename A>
+void
+HIntLib::QuotientField<A>::print (std::wostream& o, const type& u) const
+{
+   Private::WPrinter ss (o);
+
+   printShort (ss, u);
+   ss << L' ';
+   this->printSuffix (ss);
+}
+#endif
+
+
+#ifdef HINTLIB_BUILD_WCHAR
+#define HINTLIB_INSTANTIATE_QUOTIENTFIELD_W(X) \
+   template void QuotientField<X >::print (std::wostream&, const type&) const;
+#else
+#define HINTLIB_INSTANTIATE_QUOTIENTFIELD_W(X)
+#endif
 
 #define HINTLIB_INSTANTIATE_QUOTIENTFIELD(X) \
-namespace Private { \
-template QFB<X >::type QFB<X >::toLowestTerms \
-            (const base_type&, const base_type&) const; \
-template QFB<X >::type QFB<X >::toLowestTermsAndNormalize \
-            (const base_type&, const base_type&) const; \
-template unsigned QFB<X >::index (const type&) const; \
-template QFB<X >::type QFB<X >::element(unsigned) const; \
-template QFB<X >::type QFB<X >::makeElement(const base_type&) const; \
-template QFB<X >::type QFB<X >::add (const type&, const type&) const; \
-template QFB<X >::type QFB<X >::sub (const type&, const type&) const; \
-template QFB<X >::type QFB<X >::mul (const type&, const type&) const; \
-template QFB<X >::type QFB<X >::div (const type&, const type&) const; \
-template QFB<X >::type QFB<X >::recip (const type&) const; \
-template void QFB<X >::reciprocal (type&) const; \
-template unsigned QFB<X >::order (const type&) const; \
-template void QFB<X >::printShort \
-            (std::ostream&, const type&, PrintShortFlag) const; \
-template void QFB<X >::print (std::ostream&, const type&) const; \
-}
+   HINTLIB_INSTANTIATE_QUOTIENTFIELD_W(X) \
+   template void QuotientField<X >::print (std::ostream&, const type&) const; \
+   namespace Private { \
+   template QFB<X >::type QFB<X >::toLowestTerms \
+               (const base_type&, const base_type&) const; \
+   template QFB<X >::type QFB<X >::toLowestTermsAndNormalize \
+               (const base_type&, const base_type&) const; \
+   template unsigned QFB<X >::index (const type&) const; \
+   template QFB<X >::type QFB<X >::element(unsigned) const; \
+   template QFB<X >::type QFB<X >::makeElement(const base_type&) const; \
+   template QFB<X >::type QFB<X >::add (const type&, const type&) const; \
+   template QFB<X >::type QFB<X >::sub (const type&, const type&) const; \
+   template QFB<X >::type QFB<X >::mul (const type&, const type&) const; \
+   template QFB<X >::type QFB<X >::div (const type&, const type&) const; \
+   template QFB<X >::type QFB<X >::recip (const type&) const; \
+   template void QFB<X >::reciprocal (type&) const; \
+   template unsigned QFB<X >::order (const type&) const; \
+   }
+
+#ifdef HINTLIB_BUILD_WCHAR
+#define HINTLIB_INSTANTIATE_QUOTIENTFIELD_INT_W(X) \
+   template void QFB2<X,integer_tag>::printShort \
+               (std::wostream&, const type&, PrintShortFlag) const;
+#else
+#define HINTLIB_INSTANTIATE_QUOTIENTFIELD_INT_W(X)
+#endif
 
 #define HINTLIB_INSTANTIATE_QUOTIENTFIELD_INT(X) \
    HINTLIB_INSTANTIATE_QUOTIENTFIELD(X) \
    namespace Private { \
+   HINTLIB_INSTANTIATE_QUOTIENTFIELD_INT_W(X) \
+   template void QFB2<X,integer_tag>::printShort \
+               (std::ostream&, const type&, PrintShortFlag) const; \
    template QFB<X >::type QFB2<X,integer_tag>::times \
                (const type&, unsigned k) const; \
    template QFB<X >::type QFB2<X,integer_tag>::dbl (const type&) const; \
    template void QFB2<X,integer_tag>::times2 (type&) const; \
-   template std::ostream& operator<< \
-           (std::ostream&, const QFB2<X,integer_tag> &); \
    }
+
+#ifdef HINTLIB_BUILD_WCHAR
+#define HINTLIB_INSTANTIATE_QUOTIENTFIELD_POL_W(X) \
+   template std::wostream& operator<< \
+               (std::wostream&, const QFB2<X,polyoverfield_tag> &); \
+   template void QFB2<X,polyoverfield_tag>::printShort \
+               (std::wostream&, const type&, PrintShortFlag) const;
+#else
+#define HINTLIB_INSTANTIATE_QUOTIENTFIELD_POL_W(X)
+#endif
 
 #define HINTLIB_INSTANTIATE_QUOTIENTFIELD_POL(X) \
    HINTLIB_INSTANTIATE_QUOTIENTFIELD(X) \
    namespace Private { \
+   HINTLIB_INSTANTIATE_QUOTIENTFIELD_POL_W(X) \
    template QFB<X >::type QFB2<X,polyoverfield_tag>::timesImp \
                (const type&, unsigned k, X::char_category) const; \
    template std::ostream& operator<< \
                (std::ostream&, const QFB2<X,polyoverfield_tag> &); \
+   template void QFB2<X,polyoverfield_tag>::printShort \
+               (std::ostream&, const type&, PrintShortFlag) const; \
    }
 
 

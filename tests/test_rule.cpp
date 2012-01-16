@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@
 #include <HIntLib/hlmath.h>
 #include <HIntLib/mersennetwister.h>
 #include <HIntLib/distribution.h>
+#include <HIntLib/output.h>
 
 #include "test.h"
 
@@ -53,6 +54,9 @@ using namespace std;
 using namespace HIntLib;
 
 MersenneTwister mt;
+
+const char* epsilonString;
+const char* deltaString;
 
 /**
  *  User-tuneable constants
@@ -205,21 +209,21 @@ const unsigned char TestPolynomial::monomials [][MAX_DEGREE] =
 {
    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},   // 1          deg 0   #=1
    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},   // x          deg 1   #=1
-   { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0},   // x²         deg 2   #=2
-   { 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},   // xy
-   { 3, 0, 0, 0, 0, 0, 0, 0, 0, 0},   // x³         deg 3   #=3
-   { 2, 1, 0, 0, 0, 0, 0, 0, 0, 0},   // x²y
-   { 1, 1, 1, 0, 0, 0, 0, 0, 0, 0},   // xyz
+   { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0},   // x^2        deg 2   #=2
+   { 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},   // x y
+   { 3, 0, 0, 0, 0, 0, 0, 0, 0, 0},   // x^3        deg 3   #=3
+   { 2, 1, 0, 0, 0, 0, 0, 0, 0, 0},   // x^2 y
+   { 1, 1, 1, 0, 0, 0, 0, 0, 0, 0},   // x y z
    { 4, 0, 0, 0, 0, 0, 0, 0, 0, 0},   // x^4        deg 4   #=5
-   { 3, 1, 0, 0, 0, 0, 0, 0, 0, 0},   // x³y
-   { 2, 2, 0, 0, 0, 0, 0, 0, 0, 0},   // x²y²
-   { 2, 1, 1, 0, 0, 0, 0, 0, 0, 0},   // x²yz
-   { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},   // xyzu
+   { 3, 1, 0, 0, 0, 0, 0, 0, 0, 0},   // x^3 y
+   { 2, 2, 0, 0, 0, 0, 0, 0, 0, 0},   // x^2 y^2
+   { 2, 1, 1, 0, 0, 0, 0, 0, 0, 0},   // x^2 y z
+   { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},   // x y z u
    { 5, 0, 0, 0, 0, 0, 0, 0, 0, 0},   // x^5        deg 5   #=7
    { 4, 1, 0, 0, 0, 0, 0, 0, 0, 0},   // x^4 y
-   { 3, 2, 0, 0, 0, 0, 0, 0, 0, 0},   // x³y²
-   { 3, 1, 1, 0, 0, 0, 0, 0, 0, 0},   // x³yz
-   { 2, 2, 1, 0, 0, 0, 0, 0, 0, 0},   // x²y²z
+   { 3, 2, 0, 0, 0, 0, 0, 0, 0, 0},   // x^3 y^2
+   { 3, 1, 1, 0, 0, 0, 0, 0, 0, 0},   // x^3 y z
+   { 2, 2, 1, 0, 0, 0, 0, 0, 0, 0},   // x^2 y^2 z
    { 2, 1, 1, 1, 0, 0, 0, 0, 0, 0},
    { 1, 1, 1, 1, 1, 0, 0, 0, 0, 0},
    { 6, 0, 0, 0, 0, 0, 0, 0, 0, 0},   //            deg 6   #=11
@@ -693,25 +697,34 @@ real TestPolynomial::derivative (const real *x, unsigned a, unsigned b)
 
 ostream& operator<< (ostream& os, const TestPolynomial &p)
 {
+   HIntLib::Private::Printer ss (os);
+   ss << setprecision (3);
+
    for (unsigned i = 0; i < NUM_MON; ++i)
    {
-      os << (p.coef [i] > 0.0 ? " + " : " - ") << L::abs (p.coef [i]);
+      ss << ' ';
+      if (p.coef [i] > 0.0)  ss << '+';
+      else ss.minusSign();
+      ss << ' ' << L::abs (p.coef [i]);
+      bool spacePrinted = false;
 
       for (unsigned d = 0; d < p.dim; ++d)
       {
          if (p.getExponent (i, d) > 0)
          {
-            os << " x";
-
-            if (p.dim > 1)  os << '_' << d;
-
-            switch (p.getExponent (i, d))
+            if (! spacePrinted)
             {
-            case 1: break;
-            case 2: os << '²'; break;
-            case 3: os << '³'; break;
-            default: os << '^' << int (p.getExponent (i, d));
+               ss << ' ';
+               spacePrinted = true;
             }
+
+            ss << 'x';
+
+            if (p.dim > 1)  ss.subscript (d);
+
+            const int exponent = p.getExponent(i,d);
+
+            if (exponent > 1)  ss.power (exponent);
          }
       }
    }
@@ -744,7 +757,7 @@ bool checkDegree (
    {
       TestPolynomial p (r.getDimension (), degree);
 
-      DEB3  cout << "Using polynomial " << p << endl;
+      DEB3  cout << "     Using polynomial " << p << endl;
 
       EvalCounterIntegrand f1 (&p);
       DomainCheckerIntegrand f (&f1, &h);
@@ -787,19 +800,22 @@ bool checkDegree (
 
       DEB2
       {
-         cout << setprecision (9)
-              << "Result: " << setw (13) << result
-              << "  Correct: " << setw (13) << correct
-              << "  error=" << error
-              << "  threshold=" << threshold
-              << "  expExactError=" << expectedExactError
-              << "  expApproxError=" << expectedApproxError
-              << "  problem=" << problem << endl;
+         cout.setf (ostream::left, ostream::adjustfield);
+         cout << setprecision (10)
+              << "     Q(f)=" << setw (13) << result
+              << "I(f)="   << setw (13) << correct
+              << setprecision (4)
+              << deltaString << '=' << setw(10) << error
+              << epsilonString << '=' << setw(10) << threshold
+              << epsilonString << "_exact=" << setw(10) << expectedExactError
+              << epsilonString << "_approx=" << setw(10) << expectedApproxError
+              << "probl.=" << problem << endl;
       }
       
       if (error > 25.0 * threshold)
       {
-         DEB1 cout << "Error " << error << " exceeds " << threshold << endl;
+         DEB1 cout << "     Error is " << error << ", exceeding " << threshold
+                   << " by a factor of " << error / threshold << ".\n";
          return false;
       }
 
@@ -840,11 +856,14 @@ void testRule (CubatureRule& r, unsigned dim)
 
    if (num_points > MAX_NUM_POINTS)
    {
-      NORMAL  cout << "Rule has " << num_points << " (> " << MAX_NUM_POINTS
+      NORMAL  cout << "   Rule has " << num_points << " (> " << MAX_NUM_POINTS
                    << ") abscissas.  Test skipped." << endl;
       return;
    }
-   else if (verbose == 0)  cout << ' ' << dim << flush;
+   else if (verbose == 0)
+   {
+      cout << dim << ' ' << flush;
+   }
 
    unsigned degree = r.getDegree ();
 
@@ -854,11 +873,11 @@ void testRule (CubatureRule& r, unsigned dim)
    {
       if (checkDegree (r, d, NUM_TESTS, false))
       {
-         NORMAL  cout << "Degree " << d << " passed." << endl;
+         NORMAL  cout << "   Degree " << d << " passed." << endl;
       }
       else
       {
-         cout << "\nDegree " << d << " failed!!!" << endl;
+         cout << "\n   Degree " << d << " failed!!!" << endl;
          error();
          allright = false;
       }
@@ -868,11 +887,11 @@ void testRule (CubatureRule& r, unsigned dim)
    {
       if (checkDegree (r, degree + 1, 2 * NUM_TESTS + 5, true))
       {
-         error ("\nDegree seems to be higher");
+         error ("\n   Degree seems to be higher");
       }
       else
       {
-         NORMAL  cout << "Degree seems to be correct." << endl;
+         NORMAL  cout << "   Degree seems to be correct." << endl;
       }
    }
 }
@@ -894,7 +913,18 @@ void testRule (CubatureRule& r, unsigned dim)
  *  -vvv   4     + each evaluated polynomial
  */
 
-const char* options = "n:p:d:r:";
+const char options[] = "n:p:d:r:";
+const char option_msg[] =
+   "  -n n   Number of testruns to be performed (default = 3)\n"
+   "  -p n   Tests requiring more that _p_ points are skipped"
+         " (default = 3000)\n"
+   "  -d n   Maximal dimension (default = 100)\n"
+   "  -r n   Tests only rule number _n_\n";
+const char testProgramParameters[] = "[OPTION]...";
+const char testProgramUsage[] =
+   "Tests whether cubature rules work correctly.\n\n";
+const char testProgramName[] = "test_rule";
+const int  testProgramCopyright = 2003;
 
 bool opt(int c, const char* s)
 {
@@ -909,22 +939,6 @@ bool opt(int c, const char* s)
    return false;
 }
 
-void usage()
-{
-   cerr <<
-      "Usage: test_rule [OPTION]...\n\n"
-      "Tests if cubature rule work correctly.\n\n"
-      << option_msg <<
-      "  -n n   Number of testruns to be performed (default = 2)\n"
-      "  -p n   Tests requiring more that _p_ points are skipped"
-                     " (default = 3000)\n"
-      "  -d n   Maximal dimension (default = 100)\n"
-      "  -r n   Tests only rule number _n_\n"
-      "\n";
-
-   exit (1);
-}
-
 
 /**
  *  Main program
@@ -932,7 +946,16 @@ void usage()
 
 void test(int argc, char**)
 {
-   if (argc)  usage();
+   if (argc)  usage("Too many arguments!");
+
+   if (verbose >= 0)  printHeader (cout);
+
+   // GREEK CAPITAL LETTER DELTA
+   deltaString = Wgl4Ascii ("\xce\x94", "error");
+
+   // GREEK SMALL LETTER EPSILON
+   epsilonString = Wgl4Ascii ("\xce\xb5", "eps");
+
    for (unsigned rule = FIRST_RULE; rule <= LAST_RULE; ++rule)
    {
       const char* name;
@@ -945,7 +968,12 @@ void test(int argc, char**)
          continue;
       }
       
-      cout << "Testing Rule #" << rule << " (" << name << ") ..." << endl;
+      if (verbose >= -1)
+      {
+         cout << "Testing Rule #" << rule << " ";
+         doubleQuote (cout, name);
+         cout << (verbose == -1 ? "..." : ":") << endl;
+      }
 
       for (unsigned dim = FIRST_TEST_DIM; dim <= LAST_TEST_DIM; ++dim)
       {
@@ -960,12 +988,13 @@ void test(int argc, char**)
          }
          catch (InvalidDimension &e)
          {
-            NORMAL  cout << "Cannot create rule in dimension "
+            NORMAL  cout << "   Cannot create rule in dimension "
                          << e.getDimension() << "!" << endl;
          }
       }
 
-      if (verbose == 0)  cout << endl;
+           if (verbose == 0)  cout << endl;
+      else if (verbose >= 1)  cout << '\n';
    }
 }
 

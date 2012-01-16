@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -72,13 +72,13 @@ int main (int argc, const char** argv)
    if (mode == CPP)
    {
       cout <<
-         "#ifdef __GNUG__\n"
-         "#pragma implementation\n"
-         "#endif\n"
-         "\n"
          "#define HINTLIB_LIBRARY_OBJECT\n"
          "\n"
          "#include <HIntLib/prime.h>\n"
+         "\n"
+         "#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION\n"
+         "#pragma implementation\n"
+         "#endif\n"
          "\n"
          "const unsigned short HIntLib::Prime::nextPrimeArray [MAX_N+1] =\n"
          "{\n";
@@ -123,8 +123,8 @@ int main (int argc, const char** argv)
          "#error \"prime_generated.h must not be included directly!\"\n"
          "#endif\n"
          "\n"
-         "static const unsigned MAX_N = " << SIZE << ";\n"
-         "static const unsigned NUM_PRIMES = " << count << ";\n\n";
+         "enum { MAX_N = " << SIZE << " };\n"
+         "enum { NUM_PRIMES = " << count << " };\n\n";
    }
 
    return 0;

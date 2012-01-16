@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,9 +33,7 @@ using std::setw;
 
 using namespace HIntLib::NormalBitOp;
 
-template<class F>
-inline
-void create_data (F* f)
+void create_data (int f (unsigned))
 {
    cout << "{\n";
 
@@ -63,25 +61,21 @@ int main()
            "/***   Update " __FILE__ " to update this file.  ***/\n"
            "/*******************************************************/\n"
            "\n"
-           "#ifdef __GNUG__\n"
+           "#include <HIntLib/bitop.h>\n"
+           "\n"
+           "#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION\n"
            "#pragma implementation\n"
            "#endif\n"
-           "\n"
-           "#include <HIntLib/bitop.h>\n"
            "\n"
            "namespace L = HIntLib;\n"
            "\n"
            "const int L::Private::ms1_data [] =\n";
 
-   typedef int F1 (unsigned char);
-
-   create_data (static_cast<F1*> (ms1));
+   create_data (ms1);
 
    cout << "const int L::Private::ls0_data [] =\n";
 
-   typedef unsigned int F2 (unsigned char);
-
-   create_data (static_cast<F2*> (ls0));
+   create_data (ls0);
 
    return 0;
 }

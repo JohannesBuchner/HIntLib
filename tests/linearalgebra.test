@@ -1,16 +1,19 @@
 #! /bin/sh
 
-echo RUNNING: linearalgebra.test
+echo "RUNNING: linearalgebra.test"
+echo -n "Base b ="
 
 for base in 2 3 4 5 7 8 9   16 17   81
 do
-   echo "base $base"
+   echo -n " $base"
 
    for size in 1 2 3 4  5  10  20 50 100
    do
       ./test_linearalgebra -s -n 50 $base $size || exit 1
    done
 done
+
+echo
 
 exit 0
 

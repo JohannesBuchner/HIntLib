@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -69,7 +69,12 @@ void testInteger()
 
    // Q(Sqrt(2))
 
+#ifdef USE_WCHAR
+   PQ pq_r (q, 'r', 0x03b1); // GREEK SMALL LETTER ALPHA
+#else
    PQ pq_r (q, 'r');
+#endif
+
    PQ::type p3 = pq_r.x(2);
    p3[0] = q.makeElement(-2);
    doTests (FactorField<PQ> (pq_r, p3),

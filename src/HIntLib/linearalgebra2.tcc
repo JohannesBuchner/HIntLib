@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -207,7 +207,7 @@ HIntLib::matrixRank (Bi first, Bi last)
       {
          // find the non-zero column in the current row
 
-         const T mask = T(1) << ls1 (pivot);
+         const T mask = pivot & ~(pivot - 1);
 
          // subtract pivot from all remaining rows to clear a column
 
@@ -240,46 +240,55 @@ HIntLib::isLinearlyIndependent (Bi first, Bi last)
    case 0: return true;
    case 1: return first[0];
    case 2: return first[0] && first[1] && (first[0] ^ first[1]);
-   case 3: return first[0] && first[1] && first[2] &&
-                  (first[0] ^ first[1]) &&
-                  (first[1] ^ first[2]) &&
-                  (first[0] ^ first[2]) &&
-                  (first[0] ^ first[1] ^ first[2]);
+   case 3:
+      {
+         T x 
+            = first[0]; if (! x)  return false;
+         x ^= first[1]; if (! x)  return false;
+         x ^= first[0]; if (! x)  return false;
+         x ^= first[2]; if (! x)  return false;
+         x ^= first[0]; if (! x)  return false;
+         x ^= first[1]; if (! x)  return false;
+         x ^= first[0]; if (! x)  return false;
+         return true;
+      }
    }
 
    while (last - first > 4)  // More than 4 rows left?
    {
-      // Get the current row
+      // If the next vector is zero, the vectors cannot be linearly independent
 
-      const T pivot = *first;
-
-      // if this row vector is 0, the matrix cannot be regular
-
-      if (! pivot)  return false;
+      if (! *first)  return false;
 
       // find a non-zero column in the current row
 
-      const T mask = T(1) << ls1 (pivot);
+      const T* pivot = first;
+      const T mask = *pivot & ~(*pivot - 1);
 
       // subtract pivot from all remaining rows to clear a column
 
-      for (Bi i = ++first; i < last; ++i)  if (*i & mask)  *i ^= pivot;
+      for (Bi i = ++first; i < last; ++i)  if (*i & mask)  *i ^= *pivot;
    }
 
    // exactly four rows are left
 
-   return first[0] && first[1] && first[2] && first[3] &&
-         (first[0] ^ first[1]) &&
-         (first[0] ^ first[2]) &&
-         (first[0] ^ first[3]) &&
-         (first[1] ^ first[2]) &&
-         (first[1] ^ first[3]) &&
-         (first[2] ^ first[3]) &&
-         (first[1] ^ first[2] ^ first[3]) &&
-         (first[0] ^ first[2] ^ first[3]) &&
-         (first[0] ^ first[1] ^ first[3]) &&
-         (first[0] ^ first[1] ^ first[2]) &&
-         (first[0] ^ first[1] ^ first[2] ^ first[3]);
+   T x
+      = first[0]; if (! x)  return false;
+   x ^= first[1]; if (! x)  return false;
+   x ^= first[0]; if (! x)  return false;
+   x ^= first[2]; if (! x)  return false;
+   x ^= first[0]; if (! x)  return false;
+   x ^= first[1]; if (! x)  return false;
+   x ^= first[0]; if (! x)  return false;
+   x ^= first[3]; if (! x)  return false;
+   x ^= first[0]; if (! x)  return false;
+   x ^= first[1]; if (! x)  return false;
+   x ^= first[0]; if (! x)  return false;
+   x ^= first[2]; if (! x)  return false;
+   x ^= first[0]; if (! x)  return false;
+   x ^= first[1]; if (! x)  return false;
+   x ^= first[0]; if (! x)  return false;
+   return true;
 }
 
 

@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -396,6 +396,7 @@ template<class T> inline T roundDownToPower (T x, T base)
    return powInt (base, logInt(x, base));
 }
 
+
 /**
  *  digitsRepresentable()
  *
@@ -408,8 +409,7 @@ template<class T> inline unsigned digitsRepresentable(T base)
 
    // check for base = 2^k
 
-   int k = ms1(base);
-
+   const int k = ms1(base);
    if (T(1) << k == base)  return std::numeric_limits<T>::digits / k;
 
    return logInt (std::numeric_limits<T>::max(), base);
@@ -417,10 +417,12 @@ template<class T> inline unsigned digitsRepresentable(T base)
 
 
 /**
- *  divAndRoundUp
+ *  div_ru
+ *
+ *  Divide  a  by  b  and round up.
  */
 
-template<class T> inline T divAndRoundUp (T a, T b)
+template<class T> inline T div_ru (T a, T b)
 {
    return (a + b - 1) / b;
 }
@@ -443,25 +445,49 @@ bool approx (T a, T b, T factor = 10.0)
 /**
  *  choose()
  *
- *  Calcultes  "a choose b", i.e.  a! / (b! * (a-b)!).
+ *  Calculates  "a choose b", i.e.,  a! / (b! * (a-b)!).
  *
- *  a has to be larger than b.
- *
- *  The routines takes  O(min(b, a-b))  steps and uses no intermediate results
+ *  The routines takes  O(min(b, a-b,1))  steps and uses no intermediate results
  *  that are larger than the final result.
  */
 
+namespace Private
+{
+   template<bool> struct BoolSelect {};
+
+   template<typename T>
+   inline
+   T choose (T a, T b, BoolSelect<true>)
+   {
+      if (b < 0 || b > a)  return 0;
+
+      if (2 * b > a)  b = a - b;
+      T result = 1;
+      ++a;
+      for (T i = 1; i <= b; ++i)  result = (result * (a-i)) / i;
+      return result;
+   }
+
+   template<typename T>
+   inline
+   T choose (T a, T b, BoolSelect<false>)
+   {
+      if (b > a)  return 0;
+
+      if (2 * b > a)  b = a - b;
+      T result = 1;
+      ++a;
+      for (T i = 1; i <= b; ++i)  result = (result * (a-i)) / i;
+      return result;
+   }
+}  // namespace Private
+
 template<typename T>
 inline
-T choose (T a, T b)
+T choose (const T& a, const T& b)
 {
-   if (b < 0 || b > a)  return 0;
-
-   if (2 * b > a)  b = a - b;
-   T result = 1;
-   ++a;
-   for (T i = 1; i <= b; ++i)  result = (result * (a-i)) / i;
-   return result;
+   return Private::choose(a, b,
+      Private::BoolSelect<std::numeric_limits<T>::is_signed>());
 }
 
 

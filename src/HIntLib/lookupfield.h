@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,13 +21,13 @@
 #ifndef HINTLIB_LOOKUP_FIELD_H
 #define HINTLIB_LOOKUP_FIELD_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
 #include <iosfwd>
-
-#include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_CSTDDEF
   #include <cstddef>
@@ -108,10 +108,16 @@ namespace Private
 {
    void printVectorSpaceName (std::ostream &, unsigned, unsigned);
    void printFieldName (std::ostream &, unsigned);
-   void printNumber (std::ostream&, int);
    void printNumberSuffix (std::ostream&, int, unsigned);
-   void printSuffix (std::ostream&, unsigned);
-}
+   void printSuff (std::ostream&, unsigned);
+   void printNumber (std::ostream&, int);
+#ifdef HINTLIB_BUILD_WCHAR
+   void printVectorSpaceName (std::wostream &, unsigned, unsigned);
+   void printFieldName (std::wostream &, unsigned);
+   void printNumberSuffix (std::wostream&, int, unsigned);
+   void printSuff (std::wostream&, unsigned);
+   void printNumber (std::wostream&, int);
+#endif
 
 /**
  *  Lookup Field Base Base
@@ -125,7 +131,10 @@ public:
    unsigned size() const  { return s; }
    void setCharacteristic(unsigned, unsigned);
 
-   void printSuffix (std::ostream &o) const  { Private::printSuffix (o, s); }
+   void printSuffix (std::ostream &o) const  { printSuff (o, s); }
+#ifdef HINTLIB_BUILD_WCHAR
+   void printSuffix (std::wostream &o) const  { printSuff (o, s); }
+#endif
 
 protected:
    LookupFieldBB (unsigned _s, HINTLIB_SN size_t memory)
@@ -149,7 +158,11 @@ private:
 };
 
 inline std::ostream& operator<< (std::ostream &o, const LookupFieldBB &f)
-   { Private::printFieldName (o, f.size()); return o; }
+   { printFieldName (o, f.size()); return o; }
+#ifdef HINTLIB_BUILD_WCHAR
+inline std::wostream& operator<< (std::wostream &o, const LookupFieldBB &f)
+   { printFieldName (o, f.size()); return o; }
+#endif
 
 
 /**
@@ -204,19 +217,28 @@ public:
    T power (T a, unsigned k) const;
 
    T    frobenius (T a) const  { return frobTable [a]; }
+   T    frobenius (T a, unsigned k) const;
    T invFrobenius (T a) const  { return invFrobTable [a]; }
 
    unsigned order (T a) const  { return orderTable [a]; }
    bool isPrimitiveElement (T a) const  { return order (a) == size() - 1; }
 
    void print (std::ostream &o, const type& x) const
-      { Private::printNumberSuffix (o, x, size()); }
+      { printNumberSuffix (o, x, size()); }
    void printShort (std::ostream &o, const type& x) const
-      { Private::printNumber (o, x); }
+      { printNumber (o, x); }
    void printShort (std::ostream &o, const type& x, PrintShortFlag) const
-      { Private::printNumber (o, x); }
-
+      { printNumber (o, x); }
    void dump (std::ostream &) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   void print (std::wostream &o, const type& x) const
+      { printNumberSuffix (o, x, size()); }
+   void printShort (std::wostream &o, const type& x) const
+      { printNumber (o, x); }
+   void printShort (std::wostream &o, const type& x, PrintShortFlag) const
+      { printNumber (o, x); }
+   void dump (std::wostream &) const;
+#endif
 
    // Change tables
 
@@ -225,13 +247,29 @@ public:
    void setFrobenius (T, T);
 };
 
+/**
+ *  Lookup Field Mul Only
+ */
+
+template <typename T>
+class LookupFieldMulOnly : public LookupFieldBase<T>
+{
+protected:
+   explicit LookupFieldMulOnly (unsigned _s)
+      : LookupFieldBase<T> (_s,  (_s*_s) + 5 *_s) {}
+   LookupFieldMulOnly (const LookupFieldMulOnly<T> &r)
+      : LookupFieldBase<T> (r) {}
+};
+
+} // namespace Private
+
 
 /**
  *  Lookup Field
  */
 
 template<typename T>
-class LookupField : public LookupFieldBase<T>
+class LookupField : public Private::LookupFieldBase<T>
 {
 private:
    T* addTable;
@@ -249,10 +287,14 @@ public:
    typedef char_prime char_category;
 
    explicit LookupField (unsigned);
-   LookupField (const LookupField<T> &r) : LookupFieldBase<T> (r)
+   LookupField (const LookupField<T> &r) : Private::LookupFieldBase<T> (r)
       { privSetPointers(); }
    LookupField & operator= (const LookupField<T> &r)
-      { LookupFieldBase<T>::operator=(r); privSetPointers(); return *this; }
+   {
+      Private::LookupFieldBase<T>::operator=(r);
+      privSetPointers();
+      return *this;
+   }
 
    bool is0 (T a) const  { return a == T(0); }
 
@@ -273,6 +315,9 @@ public:
    unsigned extensionDegree() const  { return this->getExtensionDegree(); }
 
    void dump (std::ostream &) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   void dump (std::wostream &) const;
+#endif
 
    // Change tables
 
@@ -283,26 +328,11 @@ public:
 
 
 /**
- *  Lookup Field Mul Only
- */
-
-template <typename T>
-class LookupFieldMulOnly : public LookupFieldBase<T>
-{
-protected:
-   explicit LookupFieldMulOnly (unsigned _s)
-      : LookupFieldBase<T> (_s,  (_s*_s) + 5 *_s) {}
-   LookupFieldMulOnly (const LookupFieldMulOnly<T> &r)
-      : LookupFieldBase<T> (r) {}
-};
-
-
-/**
  *  Lookup Field Pow 2
  */
 
 template <typename T>
-class LookupFieldPow2 : public LookupFieldMulOnly<T>,
+class LookupFieldPow2 : public Private::LookupFieldMulOnly<T>,
                         public BitOpBasedAddition<T>
 {
 public:
@@ -310,13 +340,15 @@ public:
    typedef T type;
    typedef char_two char_category;
 
-   explicit LookupFieldPow2 (unsigned _s) : LookupFieldMulOnly<T> (_s) {}
-   LookupFieldPow2 (const LookupFieldPow2<T> &r)
-      : LookupFieldMulOnly<T>(r),
+   explicit LookupFieldPow2 (unsigned _s)
+      : Private::LookupFieldMulOnly<T> (_s),
         BitOpBasedAddition<T>() {}
+   LookupFieldPow2 (const LookupFieldPow2<T> &r)
+      : Private::LookupFieldMulOnly<T>(r),
+        BitOpBasedAddition<T>(r) {}
 
    LookupFieldPow2 & operator= (const LookupFieldPow2<T> &r)
-      { LookupFieldBase<T>::operator=(r); return *this; }
+      { Private::LookupFieldBase<T>::operator=(r); return *this; }
 
    unsigned extensionDegree() const  { return this->getExtensionDegree(); }
 
@@ -329,18 +361,20 @@ public:
  */
 
 template <typename T>
-class LookupFieldPrime : public LookupFieldMulOnly<T>
+class LookupFieldPrime : public Private::LookupFieldMulOnly<T>
 {
 public:
    typedef cyclic_tag algebra_category;
    typedef T type;
    typedef char_prime char_category;
 
-   explicit LookupFieldPrime (unsigned _s) : LookupFieldMulOnly<T> (_s) {}
-   LookupFieldPrime (const LookupFieldPow2<T> &r) : LookupFieldMulOnly<T> (r) {}
+   explicit LookupFieldPrime (unsigned _s)
+      : Private::LookupFieldMulOnly<T> (_s) {}
+   LookupFieldPrime (const LookupFieldPow2<T> &r)
+      : Private::LookupFieldMulOnly<T> (r) {}
 
    LookupFieldPrime & operator= (const LookupFieldPrime<T> &r)
-      { LookupFieldBase<T>::operator=(r); return *this; }
+      { Private::LookupFieldBase<T>::operator=(r); return *this; }
 
    bool is0(const T& a) const  { return !a; }
 
@@ -415,15 +449,20 @@ public:
  */
 
 template<typename T, class A>
-void copy (LookupFieldMulOnly<T> & dest, const A src);
+void copy (Private::LookupFieldMulOnly<T> & dest, const A src);
 template<typename T, class A>
 void copy (LookupField<T> & dest, const A src);
 
 
 /*****************************************************************************/
 
+namespace Private
+{
+
 /**
  *  Lookup Vector Space Base Base
+ *
+ *  Non-template base class of all Lookup vector spaces
  */
 
 class LookupVectorSpaceBB : public RefCountingAlgebra
@@ -443,8 +482,10 @@ protected:
    LookupVectorSpaceBB& operator= (const LookupVectorSpaceBB& v);
 
    bool operator== (const LookupVectorSpaceBB &)  const;
-   void prnSuffix (std::ostream &o, unsigned) const
-      { Private::printSuffix (o, s); }
+   void prnSuffix (std:: ostream &o, unsigned) const  { printSuff (o, s); }
+#ifdef HINTLIB_BUILD_WCHAR
+   void prnSuffix (std::wostream &o, unsigned) const  { printSuff (o, s); }
+#endif
 
 private:
    unsigned s;
@@ -467,6 +508,9 @@ protected:
       : LookupVectorSpaceBB (r) {}
 
    void dump (std::ostream &, unsigned) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   void dump (std::wostream &, unsigned) const;
+#endif
 
 public:
 
@@ -480,13 +524,33 @@ public:
    void scale (T& a, scalar_type l) const  { a = mul(a,l); }
 };
 
+#ifdef HINTLIB_OSTREAM_IS_BASIC_OSTREAM
+template<typename A, typename C>
+void
+vectorPrintShort (const A&, const typename A::type&, std::basic_ostream<C>&);
+
+template<typename A, typename C>
+void
+vectorPrint (const A&, const typename A::type&, std::basic_ostream<C>&);
+#else
+template<typename A>
+void
+vectorPrintShort (const A&, const typename A::type&, std::ostream&);
+
+template<typename A>
+void
+vectorPrint (const A&, const typename A::type&, std::ostream&);
+#endif
+
+} // namespace Private
+
 
 /**
  *  Lookup Vector Space
  */
 
 template <typename T, typename C>
-class LookupVectorSpace : public LookupVectorSpaceBase<T,C>
+class LookupVectorSpace : public Private::LookupVectorSpaceBase<T,C>
 {
 public:
    typedef LookupField<C> scalar_algebra;
@@ -558,12 +622,23 @@ public:
    T times (T a, unsigned k) const;
 
    void dump (std::ostream&) const;
-   void print (std::ostream&, T) const;
-   void printShort (std::ostream&, T) const;
-   void printShort (std::ostream& o, const T& a, PrintShortFlag) const
-      { printShort (o, a); }
+   void print (std::ostream& o, T a) const
+      { vectorPrint (*this, a, o); }
+   void printShort (std::ostream& o, const T& a,
+                    PrintShortFlag = PrintShortFlag()) const
+      { vectorPrintShort (*this, a, o); }
    void printSuffix (std::ostream& o) const
-      { Private::printSuffix (o, algebra.size()); }
+      { Private::printSuff (o, algebra.size()); }
+#ifdef HINTLIB_BUILD_WCHAR
+   void dump (std::wostream&) const;
+   void print (std::wostream& o, T a) const
+      { vectorPrint (*this, a, o); }
+   void printShort (std::wostream& o, const T& a,
+                    PrintShortFlag = PrintShortFlag()) const
+      { vectorPrintShort (*this, a, o); }
+   void printSuffix (std::wostream& o) const
+      { Private::printSuff (o, algebra.size()); }
+#endif
 
    unsigned additiveOrder (const T& a) const
       { return a ? algebra.characteristic() : 1; }
@@ -577,6 +652,16 @@ std::ostream& operator<< (std::ostream &o, const LookupVectorSpace<T,C> &v)
          o, v.getScalarAlgebra().size(), v.dimension());
    return o;
 }
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename T, typename C>
+inline
+std::wostream& operator<< (std::wostream &o, const LookupVectorSpace<T,C> &v)
+{
+   Private::printVectorSpaceName (
+         o, v.getScalarAlgebra().size(), v.dimension());
+   return o;
+}
+#endif
 
 
 /**
@@ -584,7 +669,7 @@ std::ostream& operator<< (std::ostream &o, const LookupVectorSpace<T,C> &v)
  */
 
 template <typename T, typename C>
-class LookupVectorSpacePow2 : public LookupVectorSpaceBase<T,C>,
+class LookupVectorSpacePow2 : public Private::LookupVectorSpaceBase<T,C>,
                               public BitOpBasedAddition<T>
 {
 public:
@@ -641,13 +726,25 @@ public:
       { return scalar_reference (&a, mask << (k * shift), k * shift); }
 
    void dump (std::ostream &o) const
-      { LookupVectorSpaceBase<T,C>::dump (o, algebra.size()); }
-   void print (std::ostream &, T) const;
-   void printShort (std::ostream&, T) const;
-   void printShort (std::ostream& o, const T& a, PrintShortFlag) const
-      { printShort (o, a); }
+      { Private::LookupVectorSpaceBase<T,C>::dump (o, algebra.size()); }
+   void print (std::ostream& o, T a) const
+      { Private::vectorPrint (*this, a, o); }
+   void printShort (std::ostream& o, const T& a,
+                    PrintShortFlag = PrintShortFlag()) const
+      { Private::vectorPrintShort (*this, a, o); }
    void printSuffix (std::ostream& o) const
-      { Private::printSuffix (o, algebra.size()); }
+      { Private::printSuff (o, algebra.size()); }
+#ifdef HINTLIB_BUILD_WCHAR
+   void dump (std::wostream &o) const
+      { Private::LookupVectorSpaceBase<T,C>::dump (o, algebra.size()); }
+   void print (std::wostream& o, T a) const
+      { Private::vectorPrint (*this, a, o); }
+   void printShort (std::wostream& o, const T& a,
+                    PrintShortFlag = PrintShortFlag()) const
+      { Private::vectorPrintShort (*this, a, o); }
+   void printSuffix (std::wostream& o) const
+      { Private::printSuff (o, algebra.size()); }
+#endif
 };
 
 template<typename T, typename C>
@@ -658,6 +755,16 @@ std::ostream& operator<< (std::ostream &o, const LookupVectorSpacePow2<T,C> &v)
          o, v.getScalarAlgebra().size(), v.dimension());
    return o;
 }
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename T, typename C>
+inline
+std::wostream& operator<< (std::wostream &o, const LookupVectorSpacePow2<T,C>&v)
+{
+   Private::printVectorSpaceName (
+         o, v.getScalarAlgebra().size(), v.dimension());
+   return o;
+}
+#endif
 
 
 /**
@@ -734,12 +841,22 @@ public:
    T    mul   (const T& a,       scalar_type l) const;
    void scale (      T& a, const scalar_type& l) const  { a = mul(a,l); }
 
-   void print (std::ostream&, const T&) const;
-   void printShort (std::ostream&, const T&) const;
-   void printShort (std::ostream& o, const T& a, PrintShortFlag) const
-      { printShort (o, a); }
+   void print (std::ostream& o, T a) const
+      { Private::vectorPrint (*this, a, o); }
+   void printShort (std::ostream& o, const T& a,
+                    PrintShortFlag = PrintShortFlag()) const
+      { Private::vectorPrintShort (*this, a, o); }
    void printSuffix (std::ostream &o) const
-      { Private::printSuffix (o, algebra.size()); }
+      { Private::printSuff (o, algebra.size()); }
+#ifdef HINTLIB_BUILD_WCHAR
+   void print (std::wostream& o, T a) const
+      { Private::vectorPrint (*this, a, o); }
+   void printShort (std::wostream& o, const T& a,
+                    PrintShortFlag = PrintShortFlag()) const
+      { Private::vectorPrintShort (*this, a, o); }
+   void printSuffix (std::wostream &o) const
+      { Private::printSuff (o, algebra.size()); }
+#endif
 
    HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };
@@ -752,6 +869,16 @@ std::ostream& operator<< (std::ostream &o, const VectorSpacePow2<T> &v)
          o, v.getScalarAlgebra().size(), v.dimension());
    return o;
 }
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename T>
+inline
+std::wostream& operator<< (std::wostream &o, const VectorSpacePow2<T> &v)
+{
+   Private::printVectorSpaceName (
+         o, v.getScalarAlgebra().size(), v.dimension());
+   return o;
+}
+#endif
 
 }  // namespace HIntLib
 

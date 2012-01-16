@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 #ifndef HINTLIB_GF2_H
 #define HINTLIB_GF2_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 // Implmentaion in polynomial2.cpp
 #endif
@@ -91,9 +93,19 @@ public:
    static void printShort (std::ostream& o, const type& a, PrintShortFlag)
       { printShort (o, a); }
    static void printSuffix (std::ostream&);
+#ifdef HINTLIB_BUILD_WCHAR
+   static void print (std::wostream&, type);
+   static void printShort (std::wostream&, type);
+   static void printShort (std::wostream& o, const type& a, PrintShortFlag)
+      { printShort (o, a); }
+   static void printSuffix (std::wostream&);
+#endif
 };
 
 std::ostream& operator<< (std::ostream&, const GF2&);
+#ifdef HINTLIB_BUILD_WCHAR
+std::wostream& operator<< (std::wostream&, const GF2&);
+#endif
 
 
 } // namespace HIntLib

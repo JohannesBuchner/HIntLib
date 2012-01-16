@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ HIntLib::Private::FactorBB<A>::~FactorBB() {}
 
 
 /**
- *  I/O
+ *  operator<<
  */
 
 template<typename A>
@@ -52,10 +52,29 @@ HIntLib::Private::operator<< (std::ostream &o, const FactorBB<A> &a)
 
    ss << a.arithmetic() << "/(";
    a.arithmetic().printShort (ss, a.modulus());
-   ss << ")";
+   ss << ')';
 
    return o;
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename A>
+std::wostream&
+HIntLib::Private::operator<< (std::wostream &o, const FactorBB<A> &a)
+{
+   Private::WPrinter ss (o);
+
+   ss << a.arithmetic() << L"/(";
+   a.arithmetic().printShort (ss, a.modulus());
+   ss << L')';
+
+   return o;
+}
+#endif
+
+/**
+ *  print()
+ */
 
 template<typename A>
 void
@@ -70,6 +89,26 @@ HIntLib::Private::FactorBB<A>::print (std::ostream &o, const type& x) const
    A::printSuffix (ss);
 }
 
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename A>
+void
+HIntLib::Private::FactorBB<A>::print (std::wostream &o, const type& x) const
+{
+   Private::WPrinter ss (o);
+
+   A::printShort (ss, x);
+   ss << L" (";
+   A::printShort (ss, m);
+   ss << L')';
+   A::printSuffix (ss);
+}
+#endif
+
+
+/**
+ *  printSuffix()
+ */
+
 template<typename A>
 void
 HIntLib::Private::FactorBB<A>::printSuffix (std::ostream &o) const
@@ -81,6 +120,20 @@ HIntLib::Private::FactorBB<A>::printSuffix (std::ostream &o) const
    ss << ')';
    A::printSuffix (ss);
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename A>
+void
+HIntLib::Private::FactorBB<A>::printSuffix (std::wostream &o) const
+{
+   Private::WPrinter ss (o);
+
+   ss << L'(';
+   A::printShort (ss, m);
+   ss << L')';
+   A::printSuffix (ss);
+}
+#endif
 
 
 /**
@@ -416,6 +469,14 @@ isPrimitiveElement (const type& u) const
 
 // Instantiations
 
+#ifdef HINTLIB_BUILD_WCHAR
+#define HINTLIB_INSTANTIATE_FACTORRING_W(X) \
+   template std::wostream& operator<< (std::wostream&, const FactorBB<X >&); \
+   template void FactorBB<X >::print (std::wostream&, const type&) const; \
+   template void FactorBB<X >::printSuffix (std::wostream&) const;
+#else
+#define HINTLIB_INSTANTIATE_FACTORRING_W(X)
+#endif
 
 #define HINTLIB_INSTANTIATE_FACTORRING(X) \
    namespace Private { \
@@ -423,6 +484,7 @@ isPrimitiveElement (const type& u) const
    template std::ostream& operator<< (std::ostream&, const FactorBB<X >&); \
    template void FactorBB<X >::print (std::ostream&, const type&) const; \
    template void FactorBB<X >::printSuffix (std::ostream&) const; \
+   HINTLIB_INSTANTIATE_FACTORRING_W(X) \
    template void FactorBB<X >::throwIfZero(const type&) const; \
    }
    

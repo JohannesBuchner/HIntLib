@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,13 +42,14 @@ DigitalNetGen<A,S>::DigitalNetGen (
   arith (_arith),
   scalArith (arith.getScalarAlgebra()),
   base (_c.getBase()),
-  prec (min3 (
+  prec (min4 (
      (_trunc == FULL) ? _c.getPrec() : m,  // what we want
      digitsRepresentable (S(scalArith.size())), // what we can get for this S
      unsigned (HINTLIB_MN ceil (
            HINTLIB_MN log(2.0) / HINTLIB_MN log(double(scalArith.size()))
-               * double(std::numeric_limits<real>::digits - 1)))
+               * double(std::numeric_limits<real>::digits - 1))),
                                                 // what can be stored in real
+     _c.getPrec()  // what's in the matrix
      )),
   c (AdjustPrec (prec, DiscardDimensions (getDimension(),
               NetFromSequence (m, equi, _c))),
@@ -58,7 +59,7 @@ DigitalNetGen<A,S>::DigitalNetGen (
   x      (getDimension() * vecPrec),
   xStart (getDimension() * vecPrec, 0),
   trunc (_trunc),
-  ss (h),
+  ss (h),  // will be initialized later
   trivialScale (1.0 / HINTLIB_MN pow(real(base), int (prec)))
 {
    if (arith.size() != c.getVecBase())  throw FIXME (__FILE__, __LINE__);
@@ -66,23 +67,26 @@ DigitalNetGen<A,S>::DigitalNetGen (
          throw FIXME (__FILE__, __LINE__);
 
    setCube (h);
-
+ 
 #if 0
-   c.print(cerr);
-   c.printVector(cerr);
-   cerr << " prec=" << prec
-        << " vecPrec=" << vecPrec
-        << " vecBase=" << vecBase
-        << " base=" << int (base)
-        << " h=" << h
-        << endl
-        << " arith.size()=" << arith.size()
-        << " arith.dimension()=" << arith.dimension()
-        << endl
-        << " scalArith.size()=" << scalArith.size()
-        << endl
-        << " trivalScale=" << trivialScale << " " << 1/trivialScale
-        << endl;
+   c.print(std::cerr);
+   std::cerr
+      << " Prec 1: " << ((_trunc == FULL) ? _c.getPrec() : m) << "\n"
+         " Prec 2: " << digitsRepresentable (S(scalArith.size())) << "\n"
+         " Prec 3: "
+      << unsigned (HINTLIB_MN ceil (
+            HINTLIB_MN log(2.0) / HINTLIB_MN log(double(scalArith.size()))
+               * double(std::numeric_limits<real>::digits - 1))) << "\n"
+         " Prec 4: " << _c.getPrec() << "\n\n"
+         " base=" << int (base)
+      << " prec=" << prec
+      << " vecBase=" << vecBase
+      << " vecPrec=" << vecPrec
+      << " h=" << h << "\n"
+         " arith.size()=" << arith.size()
+      << " arith.dimension()=" << arith.dimension() << "\n"
+         " scalArith.size()=" << scalArith.size() << "\n"
+         " trivalScale=" << trivialScale << " " << 1/trivialScale << '\n';
 #endif
 
    // Initialize xStart vector
@@ -119,7 +123,7 @@ DigitalNetGen<A,S>::DigitalNetGen (
 template<class A, typename S>
 void DigitalNetGen<A,S>::setCube (const Hypercube &h)
 {
-   real shift = trunc==CENTER ? -1./base : .0;
+   const real shift = (trunc == CENTER) ? (real(-1) / real(base)) : 0;
    ss.set (h, shift, HINTLIB_MN pow(real(base), int (prec)) + shift);
 }
 

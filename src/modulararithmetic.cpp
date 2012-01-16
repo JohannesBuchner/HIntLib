@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,13 +18,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/modulararithmetic.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
+#pragma implementation
+#endif
 
 #include <HIntLib/output.h>
 
@@ -70,9 +70,30 @@ std::ostream&
 P::operator<< (std::ostream &o, const ModularArithmeticBase &a)
 {
    Printer ss (o);
-   ss << "Z/(" << a.modulus() << ")";
+#if HINTLIB_CHARACTER_SET == 4 && defined (HINTLIB_UTF8_SELECT)
+   HINTLIB_UTF8_SELECT(ss.utf8(),
+   ss << "\xe2\x84\xa4",  // DOUBLE-STRUCK CAPITAL Z
+   ss << 'Z')
+#else
+   ss << 'Z';
+#endif
+   ss.subscript(a.modulus());
    return o;
 }
+#ifdef HINTLIB_BUILD_WCHAR
+std::wostream&
+P::operator<< (std::wostream &o, const ModularArithmeticBase &a)
+{
+   WPrinter ss (o);
+#if HINTLIB_CHARACTER_SET == 4
+   ss << L'\x2124';  // DOUBLE-STRUCK CAPITAL Z
+#else
+   ss << L'Z';
+#endif
+   ss.subscript(a.modulus());
+   return o;
+}
+#endif
 
 void
 P::ModularArithmeticBase::printSuffix (std::ostream &o) const
@@ -80,12 +101,27 @@ P::ModularArithmeticBase::printSuffix (std::ostream &o) const
    Printer ss (o);
    ss << '(' << m << ')';
 }
+#ifdef HINTLIB_BUILD_WCHAR
+void
+P::ModularArithmeticBase::printSuffix (std::wostream &o) const
+{
+   WPrinter ss (o);
+   ss << L'(' << m << L')';
+}
+#endif
 
 void
 P::ModularArithmeticBase::prnShort (std::ostream &o, unsigned a)
 {
    o << int (a);  // convert to int to make showpos work
 }
+#ifdef HINTLIB_BUILD_WCHAR
+void
+P::ModularArithmeticBase::prnShort (std::wostream &o, unsigned a)
+{
+   o << int (a);  // convert to int to make showpos work
+}
+#endif
 
 void
 P::ModularArithmeticBase::prn (std::ostream &o, unsigned a) const
@@ -93,6 +129,14 @@ P::ModularArithmeticBase::prn (std::ostream &o, unsigned a) const
    Printer ss (o);
    ss << int (a) << " (" << m << ')';
 }
+#ifdef HINTLIB_BUILD_WCHAR
+void
+P::ModularArithmeticBase::prn (std::wostream &o, unsigned a) const
+{
+   WPrinter ss (o);
+   ss << int (a) << L" (" << m << L')';
+}
+#endif
 
 
 /**

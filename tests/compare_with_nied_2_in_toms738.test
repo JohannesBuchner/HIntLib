@@ -22,4 +22,5 @@ fi
 
 rm hintlib_nied2.txt toms738_nied2.txt
 
-exit 0
+{ (exit 0); exit 0; }
+

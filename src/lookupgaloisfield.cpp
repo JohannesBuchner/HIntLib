@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,32 +18,25 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #define HINTLIB_LIBRARY_OBJECT
-
-#include <HIntLib/defaults.h>
-
-#ifdef HINTLIB_HAVE_OSTREAM
-  #include <ostream>
-#else
-  #include <iostream>
-#endif
 
 #include <HIntLib/lookupfield.h>
 #include <HIntLib/galoisfield.h>
 
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
+#pragma implementation
+#endif
+
 namespace L = HIntLib;
+namespace P = L::Private;
 
 /**
  *  make Galois Field ()
  */
 
 template<class T>
-void L::makeGaloisField
-   (T &r, unsigned base, unsigned exponent)
+void
+L::makeGaloisField (T &r, unsigned base, unsigned exponent)
 {
         if (exponent == 0)  throw GaloisFieldExponent ();
    else if (exponent == 1)
@@ -146,7 +139,8 @@ namespace
 {
 
 template<class T, class A>
-void copyMulTable (L::LookupFieldBase<T> & dest, const A src)
+void
+copyMulTable (P::LookupFieldBase<T> & dest, const A src)
 {
    typedef typename A::type AT;
 
@@ -172,7 +166,8 @@ void copyMulTable (L::LookupFieldBase<T> & dest, const A src)
 }
 
 template<class T, class A>
-void copyAddTable (L::LookupField<T> & dest, const A src)
+void
+copyAddTable (L::LookupField<T> & dest, const A src)
 {
    typedef typename A::type AT;
 
@@ -189,14 +184,16 @@ void copyAddTable (L::LookupField<T> & dest, const A src)
 }
 
 template<class T, class A>
-void L::copy (LookupField<T> & dest, const A src)
+void
+L::copy (LookupField<T> & dest, const A src)
 {
    copyMulTable (dest, src);
    copyAddTable (dest, src);
 }
 
 template<class T, class A>
-void L::copy (LookupFieldMulOnly<T> & dest, const A src)
+void
+L::copy (P::LookupFieldMulOnly<T> & dest, const A src)
 {
    copyMulTable (dest, src);
 }
@@ -206,8 +203,8 @@ namespace HIntLib
 #define HINTLIB_INSTANTIATE(X) \
    template void copy (LookupField<X> &, const GaloisField<X>); \
    template void copy (LookupField<X> &, const ModularArithmeticField<X>);\
-   template void copy (LookupFieldMulOnly<X> &, const GaloisField<X>); \
-   template void copy (LookupFieldMulOnly<X> &, const ModularArithmeticField<X>);\
+   template void copy (Private::LookupFieldMulOnly<X> &, const GaloisField<X>); \
+   template void copy (Private::LookupFieldMulOnly<X> &, const ModularArithmeticField<X>);\
    template void makeGaloisField(LookupGaloisField<X>&,unsigned,unsigned); \
    template void makeGaloisField(LookupGaloisFieldPow2<X>&,unsigned,unsigned);\
    template void makeGaloisField(LookupGaloisFieldPrime<X>&,unsigned,unsigned);\

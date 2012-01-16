@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -39,7 +39,18 @@ using std::endl;
 using std::flush;
 using std::setw;
 
-const char* options = "x:n:";
+const char options[] = "x:n:";
+const char option_msg[] =
+   "  q      Use arithmetic over F_q\n"
+   "  size   Size of the matrices\n"
+   "  -x seed Seed for random number generator (default: 0)\n"
+   "  -n num Number of tests (default: 1)\n";
+const char testProgramParameters[] = "[OPTIONS] q size";
+const char testProgramUsage[] =
+   "Exercises functions like isLinearIndependent(), matrixRank(), and\n"
+   "matrixInverse().\n\n";
+const char testProgramName[] = "test_linearalgebra";
+const int  testProgramCopyright = 2003;
 
 int SEED = 0;
 int NUM_TESTS = 1;
@@ -53,22 +64,6 @@ bool opt (int c, const char* s)
    }
 
    return false;
-}
-
-void usage()
-{
-   cerr <<
-      "Usage: test_linearalgebra q size\n\n"
-      "Exercises functions like isLinearIndependent(), matrixRank(), and\n"
-      "matrixInverse().\n\n"
-      "  q      Use arithmetic over F_q\n"
-      "  size   Size of the matrices\n"
-      "  -x seed Seed for random number generator [0]\n"
-      "  -n num Number of tests [1]\n"
-      << option_msg <<
-      "\n";
-
-   exit (1);
 }
 
 
@@ -121,7 +116,7 @@ void doTest (const int b, const unsigned char* m, const int size)
 
    if (base2)
    {
-      NORMAL cout << "packing and unpacking..." << endl;
+      NORMAL cout << "Packing and unpacking..." << endl;
 
       packMatrix (m, size, m2.begin(), m2.begin() + size);
       unpackMatrix (m2.begin(), m2.begin() + size, size, temp.begin());
@@ -130,13 +125,13 @@ void doTest (const int b, const unsigned char* m, const int size)
 
       if (! std::equal (temp.begin(), temp.begin() + size2, m))
       {
-         error ("packMatrix() or unpackMatrix() failed!");
+         error ("packMatrix() or unpackMatrix() failed");
       }
    }
 
    // matrixMul(), vectorMatrixMul()
 
-   NORMAL cout << "Multiplying matrix..." << flush;
+   NORMAL cout << "Multiplying matrix...\n" << flush;
 
    for (int i = 0; i < size; ++i)
    {
@@ -227,7 +222,7 @@ void doTest (const int b, const unsigned char* m, const int size)
       std::copy (m2.begin(), m2.begin() + size, copy2.begin());
       if (matrixRank (copy2.begin(), copy2.begin() + size) != rank)
       {
-         error ("matrixRank() for base 2 is different!");
+         error ("matrixRank() for base 2 is different");
       }
    }
 
@@ -269,7 +264,7 @@ void doTest (const int b, const unsigned char* m, const int size)
       std::copy (m2.begin(), m2.begin() + size, copy2.begin());
       if (isLinearlyIndependent (copy2.begin(), copy2.begin() + size) != indep)
       {
-         error ("isLinearlyIndependent() for base 2 is different!");
+         error ("isLinearlyIndependent() for base 2 is different");
       }
    }
 
@@ -333,7 +328,7 @@ void doTest (const int b, const unsigned char* m, const int size)
       if (dimNS != dimNS2)
       {
          cout << "Result: " << dimNS2 << '\n';
-         error ("nullSpace() for base 2 yields different dimension!");
+         error ("nullSpace() for base 2 yields different dimension");
       }
       else
       {
@@ -367,7 +362,7 @@ void doTest (const int b, const unsigned char* m, const int size)
       if (dimNS != dimNS2)
       {
          cout << "Result: " << dimNS2 << '\n';
-         error ("nullSpaceT() for base 2 yields different dimension!");
+         error ("nullSpaceT() for base 2 yields different dimension");
       }
       else
       {
@@ -431,13 +426,16 @@ void doTest (const int b, const unsigned char* m, const int size)
 
 void test (int argc, char** argv)
 {
-   if (argc != 2)  usage();
+   if (argc != 2)  usage("Invalid number of arguments!");
       
    const int b    = atoi(argv[0]);
    const int size = atoi(argv[1]);
    const int size2 = size * size;
 
-   if (b < 2 || size < 1)  usage();
+   if (b < 2)     usage("Invalid base q!");
+   if (size < 1)  usage("Invalid size!");
+
+   NORMAL printHeader (cout);
 
    Array<unsigned char> m (size2, 0);
    doTest (b, m.begin(), size);
@@ -450,7 +448,7 @@ void test (int argc, char** argv)
 
    for (int i = 0; i < NUM_TESTS; ++i)
    {
-      for (int i = 0; i < size2; ++i)  m[i] = mt(b);
+      for (int j = 0; j < size2; ++j)  m[j] = mt(b);
       doTest (b, m.begin(), size);
    }
 }

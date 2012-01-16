@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -224,7 +224,7 @@ div (const type& u, const type& v, type& q, type& r) const
 
       r.makeZero();
       r.reserve (rend - rbegin);
-      r.getC().assign (rbegin, rend);
+      std::copy (rbegin, rend, back_inserter(r.getC()));
 
       q.getC().erase (q.fromLc(), qend);
    }
@@ -247,7 +247,7 @@ div (const type& u, const type& v, type& q, type& r) const
 
       r.makeZero();
       r.reserve (end - start);
-      r.getC().assign (start, end);
+      std::copy (start, end, back_inserter(r.getC()));
    }
 }
 
@@ -359,7 +359,7 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Rem,A,T> x)
    const DownI end   = uu.toA0();
    
    reserve (end - begin);
-   c.assign (begin, end);
+   std::copy (begin, end, back_inserter(c));
 }
 
 

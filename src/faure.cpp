@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,15 +18,15 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <algorithm>
 
 #include <HIntLib/faure.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
+#pragma implementation
+#endif
 
 #include <HIntLib/generatormatrixgen.h>
 #include <HIntLib/lookupfield.h>
@@ -40,8 +40,8 @@ namespace L = HIntLib;
  *
  *  For details, see
  *
- *  [1] Henry Faure.  Discrépance de suites associées à un système de
- *      numération (en dimension $s$).  Acta Arithmetica, 41: 337-351, 1982.
+ *  [1] Henry Faure.  Discr'epance de suites associ'ees `a un syst`eme de
+ *      num'eration (en dimension $s$).  Acta Arithmetica, 41: 337-351, 1982.
  *  [2] Bennett L. Fox.  Algorithm 647: Implementation and Relative Efficiency
  *      of Quasirandom Sequence Generators.  ACM TOMS, 12(4):362-376, 1986.
  *
@@ -62,9 +62,9 @@ void L::initFaure (GeneratorMatrixGen<unsigned char> &gm)
    if (gm.getDimension() < 1)  return;
    gm.makeIdentityMatrix (0);
 
-   LookupGaloisField<unsigned char> a (gm.getBase());
-
    if (gm.getDimension() < 2)  return;
+
+   LookupGaloisField<unsigned char> a (gm.getBase());
 
    // Create Pascal's Triangle in Matrix d=1
 

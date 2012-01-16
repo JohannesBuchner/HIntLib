@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,6 +28,10 @@
 
 /******************************  GF2 Vector Space  ***************************/
 
+/**
+ * printShort()
+ */
+
 template<typename T>
 void
 HIntLib::GF2VectorSpace<T>::printShort (std::ostream& o, const type& v) const
@@ -43,6 +47,28 @@ HIntLib::GF2VectorSpace<T>::printShort (std::ostream& o, const type& v) const
    ss << ')';
 }
 
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename T>
+void
+HIntLib::GF2VectorSpace<T>::printShort (std::wostream& o, const type& v) const
+{
+   Private::WPrinter ss (o);
+
+   ss << L'(';
+   for (unsigned i = 0; i < dim; ++i)
+   {
+      if (i > 0)  ss << L',';
+      ss << unsigned (coord(v, i));
+   }
+   ss << L')';
+}
+#endif
+
+
+/**
+ *  print()
+ */
+
 template<typename T>
 void
 HIntLib::GF2VectorSpace<T>::print (std::ostream& o, const type& v) const
@@ -53,10 +79,32 @@ HIntLib::GF2VectorSpace<T>::print (std::ostream& o, const type& v) const
    ss << " (2)";
 }
 
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename T>
+void
+HIntLib::GF2VectorSpace<T>::print (std::wostream& o, const type& v) const
+{
+   Private::WPrinter ss (o);
+
+   printShort (ss, v);
+   ss << L" (2)";
+}
+#endif
+
 
 /********************  Instantiations  ***************************************/
 
+#ifdef HINTLIB_BUILD_WCHAR
+#define HINTLIB_INSTANTIATE_GF2VECTORSPACE_W(X) \
+   template void GF2VectorSpace<X >::print(std::wostream&, const type&) const; \
+   template void GF2VectorSpace<X >::printShort \
+      (std::wostream&, const type&) const;
+#else
+#define HINTLIB_INSTANTIATE_GF2VECTORSPACE_W(X)
+#endif
+
 #define HINTLIB_INSTANTIATE_GF2VECTORSPACE(X) \
+   HINTLIB_INSTANTIATE_GF2VECTORSPACE_W(X) \
    template void GF2VectorSpace<X >::print (std::ostream&, const type&) const; \
    template void GF2VectorSpace<X >::printShort \
       (std::ostream&, const type&) const;

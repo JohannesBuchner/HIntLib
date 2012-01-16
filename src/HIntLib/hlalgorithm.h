@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,11 +28,15 @@
 #ifndef HINTLIB_HLALGORITHM_H
 #define HINTLIB_HLALGORITHM_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
 #include <algorithm>
+
+#include <HIntLib/bitop.h>
 
 
 namespace HIntLib
@@ -62,6 +66,20 @@ void purge (In first, In last)
    while (first != last)  delete *first++;
 
    // for_each (first, last, delete_ptr);     // does not compile :-((
+}
+
+
+/**
+ *  purgeArray()
+ *
+ *  Calls delete[]() on each member of the container
+ */
+
+template<typename In>
+inline
+void purgeArray (In first, In last)
+{
+   while (first != last)  delete[] *first++;
 }
 
 
@@ -100,6 +118,40 @@ const T& min3 (const T& x1, const T& x2, const T& x3)
 
 
 /**
+ *  min4 (x1,x2,x3,x4)
+ *  max4 (x1,x3,x3,x4)
+ */
+
+template<typename T>
+inline
+const T& max4 (const T& x1, const T& x2, const T& x3, const T& x4)
+{
+   if (x1 > x2)
+   {
+      return max3 (x1, x3, x4);
+   }
+   else
+   {
+      return max3 (x2, x3, x4);
+   }
+}
+
+template<typename T>
+inline
+const T& min4 (const T& x1, const T& x2, const T& x3, const T& x4)
+{
+   if (x1 < x2)
+   {
+      return min3 (x1, x3, x4);
+   }
+   else
+   {
+      return min3 (x2, x3, x4);
+   }
+}
+
+
+/**
  *  initial_partition()
  *  next_partition ()
  *
@@ -116,6 +168,12 @@ template<class Bi>
 void initial_partition
    (Bi first, Bi last, typename std::iterator_traits<Bi>::value_type num)
 {
+   if (first == last)
+   {
+      if (num)  throw 1;
+      return;
+   }
+
    *first = num;
    std::fill (first + 1, last, 0);
 }
@@ -162,10 +220,6 @@ bool next_partition (Bi first, Bi last)
  *
  *  Generates the next partion, restricting the size of the subsets
  *
- *  We search for the first stack that is not empty.
- *  All elements but one return to the first stack. The remaining elements move
- *  on to the next stack.
- *
  *  If no new partition can be created, false is returned.
  */
 
@@ -174,6 +228,12 @@ void initial_partition
    (Bi first, Bi last, typename std::iterator_traits<Bi>::value_type max,
     typename std::iterator_traits<Bi>::value_type num)
 {
+   if (first == last)
+   {
+      if (num)  throw 1;
+      return;
+   }
+
    Bi i = first;
 
    while (num > max)
@@ -243,6 +303,74 @@ bool next_partition
    }
 
    return false;
+}
+
+
+/**
+ *  next_combination()
+ *  initial_combination()
+ *
+ *  Generates the next combination of  k  from  n  elements.
+ *
+ *  If no new combination can be created, false is returned.
+ *
+ *  next_combination() searches for the first element that can be moved to
+ *  the next position (i.e, we search for the minimal  i  such that there is an
+ *  element on position  i  and position  i + 1  is empty).
+ *  This element is moved to the next position and all previous elements are
+ *  returned to the leftmost positions.
+ *
+ *  There are two versions:
+ *
+ *    a) operating on a bool-array
+ *    b) operating on the bits of an integer
+ */
+
+void initial_combination (bool* first, bool* last, int num);
+
+template<typename T>
+void initial_combination (T* pattern, int num)
+{
+   *pattern = lsBitsMask<T>(num);
+}
+
+bool next_combination (bool* first, bool* last);
+
+template<typename T>
+bool next_combination (T* pattern, int n)
+{
+   // make sure there are at least two stacks and some elements
+
+   if (n <= 1 || *pattern == 0)  return false;
+   const T last = T(1) << (n - 1);
+
+   // Skip leading empty stacks
+
+   T i = *pattern & ~(*pattern - 1);
+
+   // track end-position for redistribution
+
+   T end = 1;
+
+   // Now we have found an element on position i.  We need to go on and find an
+   // empty position
+
+   for(;;)
+   {
+      // Check for (0,...,0, 1,...,1), i.e., the end
+
+      if (i == last)  return false;
+      i <<= 1;
+      if ((*pattern & i) == 0)  break;
+      end <<= 1;
+   }
+
+   // Now element  i-1  can be moved to position  i  and everything before that
+   // can be moved back to the leftmost positions.
+
+   *pattern = (*pattern & ~(i - 1)) | i | (end - 1);
+
+   return true;
 }
 
 

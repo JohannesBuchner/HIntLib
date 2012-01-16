@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -47,12 +47,25 @@ using namespace HIntLib;
 
 // Option processing
 
-const char* options = "erbm:d:t";
+const char options[] = "erbm:d:t";
+const char option_msg[] =
+   "  net    # of the GeneratorMatrix or filename of libseq-format matrix\n"
+   "  -e     Add equidistributed coordinate\n"
+   "  -r     Test restricted t parameter\n"
+   "  -b     Do tests without optimized bounds\n"
+   "  -m n   Maximum m (default: 25)\n"
+   "  -d n   Maximum dimension (default: 55)\n"
+   "  -k     Print strength instead of t-parameter\n";
+const char testProgramParameters[] = "[OPTIONS] net";
+const char testProgramUsage[] =
+   "Tests whether determining the t parameter works correctly.\n\n";
+const char testProgramName[] = "test_tparameter";
+const int  testProgramCopyright = 2003;
 
 bool ADD_EQUI = false;
 bool RESTRICTED = false;
 bool NO_BOUNDS = false;
-bool PRINT_THICKNESS = false;
+bool PRINT_STRENGTH = false;
 const unsigned MIN_M = 1;
 const unsigned MIN_S = 1;
 unsigned MAX_S = 55 + 1;
@@ -67,28 +80,10 @@ bool opt(int c, const char* s)
    case 'b':  NO_BOUNDS = true; return true;
    case 'm':  MAX_M = HINTLIB_SLN atoi (s) + 1; return true;
    case 'd':  MAX_S = HINTLIB_SLN atoi (s) + 1; return true;
-   case 't':  PRINT_THICKNESS = true; return true;
+   case 'k':  PRINT_STRENGTH = true; return true;
    }
 
    return false;
-}
-
-void usage()
-{
-   cerr <<
-      "Usage: test_tparameter [OPTION] net...\n\n"
-      "Tests if determining the t-parameter works correctly.\n\n"
-      "  net    # of the GeneratorMatrix or filename of libseq-format matrix\n"
-      << option_msg <<
-      "  -e     Add equidistributed coordinate\n"
-      "  -r     Test restricted t_parameter\n"
-      "  -b     Do tests without optimized bounds\n"
-      "  -m n   Maximum m (default = 25)\n"
-      "  -d n   Maximum dimension (default = 55)\n"
-      "  -t     Print thickness instead of t-parameter\n"
-      "\n";
-
-   exit (1);
 }
 
 
@@ -140,7 +135,7 @@ void determineT (
 
    if (NO_BOUNDS)
    {
-      if (t != tParameter (g, 0, m))  error ("Bound optimization broken!");
+      if (t != tParameter (g, 0, m))  error ("Bound optimization broken");
    }
 
    // check if restricted results make sense
@@ -176,7 +171,7 @@ void determineT (
    }
    else
    {
-      NORMAL  cout << setw(3) << (PRINT_THICKNESS ? m - t : t) << flush;
+      NORMAL  cout << setw(3) << (PRINT_STRENGTH ? m - t : t) << flush;
    }
 }
 
@@ -187,24 +182,27 @@ void determineT (
 
 void test (int argc, char** argv)
 {
-   if (argc != 1)  usage();
+   if (argc != 1)  usage("Invalid number of arguments!");
+
+   NORMAL printHeader (cout);
 
    char* endptr; 
-   int matrix = HINTLIB_SLN strtol (argv[0], &endptr, 10);
+   int matrixNumber = HINTLIB_SLN strtol (argv[0], &endptr, 10);
 
    Array<Matrix*> matrices (MAX_S, 0);    // The fullsized matrix for each s
    Array<int> t_matrix (MAX_S * MAX_M, -1);
 
    if (endptr != argv[0] && *endptr == '\0')
    { 
-      NORMAL cout << Make::getGeneratorMatrixGenName (matrix) << "\n\n";
+      NORMAL cout << Make::getGeneratorMatrixGenName (matrixNumber) << "\n\n";
       NORMAL if (! RESTRICTED)  cout << "   s=";
 
       for (unsigned s = MIN_S; s < MAX_S; ++s)
       {
          try
          {
-            matrices [s] = Make::generatorMatrixGen (matrix, s - ADD_EQUI);
+            matrices [s]
+               = Make::generatorMatrixGen (matrixNumber, s - ADD_EQUI);
             NORMAL if (! RESTRICTED)  cout << setw(3) << s << flush;
          }
          catch (InvalidDimension &)

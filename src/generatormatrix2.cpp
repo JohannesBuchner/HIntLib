@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,16 +18,17 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <iomanip>
 #include <algorithm>
 
 #include <HIntLib/generatormatrix2.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
+#pragma implementation
+#endif
+
 #include <HIntLib/exception.h>
 
 #ifdef HINTLIB_HAVE_OSTREAM
@@ -253,7 +254,7 @@ L::GeneratorMatrix2<T>::setPackedRowVector (unsigned d, unsigned b, u64 x)
 
    for (unsigned r = 0; r < m; ++r)
    {
-      setdMask (d, r, ma, x & 1);
+      setdMask (d, r, ma, unsigned(x) & 1u);
       x >>= 1;
    }
 }

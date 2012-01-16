@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <iostream>
 #include <iomanip>
 #include <algorithm>
 #include <utility>
@@ -35,18 +34,12 @@
 #include <HIntLib/prime.h>
 #include <HIntLib/array.h>
 #include <HIntLib/gcd.h>
+#include <HIntLib/output.h>
 
-#include "test.h"
+#include "test_arithmetic.h"
 
-using std::cout;
 using std::endl;
 using std::setw;
-
-#ifdef HINTLIB_NAMESPACE_REL_OPS
-using namespace std::rel_ops;
-#else
-using namespace std;
-#endif
 
 using HIntLib::group_tag;
 using HIntLib::ringfield_tag;
@@ -87,41 +80,13 @@ using HIntLib::powInt;
 using HIntLib::cube;
 
 
-/*
- *  Global variables
- */
-
-// Userdefined constants
-
-extern unsigned SIZE;
-extern bool FLUSH;
-extern unsigned W;
-
-// counters
-
-extern unsigned nilpotentsCounter;
-extern unsigned unitsCounter;
-extern unsigned primitivesCounter;
-extern unsigned lastNorm;
-extern int lastDegree;
-
-// function prototypes
-
-bool performTest (
-      const std::string& cat, const std::string& name, const std::string& type);
-void printNumberOrInf (unsigned n);
-void checkCounter (unsigned expected, unsigned actual, bool all, const char* s);
-void checkIndex (unsigned size, unsigned index, const char* s);
-void checkInfiniteInFinite (unsigned size, unsigned n, const char* s);
-
-
 /**
  *  fl();
  */
 
 inline void fl ()
 {
-   DEB2 if (FLUSH)  cout << std::flush;
+   DEB2 if (FLUSH)  COUT << std::flush;
 }
 
 /**
@@ -179,7 +144,7 @@ struct Cache : public CacheBase
    Cache (const A& _a) : arith (_a) {}
 
    const A& operator()()  { return arith; }
-   void print (const T& x) const  { arith.printShort (cout, x); }
+   void print (const T& x) const  { arith.printShort (COUT, x); }
 
    // no elements
 
@@ -242,9 +207,9 @@ void doTest (Cache<G>& c, group_tag)
 
    DEB1
    {
-      cout << "  Zero: ";
-      c().print (cout, c.zero);
-      cout << endl;
+      COUT << "  Zero: ";
+      c().print (COUT, c.zero);
+      COUT << endl;
    }
 
    if (c().index(c.zero) != 0)  error ("index(zero) invalid");
@@ -267,27 +232,36 @@ void doTest (Cache<G>& c, const typename G::type& a, group_tag)
    {
       T zero;
       T copy (a);
-      if (copy != a)  error ("Copy constructor or operator==() broken");
+      if (! (copy == a))  error ("Copy constructor or operator==() broken");
       zero = a;
-      if (zero != a)  error ("Assignment, or operator==() broken");
+      if (! (zero == a))  error ("Assignment, or operator==() broken");
    }
    
    // is0()
 
    c.is0 = c().is0(a);
-   DEB2  if (c.is0)  cout << ", zero";
+   DEB2  if (c.is0)  COUT << ", zero";
    if (c.is0 != (a == c.zero))  error ("is0() or operator==() fails");
    
    // zero
 
-   if (c().add (a, c.zero) != a)  error ("a+0 != a");
+   if (! (c().add (a, c.zero) == a))  error ("a+0 != a");
 
    // additive inverse
 
    c.neg = c().neg(a);
    DEB2
    {
-      cout << ", -a = ";
+      COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 3
+         L", \x2212" L"a = ";  // MINUS SIGN
+# else
+         L", -a = ";
+# endif
+#else
+         Wgl4Ascii (", \xe2\x88\x92" "a = ", ", -a = ");
+#endif
       c.print (c.neg);
    }
 
@@ -302,11 +276,11 @@ void doTest (Cache<G>& c, const typename G::type& a, group_tag)
 
       DEB4
       {
-         cout << ", negate(a) = ";
+         COUT << ", negate(a) = ";
          c.print (x);
       }
 
-      if (x != c.neg)  error ("negate(a) != -a");
+      if (! (x == c.neg))  error ("negate(a) != -a");
    }
    
    fl();
@@ -317,15 +291,15 @@ void doTest (Cache<G>& c, const typename G::type& a, group_tag)
       c.dbl = c().dbl(a);
       DEB2
       {
-         cout << ", 2a = ";
+         COUT << ", 2a = ";
          c.print (c.dbl);
       }
 
-      if (c.dbl != c().add (a,a))  error ("dbl(a) invalid");
+      if (! (c.dbl == c().add (a,a)))  error ("dbl(a) invalid");
 
       T d = a;
       c().times2 (d);
-      if (d != c.dbl)
+      if (! (d == c.dbl))
       {
          error ("times2() invalid");
          c.print (d);
@@ -338,7 +312,22 @@ void doTest (Cache<G>& c, const typename G::type& a, group_tag)
 
    if (sqr (c.index) < SIZE)
    {
-      DEB3 cout << ", times = ";
+      DEB3
+      {
+         COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 4
+            // LEFT-POINTING ANGLE BRACKET
+            // RIGHT-POINTING ANGLE BRACKET
+            L", \x2329na\x232a = \x2329";
+# else
+            L", <na> = <";
+# endif
+#else
+            UnicodeAscii (", \xe2\x8c\xa9na\xe2\x8c\xaa = \xe2\x8c\xa9",
+                          ", <na> = <");
+#endif
+      }
 
       unsigned SS = unsigned (HINTLIB_MN sqrt(double(SIZE)));
 
@@ -346,19 +335,34 @@ void doTest (Cache<G>& c, const typename G::type& a, group_tag)
       for (unsigned l = 0; l < SS; ++l)
       {
          T sum = c().times(a,l);
-         DEB3 { c.print (sum); cout << '/'; }
-         if (x != sum)
+         DEB3 { c.print (sum); COUT << ','; }
+         if (! (x == sum))
          {
             error ("a+...+a != times (a,k)");
-            cout << "a+...+a = ";
+            COUT << "a+...+a = ";
             c.print (x);
-            cout << ",  times (a," << l << ") = ";
+            COUT << ",  times (a," << l << ") = ";
             c.print (sum);
-            cout << ",  diff = ";
+            COUT << ",  diff = ";
             c.print (c().sub (x, sum));
-            cout << endl;
+            COUT << endl;
          }
          c().addTo (x, a);
+      }
+
+      DEB3
+      {
+         COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 4
+            // RIGHT-POINTING ANGLE BRACKET
+            L"...\x232a";
+# else
+            L"...>";
+# endif
+#else
+            UnicodeAscii ("...\xe2\x8c\xaa", "...>");
+#endif
       }
    }
 
@@ -369,7 +373,7 @@ void doTest (Cache<G>& c, const typename G::type& a, group_tag)
    c.additiveOrder = c().additiveOrder (a);
    DEB2
    {
-      cout << ", add.order: ";
+      COUT << ", add.order: ";
       printNumberOrInf (c.additiveOrder);
    }
 
@@ -433,16 +437,25 @@ void doTest (Cache<G>& c, const typename G::type& a,
       c.index  = c().index (a);
    }
 
-   // Make sure, operators dont leave domain
+   // Make sure that operators don't leave domain
 
-   c.add = c().add (a,b);
    c.sub = c().sub (a,b);
+   c.add = c().add (a,b);
 
    DEB2
    {
-      cout << ", a+b = ";
+      COUT << ", a+b = ";
       c.print (c.add);
-      cout << ", a-b = ";
+      COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 3
+         L", a\x2212" L"b = ";  // MINUS SIGN
+# else
+         L", a-b = ";
+# endif
+#else
+         Wgl4Ascii (", a\xe2\x88\x92" "b = ", ", a-b = ");
+#endif
       c.print (c.sub);
    }
 
@@ -451,21 +464,21 @@ void doTest (Cache<G>& c, const typename G::type& a,
    
    // Commutativity
 
-   if (c.add != c().add (b,a))  error ("a+b != b+a");
+   if (! (c.add == c().add (b,a)))  error ("a+b != b+a");
 
    // derived operations
 
-   if (c().add (a, c().neg(b)) != c.sub)  error ("sub() fails");
+   if (! (c().add (a, c().neg(b)) == c.sub))  error ("sub() fails");
 
    T x;
 
    x = a;
    c().addTo (x, b);
-   if (x != c.add) error ("addTo() fails");
+   if (! (x == c.add)) error ("addTo() fails");
 
    x = a;
    c().subFrom (x, b);
-   if (x != c.sub) error ("subFrom() fails");
+   if (! (x == c.sub)) error ("subFrom() fails");
 
    fl();
 }
@@ -480,7 +493,7 @@ void doTest
 
    // Associativity of addition
 
-   if (cc().add(cc().add(a, b), c) != cc().add(a, cc().add(b,c)))
+   if (! (cc().add(cc().add(a, b), c) == cc().add(a, cc().add(b,c))))
    {
       error("(a+b) + c != a + (b+c)");
    }
@@ -499,16 +512,21 @@ inline void requireCharacteristic (HIntLib::char_exists) {}
 // no element
 
 inline
-void doTest (CacheBase&, HIntLib::char_non)
+void doTest (CacheBase&, HIntLib::char_none)
 {
-   DEB1  cout << "  Char: ---" << endl;
+   DEB1  COUT << "  Char: none" << endl;
 }
 
 template<class R>
 inline
 void doTest (Cache<R>& c, HIntLib::char_zero)
 {
-   DEB1  cout << "  Char: inf" << endl;
+   DEB1
+   {
+      COUT << "  Char: ";
+      printInfinity();
+      COUT << endl;
+   }
 
    c.characteristic = c().characteristic();
 
@@ -522,7 +540,7 @@ template<class R>
 inline
 void doTest (Cache<R>& c, HIntLib::char_two)
 {
-   DEB1  cout << "  Char: 2" << endl;
+   DEB1  COUT << "  Char: 2" << endl;
 
    c.characteristic = c().characteristic();
 
@@ -538,7 +556,7 @@ void doTest (Cache<R>& c, HIntLib::char_prime)
 {
    c.characteristic = c().characteristic();
 
-   DEB1  cout << "  Char: prime = " << c.characteristic << endl;
+   DEB1  COUT << "  Char: prime = " << c.characteristic << endl;
 
    if (c.characteristic == 0)
    {
@@ -555,7 +573,7 @@ void doTest (Cache<R>& c, HIntLib::char_prime)
 
 template<class R>
 inline
-void doTest (Cache<R>&, const typename R::type&, HIntLib::char_non)
+void doTest (Cache<R>&, const typename R::type&, HIntLib::char_none)
 {}
 
 template<class R>
@@ -593,13 +611,13 @@ inline void requireNozerodivisor (HIntLib::nozerodivisor_tag) {}
 inline
 void doTest (CacheBase&, HIntLib::zerodivisor_tag)
 {
-   DEB1  cout << "  Zero divisors: yes" << endl;
+   DEB1  COUT << "  Zero divisors: yes" << endl;
 }
 
 inline
 void doTest (CacheBase&, HIntLib::nozerodivisor_tag)
 {
-   DEB1  cout << "  Zero divisors: no" << endl;
+   DEB1  COUT << "  Zero divisors: no" << endl;
 }
 
 // one element
@@ -622,7 +640,7 @@ void doTest (Cache<R>& c, const typename R::type& a, HIntLib::nozerodivisor_tag)
 
       DEB2
       {
-         cout << ", mult.order: ";
+         COUT << ", mult.order: ";
          printNumberOrInf (c.order);
       }
 
@@ -695,7 +713,7 @@ void doTest (
 template<class R>
 void doTest (Cache<R>&, nopolynomial_tag)
 {
-   DEB1 cout << "  Polynomials: no" << endl;
+   DEB1 COUT << "  Polynomials: no" << endl;
 }
 
 template<class R>
@@ -709,7 +727,7 @@ void doTest (Cache<R>& c, polynomial_tag)
    typedef typename R::coeff_type CT;
 
    const A& alg = c().getCoeffAlgebra();
-   DEB1 cout << "  Polynomials: yes, coeff algebra:  " << alg << endl;
+   DEB1 COUT << "  Polynomials: yes, coeff algebra: " << alg << endl;
 
    c.baseSize = alg.size();
 
@@ -722,9 +740,9 @@ void doTest (Cache<R>& c, polynomial_tag)
    c.x = c().x();
    DEB1
    {
-      cout << "  x: ";
-      c().print (cout, c.x);
-      cout << endl;
+      COUT << "  var: ";
+      c().print (COUT, c.x);
+      COUT << endl;
    }
 
    if (c.x.degree() != 1 || ! alg.is1(c.x.lc()) || ! alg.is0 (c.x[0]))
@@ -753,7 +771,7 @@ void doTest (Cache<R>& c, polynomial_tag)
       if (! c().is1 (xxdiv1) || ! c().is0 (xxdiv2))  error ("divByX() broken");
 
       T one = c.one;
-      if (xx != one.mulByX (i))  error ("mulByX() broken");
+      if (! (xx == one.mulByX (i)))  error ("mulByX() broken");
    }
 }
 
@@ -781,13 +799,34 @@ void doTestPoly (Cache<R>& c, const typename R::type& a, field_tag)
 
       DEB2
       {
-         cout << ", s.f.f: ";
+         COUT << ", s.f.f: ";
          c.print (c().fromUnit (unit));
          for (typename F::const_iterator i = f.begin(); i != f.end(); ++i)
          {
-            cout << " * ";
-            c().printShort (cout, i->first, FIT_FOR_MUL);
-            cout << '^' << i->second;
+            COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 4
+               L"\x22c5";  // DOT OPERATOR
+# elif HINTLIB_CHARACTER_SET >= 2
+               L"\x00b7";  // MIDDLE DOT
+# else
+               L" * ";
+# endif
+#else
+# if HINTLIB_CHARACTER_SET >= 4 && defined(HINTLIB_UTF8_SELECT)
+               (utf8 ? "\xe2\x8b\x85" : "\xb7");  // DOT OPERATOR / MIDDLE DOT
+# elif HINTLIB_CHARACTER_SET >= 2 && defined(HINTLIB_UTF8_SELECT)
+               (utf8 ? "\xc2\xb7" : "\xb7");      // MIDDLE DOT
+# else
+               " * ";
+# endif
+#endif
+            c().printShort (COUT, i->first, FIT_FOR_MUL);
+            if (i->second > 1)
+            {
+               HIntLib::Private::PrinterSelector<CHAR>::printer ss (COUT);
+               ss.power (i->second);
+            }
          } 
       }
 
@@ -814,10 +853,10 @@ void doTestPoly (Cache<R>& c, const typename R::type& a, field_tag)
          c().mulBy (prod, c().power (i->first, i->second));
       } 
 
-      if (prod != a)
+      if (! (prod == a))
       {
-         cout << "\nDifference: ";
-         c().print (cout, c().sub (prod, a));
+         COUT << "\nDifference: ";
+         c().print (COUT, c().sub (prod, a));
          
          error ("Product of factors wrong");
       }
@@ -843,7 +882,7 @@ void doTestPoly (Cache<R>& c, const typename R::type& a, gf_tag)
          if (primitivesCounter != expected)
          {
             error ("Number of primitive polynomials is wrong");
-            cout << "\nPrimitives found: " << primitivesCounter
+            COUT << "\nPrimitives found: " << primitivesCounter
                  << "  Expected: " << expected << endl;
          }
       }
@@ -860,7 +899,7 @@ void doTestPoly (Cache<R>& c, const typename R::type& a, gf_tag)
 
    if (c.isPrimitive)
    {
-      DEB2 cout << ", primitive";
+      DEB2 COUT << ", primitive";
 
       if (! c().isPrime(a))  error ("primitive without prime");
 
@@ -886,14 +925,14 @@ void doTest (Cache<R>& c, const typename R::type& a, polynomial_tag)
    // degree 
 
    c.degree = a.degree();
-   DEB2  cout << ", degree = " << c.degree;
+   DEB2  COUT << ", degree = " << c.degree;
    fl();
 
    // isConstant
 
    bool constant = a.isConstant();
 
-   DEB2 if (constant)  cout << ", constant";
+   DEB2 if (constant)  COUT << ", constant";
 
    if (constant != (c.degree <= 0))  error ("isConstant() is wrong");
 
@@ -906,19 +945,19 @@ void doTest (Cache<R>& c, const typename R::type& a, polynomial_tag)
       // isMonic()
 
       bool monic = c().isMonic (a);
-      DEB2  if (monic)  cout << ", monic";
+      DEB2  if (monic)  COUT << ", monic";
 
       // lc()
 
       CT lc = a.lc();
       DEB2
       {
-         cout << ", lc = ";
-         alg.printShort (cout, lc);
+         COUT << ", lc = ";
+         alg.printShort (COUT, lc);
       }
 
       if (monic != alg.is1(lc))  error ("monic() is wrong");
-      if (lc != a[a.degree()])  error ("lc() != leading coefficient");
+      if (! (lc == a[a.degree()]))  error ("lc() != leading coefficient");
       if (alg.is0(lc))  error ("lc() is zero");
 
       // ct()
@@ -926,11 +965,11 @@ void doTest (Cache<R>& c, const typename R::type& a, polynomial_tag)
       CT ct = a.ct();
       DEB2
       {
-         cout << ", ct = ";
-         alg.printShort (cout, ct);
+         COUT << ", ct = ";
+         alg.printShort (COUT, ct);
       }
 
-      if (ct != a[0])  error ("ct() != constant term");
+      if (! (ct == a[0]))  error ("ct() != constant term");
 
       fl();
    }
@@ -940,17 +979,18 @@ void doTest (Cache<R>& c, const typename R::type& a, polynomial_tag)
    Array<CT> coeff (c.degree + 1);
    a.toCoeff (&coeff[0]);
 
-   DEB2 cout << ", coeff = /";
+   DEB2 COUT << ", coeff = [";
    for (int i = 0; i <= c.degree; ++i)
    {
       DEB2
       {
-         alg.printShort (cout, a[i]);
-         cout << '/';
+         alg.printShort (COUT, a[i]);
+         if (i < c.degree)  COUT << ';';
       }
       
-      if (coeff[i] != a[i])  error ("toCoeff() or operator[]() broken");
+      if (! (coeff[i] == a[i]))  error ("toCoeff() or operator[]() broken");
    }
+   DEB2 COUT << ']';
 
    fl();
 
@@ -958,7 +998,7 @@ void doTest (Cache<R>& c, const typename R::type& a, polynomial_tag)
 
    T b (&coeff[0], &coeff[c.degree + 1]);
 
-   if (a != b)  error ("Constructor with iterators broken");
+   if (! (a == b))  error ("Constructor with iterators broken");
 
    // mulByX(), divByX()
 
@@ -973,8 +1013,8 @@ void doTest (Cache<R>& c, const typename R::type& a, polynomial_tag)
       div1.divByX (i);
       mul1.mulByX (i);
 
-      if (div != div1)  error ("divByX() broken");
-      if (mul != mul1)  error ("mulByX() broken");
+      if (! (div == div1))  error ("divByX() broken");
+      if (! (mul == mul1))  error ("mulByX() broken");
 
       div.divByX();
       mul.mulByX();
@@ -986,14 +1026,14 @@ void doTest (Cache<R>& c, const typename R::type& a, polynomial_tag)
 
    DEB2
    {
-      cout << ", derivative = ";
+      COUT << ", deriv. = ";
       c.print (c.derivative);
    }
    
    T deriv1 = c().derivative (c.neg);
    T deriv2 = c().neg (c.derivative);
 
-   if (deriv1 != deriv2)
+   if (! (deriv1 == deriv2))
    {
       error ("derivative() inconsistent with negation");
    }
@@ -1004,21 +1044,39 @@ void doTest (Cache<R>& c, const typename R::type& a, polynomial_tag)
 
    if (sqr (c.index) <= SIZE)
    {
+      DEB3  COUT << ", evaluation: {";
+
       unsigned ub = unsigned (HINTLIB_MN sqrt(double(SIZE)));
       if (c.baseSize && ub > c.baseSize)  ub = c.baseSize;
-   
+
       for (unsigned i = 0; i < ub; ++i)
       {
          CT x = alg.element (i);
          CT eval = c().evaluate (a, x);
 
-         CT res = CT();
-         for (int i = c.degree; i >= 0; --i)
+         DEB3
          {
-            res = alg.add (alg.mul (res, x), a[i]);
+            COUT << "a(";
+            alg.printShort (COUT, x);
+            COUT << ")=";
+            alg.printShort (COUT, eval);
+
+            if (i + 1 < ub)  COUT << ", ";
+         }
+
+         CT res = CT();
+         for (int j = c.degree; j >= 0; --j)
+         {
+            res = alg.add (alg.mul (res, x), a[j]);
          }
       
-         if (eval != res)  error ("evaluate() broken");
+         if (! (eval == res))  error ("evaluate() broken");
+      }
+
+      DEB3 
+      {
+         if (c.baseSize == 0 || c.baseSize > ub)  COUT << ",...";
+         COUT << '}';
       }
    }
 
@@ -1051,13 +1109,13 @@ void doTest (Cache<R>& c, const typename R::type& a,
 
    const T derivB = c().derivative (b);
 
-   if (c().derivative (c.add) != c().add (c.derivative, derivB))
+   if (! (c().derivative (c.add) == c().add (c.derivative, derivB)))
    {
       error ("derivative() inconsistent with addition");
    }
 
-   if (   c().derivative (c.mul)
-       != c().add (c().mul (a, derivB), c().mul (b, c.derivative)))
+   if (! (   c().derivative (c.mul)
+          == c().add (c().mul (a, derivB), c().mul (b, c.derivative))))
    {
       error ("derivative() inconsistent with multiplication");
    }
@@ -1079,9 +1137,9 @@ void doTest (Cache<R>& c, ringfield_tag)
 
    DEB1
    {
-      cout << "  One:  ";
-      c().print (cout, c.one);
-      cout << endl;
+      COUT << "  One:  ";
+      c().print (COUT, c.one);
+      COUT << endl;
    }
 
    if (c().index(c.one) != 1)  error ("index(one) != 1");
@@ -1105,12 +1163,12 @@ void doTest (Cache<R>& c, const typename R::type& a, ringfield_tag)
    // is1(), one()
 
    c.is1 = c().is1(a);
-   DEB2 if (c.is1)  cout << ", one";
+   DEB2 if (c.is1)  COUT << ", one";
    if (c.is1 != (a == c.one ))  error ("is1() fails");
       
    // neutral
 
-   if (c().mul (a, c.one) != a)  error ("a*1 != a");
+   if (! (c().mul (a, c.one) == a))  error ("a*1 != a");
 
    // square
 
@@ -1120,15 +1178,23 @@ void doTest (Cache<R>& c, const typename R::type& a, ringfield_tag)
          c.sqr = c().sqr(a);
          DEB2
          {
-            cout << ", a\262 = ";
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 2
+            COUT << L", a\x00b2 = ";  // SUPERSCRIPT TWO
+# else
+            COUT << L", a^2 = ";
+# endif
+#else
+            COUT << Latin1Ascii(", a\xc2\xb2 = ", ", a\xb2 = ", ", a^2 = ");
+#endif
             c.print (c.sqr);
          }
 
-         if (c.sqr != c().mul (a,a))  error ("sqr(a) invalid");
+         if (! (c.sqr == c().mul (a,a)))  error ("sqr(a) invalid");
 
          T s = a;
          c().square (s);
-         if (s != c.sqr)  error ("square() invalid");
+         if (! (s == c.sqr))  error ("square() invalid");
 
          fl();
       }
@@ -1139,7 +1205,27 @@ void doTest (Cache<R>& c, const typename R::type& a, ringfield_tag)
 
    if (sqr(c.index) < SIZE)
    {
-      DEB3 cout << ", power = ";
+      DEB3
+      {
+         COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 4
+            // LEFT-POINTING ANGLE BRACKET
+            // SUPERSCRIPT LATIN SMALL LETTER N
+            // RIGHT-POINTING ANGLE BRACKET
+            L", \x2329" L"a\x207f\x232a = \x2329";
+# elif HINTLIB_CHARACTER_SET >= 3
+            // SUPERSCRIPT LATIN SMALL LETTER N
+            L", <a\x207f> = <";
+# else
+            L", <na> = <";
+# endif
+#else
+            UnicodeAscii (", \xe2\x8c\xa9", ", <")
+         << Wgl4Ascii ("a\xe2\x81\xbf", "a^n")
+         << UnicodeAscii ("\xe2\x8c\xaa = \xe2\x8c\xa9", "> = <");
+#endif
+      }
 
       unsigned SS = unsigned (HINTLIB_MN sqrt(double (SIZE)));
 
@@ -1155,17 +1241,17 @@ void doTest (Cache<R>& c, const typename R::type& a, ringfield_tag)
             DEB3
             {
                c.print (p);
-               DEB4  { cout << '='; c.print (x); }
-               cout << '/';
+               DEB4  { COUT << '='; c.print (x); }
+               COUT << ',';
             }
-            if (x != p)
+            if (! (x == p))
             {
                error ("a*...*a != power (a,k)");
-               cout << "a*...*a = ";
-               c().print (cout, x);
-               cout << ",  power (a," << l << ") = ";
-               c().print (cout, p);
-               cout << endl;
+               COUT << "a*...*a = ";
+               c().print (COUT, x);
+               COUT << ",  power (a," << l << ") = ";
+               c().print (COUT, p);
+               COUT << endl;
             }
             c().mulBy (x, a);
          }
@@ -1173,6 +1259,21 @@ void doTest (Cache<R>& c, const typename R::type& a, ringfield_tag)
          {
             break;
          }
+      }
+
+      DEB3
+      {
+         COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 4
+            // RIGHT-POINTING ANGLE BRACKET
+            L"...\x232a";
+# else
+            L"...>";
+# endif
+#else
+            UnicodeAscii ("...\xe2\x8c\xaa", "...>");
+#endif
       }
    }
 
@@ -1198,7 +1299,24 @@ void doTest
 
    DEB2
    {
-      cout << ", a*b = ";
+      COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 4
+         L", a\x22C5" L"b = ";  // DOT OPERATOR
+# elif HINTLIB_CHARACTER_SET >= 2
+         L", a\x00b7" L"b = ";  // MIDDLE DOT
+# else
+         L", a*b = ";
+# endif
+#else
+# if HINTLIB_CHARACTER_SET >= 4  && defined(HINTLIB_UTF8_SELECT)
+         (utf8 ? ", a\xe2\x8B\x85" "b = " : ", a\xb7" "b = "); // both
+# elif HINTLIB_CHARACTER_SET >= 2  && defined(HINTLIB_UTF8_SELECT)
+         (utf8 ? ", a\xc2\xb7" "b = " : ", a\xb7" "b = ");  // MIDDLE DOT
+# else
+         ", a*b = ";
+# endif
+#endif
       c.print (c.mul);
    }
 
@@ -1206,11 +1324,11 @@ void doTest
 
    // Commutativity of multiplication
 
-   if (c.mul != c().mul (b,a))  error ("a*b != b*a");
+   if (! (c.mul == c().mul (b,a)))  error ("a*b != b*a");
 
    T x = a;
    c().mulBy (x, b);
-   if (x != c.mul) error ("mulBy() fails");
+   if (! (x == c.mul))  error ("mulBy() fails");
 
    fl();
 
@@ -1229,19 +1347,21 @@ void doTest
 
    // Associativity of multiplication
 
-   if (cc().mul(cc().mul(a, b), c) != cc().mul(a, cc().mul(b, c)))
+   if (! (cc().mul(cc().mul(a, b), c) == cc().mul(a, cc().mul(b, c))))
    {
       error("(a*b) * c != a * (b*c)");
    }
 
    // Distributivity
 
-   if (cc().mul (a, cc().add(b, c)) != cc().add (cc().mul(a, b), cc().mul(a,c)))
+   if (! (   cc().mul (a, cc().add(b, c))
+          == cc().add (cc().mul(a, b), cc().mul(a,c))))
    {
       error("a*(b+c) != (a*b)+(a*c)");
    }
 
-   if (cc().mul (cc().add(a, b), c) != cc().add (cc().mul(a,c), cc().mul(b,c)))
+   if (! (   cc().mul (cc().add(a, b), c)
+          == cc().add (cc().mul(a,c), cc().mul(b,c))))
    {
       error("(a+b)*c != (a*c)+(b*c)");
    }
@@ -1268,9 +1388,9 @@ void doTest (Cache<R>& c, ringdomain_tag)
    {
       UT x = c().toUnit(c.one);
       UT def = x;
-      if (def != x)  error ("unit_type broken");
+      if (! (def == x))  error ("unit_type broken");
       def = x;
-      if (def != x)  error ("unit_type broken");
+      if (! (def == x))  error ("unit_type broken");
    }
 
    // isUnit(one), isUnit(zero)
@@ -1288,9 +1408,9 @@ void doTest (Cache<R>& c, ringdomain_tag)
 
    DEB1
    {
-      cout << "  # units: ";
+      COUT << "  # units: ";
       printNumberOrInf (c.numUnits);
-      cout << endl;
+      COUT << endl;
    }
 
    checkInfiniteInFinite (c.size, c.numUnits, "units");
@@ -1308,7 +1428,7 @@ void doTest (Cache<R>& c, const typename R::type& a, ringdomain_tag)
 
    c.isUnit = c().isUnit (a);
 
-   DEB2 if (c.isUnit) cout << ", unit";
+   DEB2 if (c.isUnit) COUT << ", unit";
    fl();
 
    if (c.is0 + c.isUnit > 1)  error ("Classifiaction ambiguous");
@@ -1319,7 +1439,7 @@ void doTest (Cache<R>& c, const typename R::type& a, ringdomain_tag)
 
       UT unit = c().toUnit (a);
 
-      if (c().fromUnit(unit) != a)
+      if (! (c().fromUnit(unit) == a))
       {
          error ("toUnit() and fromUnit() do not match");
       }
@@ -1329,7 +1449,16 @@ void doTest (Cache<R>& c, const typename R::type& a, ringdomain_tag)
 
       DEB2
       {
-         cout << ", a^-1 = ";
+         COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 3
+            L", 1\x2215" L"a = ";  // DIVISION SLASH
+# else
+            L", 1/a = ";
+# endif
+#else
+            Wgl4Ascii(", 1\xe2\x88\x95" "a = ", ", 1/a = ");
+#endif
          c.print (recipElem);
       }
 
@@ -1398,19 +1527,19 @@ void doTest (Cache<R>& c, const typename R::type& a,
    {
       UT aUnit = c().toUnit (a);
 
-      if (c().mulUnit (b, aUnit) != c.mul)
+      if (! (c().mulUnit (b, aUnit) == c.mul))
       {
          error("mulUnit(type,unit_type) broken");
       }
 
       T x (b);
       c().mulByUnit (x, aUnit);
-      if (x != c.mul)  error ("mulByUnit(type&, unit_type) broken");
+      if (! (x == c.mul))  error ("mulByUnit(type&, unit_type) broken");
 
       if (c.isUnitB)
       {
          UT bUnit = c().toUnit (b);
-         if (c().fromUnit(c().mulUnit (aUnit, bUnit)) != c.mul)
+         if (! (c().fromUnit(c().mulUnit (aUnit, bUnit)) == c.mul))
          {
             error ("mulUnit(unit_type, unit_type) broken");
          }
@@ -1418,7 +1547,7 @@ void doTest (Cache<R>& c, const typename R::type& a,
          UT xUnit (aUnit);
          c().mulByUnit (xUnit, bUnit);
 
-         if (c().fromUnit(xUnit) != c.mul)
+         if (! (c().fromUnit(xUnit) == c.mul))
          {
             error ("mulByUnit(unit_type&, unit_type) broken");
          }
@@ -1445,9 +1574,9 @@ void doTest (Cache<R>& c, ring_tag)
 
    DEB1
    {
-      cout << "  # nilpotents: ";
+      COUT << "  # nilpotents: ";
       printNumberOrInf (c.numNilpotents);
-      cout << endl;
+      COUT << endl;
    }
 
    checkInfiniteInFinite (c.size, c.numNilpotents, "nilpotents");
@@ -1469,7 +1598,7 @@ void doTest (Cache<R>& c, const typename R::type& a, ring_tag)
 
    c.isNilpotent = c().isNilpotent (a);
 
-   DEB2 if (c.isNilpotent) cout << ", nilpotent";
+   DEB2 if (c.isNilpotent) COUT << ", nilpotent";
 
    if (c.isUnit && c.isNilpotent)  error ("unit cannot be nilpotent");
    if (c.is0 && ! c.isNilpotent)  error ("0 must be nilpotent");
@@ -1529,20 +1658,20 @@ void counterTest (CacheBase& c, bool all, ring_tag)
 template<class R>
 void doTest (Cache<R>&, noprimedetection_tag)
 {
-   DEB1  cout << "  Prime detection: no" << endl;
+   DEB1  COUT << "  Prime detection: no" << endl;
 }
 
 template<class R>
 void doTest (Cache<R>& c, primedetection_tag)
 {
-   DEB1  cout << "  Prime detection: yes" << endl;
+   DEB1  COUT << "  Prime detection: yes" << endl;
 
    // Prime generator
 
    typedef typename R::type T;
    typename R::PrimeGenerator pg (c());
 
-   DEB3 cout << "Primes: ";
+   DEB3 COUT << "Primes: ";
    bool first = true;
 
    for (unsigned i = 0; i < SIZE; ++i)
@@ -1551,7 +1680,7 @@ void doTest (Cache<R>& c, primedetection_tag)
 
       DEB3
       {
-         if (! first)  cout << ", ";
+         if (! first)  COUT << ", ";
          c.print (p);
          fl();
          first = false;
@@ -1568,14 +1697,14 @@ void doTest (Cache<R>& c, primedetection_tag)
       }
    }
 
-   DEB3 cout << endl;
+   DEB3 COUT << ",..." << endl;
 }
 
 template<class R>
 void doTest (Cache<R>& c, factor_tag)
 {
    doTest (c, primedetection_tag());
-   DEB1  cout << "  Factorization possible" << endl;
+   DEB1  COUT << "  Factorization possible" << endl;
 }
 
 // one element
@@ -1592,8 +1721,8 @@ void doTest (Cache<R>& c, const typename R::type& a, primedetection_tag)
 
    DEB2
    {
-      if (c.isPrime) cout << ", prime";
-      if (  isComp)  cout << ", composit";
+      if (c.isPrime) COUT << ", prime";
+      if (  isComp)  COUT << ", composit";
    }
 
    if (c.is0 + c.isUnit + c.isPrime + isComp != 1)
@@ -1622,13 +1751,35 @@ void doTest (Cache<R>& c, const typename R::type& a, factor_tag)
 
       DEB2
       {
-         cout << ", fact.: ";
+         COUT << ", fact.: ";
          c.print (c().fromUnit (unit));
          for (typename F::const_iterator i = f.begin(); i != f.end(); ++i)
          {
-            cout << " * ";
-            c().printShort (cout, i->first, FIT_FOR_MUL);
-            cout << '^' << i->second;
+            COUT << 
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 4
+               L"\x22c5";  // DOT OPERATOR
+# elif HINTLIB_CHARACTER_SET >= 2
+               L"\x00b7";  // MIDDLE DOT
+# else
+               L" * ";
+# endif
+#else
+# if HINTLIB_CHARACTER_SET >= 4 && defined(HINTLIB_UTF8_SELECT)
+               (utf8 ? "\xe2\x8b\x85" : "\xb7");  // DOT OPERATOR / MIDDLE DOT
+# elif HINTLIB_CHARACTER_SET >= 2 && defined(HINTLIB_UTF8_SELECT)
+               (utf8 ? "\xc2\xb7" : "\xb7");      // MIDDLE DOT
+# else
+               " * ";
+# endif
+#endif
+            c().printShort (COUT, i->first, FIT_FOR_MUL);
+            
+            if (i->second > 1)
+            {
+               HIntLib::Private::PrinterSelector<CHAR>::printer ss (COUT);
+               ss.power (i->second);
+            }
          } 
       }
 
@@ -1651,10 +1802,10 @@ void doTest (Cache<R>& c, const typename R::type& a, factor_tag)
          c().mulBy (prod, c().power (i->first, i->second));
       } 
 
-      if (prod != a)
+      if (! (prod == a))
       {
-         cout << "\nDifference: ";
-         c().print (cout, c().sub (prod, a));
+         COUT << "\nDifference: ";
+         c().print (COUT, c().sub (prod, a));
          error ("Product of factors wrong");
       }
    }
@@ -1750,7 +1901,19 @@ void doTest (Cache<R>& c, const typename R::type& a,
 
    bool isAssociate = c().isAssociate (a, b);
 
-   DEB2 if (isAssociate)  cout << ", a ass b";
+   DEB2 if (isAssociate)
+   {
+      COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 4
+         L", a\x223C" "b";  // TILDE OPERATOR
+# else
+         L", a~b";
+# endif
+#else
+         UnicodeAscii (", a\xe2\x88\xbc" "b", ", a~b");
+#endif
+   }
 
    if (isAssociate != c().isAssociate (b,a))
    {
@@ -1766,14 +1929,26 @@ void doTest (Cache<R>& c, const typename R::type& a,
       bool isDivisor = c().isDivisor (a,b);
       bool isUnitB   = c().isUnit (b);
 
-      DEB2 if (isDivisor)  cout << ", b|a";
+      DEB2 if (isDivisor)
+      {
+         COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 4
+            L", a\x2223" L"b";  // DIVIDES
+# else
+            L", a|b";
+# endif
+#else
+            UnicodeAscii (", a\xe2\x88\xa3" "b", ", a|b");
+#endif
+      }
 
       if (! isAssociate && isDivisor && ! c.is0 && c().isDivisor (b,a))
       {
          error ("isDivisor() must be anti-symmetric");
       }
 
-      T div;
+      T div = T();
 
       if (c().isDivisor (a,b,div) != isDivisor)
       {
@@ -1784,17 +1959,26 @@ void doTest (Cache<R>& c, const typename R::type& a,
       {
          DEB2
          {
-            cout << ", a/b = ";
+            COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 3
+               L", a\x2215" L"b = ";  // DIVISION SLASH
+# else
+               L", a/b = ";
+# endif
+#else
+               Wgl4Ascii (", a\xe2\x88\x95" "b = ", ", a/b = ");
+#endif
             c.print (div);
          }
 
-         if (c().mul (b,div) != a)  error ("exact division broken");
+         if (! (c().mul (b,div) == a))  error ("exact division broken");
 
-         if (c().div (a,b) != div)  error ("div() broken");
+         if (! (c().div (a,b) == div))  error ("div() broken");
 
          T div2 (a);
          c().divBy (div2,b);
-         if (div2 != div)  error ("divBy() broken");
+         if (! (div2 == div))  error ("divBy() broken");
 
          if (isAssociate && ! c().isUnit (div))
          {
@@ -1871,7 +2055,7 @@ void doTest (Cache<R>& c, ufd_tag)
 
    // enumerate units
 
-   DEB3 cout << "Units: ";
+   DEB3 COUT << "Units: ";
    bool first = true;
 
    unsigned ub = c.numUnits ? std::min (SIZE, c.numUnits) : SIZE;
@@ -1882,7 +2066,7 @@ void doTest (Cache<R>& c, ufd_tag)
 
       DEB3
       {
-         if (! first)  cout << ", ";
+         if (! first)  COUT << ", ";
          c.print (unitElem);
          first = false;
       }
@@ -1899,14 +2083,21 @@ void doTest (Cache<R>& c, ufd_tag)
 
       if (c.size)
       {
-         if (c().element(i + 1) != unitElem)
+         if (! (c().element(i + 1) == unitElem))
          {
             error ("element() and unitElement() do not match");
          }
       }
    }
 
-   DEB3 cout << endl;
+   DEB3
+   {
+      if (c.numUnits == 0 || ub < c.numUnits)
+      {
+         COUT << ",...";
+      }
+      COUT << endl;
+   }
 }
 
 template<class R>
@@ -1919,7 +2110,7 @@ void doTest (Cache<R>& c, const typename R::type& a, ufd_tag)
 
    c.isCanonical = c().isCanonical (a);
 
-   DEB2  if (c.isCanonical) cout << ", canonical";
+   DEB2  if (c.isCanonical) COUT << ", canonical";
 
    if (c.is0 && ! c.isCanonical)  error ("0 should be canonical");
 
@@ -1930,7 +2121,7 @@ void doTest (Cache<R>& c, const typename R::type& a, ufd_tag)
       UT unit = c().makeCanonical (copy);
       T unitElem = c().fromUnit (unit);
 
-      if (c().mulUnit (copy, unit) != a || c().mul (copy, unitElem) != a)
+      if (! (c().mulUnit (copy, unit) == a && c().mul (copy, unitElem) == a))
       {
          error ("makeCanonical() does not factor");
       }
@@ -1948,7 +2139,7 @@ void doTest (Cache<R>& c, const typename R::type& a, ufd_tag)
 
       if (c.isUnit)
       {
-         if (a != unitElem || ! c().is1 (copy))
+         if (! (a == unitElem && c().is1 (copy)))
          {
             error ("makeCanonical() of unit is broken");
          }
@@ -1958,7 +2149,7 @@ void doTest (Cache<R>& c, const typename R::type& a, ufd_tag)
 
       if (c.isCanonical)
       {
-         if (! c().is1(unitElem) || copy != a)
+         if (! (c().is1(unitElem) && copy == a))
          {
             error ("makeCanonical() of canonical form invalid");
          }
@@ -1981,7 +2172,7 @@ void doTest (Cache<R>& c, const typename R::type& a, ufd_tag)
       UT unit = c().toUnit (a);
 
       unsigned index = c().unitIndex (unit);
-      DEB2 cout << ", unit index = " << index;
+      DEB2 COUT << ", unit index = " << index;
       checkIndex (c.numUnits, index, "unitIndex");
    }
 }
@@ -2031,7 +2222,17 @@ void doTest (Cache<R>& c, const typename R::type& a, euclidean_tag)
 
    DEB2
    {
-      cout << ", norm = " << c.norm;
+      COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 4
+         L", \x2016" L"a\x2016 = "  // DOUBLE VERTICAL LINE
+# else
+         L", |a| = "
+# endif
+#else
+         UnicodeAscii (", \xe2\x80\x96" "a\xe2\x80\x96 = ", ", |a| = ")
+#endif
+         << c.norm;
    }
 
    if (c.is0 != (c.norm == 0))  error ("norm(a)==0 iff a==0 failed");
@@ -2045,7 +2246,7 @@ void doTest (Cache<R>& c, const typename R::type& a, euclidean_tag)
 
       DEB2
       {
-         cout << ", numRem: ";
+         COUT << ", numRem: ";
          printNumberOrInf (num);
       }
 
@@ -2095,27 +2296,27 @@ void doTest (Cache<R>& c, const typename R::type& a,
 
       DEB2
       {
-         cout << ", quotient = ";
+         COUT << ", quot. = ";
          c.print (q);
-         cout << ", remainder = ";
+         COUT << ", rem. = ";
          c.print (re);
       }
 
-      if (c().add (c().mul (b, q), re) != a)  error ("div() fails");
+      if (! (c().add (c().mul (b, q), re) == a))  error ("div() fails");
 
       // rem() and quot()
 
-      if (c().rem(a,b) != re)  error ("rem() inconsistent with div()");
+      if (! (c().rem(a,b) == re))  error ("rem() inconsistent with div()");
 
       T x = a;
       c().reduce (x, b);
-      if (x != re)  error ("reduce() inconsistent with div()");
+      if (! (x == re))  error ("reduce() inconsistent with div()");
 
-      if (c().quot(a,b) != q)  error ("quot() inconsistent with div()");
+      if (! (c().quot(a,b) == q))  error ("quot() inconsistent with div()");
 
       x = a;
       c().quotient (x, b);
-      if (x != q)  error ("quotient() inconsistent with div()");
+      if (! (x == q))  error ("quotient() inconsistent with div()");
 
       if (c().norm (re) >= c().norm (b))  error ("norm(rem()) >= norm(b)");
 
@@ -2130,11 +2331,11 @@ void doTest (Cache<R>& c, const typename R::type& a,
 
       DEB2
       {
-         cout << ", gcd(a,b) = ";
+         COUT << ", gcd(a,b) = ";
          c.print (g);
-         cout << ", ma = ";
+         COUT << ", ma = ";
          c.print (ma);
-         cout << ", mb = ";
+         COUT << ", mb = ";
          c.print (mb);
       }
 
@@ -2150,15 +2351,15 @@ void doTest (Cache<R>& c, const typename R::type& a,
          }
       }
 
-      if (c().add (c().mul (a, ma), c().mul (b, mb)) != g)
+      if (! (c().add (c().mul (a, ma), c().mul (b, mb)) == g))
       {
          error ("multiplicators wrong");
       }
 
-      if (genGcd (c(), a, b) != g)  error ("genGcd()-3 broken");
+      if (! (genGcd (c(), a, b) == g))  error ("genGcd()-3 broken");
 
       T ma2;
-      if (genGcd (c(), a, b, ma2) != g || ma2 != ma)
+      if (! (genGcd (c(), a, b, ma2) == g && ma2 == ma))
       {
          error ("genGcd()-4 broken");
       }
@@ -2215,7 +2416,16 @@ void doTest (Cache<R>& c, const typename R::type& a, field_tag)
       c.recip = c().recip(a);
       DEB2
       {
-         cout << ", a^-1 = ";
+         COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 3
+            L", 1\x2215" "a = ";  // DIVISION SLASH
+# else
+            L", 1/a = ";
+# endif
+#else
+            Wgl4Ascii (", 1\xe2\x88\x95" "a = ", ", 1/a = ");
+#endif
          c.print (c.recip);
       }
 
@@ -2225,7 +2435,7 @@ void doTest (Cache<R>& c, const typename R::type& a, field_tag)
          T rr = a;
          c().reciprocal (rr);
 
-         if (rr != c.recip)  error ("reciprocal() broken");
+         if (! (rr == c.recip))  error ("reciprocal() broken");
       }
 
       fl();
@@ -2247,15 +2457,24 @@ void doTest
       T r = c().recip (b);
       DEB2
       {
-         cout << ", a/b = ";
+         COUT <<
+#ifdef USE_WCHAR
+# if HINTLIB_CHARACTER_SET >= 3
+            L", a\x2215" "b = ";  // DIVISION SLASH
+# else
+            L", a/b = ";
+# endif
+#else
+            Wgl4Ascii (", a\xe2\x88\x95" "b = ", ", a/b = ");
+#endif
          c.print (q);
       }
 
-      if (c().mul (a, r) != q)  error ("div() fails");
+      if (! (c().mul (a, r) == q))  error ("div() fails");
 
       T x = a;
       c().divBy (x, b);
-      if (x != q) error ("divBy() fails");
+      if (! (x == q)) error ("divBy() fails");
 
       fl();
    }
@@ -2277,7 +2496,7 @@ void doTest (Cache<R>& c, gf_tag)
 
    unsigned extensionDegree = c().extensionDegree();
 
-   DEB1  cout << "  Degree: " << extensionDegree << endl;
+   DEB1  COUT << "  Degree: " << extensionDegree << endl;
 
    if (c.size == 0)
    {
@@ -2305,7 +2524,7 @@ void doTest (Cache<R>& c, const typename R::type& a, gf_tag)
 
    if (c.isPrimitiveElement)
    {
-      DEB2  cout << ", primitive element";
+      DEB2  COUT << ", primitive element";
       ++primitivesCounter;
    }
 
@@ -2369,7 +2588,7 @@ void doTest (Cache<V>& c, vectorspace_tag)
 
    DEB1
    {
-      cout << "  Dim:  " << c.dimension << "\n"
+      COUT << "  Dim:  " << c.dimension << "\n"
               "  Alg:  " << alg << endl;
    }
 
@@ -2422,46 +2641,47 @@ void doTest (Cache<V>& c, const typename V::type& a, vectorspace_tag)
 
    DEB2
    {
-      cout << ", coord = ";
+      COUT << ", coord = [";
       for (unsigned i = 0; i < c.dimension; ++i)
       {
-         if (i > 0)  cout << ',';
-         alg.printShort (cout, coords[i]);
+         if (i > 0)  COUT << ';';
+         alg.printShort (COUT, coords[i]);
       }
+      COUT << ']';
    }
 
    for (unsigned i = 0; i < c.dimension; ++i)
    {
       checkIndex (c.baseSize, alg.index(coords[i]), "coords");
-      if (coords[i] != c().coord(a,i))
+      if (! (coords[i] == c().coord(a,i)))
       {
          error("coord() and toCoords() mismatch");
       }
       typename V::scalar_reference ref = c().coord(aCopy, i);
-      if (coords[i] != ref)  error("coord() and toCoords() mismatch");
+      if (! (coords[i] == ref))  error("coord() and toCoords() mismatch");
    }
 
    // fromCoords()
 
    T b;
    c().fromCoord (b, &coords[0]);
-   if (a != b)  error ("fromCoord() broken");
+   if (! (a == b))  error ("fromCoord() broken");
 
    // coords()
 
    b = T();
    for (unsigned i = 0; i < c.dimension; ++i)  c().coord(b, i) = coords[i];
-   if (a != b)  error ("Assignment to coord() broken");
+   if (! (a == b))  error ("Assignment to coord() broken");
 
    b = T();
    for (int i = c.dimension - 1; i >= 0; --i)  c().coord(b, i) = coords[i];
-   if (a != b)  error ("Assignment to coord() broken");
+   if (! (a == b))  error ("Assignment to coord() broken");
 
    // Multiplication with 1
 
    b = c().mul (a, alg.one());
 
-   if (b != a)  error ("1v != v");
+   if (! (b == a))  error ("1v != v");
 
    // Multiplication with 0
 
@@ -2474,7 +2694,7 @@ void doTest (Cache<V>& c, const typename V::type& a, vectorspace_tag)
    b = c.neg;
    for (unsigned i = 0; i < c.dimension; ++i)
    {
-      if (c().coord(b,i) != alg.neg (c().coord(a,i)))
+      if (! (c().coord(b,i) == alg.neg (c().coord(a,i))))
       {
          error ("neg() for vector does not match neg() for coordinates");
       }
@@ -2495,7 +2715,7 @@ void doTest (Cache<V>& c, const typename V::type& a, vectorspace_tag)
 
          for (unsigned i = 0; i < c.dimension; ++i)
          {
-            if (c().coord(b,i) != alg.mul (c().coord(a,i), scal))
+            if (! (c().coord(b,i) == alg.mul (c().coord(a,i), scal)))
             {
                error ("mul() for vector does not match mul() for coordinates");
             }
@@ -2518,14 +2738,14 @@ void doTest (Cache<V>& c, const typename V::type& a, vectorspace_tag)
          {
             ST scal2 = alg.element (l2);
 
-            if (   c().mul (a, alg.mul (scal1, scal2))
-                != c().mul (c().mul (a, scal1), scal2))
+            if (! (   c().mul (a, alg.mul (scal1, scal2))
+                   == c().mul (c().mul (a, scal1), scal2)))
             {
                error ("(ab)v != a(bv)");
             }
 
-            if (   c().mul (a, alg.add (scal1, scal2))
-                != c().add (c().mul(a, scal1), c().mul(a, scal2)))
+            if (! (   c().mul (a, alg.add (scal1, scal2))
+                   == c().add (c().mul(a, scal1), c().mul(a, scal2))))
             {
                error ("(a+b)v != av + bv");
             }
@@ -2552,7 +2772,7 @@ void doTest
 
    for (unsigned i = 0; i < c.dimension; ++i)
    {
-      if (c().coord(c.add, i) != alg.add (c().coord(a,i), c().coord(b,i)))
+      if (! (c().coord(c.add, i) == alg.add (c().coord(a,i), c().coord(b,i))))
       {
          error ("add() for vector does not match add() for coordinates");
       }
@@ -2569,8 +2789,8 @@ void doTest
       {
          ST scal = alg.element (l);
 
-         if (   c().mul (c.add, scal)
-             != c().add (c().mul (a, scal), c().mul (b, scal)))
+         if (! (   c().mul (c.add, scal)
+                == c().add (c().mul (a, scal), c().mul (b, scal))))
          {
             error ("a (v1+v2) != (a v1) + (b + v2)");
          }
@@ -2583,22 +2803,41 @@ void doTest
 
 /*************  Names of algebraic structures  *******************************/
 
-inline const char* typeName (group_tag)       { return "group"; }
-inline const char* typeName (ring_tag)        { return "ring"; }
-inline const char* typeName (domain_tag)      { return "integral domain"; }
-inline const char* typeName (ufd_tag)         { return "UFD"; }
-inline const char* typeName (euclidean_tag)   { return "Euclidean domain"; }
-inline const char* typeName (integer_tag)     { return "Euclidean domain of integers"; }
-inline const char* typeName (field_tag)       { return "field"; }
-inline const char* typeName (numberfield_tag) { return "number field"; }
-inline const char* typeName (rational_tag)    { return "field of rational numbers"; }
-inline const char* typeName (real_tag)        { return "field of real numbers"; }
-inline const char* typeName (complex_tag)     { return "field of complex numbers"; }
-inline const char* typeName (gf_tag)          { return "finite field"; }
-inline const char* typeName (cyclic_tag)      { return "cyclic field"; }
-inline const char* typeName (funfield_tag)    { return "function field"; }
-inline const char* typeName (ratfunfield_tag) { return "rational function field"; }
-inline const char* typeName (vectorspace_tag) { return "vector space"; }
+#ifdef USE_WCHAR
+inline const CHAR* typeName (group_tag)       { return L"group"; }
+inline const CHAR* typeName (ring_tag)        { return L"ring"; }
+inline const CHAR* typeName (domain_tag)      { return L"integral domain"; }
+inline const CHAR* typeName (ufd_tag)         { return L"UFD"; }
+inline const CHAR* typeName (euclidean_tag)   { return L"Euclidean domain"; }
+inline const CHAR* typeName (integer_tag)     { return L"Euclidean domain of integers"; }
+inline const CHAR* typeName (field_tag)       { return L"field"; }
+inline const CHAR* typeName (numberfield_tag) { return L"number field"; }
+inline const CHAR* typeName (rational_tag)    { return L"field of rational numbers"; }
+inline const CHAR* typeName (real_tag)        { return L"field of real numbers"; }
+inline const CHAR* typeName (complex_tag)     { return L"field of complex numbers"; }
+inline const CHAR* typeName (gf_tag)          { return L"finite field"; }
+inline const CHAR* typeName (cyclic_tag)      { return L"cyclic field"; }
+inline const CHAR* typeName (funfield_tag)    { return L"function field"; }
+inline const CHAR* typeName (ratfunfield_tag) { return L"rational function field"; }
+inline const CHAR* typeName (vectorspace_tag) { return L"vector space"; }
+#else
+inline const CHAR* typeName (group_tag)       { return "group"; }
+inline const CHAR* typeName (ring_tag)        { return "ring"; }
+inline const CHAR* typeName (domain_tag)      { return "integral domain"; }
+inline const CHAR* typeName (ufd_tag)         { return "UFD"; }
+inline const CHAR* typeName (euclidean_tag)   { return "Euclidean domain"; }
+inline const CHAR* typeName (integer_tag)     { return "Euclidean domain of integers"; }
+inline const CHAR* typeName (field_tag)       { return "field"; }
+inline const CHAR* typeName (numberfield_tag) { return "number field"; }
+inline const CHAR* typeName (rational_tag)    { return "field of rational numbers"; }
+inline const CHAR* typeName (real_tag)        { return "field of real numbers"; }
+inline const CHAR* typeName (complex_tag)     { return "field of complex numbers"; }
+inline const CHAR* typeName (gf_tag)          { return "finite field"; }
+inline const CHAR* typeName (cyclic_tag)      { return "cyclic field"; }
+inline const CHAR* typeName (funfield_tag)    { return "function field"; }
+inline const CHAR* typeName (ratfunfield_tag) { return "rational function field"; }
+inline const CHAR* typeName (vectorspace_tag) { return "vector space"; }
+#endif
 
 
 /*************  Main test procedure  *****************************************/
@@ -2609,7 +2848,10 @@ void doTests(A r, const char* type)
    typedef typename A::algebra_category cat;
    typedef typename A::type T;
 
-   std::ostringstream ss;
+   STRINGSTREAM ss;
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCALE
+   ss.imbue (COUT.getloc());
+#endif
    ss << r;
 
    if (! performTest (typeName(cat()), ss.str(), type))  return;
@@ -2626,9 +2868,9 @@ void doTests(A r, const char* type)
 
    DEB1
    {
-      cout << "  Size: ";
+      COUT << "  Size: ";
       printNumberOrInf (c.size);
-      cout << endl;
+      COUT << endl;
    }
 
    doTest (c, typename A::size_category());
@@ -2648,18 +2890,18 @@ void doTests(A r, const char* type)
          break;
       }
 
-      DEB1 { cout << setw(W); c.print (a); }
+      DEB1 { COUT << setw(W); c.print (a); }
 
       // element() and index()
 
       c.index = r.index(a);
-      DEB2 cout << ", index = " << c.index;
+      DEB2 COUT << ", index = " << c.index;
       fl();
       if (c.index != i)  error ("index(a) != i");
 
       doTest (c, a, cat());
 
-      DEB1 cout << endl;
+      DEB1 COUT << endl;
    }
 
    counterTest (c, S == c.size, cat());
@@ -2679,18 +2921,18 @@ void doTests(A r, const char* type)
 
          DEB1
          {
-            cout << setw(W); c.print (a);
-            cout << setw(W); c.print (b);
+            COUT << setw(W); c.print (a);
+            COUT << setw(W); c.print (b);
+            fl();
          }
 
          // Make sure, == makes sense
 
          if ((a == b) != (i == j))  error ("a==b incorrect");
-         if ((a != b) != (i != j))  error ("a!=b incorrect");
 
          doTest (c, a, b, cat());
 
-         DEB1 cout << endl;
+         DEB1 COUT << endl;
       }
    }
 
@@ -2713,14 +2955,14 @@ void doTests(A r, const char* type)
 
             DEB1
             {
-               cout << setw(W); c.print (a);
-               cout << setw(W); c.print (b);
-               cout << setw(W); c.print (d);
+               COUT << setw(W); c.print (a);
+               COUT << setw(W); c.print (b);
+               COUT << setw(W); c.print (d);
             }
 
             doTest (c, a, b, d, cat());
 
-            DEB1 cout << endl;
+            DEB1 COUT << endl;
          }
       }
    }

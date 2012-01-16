@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -44,7 +44,10 @@ using L::ms1;
 using L::ls0;
 using L::ls1;
 using L::bit;
-using L::leastSignificantBits;
+using L::lsBits;
+using L::lsBitsMask;
+using L::popCount;
+using L::parity;
 using std::numeric_limits;
 
 
@@ -56,7 +59,7 @@ template<class T>
 inline
 void test_ms1 (T x)
 {
-   int i = ms1 (x);
+   const int i = ms1 (x);
 
    // compare with old routine
 
@@ -68,7 +71,7 @@ void test_ms1 (T x)
 
    // range
 
-   if (i < -1 || i > int (sizeof(T) * 8) - 1)
+   if (i < -1 || i > std::numeric_limits<T>::digits - 1)
    {
       cout << "ms1(): " << i << " out of range for " << x << endl;
       error();
@@ -93,7 +96,7 @@ void test_ms1 (T x)
       }
    }
 
-   if (i + 1 < int (sizeof(T) * 8))
+   if (i + 1 < std::numeric_limits<T>::digits)
    {
       T mask = T(-1) << (i+1);   // all bits above the msb
 
@@ -114,9 +117,9 @@ template<class T>
 inline
 void test_ls0 (T x)
 {
-   unsigned i = ls0 (x);
+   const int i = ls0 (x);
 
-   if (i != O::ls0 (x))
+   if (i != int(O::ls0 (x)))
    {
       cout << "ls0() != O::ls0() for " << x << endl;
       error();
@@ -124,7 +127,7 @@ void test_ls0 (T x)
 
    // range
  
-   if (i > sizeof(T) * 8)
+   if (i > int(std::numeric_limits<T>::digits))
    {
       cout << "ls0(): " << i << " out of range for " << x << endl;
       error();
@@ -132,7 +135,7 @@ void test_ls0 (T x)
 
    // Is it 0?
 
-   if (i < sizeof(T)*8 && bit (x, i))
+   if (i < std::numeric_limits<T>::digits && bit (x, i))
    {
       cout << "ls0()-bit is not 0 for " << x << endl;
       error();
@@ -140,13 +143,10 @@ void test_ls0 (T x)
 
    // All lower bits 1?
 
-   if (i > 0)
+   if (lsBits (x, i) != lsBitsMask<T> (i))
    {
-      if (leastSignificantBits (x + 1, i))
-      {
-         cout << "ls0: There are 0s below ls0() for " << x << endl;
-         error();
-      }
+      cout << "ls0: There are 0s below ls0() for " << x << endl;
+      error();
    }
 }
 
@@ -169,7 +169,7 @@ void test_ls1 (T x)
  
    // range
  
-   if (i < -1 || i > int (sizeof(T) * 8) - 1)
+   if (i < -1 || i > std::numeric_limits<T>::digits - 1)
    {
       cout << "ls1(): " << i << " out of range for " << x << endl;
       error();
@@ -196,13 +196,96 @@ void test_ls1 (T x)
  
    // All lower bits 0?
  
-   if (i > 0)
+   if (lsBits (x, i))
    {
-      if (leastSignificantBits (x, i))
+      cout << "ls1: There are 1s below ls1() for " << x << endl;
+      error();
+   }
+}
+
+
+/**
+ *  test_popcount()
+ */
+
+template<class T>
+inline
+void test_popcount (T x)
+{
+   int i = popCount (x);
+
+   // range
+ 
+   if (i < 0 || i > std::numeric_limits<T>::digits)
+   {
+      cout << "popCount(" << x << ") = " << i << " is out of range!\n";
+      error();
+   }
+ 
+   // Count digits
+
+   int counter = 0;
+   {
+      T xx = x;
+      while (xx)
       {
-         cout << "ls1: There are 1s below ls1() for " << x << endl;
-         error();
+         if (xx & 1)  ++counter;
+         xx >>= 1;
       }
+   }
+
+   if (counter != i)
+   {
+      cout << "popCount(" << x << ") = " << i << " should be "
+           << counter << "!\n";
+      error();
+   }
+}
+
+
+/**
+ *  test_parity()
+ */
+
+template<class T>
+inline
+void test_parity (T x)
+{
+   int i = parity (x);
+
+   // range
+ 
+   if (i < 0 || i > 1)
+   {
+      cout << "parity(" << x << ") = " << i << " should be in {0,1}!\n";
+      error();
+   }
+ 
+   // Count digits
+
+   int par = 0;
+   {
+      T xx = x;
+      while (xx)
+      {
+         if (xx & 1)  par ^= 1;
+         xx >>= 1;
+      }
+   }
+
+   if (par != i)
+   {
+      cout << "parity(" << x << ") = " << i << " should be " << par << "!\n";
+      error();
+   }
+
+   // Compare with popcount()
+
+   if (i != (popCount(x) & 1))
+   {
+      cout << "parity(" << x << ") = " << i
+           << " does not match popCount() & 1!\n";
+      error();
    }
 }
 
@@ -223,9 +306,13 @@ void test (const T &)
 
       do
       {
+         DEB1  cout << i;
          test_ms1 (i);
          test_ls0 (i);
          test_ls1 (i);
+         test_popcount (i);
+         test_parity (i);
+         DEB1 cout << '\n';
 
       } while (++i);
    }
@@ -234,35 +321,40 @@ void test (const T &)
       for (L::u32 i = 0; i < 0x133333ull; ++i)
       {
          T ii (i);
+         DEB1  cout << i;
          test_ms1 (ii);
          test_ls0 (ii);
          test_ls1 (ii);
+         test_popcount (ii);
+         test_parity (ii);
+         DEB1 cout << '\n';
    
          ii = numeric_limits<T>::max() - i;
+         DEB1  cout << ii;
          test_ms1 (ii);
          test_ls0 (ii);
          test_ls1 (ii);
+         test_popcount (ii);
+         test_parity (ii);
+         DEB1 cout << '\n';
       }
    }
 }
 
-const char* options = "";
+const char options[] = "";
+const char option_msg[] = "";
+const char testProgramParameters[] = "[OPTION]...";
+const char testProgramUsage[] = "";
+const char testProgramName[] = "test_bitop";
+const int  testProgramCopyright = 2003;
 
 bool opt(int, const char*) { return false; }
 
-void usage()
-{
-   cerr <<
-      "Usage: test_bitop [OPTION]...\n\n"
-      << option_msg <<
-      "\n";
-
-   exit (1);
-}
-
 void test(int argc, char**)
 {
-   if (argc)  usage();
+   if (argc)  usage("Too many arguments!");
+
+   NORMAL printHeader (cout);
    
    NORMAL  cout << "Testing type unsigned char" << endl;
 

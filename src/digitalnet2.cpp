@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,21 +18,21 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <algorithm>
-#include <iostream>
 
 #include <HIntLib/digitalnet2.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
+#pragma implementation
+#endif
 
 #include <HIntLib/generatormatrixvirtual.h>
 #include <HIntLib/mersennetwister.h>
 #include <HIntLib/mcpointset.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/hlalgorithm.h>
 
 namespace L = HIntLib;
 
@@ -55,10 +55,11 @@ L::DigitalNet2<T>::DigitalNet2 (
    unsigned _m, Index index, bool equi, Truncation _trunc)
 : QRNSequenceBase(_h),
   DigitalNet (_c.getBase(), _m),
-  prec (std::min(
-     (_trunc == FULL) ? _c.getPrec() : m,   // what we want
-     unsigned (std::numeric_limits<real>::digits - 1)
-  )), // what makes sense
+  prec (min3(
+     (_trunc == FULL) ? _c.getPrec() : m,              // what we want
+     unsigned (std::numeric_limits<real>::digits - 1), // what makes sense
+     _c.getPrec()                                      // what's in the matrix
+  )),
   alg (prec),
   scalAlg (alg.getScalarAlgebra()),
   c (AdjustPrec (prec, DiscardDimensions (getDimension(),
@@ -81,28 +82,30 @@ L::DigitalNet2<T>::DigitalNet2 (
 
    // Initialize xStart vector
 
-   const int dd = equi;
-   unsigned i = m;
-   Index indexCopy = index;
-   int shift = _c.getPrec() - c.getPrec();
-
-   while (index)
    {
-      if (i >= _c.getM())
-      {
-         throw NetIndexTooHigh (indexCopy, _c.getM(), m);
-      }
+      const int dd = equi;
+      unsigned i = m;
+      Index indexCopy = index;
+      int shift = _c.getPrec() - c.getPrec();
 
-      if (index & 1)
+      while (index)
       {
-         for (unsigned d = dd; d < c.getDimension(); ++d)
+         if (i >= _c.getM())
          {
-            alg.addTo (xStart [d], (_c(d-dd, i) >> shift));
+            throw NetIndexTooHigh (indexCopy, _c.getM(), m);
          }
-      }
 
-      index >>= 1;
-      ++i;
+         if (index & 1)
+         {
+            for (unsigned d = dd; d < c.getDimension(); ++d)
+            {
+               alg.addTo (xStart [d], (_c(d-dd, i) >> shift));
+            }
+         }
+
+         index >>= 1;
+         ++i;
+      }
    }
 
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
@@ -147,6 +150,37 @@ void L::DigitalNet2<T>::setCube (const Hypercube &h)
 
   ssMagic.set (h, 1.0 + centerShiftMagic, 2.0 + centerShiftMagic);
 #endif
+}
+
+
+/**
+ *  setDigitalShift()
+ */
+
+template<class T>
+void L::DigitalNet2<T>::setDigitalShift (const T* vectors)
+{
+#ifdef HINTLIB_IEEE_MAGIC_WORKS
+   const int shift = floatBits - prec;
+   union { floatType f; T i; } xx;
+   xx.f = 1.;
+#endif
+
+   for (unsigned d = 0; d < getDimension(); ++d)
+   {
+      T x = vectors[d];
+
+#ifdef HINTLIB_IEEE_MAGIC_WORKS
+      if (      std::numeric_limits<floatType>::digits
+             >= std::numeric_limits<real>::digits
+          || mode == DIRECT)
+      {
+         xStart [d] = (x << shift) | xx.i;
+      }
+      else
+#endif
+      xStart [d] = x;
+   }
 }
 
 

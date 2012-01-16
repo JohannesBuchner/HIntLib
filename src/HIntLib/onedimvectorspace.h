@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 #ifndef HINTLIB_ONE_DIM_VECTOR_SPACE_H
 #define HINTLIB_ONE_DIM_VECTOR_SPACE_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -69,6 +71,12 @@ namespace HIntLib
       void printShort (std::ostream& o, const type& x, PrintShortFlag) const
          { printShort (o, x); }
       void print      (std::ostream&, const type&) const;
+#ifdef HINTLIB_BUILD_WCHAR
+      void printShort (std::wostream&,   const type&) const;
+      void printShort (std::wostream& o, const type& x, PrintShortFlag) const
+         { printShort (o, x); }
+      void print      (std::wostream&, const type&) const;
+#endif
 
       scalar_type coord (const type& x, unsigned) const  { return x; }
       scalar_reference coord  (type& x, unsigned) const  { return x; }
@@ -87,6 +95,16 @@ namespace HIntLib
       A::print (ss, x);
       ss << ')';
    }
+#ifdef HINTLIB_BUILD_WCHAR
+   template<typename A>
+   void OneDimVectorSpace<A>::print (std::wostream &o, const type& x) const
+   {
+      Private::WPrinter ss (o);
+      ss << L'(';
+      A::print (ss, x);
+      ss << L')';
+   }
+#endif
 
    template<typename A>
    void OneDimVectorSpace<A>::printShort (std::ostream &o, const type& x) const
@@ -96,14 +114,35 @@ namespace HIntLib
       A::printShort (ss, x);
       ss << ')';
    }
+#ifdef HINTLIB_BUILD_WCHAR
+   template<typename A>
+   void OneDimVectorSpace<A>::printShort (std::wostream &o, const type& x) const
+   {
+      Private::WPrinter ss (o);
+      ss << L'(';
+      A::printShort (ss, x);
+      ss << L')';
+   }
+#endif
 
    template<typename A>
    std::ostream& operator<< (std::ostream &o, const OneDimVectorSpace<A> &v)
    {
       Private::Printer ss (o);
-      ss << v.getScalarAlgebra() << "^1";
+      ss << v.getScalarAlgebra();
+      ss.power(1);
       return o;
    } 
+#ifdef HINTLIB_BUILD_WCHAR
+   template<typename A>
+   std::wostream& operator<< (std::wostream &o, const OneDimVectorSpace<A> &v)
+   {
+      Private::WPrinter ss (o);
+      ss << v.getScalarAlgebra();
+      ss.power(1);
+      return o;
+   } 
+#endif
 
 } // namespace HIntLib
 

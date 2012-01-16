@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -74,13 +74,13 @@ int main()
            "/***   Update " __FILE__            " to update this file. */\n"
            "/***********************************************************/\n"
            "\n"
-           "#ifdef __GNUG__\n"
-           "#pragma implementation\n"
-           "#endif\n"
-           "\n"
            "#define HINTLIB_LIBRARY_OBJECT\n"
            "\n"
            "#include <HIntLib/niederreitermatrix.h>\n"
+           "\n"
+           "#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION\n"
+           "#pragma implementation\n"
+           "#endif\n"
            "\n"
            "namespace L = HIntLib;\n"
            "\n"

@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,7 +29,9 @@
 #ifndef HINTLIB_DIGITAL_NET_2_H
 #define HINTLIB_DIGITAL_NET_2_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -74,6 +76,7 @@ public:
 
    void setCube (const Hypercube &);
    void randomize (PRNG &);
+   void setDigitalShift (const T*);
 
 protected:
    typedef GF2VectorSpace<T> A;
@@ -92,7 +95,7 @@ protected:
    ShiftScale ssMagic;
    enum MODE {STANDARD, DIRECT} mode;
    typedef typename FloatType<T>::floatType floatType;
-   static const unsigned floatBits = std::numeric_limits<floatType>::digits - 1;
+   enum { floatBits = std::numeric_limits<floatType>::digits - 1 };
 #endif
 
    DigitalNet2

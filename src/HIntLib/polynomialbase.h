@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 #ifndef HINTLIB_POLYNOMIAL_BASE_H
 #define HINTLIB_POLYNOMIAL_BASE_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -45,15 +47,26 @@ public:
 
    void printVariable (std::ostream &) const;
    void printVariableWithBrackets (std::ostream &) const;
-   void printVariablePow (std::ostream&, unsigned) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   void printVariable (std::wostream &) const;
+   void printVariableWithBrackets (std::wostream &) const;
+#endif
 
 protected:
+#ifdef HINTLIB_BUILD_WCHAR
+            PRB (char _var, wchar_t _wvar) : var (_var), wvar (_wvar) {}
+   explicit PRB (char _var) : var (_var), wvar (_var) {}
+#else
    explicit PRB (char _var) : var (_var) {}
+#endif
 
    static const int squareBeatsLinear [];
 
 private:
    const char var;
+#ifdef HINTLIB_BUILD_WCHAR
+   const wchar_t wvar;
+#endif
 };
 
 unsigned funnySum (int, unsigned);

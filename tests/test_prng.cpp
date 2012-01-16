@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -48,19 +48,14 @@ using namespace HIntLib;
  *  Command line arguments
  */
 
-const char* options = "";
+const char options[] = "";
+const char option_msg[] = "";
+const char testProgramParameters[] = "[OPTION]...";
+const char testProgramUsage[] = "";
+const char testProgramName[] = "test_prng";
+const int  testProgramCopyright = 2003;
 
 bool opt(int, const char*) { return false; }
-
-void usage()
-{
-   std::cerr <<
-      "Usage: test_prng [OPTION]...\n\n"
-      << option_msg <<
-      "\n";
-
-   exit (1);
-}
 
 template<class T>
 void doTest (const T*)
@@ -72,17 +67,19 @@ void doTest (const T*)
    real range = g.getRange();
    real res   = g.getResolution();
 
-   DEB1 cout << "Max=" << max << "  Range=" << range << "  Resolution=" << res
-             << endl;
+   DEB1 cout << "Max = " << max << ",  range = " << range
+             << ",  resolution = " << res << ".\n" << endl;
 
-   if (range < max || range > real(max) * 1.000001 + 1.)
+   if (! approx (real(max), range - 1, real(1)))
    {
-      error ("getRange() broken!");
+      cout << "abs ((max + 1) - range) = "
+           << L::abs (real(max) - range + 1) << ".\n";
+      error ("getRange() broken");
    }
 
-   if (L::abs (1.0 / res - range) > .0001)
+   if (! approx (real(1) / res, range, real(1)))
    {
-      error ("getResolution() broken!");
+      error ("getResolution() broken");
    }
 
    real xx = 0;
@@ -94,19 +91,19 @@ void doTest (const T*)
       // (0,1)
 
       real x = g.getReal();
-      if (x <= 0.0 || x >= 1.0)  error ("getReal() failed!");
+      if (x <= 0.0 || x >= 1.0)  error ("getReal() failed");
       xx += x;
 
       // {0,...,n}
 
       int y = g (37);
-      if (y < 0 || y >= 37)  error ("operator()(int) failed!");
+      if (y < 0 || y >= 37)  error ("operator()(int) failed");
       yy += y;
 
       // {0,...,MAX}
 
       R z = g();
-      if (z > max)  error ("operator()() failed!");
+      if (z > max)  error ("operator()() failed");
       zz += z;
    }
 }
@@ -118,7 +115,9 @@ void doTest (const T*)
 
 void test(int argc, char**)
 {
-   if (argc)  usage();
+   if (argc)  usage("Too many arguments!");
+
+   NORMAL printHeader (cout);
 
    // BuiltInPRNG
 

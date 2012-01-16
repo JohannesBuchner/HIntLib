@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -48,30 +48,28 @@ using std::setw;
 // Option processing
 
 int MAX_M = 0;
+int MIN_M = 1;
 
-const char* options = "m:";
+const char options[] = "m:i:";
+const char option_msg[] =
+   "  base   Base of the shift net\n"
+   "  -m     Maximal m\n"
+   "  -i     Minimal m\n";
+const char testProgramParameters[] = "[OPTIONS] base";
+const char testProgramUsage[] =
+    "Test whether the shifnets are generated correctly.\n\n";
+const char testProgramName[] = "test_shiftnet";
+const int  testProgramCopyright = 2003;
 
 bool opt(int c, const char* s)
 {
    switch (c)
    {
    case 'm':  MAX_M = HINTLIB_SLN atoi (s); return true;
+   case 'i':  MIN_M = HINTLIB_SLN atoi (s); return true;
    }
 
    return false;
-}
-
-void usage()
-{
-   cerr <<
-      "Usage: test_shiftnet base [OPTION] ...\n\n"
-      "Test if the shifnets are generated correctly.\n\n"
-      "  base   Base of the shift net\n"
-      << option_msg <<
-      "  -m     Maximal m\n"
-      "\n";
-
-   exit (1);
 }
 
 
@@ -81,39 +79,77 @@ void usage()
 
 void test (int argc, char** argv)
 {
-   if (argc != 1)  usage();
+   // Determine parameters
+
+   if (argc != 1)  usage("Invalid number of arguments!");
 
    int base = atoi (argv[0]);
 
    if (! MAX_M)  MAX_M = maxMForShiftNet (base);
 
-   NORMAL cout << "Testing shift nets in base b = " << base << endl;
-   DEB1
+   // Check parameters
+   
+   if (MIN_M < 1)  usage("Minimal m must be positive!");
+
+   if (MAX_M > int (maxMForShiftNet (base)))
    {
-      cout << setw (3) << "m"
-           << setw (11) << "expected t"
-           << setw (11) << "actual t" << endl;
+      usage("Maximal m is too large!");
    }
 
-   for (int m = 1; m <= MAX_M; ++m)
+   if (MIN_M > MAX_M)
+   {
+      usage("Minimal m must not be larger than maximal m!");
+   }
+
+   // Do Tests
+
+   NORMAL printHeader(cout);
+   if (verbose >= 0)
+   {
+      cout << "Testing shift nets in base b = " << base
+           << (verbose >= 2 ? ":" : "...") << endl;
+   }
+
+   DEB1
+   {
+      cout << setw (3) << "m" << setw(11) << "t" << "   Test results\n";
+   }
+
+   for (int m = MIN_M; m <= MAX_M; ++m)
    {
       DEB1  cout << setw (3) << m << flush;
 
       GeneratorMatrixGen<unsigned char> gm (base, m, m, m);
       initShiftNet (gm);
 
-      unsigned expected = optimalShiftNetT (base, m);
+      const unsigned expected = optimalShiftNetT (base, m);
 
       DEB1  cout << setw(11) << expected << flush;
 
-      unsigned actual = tParameter (gm);
-
-      DEB1  cout << setw(11) << actual << endl;
-
-      if (actual != expected)
+      if (confirmT(gm, expected))
       {
-         error ("Actual t not equal to expected t!");
+         DEB1 cout << setw(7) << "ok" << flush;
       }
+      else
+      {
+         DEB1 cout << setw(7) << "failed" << flush;
+         error ("Actual t is too high");
+      }
+
+      if (expected > 0)
+      {
+         if (confirmT(gm, expected - 1))
+         {
+            DEB1 cout << setw(7) << "failed" << flush;
+            error ("Actual t is too low");
+         }
+         else
+         {
+            DEB1 cout << setw(7) << "ok" << flush;
+         }
+      }
+
+      DEB1  cout << '\n';
    }
 }
 

@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -82,7 +82,15 @@ void doIt (const u32 S, const P& dummy)
    }
 }
 
-const char* options = "n:";
+const char options[] = "n:";
+const char option_msg[] = "  -n n   Size of the sieve (default = 1000).\n";
+const char testProgramParameters[] = "[OPTION]...";
+const char testProgramUsage[] =
+   "Tests Eratosthenes' sieve.\n"
+   "The output is compared to a manual divisability check.\n"
+   "The test is performed for integers (u32) and polynomials.\n\n";
+const char testProgramName[] = "test_eratosthenes";
+const int  testProgramCopyright = 2003;
 
 bool opt (int c, const char* s)
 {
@@ -94,27 +102,18 @@ bool opt (int c, const char* s)
    return false;
 }
 
-void usage()
-{
-   cerr <<
-      "Usage: test_eratosthenes [OPTION]...\n\n"
-      "Tests Eratosthenes' sieve.\n"
-      "The output is compared to a manual divisability check.\n"
-      "The test is performed for integers (u32) and polynomials.\n\n"
-      << option_msg <<
-      "  -n n   Size of the sieve (default = 1000).\n"
-      "\n";
-
-   exit (1);
-}
-
 void test (int argc, char **)
 {
-   if (argc)  usage();
+   if (argc)  usage("Too many arguments!");
 
-   NORMAL  cout << "Testing Eratosthenes for 'u32'..." << endl;
+   NORMAL printHeader (cout);
+
+   NORMAL cout << "Testing Eratosthenes for 'u32'..." << endl;
    doIt (SIZE, u32 (0));
-//    NORMAL  cout << "Testing Eratosthenes for 'Polynomial2'..." << endl;
-//   doIt (SIZE, L::Polynomial2<L::u32> (0));
+
+#if 0
+   NORMAL  cout << "Testing Eratosthenes for 'Polynomial2'..." << endl;
+   doIt (SIZE, L::Polynomial2<L::u32> (0));
+#endif
 }
 

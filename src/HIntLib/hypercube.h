@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,7 +27,9 @@
 #ifndef HINTLIB_HYPERCUBE_H
 #define HINTLIB_HYPERCUBE_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -159,6 +161,9 @@ Hypercube::Location
 // Printing a hypercube
 
 std::ostream& operator<< (std::ostream &, const Hypercube &);
+#ifdef HINTLIB_BUILD_WCHAR
+std::wostream& operator<< (std::wostream &, const Hypercube &);
+#endif
 
 // build union of two cubes
 

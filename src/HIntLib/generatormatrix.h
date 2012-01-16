@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,13 +22,13 @@
 #ifndef HINTLIB_GENERATOR_MATRIX_H
 #define HINTLIB_GENERATOR_MATRIX_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
 #include <iosfwd>
-
-#include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
@@ -68,9 +68,9 @@ public:
     * be smaller due to the size of T.
     */
      
-   static const unsigned DEFAULT_M_BASE2
+   enum { DEFAULT_M_BASE2
       = std::numeric_limits<Index>::digits - 1 < 47
-      ? std::numeric_limits<Index>::digits - 1 : 47;
+      ? std::numeric_limits<Index>::digits - 1 : 47 };
 
    static unsigned getDefaultM (unsigned base) HINTLIB_GNU_CONST;
 
@@ -84,8 +84,7 @@ public:
      * be smaller due to the size of T.
      */
 
-   static const unsigned DEFAULT_TOTALPREC_BASE2
-      = std::numeric_limits<real>::digits - 1;
+   enum { DEFAULT_TOTALPREC_BASE2 = std::numeric_limits<real>::digits - 1 };
 
    static unsigned getDefaultPrec (unsigned base) HINTLIB_GNU_CONST;
 
@@ -112,6 +111,12 @@ public:
    void printDimension    (std::ostream &, unsigned d) const;
    void printRowVector    (std::ostream &, unsigned d, unsigned b) const;
    void printColumnVector (std::ostream &, unsigned d, unsigned r) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   void print (std::wostream &) const;
+   void printDimension    (std::wostream &, unsigned d) const;
+   void printRowVector    (std::wostream &, unsigned d, unsigned b) const;
+   void printColumnVector (std::wostream &, unsigned d, unsigned r) const;
+#endif
 
    // Export in special formats
 

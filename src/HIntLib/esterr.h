@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,10 +22,11 @@
 #ifndef HINTLIB_ESTERR_H
 #define HINTLIB_ESTERR_H 1
  
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
-
 
 #include <algorithm>
 #include <iosfwd>
@@ -73,7 +74,10 @@ public:
 #endif
 };
 
-std::ostream& operator<< (std::ostream &o, const EstErr &ee);
+std:: ostream& operator<< (std:: ostream &, const EstErr &);
+#ifdef HINTLIB_BUILD_WCHAR
+std::wostream& operator<< (std::wostream &, const EstErr &);
+#endif
 
 
 /********** Implementation *********************************/

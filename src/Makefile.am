@@ -55,10 +55,12 @@ ALLSRC= \
    generatormatrixvec.cpp \
    generatormatrixvirtual.cpp \
    halton.cpp \
+   hlalgorithm.cpp \
    hypercube.cpp \
    integerring.cpp \
    integrator.cpp \
    kahanadd.cpp \
+   l2discrepancy.cpp \
    linereader.cpp \
    loadbinary.cpp \
    loadedel.cpp \
@@ -105,6 +107,7 @@ ALLSRC= \
    shiftnet.cpp \
    shiftscale.cpp \
    sobolmatrix.cpp \
+   stardiscrepancy.cpp \
    testintegrand.cpp \
    tparameter.cpp \
    vegas.cpp \

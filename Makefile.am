@@ -4,3 +4,4 @@
 SUBDIRS = libtest src share tests
 
 EXTRA_DIST = manual.pdf
+

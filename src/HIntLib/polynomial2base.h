@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 #ifndef HINTLIB_POLYNOMIAL_2_BASE_H
 #define HINTLIB_POLYNOMIAL_2_BASE_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -52,10 +54,24 @@ public:
 
    static void printSuffix (std::ostream &);
    void printVariable (std::ostream &) const;
+#ifdef HINTLIB_BUILD_WCHAR
+   static void printSuffix (std::wostream &);
+   void printVariable (std::wostream &) const;
+#endif
 
 protected:
-   Polynomial2RingBase (char _var) : var (_var) {}
+#ifdef HINTLIB_BUILD_WCHAR
+            Polynomial2RingBase (char _var, wchar_t _wvar)
+               : var (_var), wvar (_wvar) {}
+   explicit Polynomial2RingBase (char _var) : var (_var), wvar(_var) {}
+#else
+   explicit Polynomial2RingBase (char _var) : var (_var) {}
+#endif
+
    const char var;
+#ifdef HINTLIB_BUILD_WCHAR
+   const wchar_t wvar;
+#endif
 };
 
 inline
@@ -66,6 +82,9 @@ operator== (Polynomial2RingBase::unit_type, Polynomial2RingBase::unit_type)
 }
 
 std::ostream& operator<< (std::ostream &, const Polynomial2RingBase &);
+#ifdef HINTLIB_BUILD_WCHAR
+std::wostream& operator<< (std::wostream &, const Polynomial2RingBase &);
+#endif
 
 
 } // namespace Private

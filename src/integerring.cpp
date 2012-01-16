@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,19 +18,15 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/integerring.h>
 
-#ifdef HINTLIB_HAVE_OSTREAM
-  #include <ostream>
-#else
-  #include <iostream>
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
+#pragma implementation
 #endif
+
+#include <HIntLib/output.h>
 
 namespace L = HIntLib;
 namespace P = HIntLib::Private;
@@ -41,8 +37,25 @@ namespace P = HIntLib::Private;
 
 std::ostream& P::operator<< (std::ostream &o, const ZRing&)
 {
+#if HINTLIB_CHARACTER_SET == 4 && defined (HINTLIB_UTF8_SELECT)
+   HINTLIB_UTF8_SELECT(Private::utf8Support(o),
+      return o << "\xe2\x84\xa4",  // DOUBLE-STRUCK CAPITAL Z
+      return o << "Z")
+#else
    return o << "Z";
+#endif
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+std::wostream& P::operator<< (std::wostream &o, const ZRing&)
+{
+#if HINTLIB_CHARACTER_SET == 4
+   return o << L"\x2124";  // DOUBLE-STRUCK CAPITAL Z
+#else
+   return o << L"Z";
+#endif
+}
+#endif
 
 
 /**

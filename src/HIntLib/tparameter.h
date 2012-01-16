@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,7 +22,9 @@
 #ifndef HINTLIB_TPARAMETER_H
 #define HINTLIB_TPARAMETER_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
 
@@ -65,7 +67,7 @@ protected:
    int *const partition;
 
 private:
-   static const unsigned MAX_PARTITION_SIZE = 200;
+   enum { MAX_PARTITION_SIZE = 200 };
    static int staticPartition [MAX_PARTITION_SIZE];
 };
 
@@ -95,12 +97,12 @@ public:
    TCalc2 (const HIntLib::GeneratorMatrix2Row<T> &_gm)
       : TCalc (_gm.getDimension()), gm(_gm) {}
 
-   bool check (int thickness, bool dimOpt);
-   bool checkTO (int thickness, bool dimOpt);
-   bool checkRestricted (int thickness, int maxRows);
-   bool checkRestrictedRO (int thickness, int maxRows);
-   bool checkRestrictedTO (int thickness, int maxRows);
-   bool checkRestrictedTORO (int thickness, int maxRows);
+   bool check (int strength, bool dimOpt);
+   bool checkTO (int strength, bool dimOpt);
+   bool checkRestricted (int strength, int maxRows);
+   bool checkRestrictedRO (int strength, int maxRows);
+   bool checkRestrictedTO (int strength, int maxRows);
+   bool checkRestrictedTORO (int strength, int maxRows);
 
 private:
    void init (const GeneratorMatrix &);
@@ -110,8 +112,8 @@ protected:
    void copyToSelection ();
    bool singular (T* l)
       { return ! isLinearlyIndependent (&selection[0], l); }
-   bool singular (int thickness)
-      { return ! isLinearlyIndependent (&selection[0], &selection[thickness]); }
+   bool singular (int strength)
+      { return ! isLinearlyIndependent (&selection[0], &selection[strength]); }
 
    const GeneratorMatrix2Row<T> & gm;
    static HINTLIB_DLL_IMPORT T selection [std::numeric_limits<T>::digits];
@@ -147,17 +149,17 @@ public:
    TCalcGen (const GeneratorMatrixGen<unsigned char> &);
    ~TCalcGen ();
 
-   bool check (int thickness, bool dimOpt);
-   bool checkRestricted (int thickness, int maxRows);
-   bool checkRestrictedRO (int thickness, int maxRows);
+   bool check (int strength, bool dimOpt);
+   bool checkRestricted (int strength, int maxRows);
+   bool checkRestrictedRO (int strength, int maxRows);
 
 protected:
    void copyToSelection (int d, int num, unsigned& pos);
    void copyToSelection ();
-   bool singular (int thickness, int newM);
-   bool singular (int thickness);
+   bool singular (int strength, int newM);
+   bool singular (int strength);
 
-   void dumpSelection (std::ostream &) const;
+   // void dumpSelection (std::ostream &) const;
 
    unsigned char* selection;
 
@@ -167,7 +169,7 @@ protected:
 private:
    LinearAlgebra* la;
 
-   static const unsigned MAX_SELECTION_SIZE = 1000;
+   enum { MAX_SELECTION_SIZE = 1000 };
    static unsigned char staticSelection [MAX_SELECTION_SIZE];
 
    TCalcGen ();
@@ -179,15 +181,15 @@ private:
  */
 
 inline
-bool TCalcGen::singular (int thickness, int newM)
+bool TCalcGen::singular (int strength, int newM)
 {
-   return ! la->isLinearlyIndependent (&selection[0], thickness, newM);
+   return ! la->isLinearlyIndependent (&selection[0], strength, newM);
 }
 
 inline
-bool TCalcGen::singular (int thickness)
+bool TCalcGen::singular (int strength)
 {
-   return ! la->isLinearlyIndependent (&selection[0], thickness, M);
+   return ! la->isLinearlyIndependent (&selection[0], strength, M);
 }
 
 
@@ -197,7 +199,7 @@ enum TOption
 {
    DEFAULT = 0,
    LOWER_RESTRICTION_OK = 1, // Asuume that any smaller restriction is ok
-   LARGER_T_OK = 2,          // Assume that any larger t (lower thickness) is ok
+   LARGER_T_OK = 2,          // Assume that any larger t (lower strength) is ok
    LOWER_DIM_OK = 4          // Assume that its ok without the last matrix
 };
 

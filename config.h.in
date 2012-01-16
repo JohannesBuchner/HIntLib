@@ -1,37 +1,97 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* function to use for abs(double) */
+/* Function to use for `abs(double)'. */
 #undef ABS_FOR_DOUBLE
 
-/* function to use for abs(float) */
+/* Function to use for `abs(float)'. */
 #undef ABS_FOR_FLOAT
 
-/* function to use for abs(int) */
+/* Function to use for `abs(int)'. */
 #undef ABS_FOR_INT
 
-/* function to use for abs(long double) */
+/* Function to use for `abs(long double)'. */
 #undef ABS_FOR_LONG_DOUBLE
 
-/* function to use for abs(long int) */
+/* Function to use for `abs(long int)'. */
 #undef ABS_FOR_LONG_INT
 
-/* strategy to get abs() right */
+/* Strategy to get `abs()' right. */
 #undef ABS_STRATEGY
 
-/* define whether std::pow(std::complex<long double>,int) is broken */
+/* Define to 1 if support for wchar_t should be built. */
+#undef BUILD_WCHAR
+
+/* The set of valid characters (1=ASCII, 2=Latin-1, 3=WGL4, 4=all). */
+#undef CHARACTER_SET
+
+/* Define to 1 if `std::pow(std::complex<long double>,int)' is broken. */
 #undef COMPLEX_POW_BUG
 
-/* The directory which holds our data files */
+/* The directory which holds the installed data files. */
 #undef DATADIR
 
-/* define if STL has the equal()-bug */
+/* Define to 1 if char uses Latin-1 encoding. */
+#undef ENCODING_LATIN1
+
+/* Define to 1 if encoding of char should be determined by the locale. */
+#undef ENCODING_LOCALE
+
+/* Define to 1 if char uses UTF-8 encoding. */
+#undef ENCODING_UTF8
+
+/* Define to 1 if the STL has the equal()-bug. */
 #undef EQUAL_BUG
 
-/* define if FLT_ROUNDS is constant */
+/* Define to 1 if `FLT_ROUNDS' is a constant. */
 #undef FLT_ROUNDS_CONST
 
 /* Define to 1 if you have the <algorithm> header file. */
 #undef HAVE_ALGORITHM
+
+/* Define to 1 if `__builtin_clz()' is available. */
+#undef HAVE_BUILTIN_CLZ
+
+/* Define to 1 if `__builtin_clzl()' is available. */
+#undef HAVE_BUILTIN_CLZL
+
+/* Define to 1 if `__builtin_clzll()' is available. */
+#undef HAVE_BUILTIN_CLZLL
+
+/* Define to 1 if `__builtin_ctz()' is available. */
+#undef HAVE_BUILTIN_CTZ
+
+/* Define to 1 if `__builtin_ctzl()' is available. */
+#undef HAVE_BUILTIN_CTZL
+
+/* Define to 1 if `__builtin_ctzll()' is available. */
+#undef HAVE_BUILTIN_CTZLL
+
+/* Define to 1 if `__builtin_ffs()' is available. */
+#undef HAVE_BUILTIN_FFS
+
+/* Define to 1 if `__builtin_ffsl()' is available. */
+#undef HAVE_BUILTIN_FFSL
+
+/* Define to 1 if `__builtin_ffsll()' is available. */
+#undef HAVE_BUILTIN_FFSLL
+
+/* Define to 1 if `__builtin_parity()' is available. */
+#undef HAVE_BUILTIN_PARITY
+
+/* Define to 1 if `__builtin_parityl()' is available. */
+#undef HAVE_BUILTIN_PARITYL
+
+/* Define to 1 if `__builtin_parityll()' is available. */
+#undef HAVE_BUILTIN_PARITYLL
+
+/* Define to 1 if `__builtin_popcount()' is available. */
+#undef HAVE_BUILTIN_POPCOUNT
+
+/* Define to 1 if `__builtin_popcountl()' is available. */
+#undef HAVE_BUILTIN_POPCOUNTL
+
+/* Define to 1 if `__builtin_popcountll()' is available. */
+#undef HAVE_BUILTIN_POPCOUNTLL
 
 /* Define to 1 if you have the <cmath> header file. */
 #undef HAVE_CMATH
@@ -86,6 +146,9 @@
 
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
+
+/* Define to 1 if you have the <locale> header file. */
+#undef HAVE_LOCALE
 
 /* Define to 1 if the system has the type `long double'. */
 #undef HAVE_LONG_DOUBLE
@@ -159,17 +222,20 @@
 /* Define to 1 if you have the <vector> header file. */
 #undef HAVE_VECTOR
 
-/* define if IEEE magic works */
+/* Define to 1 if the system has the type `wchar_t'. */
+#undef HAVE_WCHAR_T
+
+/* Define to 1 if IEEE magic works. */
 #undef IEEE_MAGIC_WORKS
 
-/* Size of Index data type. */
+/* Size of `Index' type. */
 #undef INDEX
 
-/* strategy to get standard math functions right */
+/* Strategy to get standard math functions right. */
 #undef MATH_FUN_STRATEGY
 
-/* define if namespace std::rel_ops exists */
-#undef NAMESPACE_REL_OPS
+/* Define to 1 if std::ostream is a typedef for std::basic_ostream<char>. */
+#undef OSTREAM_IS_BASIC_OSTREAM
 
 /* Name of package */
 #undef PACKAGE
@@ -189,28 +255,28 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Type of real data type. */
+/* Type of `real' type. */
 #undef REAL
 
 /* Define if we are compiling with the SGI C++ compiler CC. */
 #undef SGI
 
-/* function to use for sin(double) */
+/* Function to use for `sin(double)'. */
 #undef SIN_FOR_DOUBLE
 
-/* function number to use for sin(double) */
+/* Function number to use for `sin(double)'. */
 #undef SIN_FOR_DOUBLE_NUM
 
-/* function to use for sin(float) */
+/* Function to use for `sin(float)'. */
 #undef SIN_FOR_FLOAT
 
-/* function number to use for sin(float) */
+/* Function number to use for `sin(float)'. */
 #undef SIN_FOR_FLOAT_NUM
 
-/* function to use for sin(long double) */
+/* Function to use for `sin(long double)'. */
 #undef SIN_FOR_LONG_DOUBLE
 
-/* function number to use for sin(long double) */
+/* Function number to use for `sin(long double)'. */
 #undef SIN_FOR_LONG_DOUBLE_NUM
 
 /* The size of a `unsigned int', as computed by sizeof. */
@@ -222,19 +288,25 @@
 /* The size of a `unsigned long long int', as computed by sizeof. */
 #undef SIZEOF_UNSIGNED_LONG_LONG_INT
 
-/* The directory which holds the uninstalled data files */
+/* The size of a `wchar_t', as computed by sizeof. */
+#undef SIZEOF_WCHAR_T
+
+/* The directory which holds the uninstalled data files. */
 #undef SRCDATADIR
 
-/* Define if only a static library is built on Cygwin */
+/* Define to 1 if only a static library is built on Cygwin. */
 #undef STATIC_LIB_ONLY
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* define if streams support local */
-#undef STREAMS_SUPPORT_LOCAL
+/* Define to 1 if C++ streams support locales. */
+#undef STREAMS_SUPPORT_LOCALE
 
-/* define if unreachable calls are removed by the optimizer */
+/* Define to 1 if `wchar_t' is available and uses UNICODE characters. */
+#undef UNICODE
+
+/* Define to 1 if unreachable calls are removed by the optimizer. */
 #undef UNREACHABLE_CALLS_REMOVED
 
 /* Version number of package */

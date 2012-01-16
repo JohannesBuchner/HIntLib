@@ -28,4 +28,5 @@ EOF
    rm hintlib_faure_${dim}.txt toms659_faure_${dim}.txt
 done
 
-exit 0
+{ (exit 0); exit 0; }
+

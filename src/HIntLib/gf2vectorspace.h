@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 #ifndef HINTLIB_GF2VECTORSPACE_H
 #define HINTLIB_GF2VECTORSPACE_H 1
 
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 // Implementation in polynomial2base.cpp
 #endif
@@ -50,6 +52,9 @@ public:
    unsigned dimension() const  { return dim; }
 
    void printSuffix (std::ostream &o) const { GF2().printSuffix (o); }
+#ifdef HINTLIB_BUILD_WCHAR
+   void printSuffix (std::wostream &o) const { GF2().printSuffix (o); }
+#endif
 
 protected:
    GF2VectorSpaceBase (unsigned _dim) : dim(_dim) {}
@@ -58,6 +63,9 @@ protected:
 };
 
 std::ostream& operator<< (std::ostream&, const GF2VectorSpaceBase&);
+#ifdef HINTLIB_BUILD_WCHAR
+std::wostream& operator<< (std::wostream&, const GF2VectorSpaceBase&);
+#endif
 
 }  // namespace Private
 
@@ -114,6 +122,12 @@ public:
    void printShort (std::ostream&, const type&) const;
    void printShort (std::ostream& o, const type& a, PrintShortFlag) const
       { printShort (o, a); }
+#ifdef HINTLIB_BUILD_WCHAR
+   void print (std::wostream&, const type&) const;
+   void printShort (std::wostream&, const type&) const;
+   void printShort (std::wostream& o, const type& a, PrintShortFlag) const
+      { printShort (o, a); }
+#endif
 
    HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };

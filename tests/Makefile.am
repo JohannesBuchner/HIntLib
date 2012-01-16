@@ -2,6 +2,7 @@
 
 COMMON_TESTS = \
    abs.test \
+   combination.test \
    partition.test \
    bitop.test \
    eratosthenes.test \
@@ -45,6 +46,9 @@ check_PROGRAMS = \
    test_abs \
    test_arithmetic \
    test_bitop \
+   test_charset \
+   test_charsetw \
+   test_combination \
    test_eratosthenes \
    test_genmatrix \
    test_linearalgebra \
@@ -69,6 +73,9 @@ test_arithmetic_SOURCES    = \
    test_arithmetic_lookupfield.cpp \
    test_arithmetic_modulararithmetic.cpp $(com)
 test_bitop_SOURCES         = test_bitop.cpp $(com)
+test_charset_SOURCES       = test_charset.cpp  test_charset_common.cpp $(com)
+test_charsetw_SOURCES      = test_charsetw.cpp test_charset_common.cpp $(com)
+test_combination_SOURCES   = test_combination.cpp $(com)
 test_eratosthenes_SOURCES  = test_eratosthenes.cpp $(com)
 test_genmatrix_SOURCES     = test_genmatrix.cpp $(com)
 test_linearalgebra_SOURCES = test_linearalgebra.cpp $(com)
@@ -80,7 +87,10 @@ test_rule_SOURCES          = test_rule.cpp $(com)
 test_shiftnet_SOURCES      = test_shiftnet.cpp $(com)
 test_tparameter_SOURCES    = test_tparameter.cpp $(com)
 
-noinst_HEADERS = test.h test_arithmetic_tests.h
+noinst_HEADERS = \
+   test.h \
+   test_arithmetic_tests.h test_arithmetic.h \
+   test_charset.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)/src
 AM_CXXFLAGS = @COMPILERWARNINGS@

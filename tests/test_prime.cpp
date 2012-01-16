@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -47,7 +47,15 @@ using HIntLib::u32;
 
 u32 SIZE = 1000;
 
-const char* options = "n:";
+const char options[] = "n:";
+const char option_msg[] =
+   "  -n n   Largest number to test for (default: 1000).\n";
+const char testProgramParameters[] = "[OPTION]...";
+const char testProgramUsage[] =
+   "Tests whether the functions in Prime work:  "
+   "test(), next(), nth(), eulerPhi()...\n\n";
+const char testProgramName[] = "test_prime";
+const int  testProgramCopyright = 2003;
 
 bool opt (int c, const char* s)
 {
@@ -59,24 +67,15 @@ bool opt (int c, const char* s)
    return false;
 }
 
-void usage()
-{
-   cerr <<
-      "Usage: test_prime [OPTION]...\n\n"
-      "Tests if the functions in Prime work:"
-              " test(), next(), nth(), eulerPhi()\n\n"
-      << option_msg <<
-      "  -n n   Largest number to test for (default = 1000).\n"
-      "\n";
-
-   exit (1);
-}
-
 void test (int argc, char**)
 {
-   if (argc)  usage();
+   if (argc)  usage("Invalid number of arguments!");
    
-   NORMAL  cout << "Searching for prime numbers..." << endl;
+   NORMAL
+   {
+      printHeader (cout);
+      cout << "Searching for prime numbers..." << endl;
+   }
 
    u32 n = 0;
    u32 last = 0;
@@ -91,36 +90,36 @@ void test (int argc, char**)
       NORMAL
       {
          DEB1  cout << setw(10) << (p ? " prime" : "not prime");
-         else if (p)  cout << setw(5) << i << endl;
-         DEB2  cout << flush;
+         else if (p)  cout << i << ' ';
+         cout << flush;
       }
 
       if (p)  // prime
       {
-         DEB2  cout << "." << flush;
+         DEB2  cout << "   ." << flush;
          for (u32 j = 2; j < i; ++j)
          {
             if (i % j == 0)  error ("Should not be prime");
          }
 
-         DEB2  cout << "." << flush;
+         DEB2  cout << '.' << flush;
          try
          {
             if (i != L::Prime::nth(n++))  error ("nth() failed");
          }
          catch (L::PrimeNumberNth &) {}
 
-         DEB2  cout << "." << flush;
+         DEB2  cout << '.' << flush;
          for (u32 j = last+1; j <= i; ++j)
          {
             if (L::Prime::next(j) != i)  error ("next() failed");
          }
 
-         DEB2  cout << "." << flush;
+         DEB2  cout << '.' << flush;
          if (i != L::Prime::eulerPhi(i) + 1)  error ("eulerPhi() failed");
 
          last = i;
-         DEB2  cout << "." << flush;
+         DEB2  cout << '.' << flush;
       }
       else   // not prime
       {

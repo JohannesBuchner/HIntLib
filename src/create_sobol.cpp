@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -44,23 +44,23 @@ typedef Polynomial2<u32> P;
 
 
 /*
- *  List of MAX_DIM primitive polynomials on the field {0,1}, ordered by degree.
+ *  List of MAX_DIM primitive polynomials over the field F_2, ordered by degree.
  *
- *  Polynomials are not sorted to allow property A and A'.  However, all
- *  possible polynomials of lower degree are listed befor the first polynomial
- *  of the next higher degree.
+ *  Polynomials are not sorted in order to allow property A and A'.
+ *  However, all possible polynomials of lower degree are listed befor the
+ *  first polynomial of the next higher degree.
  */
 
 const P polynomials [SobolMatrix::MAX_DIM] =
 {
-   P (2),    // deg 1   x       this one is NOT primitive!!!
+   P (2),    // deg 1   x       this one is NOT primitive, but works anyway!!!
    P (3),    //         x+1
-   P (7),    // deg 2   x²+x+1
-   P (11),   // deg 3   x³+x+1
-   P (13),   //         x³+x²+1
+   P (7),    // deg 2   x^2+x+1
+   P (11),   // deg 3   x^3+x+1
+   P (13),   //         x^3+x^2+1
    P (19),   // deg 4   x^4+x+1
-   P (25),   //         x^4+x³+1
-   P (37),   // deg 5   x^5+x²+1
+   P (25),   //         x^4+x^3+1
+   P (37),   // deg 5   x^5+x^2+1
    P (59),
    P (47),
    P (61),
@@ -110,7 +110,7 @@ const unsigned MAX_DEGREE = 8;  // Maximum degree of polynomials
  */
 
 const u64 vinit [SobolMatrix::MAX_DIM][MAX_DEGREE] =
-{  //  x   x²   x³  x^4  x^5  x^6  x^7  x^8
+{  //  x  x^2  x^3  x^4  x^5  x^6  x^7  x^8
    {   1,   0,   0,   0,   0,   0,   0,   0},
    {   1,   0,   0,   0,   0,   0,   0,   0},
    {   1,   1,   0,   0,   0,   0,   0,   0},
@@ -183,13 +183,13 @@ int main (void)
               "/***   Update " __FILE__ " to update this file.  ***/\n"
               "/*******************************************************/\n"
               "\n"
-              "#ifdef __GNUG__\n"
-              "#pragma implementation\n"
-              "#endif\n"
-              "\n"
               "#define HINTLIB_LIBRARY_OBJECT\n"
               "\n"
               "#include <HIntLib/sobolmatrix.h>\n"
+              "\n"
+              "#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION\n"
+              "#pragma implementation\n"
+              "#endif\n"
               "\n"
               "namespace L = HIntLib;\n"
               "\n"
@@ -231,10 +231,10 @@ int main (void)
 SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _prec)
    : GeneratorMatrix2<u64> (_dim, _m, _prec)
 {
-   // Initialize v for all possible dimensions
-
    for (unsigned d = 0; d < dim; ++d)
    {
+      // Get the polynomial defining the recurrence for the current dimension
+
       P p = polynomials [d];
 
       const int deg = p.degree();
@@ -246,16 +246,13 @@ SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _prec)
          setv(d,i, vinit [d][i] << (prec - 1 - i));
       }
 
-      // Calculate the following elements according to the recurrency
+      // Calculate the following elements according to the recurrence
 
       for (unsigned i = deg; i < m; ++i)
       {
          BaseType x = (*this)(d, i-deg) >> deg;
 
-         for (int j = 1; j <= deg; ++j)
-         {
-            if (p[deg - j])  x ^= (*this)(d, i-j);
-         }
+         for (int j = 1; j <= deg; ++j)  if (p[deg - j])  x ^= (*this)(d, i-j);
 
          setv (d, i, x);
       }

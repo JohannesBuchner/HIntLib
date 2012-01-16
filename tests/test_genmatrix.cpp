@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,28 +34,23 @@ using namespace HIntLib;
 
 unsigned DIM = 40;
 
-const char* options = "d:";
+const char options[] = "d:";
+const char option_msg[] =
+   "  -d dim Dimension of the matrices (default = 40).\n";
+const char testProgramParameters[] = "[OPTION]...";
+const char testProgramUsage[] =
+   "Checks GeneratorMatrix2 and GeneratorMatrixGen.\n\n";
+const char testProgramName[] = "test_genmatrix";
+const int  testProgramCopyright = 2003;
 
 bool opt (int c, const char* s)
 {
    switch (c)
    {
-      case 'd':  DIM = atoi (s); return true;
+      case 'd': DIM = atoi (s); return true;
    }
 
    return false;
-}
-
-void usage()
-{
-   cerr <<
-      "Usage: test_genmatrix [OPTION]...\n\n"
-      "Checks GeneratorMatrix2 and GeneratorMatrixGen.\n\n"
-      << option_msg <<
-      "  -d dim Dimension of the matrices (default = 40).\n"
-      "\n";
-
-   exit (1);
 }
 
 
@@ -108,9 +103,9 @@ void testOneMatrix (M &m)
 {
    initMatrix (m);
 
-   if (! verifyMatrix (m))  error ("getDigit()/setDigit() broken!");
+   if (! verifyMatrix (m))  error ("getDigit()/setDigit() broken");
 
-   if (! (m == m))  error ("operator==() broken!");
+   if (! (m == m))  error ("operator==() broken");
 }
 
 template<class T>
@@ -122,7 +117,7 @@ void testTwoMatrices (M& m1, T& m2)
 
    if (! verifyMatrix (m2))
    {
-      error ("assign() broken!");
+      error ("assign() broken");
       DEB1
       {
          m1.print (cout);
@@ -130,7 +125,7 @@ void testTwoMatrices (M& m1, T& m2)
       }
    }
 
-   if (! (m1 == m2))  error ("operator==() broken!");
+   if (! (m1 == m2))  error ("operator==() broken");
 
    for (unsigned i = 0; i < 5; ++i)
    {
@@ -239,7 +234,7 @@ void oldTests ()
 
    if (! (sobol == sobol2))
    {
-      error ("Testing: Equal in base 2      failed!");
+      error ("Testing: Equal in base 2      failed");
    }
 
    MGen sobolGenAgain (sobol2);
@@ -248,7 +243,7 @@ void oldTests ()
 
    if (! (sobolGen == sobolGenAgain))
    {
-      error ("Testing: Equal in gen-basee      failed!");
+      error ("Testing: Equal in gen-basee      failed");
    }
 
    NORMAL  cout << "Creating 32-bit copy of sobol..." << endl;
@@ -271,7 +266,7 @@ void oldTests ()
    DEB1 cout << "Comparing..." << endl;
    if (! (sobol2truncatedA == sobolGenTruncatedA))
    {
-      error ("Truncated matrices, m < prec  are not equal!");
+      error ("Truncated matrices, m < prec  are not equal");
    }
 
    NORMAL  cout << "Creating truncated vec-base matrix, m < prec..." << endl;
@@ -281,7 +276,7 @@ void oldTests ()
    DEB1 cout << "Comparing..." << endl;
    if (! (sobol2truncatedA == sobolVecTruncatedA))
    {
-      error ("Truncated matrices, m < prec  are not equal!");
+      error ("Truncated matrices, m < prec  are not equal");
    }
 
    // m > prec
@@ -300,7 +295,7 @@ void oldTests ()
    DEB1  cout << "Comparing..." << endl;
    if (! (sobol2truncatedB == sobolGenTruncatedB))
    {
-      error ("Truncated matrices, m > prec  are not equal!");
+      error ("Truncated matrices, m > prec  are not equal");
    }
 
    NORMAL  cout << "Creating truncated vec-base matrix, m > prec..." << endl;
@@ -310,7 +305,7 @@ void oldTests ()
    DEB1  cout << "Comparing..." << endl;
    if (! (sobol2truncatedB == sobolVecTruncatedB))
    {
-      error ("Truncated matrices, m > prec  are not equal!");
+      error ("Truncated matrices, m > prec  are not equal");
    }
 
    // m < prec, equi
@@ -330,7 +325,7 @@ void oldTests ()
    DEB1  cout << "Comparing..." << endl;
    if (! (sobol2truncatedEquiA == sobolGenTruncatedEquiA))
    {
-      error ("Truncated matrices, m < prec, equi  are not equal!");
+      error ("Truncated matrices, m < prec, equi  are not equal");
    }
 
    NORMAL
@@ -341,7 +336,7 @@ void oldTests ()
    DEB1  cout << "Comparing..." << endl;
    if (! (sobol2truncatedEquiA == sobolVecTruncatedEquiA))
    {
-      error ("Truncated matrices, m < prec, equi  are not equal!");
+      error ("Truncated matrices, m < prec, equi  are not equal");
    }
 
    // m > prec, equi
@@ -361,7 +356,7 @@ void oldTests ()
    DEB1 cout << "Comparing..." << endl;
    if (! (sobol2truncatedEquiB == sobolGenTruncatedEquiB))
    {
-      error ("Truncated matrices, m > prec, equi  are not equal!");
+      error ("Truncated matrices, m > prec, equi  are not equal");
    }
 
    NORMAL
@@ -372,7 +367,7 @@ void oldTests ()
    DEB1 cout << "Comparing..." << endl;
    if (! (sobol2truncatedEquiB == sobolVecTruncatedEquiB))
    {
-      error ("Truncated matrices, m > prec, equi  are not equal!");
+      error ("Truncated matrices, m > prec, equi  are not equal");
    }
 
    // prepareForGrayCode
@@ -400,7 +395,11 @@ void oldTests ()
 
 void test (int argc, char**)
 {
-   if (argc)  usage();
+   if (argc)  usage("Too many arguments!");
+
+   if (DIM < 1)  usage ("Dimension must be positive!");
+
+   NORMAL printHeader (cout);
 
 #if 0
    doTests (2);

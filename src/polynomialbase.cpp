@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,10 +17,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-
-#ifdef __GNUG__
-#pragma implementation
-#endif
 
 #define HINTLIB_LIBRARY_OBJECT
 
@@ -39,6 +35,10 @@
 #endif
 
 #include <HIntLib/polynomialbase.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
+#pragma implementation
+#endif
 
 namespace P = HIntLib::Private;
 
@@ -77,6 +77,13 @@ P::PRB::printVariable (std::ostream& o) const
 {
    o << var;
 }
+#ifdef HINTLIB_BUILD_WCHAR
+void
+P::PRB::printVariable (std::wostream& o) const
+{
+   o << wvar;
+}
+#endif
 
 
 /**
@@ -90,25 +97,13 @@ P::PRB::printVariableWithBrackets (std::ostream& o) const
 {
    o << '[' << var << ']';
 }
-
-
-/**
- *  printVariablePow ()
- */
-
+#ifdef HINTLIB_BUILD_WCHAR
 void
-P::PRB::printVariablePow (std::ostream& o, unsigned i) const
+P::PRB::printVariableWithBrackets (std::wostream& o) const
 {
-   o << var;
-
-   switch (i)
-   {
-   case 1:  break;
-   case 2:  o << '\262'; break;
-   case 3:  o << '\263'; break;
-   default: o << '^' << i;
-   }
+   o << L'[' << wvar << L']';
 }
+#endif
 
 
 /**

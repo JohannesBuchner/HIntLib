@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 
 #ifndef HINTLIB_POLYNOMIAL_TCC
 #define HINTLIB_POLYNOMIAL_TCC 1
+
+#include <iostream>
 
 #include <HIntLib/polynomial.h>
 
@@ -43,23 +45,12 @@ Polynomial<T>::Polynomial (const P& p)
 
 /**
  *  Destructor
+ *
+ *  Not inline because it includes the destruction of the vector<T>
  */
 
 template<typename T>
-Polynomial<T>::~Polynomial () {}
-
-
-/**
- *  Assignment
- */
-
-template<typename T>
-Polynomial<T>&
-Polynomial<T>::operator= (const P& p)
-{
-   if (this != &p)  c = p.c;
-   return *this;
-}
+Polynomial<T>::~Polynomial() {}
 
 
 /**
@@ -341,7 +332,7 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Neg<char_two>,A,T> x)
 // If we don't have a characteristic
 
 template<typename T> template<typename A>
-HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Dbl<char_non>,A,T> x)
+HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Dbl<char_none>,A,T> x)
 {
    const A* a = x.a;
    const P* p = x.p;
@@ -408,7 +399,7 @@ Polynomial (Private::PG<Private::Dbl<char_prime>,A,T> x)
 
 template<typename A>
 void
-HIntLib::Private::PRBA<A>::times2Imp (type& p, char_non) const
+HIntLib::Private::PRBA<A>::times2Imp (type& p, char_none) const
 {
    const typename type::DownI end = p.toA0();
          typename type::DownI i = p.fromLc();
@@ -479,7 +470,8 @@ HIntLib::Private::PRBA<A>::times2Imp (type& p, char_zero) const
 // characteristic does not exit
 
 template<typename T> template<typename A>
-HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Times<char_non>,A,T> x)
+HIntLib::Polynomial<T>::Polynomial (
+      Private::PG<Private::Times<char_none>,A,T> x)
 {
    unsigned n = x.n;
    if (!n)  return;
@@ -604,8 +596,8 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Add,A,T> x)
    if (num1 != num2)
    {
       reserve (num1);
-      c.assign (i1, end1 - num2);
-      i1 = end1 - num2;
+      const CDownI oldI1 = i1;
+      std::copy (oldI1, i1 = end1 - num2, back_inserter(c));
    }
    else
    {
@@ -647,8 +639,8 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Sub,A,T> x)
    if (num1 > num2)   // p1 longer: copy extra coefficients
    {
       reserve (num1);
-      c.assign (i1, end1 - num2);
-      i1 = end1 - num2;
+      const CDownI oldI1 = i1;
+      std::copy (oldI1, i1 = end1 - num2, back_inserter(c));
    }
    else if (num1 < num2)   // p2 longer: copy negatives of extra coefficients
    {
@@ -1099,16 +1091,22 @@ HIntLib::Private::PRBA<A>::evaluate (const type& p, const coeff_type& x) const
    if (a.is0 (x))  return p.ct();
 
    coeff_type res = coeff_type();
+   const typename type::CDownI end = p.toA0();
 
    if (a.is1 (x))
    {
-      for (int i = p.degree(); i >= 0; --i)  a.addTo (res, p[i]);
+      for (typename type::CDownI i = p.fromLc(); i != end; ++i)  
+      {
+         a.addTo (res, *i);
+      }
    }
    else
    {
-      for (int i = p.degree(); i >= 0; --i)  res = a.add (a.mul (res, x), p[i]);
+      for (typename type::CDownI i = p.fromLc(); i != end; ++i)  
+      {
+         res = a.add (a.mul (res, x), *i);
+      }
    }
-
    return res;
 }
 
@@ -1126,6 +1124,18 @@ HIntLib::Private::operator<< (std::ostream &o, const PRBA<A> &a)
    a.printVariableWithBrackets (ss);
    return o;
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename A>
+std::wostream&
+HIntLib::Private::operator<< (std::wostream &o, const PRBA<A> &a)
+{
+   WPrinter ss (o);
+   ss << a.getCoeffAlgebra();
+   a.printVariableWithBrackets (ss);
+   return o;
+}
+#endif
 
 
 /**
@@ -1159,6 +1169,9 @@ printShort (std::ostream& o, const type& p, PrintShortFlag f) const
    
    Printer ss (o);
 
+#ifdef HINTLIB_ENCODING_LOCALE
+   const bool utf8 = ss.utf8();
+#endif
    bool needPlus = o.flags() & o.showpos;
    PrintShortFlag flag = PrintShortFlag(f | FIT_FOR_MUL);
 
@@ -1187,7 +1200,7 @@ printShort (std::ostream& o, const type& p, PrintShortFlag f) const
       }
       else if (a.is1(a.neg(coef)))
       {
-         ss << '-';
+         ss.minusSign();
       }
       else
       {
@@ -1206,7 +1219,8 @@ printShort (std::ostream& o, const type& p, PrintShortFlag f) const
       }
       else
       {
-         printVariablePow (ss, i);
+         printVariable (ss);
+         if (i >= 2)  ss.power (i);
       }
 
       needPlus = true;
@@ -1214,6 +1228,92 @@ printShort (std::ostream& o, const type& p, PrintShortFlag f) const
 
    if ((f & FIT_FOR_MUL) && nonZeroTerms >= 2)  ss << ')';
 }
+
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename A>
+void
+HIntLib::Private::PRBA<A>::
+printShort (std::wostream& o, const type& p, PrintShortFlag f) const
+{
+   // The zero-polynomial is a special case
+
+   if (p.is0())
+   {
+      a.printShort (o, coeff_type(), f);  // print zero-element of coeff_algebra
+      return;
+   }
+
+   if (a.is0 (p.lc()))  throw InternalError (__FILE__, __LINE__);
+
+   // count non-zero terms
+
+   int nonZeroTerms = 0;
+
+   for (int i = 0; i <= p.degree(); ++i)
+   {
+      if (! a.is0 (p[i]))  ++nonZeroTerms;
+      if (nonZeroTerms >= 2)  break;
+   }
+   
+   WPrinter ss (o);
+
+   bool needPlus = o.flags() & o.showpos;
+   PrintShortFlag flag = PrintShortFlag(f | FIT_FOR_MUL);
+
+   if ((f & FIT_FOR_MUL) && nonZeroTerms >= 2)
+   {
+      if (needPlus)
+      {
+         ss << L'+';
+         needPlus = false;
+      }
+      ss << L'(';
+   }
+
+   for (int i = p.degree(); i >= 0; --i)
+   {
+      // print coefficient
+
+      const coeff_type coef = p[i];
+      if (a.is0(coef))  continue;
+
+      bool coefPrinted = false;
+
+      if (a.is1(coef))
+      {
+         if (needPlus)  ss << L'+';
+      }
+      else if (a.is1(a.neg(coef)))
+      {
+         ss.minusSign();
+      }
+      else
+      {
+         if (i == 0 && ! (f & FIT_FOR_MUL && nonZeroTerms >= 2)) flag = f;
+         if (needPlus) ss.setf (ss.showpos);
+         a.printShort (ss, coef, flag);
+         coefPrinted = true;
+      }
+
+      // print x^i
+
+      if (i == 0)
+      {
+         ss.unsetf (ss.showpos);
+         if (! coefPrinted)  a.printShort (ss, a.one());
+      }
+      else
+      {
+         printVariable (ss);
+         if (i >= 2)  ss.power (i);
+      }
+
+      needPlus = true;
+   }
+
+   if ((f & FIT_FOR_MUL) && nonZeroTerms >= 2)  ss << L')';
+}
+#endif
 
 
 /**
@@ -1231,6 +1331,19 @@ HIntLib::Private::PRBA<A>::print (std::ostream& o, const type& p) const
    printSuffix (ss);
 }
 
+#ifdef HINTLIB_BUILD_WCHAR
+template<typename A>
+void
+HIntLib::Private::PRBA<A>::print (std::wostream& o, const type& p) const
+{
+   WPrinter ss (o);
+
+   printShort (ss, p);
+   ss << L' ';
+   printSuffix (ss);
+}
+#endif
+
 
 /*********************  Instantiations  **************************************/
 
@@ -1240,7 +1353,7 @@ HIntLib::Private::PRBA<A>::print (std::ostream& o, const type& p) const
 
 #define HINTLIB_INSTANTIATE_POLYNOMIAL_NO_EQUAL(X) \
    template Polynomial<X >::Polynomial(const Polynomial<X >&); \
-   template Polynomial<X >& Polynomial<X >::operator= (const Polynomial<X >&); \
+   template Polynomial<X >::~Polynomial(); \
    template Polynomial<X >& Polynomial<X >::divByX (unsigned); \
    template Polynomial<X >& Polynomial<X >::mulByX (unsigned);
 
@@ -1257,6 +1370,16 @@ HIntLib::Private::PRBA<A>::print (std::ostream& o, const type& p) const
 /**
  *  Instantiate Polynomial Ring Base
  */
+
+#ifdef HINTLIB_BUILD_WCHAR
+#define HINTLIB_INSTANTIATE_POLYNOMIALRING_BB_W(Y) \
+   template std::wostream& operator<< (std::wostream &, const PRBA<Y > &); \
+   template void PRBA<Y >::print (std::wostream &, const type&) const; \
+   template void PRBA<Y >::printShort \
+               (std::wostream &, const type&, PrintShortFlag) const;
+#else
+#define HINTLIB_INSTANTIATE_POLYNOMIALRING_BB_W(Y)
+#endif
 
 #define HINTLIB_INSTANTIATE_POLYNOMIALRING_BB(Y) \
    template Polynomial<Y::type>::Polynomial(Private::PG<Private::X,Y >); \
@@ -1283,6 +1406,7 @@ HIntLib::Private::PRBA<A>::print (std::ostream& o, const type& p) const
    template Polynomial<Y::type>::Polynomial \
       (Private::PG<Private::Derivative,Y >); \
    namespace Private { \
+   HINTLIB_INSTANTIATE_POLYNOMIALRING_BB_W(Y) \
    template unsigned PRBA<Y >::indexImp (const type&, Y::size_category) const; \
    template bool PRBA<Y >::is1 (const type&) const; \
    template bool PRBA<Y >::isMonic (const type&) const; \

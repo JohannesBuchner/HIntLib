@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,15 +18,15 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #define HINTLIB_LIBRARY_OBJECT
 
 #include <memory>
 
 #include <HIntLib/tparameter.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
+#pragma implementation
+#endif
 
 #include <HIntLib/generatormatrix2row.h>
 #include <HIntLib/generatormatrixgen.h>
@@ -49,6 +49,13 @@ namespace
    {
       return gm.getBase() == 2
           && int(gm.getM()) <= std::numeric_limits<L::u32>::digits;
+   }
+
+   inline
+   bool use64bit (const GMGen &gm)
+   {
+      return gm.getBase() == 2
+          && int(gm.getM()) <= std::numeric_limits<L::u64>::digits;
    }
 
 }  // anonymous namespace
@@ -87,18 +94,18 @@ template<typename T> T L::TCalc2<T>::selection [];
 /**
  *  check()
  *
- *  Checks if (at least) a certain thickness is present.
+ *  Checks if (at least) a certain strength is present.
  *
  *  If _dimOpt_ is true, only partitions containing a vector from the last
  *  matrix are checked.
  */
 
 template<typename T>
-bool L::TCalc2<T>::check (int thickness, bool dimOpt)
+bool L::TCalc2<T>::check (int strength, bool dimOpt)
 {
-   // choose these _thickness_ vectors from c
+   // choose these _strength vectors from c
 
-   initial_partition (&partition[0], &partition[dim], thickness);
+   initial_partition (&partition[0], &partition[dim], strength);
 
    // if we have checkt a low-dimensional submatrix already, at least one
    // vector has to come from the new dimension
@@ -112,7 +119,7 @@ bool L::TCalc2<T>::check (int thickness, bool dimOpt)
    do
    {
       copyToSelection ();
-      if (singular (thickness))  return false;
+      if (singular (strength))  return false;
    }
    while (next_partition (&partition[0], &partition[dim]));
 
@@ -123,21 +130,21 @@ bool L::TCalc2<T>::check (int thickness, bool dimOpt)
 /**
  *  checkTO ()
  *
- *  Checks if (at least) a certain thickness is present.
+ *  Checks if (at least) a certain strength is present.
  *
- *  The check is performed under the assumption that a thickness of
- *  _thickness_-1 is present.
+ *  The check is performed under the assumption that a strength of
+ *  _strength-1 is present.
  *
  *  If _dimOpt_ is true, only partitions containing a vector from the last
  *  matrix are checked.
  */
 
 template<typename T>
-bool L::TCalc2<T>::checkTO (int thickness, bool dimOpt)
+bool L::TCalc2<T>::checkTO (int strength, bool dimOpt)
 {
-   // choose these _thickness_ vectors from c
+   // choose these _strength vectors from c
 
-   initial_partition (&partition[0], &partition[dim], thickness);
+   initial_partition (&partition[0], &partition[dim], strength);
 
    // if we have checkt a low-dimensional submatrix already, at least one
    // vector has to come from the new dimension
@@ -178,48 +185,58 @@ bool L::TCalc2<T>::checkTO (int thickness, bool dimOpt)
 /**
  *  checkRestricted()
  *
- *  Checks if (at least) a certain thickness is present. Only partitions with
+ *  Checks if (at least) a certain strength is present. Only partitions with
  *  at most _maxRows_ per matrix considered.
  */
 
+// #include <iostream>
 template<typename T>
-bool L::TCalc2<T>::checkRestricted (int thickness, int maxRows)
+bool L::TCalc2<T>::checkRestricted (int strength, int maxRows)
 {
-   if (thickness > maxRows * dim)  return true;;
+   if (strength > maxRows * dim)  return true;;
 
    // choose these _numVectors_ vectors from c
 
-   initial_partition (&partition[0], &partition[dim], maxRows, thickness);
+   initial_partition (&partition[0], &partition[dim], maxRows, strength);
 
    do
    {
       copyToSelection ();
 
-      if (singular (thickness))  return false;
+      if (singular (strength))
+      {
+#if 0
+         for (int i = 0; i < dim; ++i)  std::cout << partition[i];
+         std::cout <<'\n';
+#endif
+         
+         return false;
+      }
    }
    while (next_partition (&partition[0], &partition[dim], maxRows));
 
    return true;
 }
 
+
 /**
  *  checkRestrictedRO()
  *
- *  Checks if (at least) a certain thickness is present. Only partitions with
+ *  Checks if (at least) a certain strength is present. Only partitions with
  *  at most _maxRows_ per matrix considered.
  *
- *  The check is performed under the assumption that the thickness is present
+ *  The check is performed under the assumption that the strength is present
  *  considerung at most _maxRows_-1 per matrix.
  */
 
 template<typename T>
-bool L::TCalc2<T>::checkRestrictedRO (int thickness, int maxRows)
+bool L::TCalc2<T>::checkRestrictedRO (int strength, int maxRows)
 {
-   if (thickness > maxRows * dim)  return true;;
+   if (strength > maxRows * dim)  return true;;
 
    // choose these _numVectors_ vectors from c
 
-   initial_partition (&partition[0], &partition[dim], maxRows, thickness);
+   initial_partition (&partition[0], &partition[dim], maxRows, strength);
 
    do
    {
@@ -229,31 +246,32 @@ bool L::TCalc2<T>::checkRestrictedRO (int thickness, int maxRows)
 
       copyToSelection ();
 
-      if (singular (thickness))  return false;
+      if (singular (strength))  return false;
    }
    while (next_partition (&partition[0], &partition[dim], maxRows));
 
    return true;
 }
 
+
 /**
  *  checkRestrictedT0
  *
- *  Checks if (at least) a certain thickness is present.  Only partitions with
+ *  Checks if (at least) a certain strength is present.  Only partitions with
  *  at most _maxRows_ per matrix are considered.
  *
- *  The check is performed under the assumption that a thickness of
- *  _thickness_-1 is present.
+ *  The check is performed under the assumption that a strength of
+ *  _strength-1 is present.
  */
 
 template<typename T>
-bool L::TCalc2<T>::checkRestrictedTO (int thickness, int maxRows)
+bool L::TCalc2<T>::checkRestrictedTO (int strength, int maxRows)
 {
-   if (thickness > maxRows * dim)  return true;
+   if (strength > maxRows * dim)  return true;
 
    // choose these _numVectors_ vectors from c
 
-   initial_partition (&partition[0], &partition[dim], maxRows, thickness);
+   initial_partition (&partition[0], &partition[dim], maxRows, strength);
 
    do
    {
@@ -280,27 +298,28 @@ bool L::TCalc2<T>::checkRestrictedTO (int thickness, int maxRows)
    return true;
 }
 
+
 /**
  *  checkRestrictedT0RO
  *
- *  Checks if (at least) a certain thickness is present.  Only partitions with
+ *  Checks if (at least) a certain strength is present.  Only partitions with
  *  at most _maxRows_ per matrix are considered.
  *
- *  The check is performed under the assumption that a thickness of
- *  _thickness_-1 is present.
+ *  The check is performed under the assumption that a strength of
+ *  _strength-1 is present.
  *
- *  The check is performed under the assumption that the thickness is present
+ *  The check is performed under the assumption that the strength is present
  *  considerung at most _maxRows_-1 per matrix.
  */
 
 template<typename T>
-bool L::TCalc2<T>::checkRestrictedTORO (int thickness, int maxRows)
+bool L::TCalc2<T>::checkRestrictedTORO (int strength, int maxRows)
 {
-   if (thickness > maxRows * dim)  return true;
+   if (strength > maxRows * dim)  return true;
 
    // choose these _numVectors_ vectors from c
 
-   initial_partition (&partition[0], &partition[dim], maxRows, thickness);
+   initial_partition (&partition[0], &partition[dim], maxRows, strength);
 
    do
    {
@@ -389,9 +408,9 @@ L::TCalcGen::copyToSelection ()
  *  check()
  */
 
-bool L::TCalcGen::check (int thickness, bool dimOpt)
+bool L::TCalcGen::check (int strength, bool dimOpt)
 {
-   initial_partition (&partition[0], &partition[dim], thickness);
+   initial_partition (&partition[0], &partition[dim], strength);
 
    // if we have checked a low-dimensional submatrix already, at least one
    // vector must come from the new dimension
@@ -405,51 +424,53 @@ bool L::TCalcGen::check (int thickness, bool dimOpt)
    do
    {
       copyToSelection ();
-      if (singular (thickness))  return false;
+      if (singular (strength))  return false;
    }
    while (next_partition (&partition[0], &partition[dim]));
 
    return true;
 }
 
+
 /**
  *  checkRestricted()
  *
- *  Checks if (at least) a certain thickness is present. Only partitions with
+ *  Checks if (at least) a certain strength is present. Only partitions with
  *  at most _maxRows_ per matrix considered.
  */
 
-bool L::TCalcGen::checkRestricted (int thickness, int maxRows)
+bool L::TCalcGen::checkRestricted (int strength, int maxRows)
 {
-   if (thickness > maxRows * dim)  return true;
+   if (strength > maxRows * dim)  return true;
 
-   initial_partition (&partition[0], &partition[dim], maxRows, thickness);
+   initial_partition (&partition[0], &partition[dim], maxRows, strength);
 
    do
    {
       copyToSelection ();
-      if (singular (thickness))  return false;
+      if (singular (strength))  return false;
    }
    while (next_partition (&partition[0], &partition[dim], maxRows));
 
    return true;
 }
 
+
 /**
  *  checkRestrictedRO()
  *
- *  Checks if (at least) a certain thickness is present. Only partitions with
+ *  Checks if (at least) a certain strength is present. Only partitions with
  *  at most _maxRows_ per matrix considered.
  *
- *  The check is performed under the assumption that the thickness is present
+ *  The check is performed under the assumption that the strength is present
  *  considerung at most _maxRows_-1 per matrix.
  */
 
-bool L::TCalcGen::checkRestrictedRO (int thickness, int maxRows)
+bool L::TCalcGen::checkRestrictedRO (int strength, int maxRows)
 {
-   if (thickness > maxRows * dim)  return true;
+   if (strength > maxRows * dim)  return true;
 
-   // Partition  thickness-maxRows  elements on  dim-1  stacks.
+   // Partition  strength-maxRows  elements on  dim-1  stacks.
    // Then, add an additional stack with  maxRows  elements.
    // Adding this extra stack ensures that at least one stack with  maxRows
    //   elements is present.
@@ -457,7 +478,7 @@ bool L::TCalcGen::checkRestrictedRO (int thickness, int maxRows)
    //   elements ensures that no combination is created twice.
 
    initial_partition (
-         &partition[0], &partition[dim-1], maxRows, thickness - maxRows);
+         &partition[0], &partition[dim-1], maxRows, strength - maxRows);
 
    do
    {
@@ -474,7 +495,16 @@ bool L::TCalcGen::checkRestrictedRO (int thickness, int maxRows)
          for (int d = pos + 1; d < dim; ++d)
             copyToSelection (d, partition[d-1], l);
 
-         if (singular (thickness))  return false;
+         if (singular (strength))
+         {
+#if 0
+            for (int d = 0; d < pos; ++d)  std::cout << partition[d];
+            std::cout << maxRows;
+            for (int d = pos + 1; d < dim; ++d)std::cout << partition[d];
+            std::cout << '\n';
+#endif
+            return false;
+         }
       }
    }
    while (next_partition (&partition[0], &partition[dim-1], maxRows));
@@ -506,6 +536,16 @@ bool L::confirmT (const GeneratorMatrix& gm, int t, TOption opts)
       else
          return calc.check (k, opts & LOWER_DIM_OK);
    }
+   else if (use64bit (gm))
+   {
+      GeneratorMatrix2Row<u64> gm2 (gm1);
+      TCalc2<u64> calc (gm2);
+
+      if (opts & LARGER_T_OK)
+         return calc.checkTO (k, opts & LOWER_DIM_OK);
+      else
+         return calc.check (k, opts & LOWER_DIM_OK);
+   }
    else
    {
       GMGen gm2 (gm1);
@@ -513,6 +553,7 @@ bool L::confirmT (const GeneratorMatrix& gm, int t, TOption opts)
       return calc.check (k, opts & LOWER_DIM_OK);
    }
 }
+
 
 bool L::confirmTRestricted (
       const GeneratorMatrix& gm, int t, int maxRows, TOption opts)
@@ -522,8 +563,8 @@ bool L::confirmTRestricted (
    if (t < 0 || t > int (gm.getM()))  throw FIXME (__FILE__, __LINE__);
    if (maxRows > int (gm.getPrec()))  throw FIXME (__FILE__, __LINE__);
 
-   const int thickness = gm.getM() - t;
-   const int numRows = std::min (maxRows, thickness);
+   const int strength = gm.getM() - t;
+   const int numRows = std::min (maxRows, strength);
 
    AdjustPrec gm1 (numRows, gm);
 
@@ -532,19 +573,39 @@ bool L::confirmTRestricted (
       GeneratorMatrix2Row<u32> gm2 (gm1);
       TCalc2<u32> calc (gm2);
 
-      if ((opts & LOWER_RESTRICTION_OK) && thickness > 1)
+      if ((opts & LOWER_RESTRICTION_OK) && strength > 1)
       {
          if (opts & LARGER_T_OK)
-            return calc.checkRestrictedTORO (thickness, maxRows);
+            return calc.checkRestrictedTORO (strength, maxRows);
          else
-            return calc.checkRestrictedRO   (thickness, maxRows);
+            return calc.checkRestrictedRO   (strength, maxRows);
       }
       else
       {
          if (opts & LARGER_T_OK)
-            return calc.checkRestrictedTO (thickness, maxRows);
+            return calc.checkRestrictedTO (strength, maxRows);
          else
-            return calc.checkRestricted   (thickness, maxRows);
+            return calc.checkRestricted   (strength, maxRows);
+      }
+   }
+   else if (use64bit (gm))
+   {
+      GeneratorMatrix2Row<u64> gm2 (gm1);
+      TCalc2<u64> calc (gm2);
+
+      if ((opts & LOWER_RESTRICTION_OK) && strength > 1)
+      {
+         if (opts & LARGER_T_OK)
+            return calc.checkRestrictedTORO (strength, maxRows);
+         else
+            return calc.checkRestrictedRO   (strength, maxRows);
+      }
+      else
+      {
+         if (opts & LARGER_T_OK)
+            return calc.checkRestrictedTO (strength, maxRows);
+         else
+            return calc.checkRestricted   (strength, maxRows);
       }
    }
    else
@@ -554,14 +615,15 @@ bool L::confirmTRestricted (
 
       // there is no way to optimize for LARGER_T_OK in base > 2
 
-      if ((opts & LOWER_RESTRICTION_OK) && thickness > 1)
+      if ((opts & LOWER_RESTRICTION_OK) && strength > 1)
       {
-         return calc.checkRestrictedRO (thickness, maxRows);
+         return calc.checkRestrictedRO (strength, maxRows);
       }
       else
-         return calc.checkRestricted   (thickness, maxRows);
+         return calc.checkRestricted   (strength, maxRows);
    }
 }
+
 
 int L::tParameter (const GeneratorMatrix& gm, int lb, int ub, TOption opts)
 {
@@ -604,6 +666,19 @@ int L::tParameter (const GeneratorMatrix& gm, int lb, int ub, TOption opts)
          }
       }
    }
+   else if (use64bit (gm1))
+   {
+      GeneratorMatrix2Row<u64> gm2 (gm1);
+      TCalc2<u64> calc (gm2);
+
+      for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
+      {
+         if (! calc.checkTO (numVectors, opts & LOWER_DIM_OK))
+         {
+            return M - numVectors + 1;
+         }
+      }
+   }
    else
    {
       GMGen gm2 (gm1);
@@ -625,6 +700,7 @@ int L::tParameter (const GeneratorMatrix& gm, int lb, int ub, TOption opts)
 
    return lb;
 }
+
 
 int L::tParameterRestricted (
       const GeneratorMatrix& gm, int lb, int ub, int maxRows, TOption opts)
@@ -650,6 +726,19 @@ int L::tParameterRestricted (
    {
       GeneratorMatrix2Row<u32> gm2 (gm1);
       TCalc2<u32> calc (gm2);
+
+      for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
+      {
+         if (! calc.checkRestrictedTO (numVectors, maxRows))
+         {
+            return M - numVectors + 1;
+         }
+      }
+   }
+   else if (use64bit (gm1))
+   {
+      GeneratorMatrix2Row<u64> gm2 (gm1);
+      TCalc2<u64> calc (gm2);
 
       for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
       {
@@ -706,7 +795,7 @@ int L::tParameter1DimProjection (const GeneratorMatrix& gm, unsigned d)
    
    std::auto_ptr<LinearAlgebra> la (LinearAlgebra::make (gm.getBase()));
 
-   return la->numLinearlyIndependentVectors (matrix.begin(), prec, m);
+   return m - la->numLinearlyIndependentVectors (matrix.begin(), prec, m);
 }
 
 
@@ -721,7 +810,7 @@ int L::tParameterMax1DimProjection (const GeneratorMatrix& gm)
    const unsigned prec = gm.getPrec();
 
    Array<unsigned char> matrix (m * prec);
-   MaxFinder<unsigned> mf;
+   MinFinder<unsigned> mf;
 
    for (unsigned d = 0; d < dim; ++d)
    {
@@ -738,7 +827,7 @@ int L::tParameterMax1DimProjection (const GeneratorMatrix& gm)
       mf << la->numLinearlyIndependentVectors (matrix.begin(), prec, m);
    }
 
-   return mf.getMaximum();
+   return m - mf.getMinimum();
 }
 
 
@@ -751,7 +840,7 @@ int L::tParameter2DimProjection
 {
    unsigned dimensions [2];
    dimensions [0] = d1;
-   dimensions [0] = d2;
+   dimensions [1] = d2;
 
    SelectDimensions gm2 (dimensions, dimensions + 2, gm);
 

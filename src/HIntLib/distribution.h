@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schuerer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,10 +27,11 @@
 #ifndef HINTLIB_DISTRIBUTION_H
 #define HINTLIB_DISTRIBUTION_H 1
  
-#ifdef __GNUG__
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_USE_INTERFACE_IMPLEMENTATION
 #pragma interface
 #endif
-
 
 #include <HIntLib/hypercube.h>
 #include <HIntLib/shiftscale.h>
@@ -126,6 +127,34 @@ private:
    const unsigned dim;
    const ShiftScale ss;
 };
+
+
+/**
+ *  normalDistribution()
+ */
+
+template<class PRNG>
+real normalDistribution (PRNG &prng)   //  mean = 0, stddev = 1
+{
+   double v1, v2, s;
+   do
+   {
+      v1 = uniform (prng, -1.0, 1.0);
+      v2 = uniform (prng, -1.0, 1.0);
+      s = v1 * v1 + v2 * v2;
+   }
+   while (s >= 1.0);
+
+   return v1 * HINTLIB_MN sqrt (-2.0 * HINTLIB_MN log (s) / s);
+}
+
+template<class PRNG>
+inline
+real normalDistribution (PRNG &prng, real mean, real stddev)
+{
+   return mean + stddev * normalDistribution (prng);
+}
+
 
 } // namespace HIntLib
 
