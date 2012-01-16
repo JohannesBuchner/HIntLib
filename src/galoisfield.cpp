@@ -43,7 +43,7 @@ namespace L = HIntLib;
 
 template<class B>
 L::GaloisField<B>::GaloisField (unsigned base, unsigned exponent)
-   : ModularArithmeticField<PolynomialRingField<ModularIntegerField<B> > >
+   : ModularArithField<PolynomialRing<ModularArithField<B> > >
       (Poly (Field (base)),
        findPoly (base, exponent))
 {}

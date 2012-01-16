@@ -1,6 +1,6 @@
 #! /bin/sh
 
-./test_arithmetic -s -n 3000
+./test_arithmetic -n 4000
 
 exit $?
 

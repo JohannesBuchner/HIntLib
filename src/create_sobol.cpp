@@ -156,7 +156,7 @@ const u64 vinit [SobolMatrix::MAX_DIM][MAX_DEGREE] =
 class SobolM : public  HeapAllocatedGeneratorMatrix2<u64>
 {
 public:
-   SobolM (unsigned _dim, unsigned _m, unsigned _prec);
+   SobolM (unsigned _dim, unsigned _m, unsigned _vec);
 };
 
 
@@ -166,55 +166,64 @@ public:
 
 int main (void)
 {
-   SobolM m (SobolMatrix::MAX_DIM,
-             SobolMatrix::MAX_LOG_N,
-             SobolMatrix::PRECISION);
-
-   cout << "/*******************************************************/\n"
-           "/***   This file is program-generated!               ***/\n"
-           "/***                                                 ***/\n"
-           "/***   Do not change!!!                              ***/\n"
-           "/***                                                 ***/\n"
-           "/***   Update " __FILE__ " to update this file.  ***/\n"
-           "/*******************************************************/\n"
-           "\n"
-           "#ifdef __GNUG__\n"
-           "#pragma implementation\n"
-           "#endif\n"
-           "\n"
-           "#include <HIntLib/sobolmatrix.h>\n"
-           "\n"
-           "namespace L = HIntLib;\n"
-           "\n"
-           "const L::u64 L::SobolMatrix::v_mem [MAX_LOG_N][MAX_DIM] =\n";
-
-   m.dumpAsCArray (cout);
-
-   cout << "\n"
-           "const unsigned L::SobolMatrix::t_s [MAX_DIM] =\n"
-           "{\n";
-
-   unsigned sum = 0;
-
-   for (unsigned i = 0; i < SobolMatrix::MAX_DIM; ++i)
+   try
    {
-      sum += polynomials [i].degree() - 1;
+      SobolM m (SobolMatrix::MAX_DIM,
+                SobolMatrix::MAX_LOG_N,
+                SobolMatrix::TOTAL_PREC);
 
-      cout << setw(6) << sum << ",   // t_s [" << i + 1 << "]\n";
-   }
+      cout << "/*******************************************************/\n"
+              "/***   This file is program-generated!               ***/\n"
+              "/***                                                 ***/\n"
+              "/***   Do not change!!!                              ***/\n"
+              "/***                                                 ***/\n"
+              "/***   Update " __FILE__ " to update this file.  ***/\n"
+              "/*******************************************************/\n"
+              "\n"
+              "#ifdef __GNUG__\n"
+              "#pragma implementation\n"
+              "#endif\n"
+              "\n"
+              "#include <HIntLib/sobolmatrix.h>\n"
+              "\n"
+              "namespace L = HIntLib;\n"
+              "\n"
+              "const L::u64 L::SobolMatrix::v_mem [MAX_LOG_N][MAX_DIM] =\n";
 
-   cout << "};\n\n";
+      m.CArrayDump (cout);
+
+      cout << "\n"
+              "const unsigned L::SobolMatrix::t_s [MAX_DIM] =\n"
+              "{\n";
+
+      unsigned sum = 0;
+
+      for (unsigned i = 0; i < SobolMatrix::MAX_DIM; ++i)
+      {
+         sum += polynomials [i].degree() - 1;
+   
+         cout << setw(6) << sum << ",   // t_s [" << i + 1 << "]\n";
+      }
+
+      cout << "};\n\n";
  
-   return 0;
-} 
+      return 0;
+   } 
+   catch (std::exception &e)
+   {
+      std::cerr << "Exception: " << e.what() << std::endl;
+      throw;
+   }
+}
+
 
 
 /**
  *   Calculation of vectors v according to Bratley-Fox
  */
 
-SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _prec)
-   : HeapAllocatedGeneratorMatrix2<u64> (_dim, _m, _prec)
+SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _totalPrec)
+   : HeapAllocatedGeneratorMatrix2<u64> (_dim, _m, _totalPrec)
 {
    // Initialize v for all possible dimensions
 
@@ -226,7 +235,10 @@ SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _prec)
 
       // Initializ the first elements of v from the table
 
-      for (int i = 0; i < deg; ++i)  set(d,i, vinit [d][i] << (prec - 1 - i));
+      for (int i = 0; i < deg; ++i)
+      {
+         setv(d,i, vinit [d][i] << (totalPrec - 1 - i));
+      }
 
       // Calculate the following elements according to the recurrency
 
@@ -239,7 +251,7 @@ SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _prec)
             if (p[deg - j])  x ^= operator()(d, i-j);
          }
 
-         set (d, i, x);
+         setv (d, i, x);
       }
    }  //  for dim
 }

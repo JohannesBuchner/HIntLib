@@ -2,6 +2,66 @@
 Change Log
 ==========
 
+0.0.4    June 16, 2003
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     29352   99405  729424 total
+
+Algebraic structures:
+
++ algebra.h defines algebra_ and polynomial_tag's, TrivialFieldMembers and
+  BitOpBasedAddition
++ algebra_tag and polynomial_tag used in all algebraic structures
++ test_arithmetic completely rewritten. Examines all features of all algebraic
+  structures based on their algebra_category.
++ Many missing members included in various algebraic structures
++ print(), printShort() and printSuffix() for algebraic structures
++ PolynomialRing<A> can determine its algebra_category based on A
++ New algorithm for printing polynomials
++ PolynomialRing::quot() and ::rem() do not use ::div()
++ evaluate() for polynomial rings
+/ Name change: ModularArithmetic* -> ModularArith*
+/ ModularInteger* replaced by a specialization of ModularArith*
++ ModularArith detects polynomials and avoids unnecessary reductions
++ Additional eratosthenes() for arbitrary Euclidean rings
++ OneDimVectorSpace, GF2, GF2VectorSpace
+/ Name change: PrecalculatedField* -> LookupField*
++ LookupField uses RefCountingAlgebra
++ LookupFieldPow2 and LookupFieldPrime (based on LookupFieldMulOnly)
++ LookupVectorSpace, LookupVectorSpacePow2, VectorSpacePow2
+
+GeneratorMatrix:
+
+- Output of GeneratorMatrix::dump() was transposed
++ Completely revised interface, allowing vectorization
+  GeneratorMatrix2 becomes a special case of vectorization
++ New members: getVectorization(), getPrec(), getTotalPrec(), setVector(),
+  getVector(), getDigit(), setDigit(), set(), setv()
+/ Name change: dump* -> *Dump
++ operator== and operator= for arbitrary combinations of GeneratorMatrix'es
++ GMCopy object to specify copy operation
+
+DigitalNetGen:
+
++ Vectorization
++ Accepts arbitrary GeneratorMatrix'es
+
+
+DigitalNet2:
+
++ Adding -1.0 for IEEE-Magic is done as part of the ShiftScale
++ GF2VectorSpace and GF2 is used internally
++ Accepts arbitrary GeneratorMatrix'es with base=2
+/ DigitalNet2Naive removed
+
+Other changes:
+
++ t_parameter2 calculates a "restricted" t-parameter
++ operator<<(ostream&, X) treats falgs, precision and locale correctly
++ Prime::isPrimePower()
+- tests/qrnsequence: exit1 instead of exit 1
++ tests/tparameter:  Checks t_parameter() and t_parameter2()
+
 
 0.0.3    Apr 15, 2003
 

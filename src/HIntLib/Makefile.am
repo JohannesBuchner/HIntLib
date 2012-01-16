@@ -2,7 +2,7 @@
 
 pkginclude_HEADERS = \
    adapt.h                       miser.h \
-   adaptintegrator.h             modulararithmetic.h bitvectorring.h \
+   adaptintegrator.h             modulararithmetic.h \
    adaptintegratorlocallist.h    myalgorithm.h \
    adaptintegratorms.h           mymath.h gcd.h \
    array.h                       mympi.h \
@@ -12,14 +12,14 @@ pkginclude_HEADERS = \
    builtinprng.h                 orbitrule.h \
    compruleintegrator.h          polynomial2.h polynomial.h \
    galoisfield.h \
-   precalculatedfield.h \
+   lookupfield.h \
                                  prime.h integerring.h \
    cubaturerule.h                pseudoembeddedrule.h \
    cubepartitioner.h             qmcintegration.h \
    defaultcubaturerulefactory.h  qmcintegrator.h \
    qmcroutinesimp.h \
    digitalnet2.h                 qrnsequencebase.h \
-   digitalnetgen.h               qrnsequence.h \
+   digitalnetgen.h digitalnetgen.tcc  qrnsequence.h \
    distribution.h                regioncollection.h \
    embeddedrule.h                region.h \
    eratosthenes.h                rule1midpoint.h \
@@ -45,8 +45,9 @@ pkginclude_HEADERS = \
    mersennetwister.h             virtualprng.h \
    minmaxfinder.h \
    prime_generated.h \
-   defaults.h  pointset.h \
-   fallback_limits.h fallback_sstream.h
+   defaults.h  pointset.h algebra.h \
+   fallback_limits.h fallback_sstream.h \
+   onedimvectorspace.h
 
 CLEANFILES = defaults.h prime_generated.h
 

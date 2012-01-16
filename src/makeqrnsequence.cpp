@@ -52,7 +52,9 @@
 #include <HIntLib/digitalnet2.h>
 #include <HIntLib/digitalnetgen.h>
 #include <HIntLib/modulararithmetic.h>
-#include <HIntLib/precalculatedfield.h>
+#include <HIntLib/lookupfield.h>
+#include <HIntLib/polynomial2.h>
+#include <HIntLib/onedimvectorspace.h>
 #include <HIntLib/prime.h>
 #include <HIntLib/mersennetwister.h>
 #include <HIntLib/mcpointset.h>
@@ -112,28 +114,31 @@ GM64* L::Make::generatorMatrix2 (int n, unsigned dim)
     *  3 - Random
     */
 
+   GMCopy copy;
+   copy.dim(dim);
+
    if (n >= 0 && n <= 1)
    {
       if (dim > gm64[n]->getDimension())  throw InvalidDimension(dim);
-      return new GeneratorMatrix2Copy<u64> (*gm64 [n], dim, 0, 0);
+      return new GeneratorMatrix2Copy<u64> (*gm64 [n], copy);
    }
    else if (n == 2)
    {
-      if (dim == 0)  return new HeapAllocatedGeneratorMatrix2<u64> (0);
+      if (dim == 0)  return new HeapAllocatedGeneratorMatrix2<u64> (2, 0);
 
       std::auto_ptr<GeneratorMatrixGen<unsigned char> > m 
          (loadNiederreiterXing (dim < 4 ? 4 : dim));
 
-      return new GeneratorMatrix2Copy<u64> (*m, dim, 0, 0);
+      return new GeneratorMatrix2Copy<u64> (*m, copy);
    }
    else if (n == 3)
    {
-      GM64* m = new HeapAllocatedGeneratorMatrix2<u64> (dim);
+      GM64* m = new HeapAllocatedGeneratorMatrix2<u64> (2, dim);
 
       for (unsigned d = 0; d < m->getDimension(); ++d)
       {
          for (unsigned r = 0; r < m->getM(); ++r)
-            for (unsigned b = 0; b < m->getPrecision(); ++b)
+            for (unsigned b = 0; b < m->getPrec(); ++b)
                m->set(d, r, b, mt->equidist (2));
       }
       return m;
@@ -184,6 +189,9 @@ GMGen8* L::Make::generatorMatrixGen (int n, unsigned dim)
     *        xx base of Niederreiter Matrix
     */
 
+   GMCopy copy;
+   copy.dim(dim);
+
    if (n == 0)
    {
       return new Faure (dim);
@@ -191,12 +199,12 @@ GMGen8* L::Make::generatorMatrixGen (int n, unsigned dim)
    if (n == 1)
    {
       if (dim > gm64[0]->getDimension())  throw InvalidDimension(dim);
-      return new GeneratorMatrixGenCopy<unsigned char> (*gm64 [0], dim, 0, 0);
+      return new GeneratorMatrixGenCopy<unsigned char> (*gm64 [0], copy);
    }
    if (n == 6)
    {
       if (dim == 0)
-         return new HeapAllocatedGeneratorMatrixGen<unsigned char> (2, 0);
+         return new HeapAllocatedGeneratorMatrixGen<unsigned char> (2, 1, 0);
 
       return loadNiederreiterXing (dim < 4 ? 4 : dim);
    }
@@ -284,7 +292,7 @@ L::QRNSequence* L::Make::qrnSequence (int n, const Hypercube &h)
     *   | |
     *   | \__ Generator Matrix 2
     *   |
-    *   \____ 0 - Naive
+    *   \____ 
     *         1 - Normal
     *         2 - Gray-Code
     */
@@ -308,15 +316,14 @@ L::QRNSequence* L::Make::qrnSequence (int n, const Hypercube &h)
       if (type >= 3)  throw QRNSequenceDoesNotExist (n);
 
       typedef DigitalNet2Gray<u64> DN2G;
-      typedef DigitalNet2Naive<u64> DN2X;
 
       QRNSequence* seq;
 
       switch (type)
       {
-         case 0:  seq = new QRNSequenceP<DN2X> (new DN2X (*gm, h)); break;
          case 1:  seq = new QRNSequenceP<DN2G> (new DN2G (*gm, h)); break;
-         case 2:  seq = new QRNSequenceP<DN2G> (new DN2G (*gm, h, false));break;
+         case 2:  seq = new QRNSequenceP<DN2G> (new DN2G (*gm, h, false));
+                  break;
 
          default: throw InternalError (__FILE__, __LINE__);
       }
@@ -353,31 +360,122 @@ L::QRNSequence* L::Make::qrnSequence (int n, const Hypercube &h)
       if (type >= 3)  throw QRNSequenceDoesNotExist (n);
 
       unsigned base = gm->getBase();
+      bool prime = Prime::test (base);
+
+      unsigned vec = digitsRepresentable(static_cast<unsigned char>(base));
+
       QRNSequence* seq;
 
-      typedef PrecalculatedField<unsigned char> Ring;
-      PrecalculatedGaloisField<unsigned char> r (base);
-
-      typedef DigitalNetGenNormal    <Ring, Index> Normal;
-      typedef DigitalNetGenNaive     <Ring, Index> Naive;
-      typedef DigitalNetGenGray      <Ring, Index> Gray;
-      typedef DigitalNetGenCyclicGray<Ring, Index> Cyclic;
-
-      switch (type)
+      if (vec == 1)
+      // if (1)
       {
-         case 0:  seq = new QRNSequenceP<Naive> (new Naive (*gm, r, h)); break;
-         case 1:  seq = new QRNSequenceP<Normal> (new Normal (*gm, r, h));
-                  break;
-         case 2:
-         {
-            if (Prime::test (base))
-               seq = new QRNSequenceP<Cyclic> (new Cyclic (*gm, r, h));
-            else
-               seq = new QRNSequenceP<Gray> (new Gray (*gm, r, h));
+         // Field types
 
-            break;
+         typedef LookupField      <unsigned char> Fgen;
+         typedef LookupFieldPow2  <unsigned char> Fpow2;
+         typedef ModularArithField<unsigned char> Fprime;
+
+         // Field types used for Vector Space construction
+
+         typedef LookupGaloisField    <unsigned char> GFgen;
+         typedef LookupGaloisFieldPow2<unsigned char> GFpow2;
+
+         // Vector Space types
+
+         typedef OneDimVectorSpace<Fgen>   VSgen;
+         typedef OneDimVectorSpace<Fpow2>  VSpow2;
+         typedef OneDimVectorSpace<Fprime> VSprime;
+         typedef OneDimVectorSpace<GF2>    VS2;
+
+         // Digital Net types
+
+         typedef DigitalNetGenNormal    <VSgen,   Index> NormalGen;
+         typedef DigitalNetGenNaive     <VSgen,   Index> NaiveGen;
+         typedef DigitalNetGenGray      <VSgen,   Index> GrayGen;
+         typedef DigitalNetGenGray      <VSpow2,  Index> GrayPow2;
+         typedef DigitalNetGenCyclicGray<VSprime, Index> CyclicPrime;
+         typedef DigitalNetGenCyclicGray<VS2,     Index> Cyclic2;
+
+         switch (type)
+         {
+            case 0:  seq = new QRNSequenceP<NaiveGen> (new NaiveGen (
+                              VSgen(GFgen(base)), *gm, h));
+                     break;
+            case 1:  seq = new QRNSequenceP<NormalGen> (new NormalGen (
+                              VSgen(GFgen(base)), *gm, h));
+                     break;
+            case 2:
+            {
+               if (base == 2)
+                  seq = new QRNSequenceP<Cyclic2> (new Cyclic2 (
+                           VS2(GF2()), *gm, h));
+               else if (prime)
+                  seq = new QRNSequenceP<CyclicPrime> (new CyclicPrime (
+                           VSprime(Fprime(base)), *gm, h));
+               else if (base % 2 == 0)
+                  seq = new QRNSequenceP<GrayPow2> (new GrayPow2 (
+                           VSpow2(GFpow2(base)), *gm, h));
+               else
+                  seq = new QRNSequenceP<GrayGen> (new GrayGen (
+                           VSgen(GFgen(base)), *gm, h));
+               break;
+            }
+            default: throw InternalError (__FILE__, __LINE__);
          }
-         default: throw InternalError (__FILE__, __LINE__);
+      }
+      else   // we can do vectorization
+      {
+         // Field types used for Vector Space construction
+
+         typedef LookupGaloisField    <unsigned char> GFgen;
+         typedef LookupGaloisFieldPow2<unsigned char> GFpow2;
+
+         // Vector Space types
+
+         typedef LookupVectorSpace    <unsigned char,unsigned char> VSgen;
+         typedef LookupVectorSpacePow2<unsigned char,unsigned char> VSpow2;
+
+         typedef VectorSpacePow2<u64> VSpow2full;
+
+         // Digital Net types
+
+         typedef DigitalNetGenNormal    <VSgen,   Index> NormalGen;
+         typedef DigitalNetGenNaive     <VSgen,   Index> NaiveGen;
+         typedef DigitalNetGenGray      <VSgen,   Index> GrayGen;
+         typedef DigitalNetGenGray      <VSpow2,  Index> GrayPow2;
+         typedef DigitalNetGenCyclicGray<VSgen,   Index> CyclicGen;
+         typedef DigitalNetGenCyclicGray<VSpow2,  Index> CyclicPow2;
+
+         VSgen x = VSgen(GFgen(base), vec);
+
+         switch (type)
+         {
+            case 0:  seq = new QRNSequenceP<NaiveGen> (new NaiveGen (
+                              VSgen(GFgen(base), vec), *gm, h));
+                     break;
+            case 1:  seq = new QRNSequenceP<NormalGen> (new NormalGen (
+                              VSgen(GFgen(base), vec), *gm, h));
+                     break;
+            case 2:
+            {
+               if (base == 2)
+                  seq = new QRNSequenceP<CyclicPow2> (new CyclicPow2 (
+                           VSpow2(GFpow2(base), vec), *gm, h));
+               else if (base % 2 == 0)
+               {
+                  seq = new QRNSequenceP<GrayPow2> (new GrayPow2 (
+                           VSpow2(GFpow2(base), vec), *gm, h));
+               }
+               else if (prime)
+                  seq = new QRNSequenceP<CyclicGen> (new CyclicGen (
+                           VSgen(GFgen(base), vec), *gm, h));
+               else
+                  seq = new QRNSequenceP<GrayGen> (new GrayGen (
+                           VSgen(GFgen(base), vec), *gm, h));
+               break;
+            }
+            default: throw InternalError (__FILE__, __LINE__);
+         }
       }
 
       delete gm;
@@ -611,8 +709,8 @@ L::QRNSequence* L::Make::qrnNet (int n, const Hypercube &h, Index size)
       unsigned base = gm->getBase();
       QRNSequence* seq;
 
-      typedef PrecalculatedField<unsigned char> Ring;
-      PrecalculatedGaloisField<unsigned char> r (base);
+      typedef LookupField<unsigned char> Ring;
+      LookupGaloisField<unsigned char> r (base);
 
       typedef DigitalNetGenNormal    <Ring, Index> Normal;
       typedef DigitalNetGenNaive     <Ring, Index> Naive;

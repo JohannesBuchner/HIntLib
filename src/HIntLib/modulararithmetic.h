@@ -27,35 +27,54 @@
 
 #include <iosfwd>
 
-#include <HIntLib/mymath.h>
+#include <HIntLib/defaults.h>
+#include <HIntLib/algebra.h>
 
+#ifdef HINTLIB_HAVE_LIMITS
+  #include <limits>
+#else
+  #include <HIntLib/fallback_limits.h>
+#endif
 
 namespace HIntLib
 {
+namespace Priv
+{
 
 /**
- * Modular Integer Ring
+ * Modular Integer Ring Base
  */
 
 class ModularIntegerRingBase
 {
 public:
-   unsigned size() const  { return m; }
+   unsigned size() const     { return m; }
    unsigned modulus() const  { return m; }
+
 
 protected:
    ModularIntegerRingBase (unsigned _m) : m(_m) {}
+   void checkField() const;
+   unsigned fieldRecip (unsigned) const;
+
    const unsigned m;
+
+          void prnSuffix (std::ostream &) const;
+   static void prnShort (std::ostream &, unsigned);
+          void prn (std::ostream &, unsigned) const;
 };
 
 std::ostream& operator<< (std::ostream &, const ModularIntegerRingBase &);
 
+
+/**
+ * Modular Integer Ring
+ */
+
 template <class T>
 class ModularIntegerRing : public ModularIntegerRingBase
 {
-public:
-
-   typedef T type;
+protected:
 
    ModularIntegerRing(const T _m)
       : ModularIntegerRingBase (unsigned (_m))
@@ -69,6 +88,12 @@ public:
       }
    } 
 
+public:
+
+   typedef T type;
+   typedef ring_tag algebra_category;
+   typedef nopolynomial_tag polynomial_category;
+
    T zero() const  { return T(0); }
    T one()  const  { return T(1); }
 
@@ -79,15 +104,17 @@ public:
    unsigned index (T x) const   { return x; }
 
    T add (const T& a, const T& b) const
-      { return     (unsigned(a) + unsigned(b)) % m; }
+      { unsigned t = unsigned(a) + unsigned(b); return     (t>=m) ? t - m : t; }
    T& addTo (T& a,    const T& b) const
-      { return a = (unsigned(a) + unsigned(b)) % m; }
+      { unsigned t = unsigned(a) + unsigned(b); return a = (t>=m) ? t - m : t; }
 
-   T neg (const T& a) const  { return a > 0  ?  m - a  :  0; }
-   T& negate (T& a) const    { if (a == 0)  return a; return a = m - a; }
+   T neg (const T& a) const  { return a != 0  ?  m - a  :  0; }
+   T& negate (T& a) const    { if (a != 0) a = m - a;  return a; }
 
-   T sub (const T& a, const T& b) const { return   (m + int(a) - int(b)) % m; }
-   T& subFrom (T& a,  const T& b) const { return a=(m + int(a) - int(b)) % m; }
+   T sub (const T& a, const T& b) const
+      { int t = int(a) - int(b); return     (t<0) ? t+m : t; }
+   T& subFrom (T& a,  const T& b) const
+      { int t = int(a) - int(b); return a = (t<0) ? t+m : t; }
 
    T mul (const T& a, const T& b) const
       { return (unsigned(a) * unsigned(b)) % m; }
@@ -97,116 +124,241 @@ public:
    T times (const T& a, unsigned k) const  { return (a * (k % m)) % m; }
    T power (const T& a, unsigned k) const
       { return powerMod (unsigned(a), k, unsigned(m)); }
+
+   void printSuffix (std::ostream &o) const  {  prnSuffix (o); }
+   void printShort (std::ostream &o, const T& a) const  { prnShort (o, a); }
+   void print (std::ostream &o, const T& a) const  { prn (o, a); }
+};
+
+}  // namespace Priv
+
+
+/**
+ *  Modular Arith
+ */
+
+template <class A>
+class ModularArith
+{
+public:
+   typedef typename A::type type;
+   typedef ring_tag algebra_category;
+   typedef nopolynomial_tag polynomial_category;
+
+protected:
+   const A a;
+   const type m;
+
+public:
+   ModularArith (const A& _a, const type& _m) : a(_a), m(_m) {}
+
+   type modulus() const  { return m; }
+   A arithmetic() const  { return a; }
+   unsigned size() const  { return a.numOfRemainders(m); }
+
+   type zero() const  { return a.zero(); }
+   type one()  const  { return a.one(); }
+
+   bool is0 (const type& u) const  { return a.is0(u); }
+   bool is1 (const type& u) const  { return a.is1(u); }
+
+   type element(unsigned i) const  { return a.rem (a.element(i), m); }
+   unsigned index (const type& u) const   { return a.index (u); }
+
+private:
+   typedef typename A::polynomial_category PC;
+
+   // non-polynomials
+
+   type  add (const type& u, const type& v, nopolynomial_tag) const
+      { return     a.rem (a.add (u, v), m); }
+   type& addTo (    type& u, const type& v, nopolynomial_tag) const
+      { return u = a.rem (a.add (u, v), m); }
+
+   type  neg (const type& u, nopolynomial_tag) const
+      { return     a.rem (a.neg (u), m); }
+   type& negate    (type& u, nopolynomial_tag) const
+      { return u = a.rem (a.neg (u), m); }
+
+   type  sub (const type& u, const type& v, nopolynomial_tag) const
+      { return     a.rem (a.sub (u, v), m); }
+   type& subFrom   (type& u, const type& v, nopolynomial_tag) const
+      { return u = a.rem (a.sub (u, v), m); }
+
+   type times (const type& u, unsigned k, nopolynomial_tag) const
+      { return a.rem (a.times (u, k), m); }
+
+   // polynomials
+
+   type  add (const type& u, const type& v, polynomial_tag) const
+      { return a.add   (u, v); }
+   type& addTo (    type& u, const type& v, polynomial_tag) const
+      { return a.addTo (u, v); }
+
+   type  neg (const type& u, polynomial_tag) const  { return a.neg (u); }
+   type& negate    (type& u, polynomial_tag) const  { return a.negate (u); }
+
+   type  sub (const type& u, const type& v, polynomial_tag) const
+      { return a.sub     (u, v); }
+   type& subFrom   (type& u, const type& v, polynomial_tag) const
+      { return a.subFrom (u, v); }
+
+   type times (const type& u, unsigned k, polynomial_tag) const
+      { return a.times (u, k); }
+
+public:
+   type  add (const type& u, const type& v) const { return add   (u,v, PC()); }
+   type& addTo (    type& u, const type& v) const { return addTo (u,v, PC()); }
+
+   type  neg (const type& u) const  { return neg    (u, PC()); }
+   type& negate    (type& u) const  { return negate (u, PC()); }
+
+   type  sub (const type& u, const type& v) const { return sub    (u,v, PC()); }
+   type& subFrom   (type& u, const type& v) const { return subFrom(u,v, PC()); }
+
+   type  mul (const type& u, const type& v) const
+      { return     a.rem (a.mul (u, v), m); }
+   type& mulBy     (type& u, const type& v) const
+      { return u = a.rem (a.mul (u, v), m); }
+
+   type times (const type& u, unsigned k) const  { return times (u,k, PC()); }
+   type power (const type& u, unsigned k) const
+      { return powerMod (a, u, k, m); }
+
+   void print (std::ostream &, const type&) const;
+   void printShort (std::ostream &, const type&) const;
+   void printSuffix (std::ostream &) const;
+};
+
+template <>
+class ModularArith<unsigned char>
+   : public Priv::ModularIntegerRing<unsigned char>
+{
+public:
+   ModularArith(unsigned char m)
+      : Priv::ModularIntegerRing<unsigned char> (m) {}
+};
+
+template <>
+class ModularArith<unsigned short>
+   : public Priv::ModularIntegerRing<unsigned short>
+{
+public:
+   ModularArith(unsigned short m)
+      : Priv::ModularIntegerRing<unsigned short> (m) {}
 };
 
 
 /**
- *  Modular Arithmetic Ring
+ *  operator<<
  */
 
-template <class A>
-class ModularArithmeticRing
-{
-private:
-   typedef typename A::type T;
-
-protected:
-   const A a;
-   const T m;
-
-   T rem (const T& x) const;
-
-public:
-   typedef typename A::type type;
-
-   ModularArithmeticRing(const A _a, const T _m) : a(_a), m(_m) {}
-
-   T modulus() const  { return m; }
-   A arithmetic() const  { return a; }
-
-   T zero() const  { return a.zero(); }
-   T one()  const  { return a.one(); }
-
-   bool is0 (const T& u) const  { return a.is0(u); }
-   bool is1 (const T& u) const  { return a.is1(u); }
-
-   T element(unsigned i) const  { return rem (a.element(i)); }
-   unsigned index (const T& u) const   { return a.index (u); }
-
-   T  add (const T& u, const T& v) const  { return     rem (a.add (u, v)); }
-   T& addTo (    T& u, const T& v) const  { return u = rem (a.add (u, v)); }
-
-   T  neg (const T& u) const  { return     rem (a.neg (u)); }
-   T& negate    (T& u) const  { return u = rem (a.neg (u)); }
-
-   T  sub (const T& u, const T& v) const { return     rem (a.sub (u, v)); }
-   T& subFrom   (T& u, const T& v) const { return u = rem (a.sub (u, v)); }
-
-   T  mul (const T& u, const T& v) const { return     rem (a.mul (u, v)); }
-   T& mulBy     (T& u, const T& v) const { return u = rem (a.mul (u, v)); }
-
-   T times (const T& u, unsigned k) const  { return rem (a.times (u, k)); }
-   T power (const T& u, unsigned k) const  { return powerMod (a, u, k, m); }
-   unsigned size() const  { return a.numOfRemainders(m); }
-};
-
 template<class A>
-std::ostream& operator<< (std::ostream &, const ModularArithmeticRing<A> &);
+std::ostream& operator<< (std::ostream &, const ModularArith<A> &);
+
+template<>
+inline
+std::ostream& operator<< (
+      std::ostream &o, const ModularArith<unsigned char> &a)
+{
+   return o << static_cast<const Priv::ModularIntegerRingBase&> (a);
+}
+
+template<>
+inline
+std::ostream& operator<< (
+      std::ostream &o, const ModularArith<unsigned short> &a)
+{
+   return o << static_cast<const Priv::ModularIntegerRingBase&> (a);
+}
 
 
 /**
  *  Modular Integer Field
  */
 
-template <class T>
-class ModularIntegerField : public ModularIntegerRing<T>
+namespace Priv
 {
-public:
-   ModularIntegerField (const T);
+template <class T>
+class ModularIntegerField : public ModularIntegerRing<T>,
+                            public TrivialFieldMembers<T>
+{
+protected:
 
-   T recip (const T&) const;
+   ModularIntegerField (const T _m) : ModularIntegerRing<T> (_m)
+      { checkField(); }
+
+public:
+   typedef cyclic_tag algebra_category;
+   typedef nopolynomial_tag polynomial_category;
+
+   unsigned characteristic() const  { return m; }
+
+   T recip (const T& x) const { return T (fieldRecip (x)); }
    T unitRecip (const T& u) const  { return recip (u); }
 
    void div (const T& a, const T& b, T& q, T& r) const
       { q = mul (a, recip (b)); r = 0; }
-   T div (const T& a, const T& b) const  { return mul (a, recip(b)); }
+   T div  (const T& a, const T& b) const  { return mul (a, recip(b)); }
+   T quot (const T& a, const T& b) const  { return div (a, b); }
    T& divBy (T& a,  const T& b) const  { return mulBy (a, recip(b)); }
 
    bool isUnit  (T a) const  { return a != 0; }
-   bool isPrime (T)   const  { return false; }
-   bool isIrreducible (T) const { return false; }
+   unsigned norm (T a) const { return a != 0; }
 
    T power (const T& a, unsigned k) const
       { return a ? powerMod (unsigned(a), k % (m-1), unsigned(m)) : 0; }
 };
 
+}  // namespace Priv
+
 
 /**
- *  Modular Arithmetic Field
+ *  Modular Arith Field
  */
 
 template <class A>
-class ModularArithmeticField : public ModularArithmeticRing<A>
+class ModularArithField : public ModularArith<A>,
+                          public TrivialFieldMembers<typename A::type>
 {
-private:
-   typedef typename A::type T;
-
 public:
-   ModularArithmeticField (const A &_a, const T &_m)
-      : ModularArithmeticRing<A> (_a, _m) {}
-   // ModularArithmeticField (unsigned deg, unsigned n = 0);
+   typedef field_tag algebra_category;
+   typedef nopolynomial_tag polynomial_category;
+   typedef typename A::type type;
 
-   T recip (const T&) const;
-   T unitRecip (const T& u) const  { return recip (u); }
+   ModularArithField (const A &_a, const type &_m) : ModularArith<A> (_a, _m) {}
 
-   void div (const T& u, const T& v, T& q, T& r) const
+   unsigned characteristic() const;
+
+   type recip (const type&) const;
+   type unitRecip (const type& u) const  { return recip (u); }
+
+   void div (const type& u, const type& v, type& q, type& r) const
       { q = mul (u, recip (v)); r = a.zero(); }
-   T div (const T& u, const T& v) const  { return mul (u, recip(v)); }
-   T& divBy (T& u,  const T& v) const  { return mulBy (u, recip(v)); }
+   type div (const type& u, const type& v) const  { return mul (u, recip(v)); }
+   type quot (const type& u, const type& v) const  { return div (u, v); }
+   type& divBy (type& u,  const type& v) const  { return mulBy (u, recip(v)); }
 
-   bool isUnit  (const T &u) const  { return ! is0 (u); }
-   bool isPrime (const T &)  const  { return false; }
-   bool isIrreducible (const T &) const { return false; }
+   bool isUnit  (const type& u) const  { return ! is0 (u); }
+   unsigned norm (const type& u) const  { return ! is0 (u); }
+};
+
+template<>
+class ModularArithField<unsigned char>
+      : public Priv::ModularIntegerField<unsigned char>
+{
+public:
+   ModularArithField (unsigned char m)
+      : Priv::ModularIntegerField<unsigned char> (m) {}
+};
+
+template<>
+class ModularArithField<unsigned short>
+      : public Priv::ModularIntegerField<unsigned short>
+{
+public:
+   ModularArithField (unsigned short m)
+      : Priv::ModularIntegerField<unsigned short> (m) {}
 };
 
 }  // namespace HIntLib

@@ -28,16 +28,22 @@
 #include <iosfwd>
 
 #include <HIntLib/mymath.h>
+#include <HIntLib/algebra.h>
 
 
 namespace HIntLib
 {
 
-template <class T>
+template <typename T>
 class NumberRing
 {
+protected:
+   NumberRing() {}
 public:
    typedef T type;
+   typedef nopolynomial_tag polynomial_category;
+
+   unsigned size() const  { return 0; }
 
    T zero() const  { return T(0); }
    T one() const  { return T(1); }
@@ -57,68 +63,82 @@ public:
    T mul (const T& a, const T& b) const  { return a *  b; }
    T& mulBy (T& a,    const T& b) const  { return a *= b; }
 
-   T times (const T& a, int k) const  { return a * T(k); }
-   T power (const T& a, int k) const  { return powInt (a, k); }
+   T times (const T& a, unsigned k) const  { return a * T(k); }
+   T power (const T& a, unsigned k) const  { return powInt (a, k); }
 
-   unsigned size() const  { return 0; }
+   void print (std::ostream &o, const T& a) const  {  o << a; }
+   void printShort (std::ostream &o, const T& a) const  { print (o, a); }
+   void printSuffix (std::ostream &) const  {}
 };
 
-class ZRing {};
-class RRing {};
+class ZRing
+{
+protected:
+   ZRing () {}
+};
 
-template <class T>
+class RRing
+{
+protected:
+   RRing () {}
+};
+
+template <typename T = int>
 class IntegerRing : public NumberRing<T>, public ZRing
 {
 public:
+   typedef euclidean_tag algebra_category; 
+   
    IntegerRing()
    {
       if (   ! std::numeric_limits<T>::is_signed
           || ! std::numeric_limits<T>::is_integer)
       {
-         throw 1;
+         throw InvalidType ("IntegerRing");
       }
    } 
 
-   T element(unsigned i) const
-      { return odd(i)  ?  T(i/2 + 1)  :  -T(i/2); }
-   unsigned index (T x) const
-      { return x > 0  ?  x*2 - 1 :  x * -2; }
+   T element(unsigned) const;
+   unsigned index (T) const;
 
    void div (const T& a, const T& b, T& q, T& r) const { q = a / b; r = a % b; }
+   T quot (const T& a, const T& b) const  { return a / b; }
+   T rem  (const T& a, const T& b) const  { return a % b; }
 
    unsigned numOfRemainders (T x) const  { return abs (x); }
+   unsigned norm (T x) const  { return abs (x); }
 
    bool isUnit  (T a) const  { return a == 1 || a == -1; }
    bool isPrime (T a) const;
    bool isIrreducible (T a) const  { return isPrime (a); }
+   bool isComposit (T a) const;
    T unitRecip (T a) const  { return a; }
 };
 
 
-template <class T = real>
-class RealField : public NumberRing<T>, public RRing
+template <typename T = real>
+class RealField : public NumberRing<T>, public RRing,
+                  public TrivialFieldMembers<T>
 {
 public:
+   typedef field_tag algebra_category; 
+
    RealField()
    {
-      if (std::numeric_limits<T>::is_integer)  throw 1;
+      if (std::numeric_limits<T>::is_integer)  throw InvalidType ("RealField");
    } 
 
-   T element(unsigned i) const
-      { if (i == 0)  return T(0);
-        else return odd(i)  ?  T(i/2 + 1)  :  -T(i/2); }
-   unsigned index (T r) const
-      { int x = int (r); return x > 0  ?  x*2 - 1 :  x * -2; }
+   T element(unsigned) const;
+   unsigned index (T r) const;
 
    T recip (T a) const  { return T(1) / a; }
 
    void div (T a, T b, T& q, T& r) const  { q = a / b; r = T(0); }
-   T div (T a, T b) const  { return a /  b; }
+   T div  (T a, T b) const  { return a / b; }
+   T quot (T a, T b) const  { return a / b; }
    T& divBy (T& a, T b) const  { return a /= b; }
 
    bool isUnit  (T a) const  { return ! is0 (a); }
-   bool isPrime (T) const  { return false; }
-   bool isIrreducible (T) const { return false; }
 };
 
 std::ostream & operator<< (std::ostream &, const ZRing &);

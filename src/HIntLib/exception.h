@@ -290,18 +290,18 @@ namespace HIntLib
       virtual void makeString() const;
    };
 
-   class PrecalculatedFieldException : public ArithmeticException {};
+   class LookupFieldException : public ArithmeticException {};
 
-   class PrecalculatedFieldCopy : public PrecalculatedFieldException
+   class LookupFieldCopy : public LookupFieldException
    {
       virtual void makeString() const;
    };
 
-   class PrecalculatedFieldSet : public PrecalculatedFieldException
+   class LookupFieldSet : public LookupFieldException
    {
       virtual void makeString() const;
    public:
-      PrecalculatedFieldSet (unsigned _index, unsigned _size)
+      LookupFieldSet (unsigned _index, unsigned _size)
          : index (_index), size (_size)  {}
    private:
       const unsigned index;

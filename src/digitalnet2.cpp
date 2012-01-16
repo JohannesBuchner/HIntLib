@@ -35,15 +35,6 @@ namespace L = HIntLib;
 
 using L::Index;
 
-/*****************************************************************************/
-/***         Digital Net                                                   ***/
-/*****************************************************************************/
-
-L::DigitalNet::DigitalNet (unsigned _m)
-   : m (std::min (_m, unsigned (std::numeric_limits<Index>::digits) - 1)),
-     size (Index(1) << m)
-{}
-
 
 /*****************************************************************************/
 /***         Digital Net 2 <T>                                             ***/
@@ -60,20 +51,27 @@ L::DigitalNet2<T>::DigitalNet2 (
    const GeneratorMatrix2<T> &_c, const Hypercube &_h,
    unsigned _m, Index index, bool equi, Truncation _trunc) 
 : QRNSequenceBase(_h),
-  DigitalNet (_m),
-  prec (std::min((_trunc == FULL) ? _c.getPrecision() : m,
-                 unsigned (std::numeric_limits<real>::digits - 1))),
-  c (_c, getDimension(), m, prec, equi),
+  DigitalNet (_c.getBase(), _m),
+  alg(),
+  scalAlg (alg.getScalarAlgebra()),
+  totalPrec (std::min(
+     (_trunc == FULL) ? _c.getTotalPrec() : m,   // what we want
+     unsigned (std::numeric_limits<real>::digits - 1)
+  )), // what makes sense
+
+  c (_c, GMCopy().dim(getDimension()).m(m).totalPrec(totalPrec).equi(equi)),
   x      (getDimension()),
   xStart (getDimension(), 0),
   trunc (_trunc),
-  trivialScale (powInt(.5, c.getPrecision())),
+  trivialScale (powInt(.5, c.getTotalPrec())),
   ss (h.getDimension())
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
   , ssMagic (h.getDimension()),
   mode (STANDARD)
 #endif
 {
+   if (c.getBase() != 2)  throw FIXME (__FILE__, __LINE__);
+
    // Initialize Shift Scale
 
    setCube (h);
@@ -83,7 +81,7 @@ L::DigitalNet2<T>::DigitalNet2 (
    const int dd = equi;
    unsigned i = m;
    Index indexCopy = index;
-   int shift = _c.getPrecision() - c.getPrecision();
+   int shift = _c.getTotalPrec() - c.getTotalPrec();
 
    while (index)
    {
@@ -96,22 +94,22 @@ L::DigitalNet2<T>::DigitalNet2 (
       {
          for (unsigned d = dd; d < c.getDimension(); ++d)
          {
-            xStart [d] ^= (_c(d-dd,i) >> shift);
+            alg.addTo (xStart [d], (_c(d-dd, i) >> shift));
          }
       }
 
-      index /= 2;
+      index >>= 1;
       ++i;
    }
 
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
    // Prepare for direct updates, if we can
 
-   if (c.getPrecision() <= floatBits)
+   if (c.getTotalPrec() <= floatBits)
    {
       mode = DIRECT;
 
-      const int shift = floatBits - c.getPrecision();
+      const int shift = floatBits - c.getTotalPrec();
       union { floatType f; T i; } x;
       x.f = 1.;
 
@@ -120,7 +118,7 @@ L::DigitalNet2<T>::DigitalNet2 (
          xStart [d] = (xStart[d] << shift) | x.i;
       }
 
-      c.adjustPrecision (floatBits);
+      c.adjustTotalPrec (floatBits);
    }
 #endif
 }
@@ -135,11 +133,16 @@ L::DigitalNet2<T>::DigitalNet2 (
 template<class T>
 void L::DigitalNet2<T>::setCube (const Hypercube &h)
 {
-  ss.set (h, trunc == CENTER ? -.5 : .0, 
-             powInt(2.0, c.getPrecision()) - (trunc == CENTER ? .5 : .0));
+  double centerShift = trunc == CENTER ? -.5 : .0;
+
+  ss.set (h,                         centerShift, 
+     powInt(2.0, c.getTotalPrec()) + centerShift);
+
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
-  ssMagic.set (h, trunc == CENTER ? -powInt(.5, c.getPrecision()+1) : .0, 
-                1.0 - (trunc == CENTER ?  powInt(.5, c.getPrecision()+1) : .0));
+  double centerShiftMagic = trunc == CENTER
+     ? -powInt (.5, c.getTotalPrec() + 1) : .0;
+
+  ssMagic.set (h, 1.0 + centerShiftMagic, 2.0 + centerShiftMagic);
 #endif
 }
 
@@ -152,7 +155,7 @@ template<class T>
 void L::DigitalNet2<T>::randomize (PRNG &g)
 {
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
-   const int shift = floatBits - prec;
+   const int shift = floatBits - totalPrec;
    union { floatType f; T i; } xx;
    xx.f = 1.;
 #endif
@@ -160,9 +163,9 @@ void L::DigitalNet2<T>::randomize (PRNG &g)
    for (unsigned d = 0; d < getDimension(); ++d)
    {
       T x = 0;
-      for (unsigned b = 0; b < prec; ++b)
+      for (unsigned b = 0; b < totalPrec; ++b)
       {
-         x = 2 * x + g.equidist(2);
+         x = (x << 1) | g.equidist(scalAlg.size());
       }
 
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
@@ -192,9 +195,14 @@ void L::DigitalNet2<T>::resetX (Index nn)
 
    for (unsigned r = 0; nn != 0; ++r, nn >>= 1)
    {
-      if (nn & 1)
+      const unsigned char digit = nn & 1;
+
+      if (! scalAlg.is0 (digit))
       {
-         for (unsigned d = 0; d < getDimension(); ++d)  x [d] ^= c(d,r);
+         for (unsigned d = 0; d < getDimension(); ++d)
+         {
+            alg.addTo (x [d], alg.mul (c(d,r), digit));
+         }
       }
    }
 }
@@ -211,32 +219,6 @@ Index L::DigitalNet2<T>::getOptimalNumber(Index max) const
    if (trunc == FULL)  return max;
 
    return (max == 0) ? 0 : Index(1) << ms1(max);
-}
-
-
-/*****************************************************************************/
-/***         Digital Net 2 Gray <T>                                        ***/
-/*****************************************************************************/
-
-/**
- *  Constructor
- */
-
-template<class T>
-L::DigitalNet2Gray<T>::DigitalNet2Gray
-   (const GeneratorMatrix2<T> &gm, const Hypercube &_h,
-    unsigned m, Index i, bool equi, DigitalNet::Truncation t, bool correct)
-: DigitalNet2<T> (gm, _h, m, i, equi, t)
-{
-   if (correct)  c.prepareForGrayCode();
-}
-
-template<class T>
-L::DigitalNet2Gray<T>::DigitalNet2Gray
-   (const GeneratorMatrix2<T> &gm, const Hypercube &_h, bool correct)
-: DigitalNet2<T> (gm, _h, gm.getM(), 0, false, FULL)
-{
-   if (correct)  c.prepareForGrayCode();
 }
 
 
@@ -297,7 +279,8 @@ int L::DigitalNet2PointSetBase::calculateM (Index num) const
 void L::DigitalNet2PointSetBase::doJobPartition
    (real *point, Job &job, Index num, Index begin, Index end)
 {
-   DigitalNet2Gray<BaseType> net (gm, *h, calculateM (num), index, equi, trunc);
+   DigitalNet2Gray<BaseType> net
+      (gm, *h, calculateM (num), index, equi, trunc);
    performRandomization (net);
    qmcDoJob (point, net, job, begin, end);
 }
@@ -444,12 +427,12 @@ void L::DigitalSeq2PointSet<L::real>::integratePartition
    qmcIntegration (point, *net, f, begin, end, stat);
 }
 
-template class L::DigitalNet2<L::u32>;
-template class L::DigitalNet2Gray<L::u32>;
-
+namespace HIntLib
+{
+   template class DigitalNet2 <u32>;
 #ifdef HINTLIB_U32_NOT_EQUAL_U64
-template class L::DigitalNet2<L::u64>;
-template class L::DigitalNet2Gray<L::u64>;
+   template class DigitalNet2 <u64>;
 #endif
+}
 
 

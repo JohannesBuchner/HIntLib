@@ -1,0 +1,31 @@
+#! /bin/sh
+
+p1="./test_tparameter -s -b -r -d 15 -m 15"
+p2="./test_tparameter -s -b -r -d 15 -m 7"
+
+echo "Testing Faure..."
+$p2 0 ||
+  { echo "tparameter test for Faure fails!"; { (exit 1); exit 1; }; }
+
+echo "Testing Sobol..."
+$p1 1 ||
+  { echo "tparameter test for Sobol fails!"; { (exit 1); exit 1; }; }
+
+echo "Testing Niederreiter, b=2..."
+$p1 2 ||
+  { echo "tparameter test for Niederreiter, b=2 fails!"; { (exit 1);exit 1; }; }
+
+echo "Testing Niederreiter, b=3..."
+$p2 3 ||
+  { echo "tparameter test for Niederreiter, b=3 fails!"; { (exit 1);exit 1; }; }
+
+echo "Testing Niederreiter, b=4..."
+$p2 4 ||
+  { echo "tparameter test for Niederreiter, b=4 fails!"; { (exit 1);exit 1; }; }
+
+echo "Testing Niederreiter/Xing..."
+$p1 6 ||
+  { echo "tparameter test for Niederreiter/Xing fails!"; { (exit 1);exit 1; }; }
+
+exit 0
+

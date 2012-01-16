@@ -144,7 +144,7 @@ template L::u64   L::Prime::eulerPhi (u64);
  *  If  x  is not a prime power, NotAPrimePower is thrown.
  */
 
-void L::Prime::factorPrimePower (unsigned x, unsigned &_prime, unsigned &_power)
+bool L::Prime::isPrimePower (unsigned x, unsigned &_prime, unsigned &_power)
 {
    if (Prime::test (x))
    {
@@ -152,13 +152,13 @@ void L::Prime::factorPrimePower (unsigned x, unsigned &_prime, unsigned &_power)
    }
    else
    {
-      if (x < 2)  throw NotAPrimePower (x);
+      if (x < 2)  return false;
 
       unsigned prime = 2;
 
       while (x % prime != 0)
       {
-         if (prime * prime > x)  throw NotAPrimePower (x);
+         if (prime * prime > x)  return false;
          prime = Prime::next (prime + 1);
       }
 
@@ -167,7 +167,7 @@ void L::Prime::factorPrimePower (unsigned x, unsigned &_prime, unsigned &_power)
 
       do
       {
-         if (s % prime != 0)  throw NotAPrimePower (x);
+         if (s % prime != 0)  return false;
          s /= prime;
          ++power;
       }
@@ -175,6 +175,20 @@ void L::Prime::factorPrimePower (unsigned x, unsigned &_prime, unsigned &_power)
 
       _prime = prime; _power = power;
    }
+
+   return true;
+}
+
+bool L::Prime::isPrimePower (unsigned x)
+{
+   unsigned prime;
+   unsigned power;
+   return isPrimePower (x, prime, power);
+}
+
+void L::Prime::factorPrimePower (unsigned x, unsigned &prime, unsigned &power)
+{
+   if (! isPrimePower (x, prime, power))  throw NotAPrimePower (x);
 }
 
 

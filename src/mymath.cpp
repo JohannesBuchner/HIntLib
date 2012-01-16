@@ -110,9 +110,10 @@ namespace HIntLib
  *  logInt(0, base)  := -1
  */
 
-template<class T> unsigned L::logInt (T x, T base)
+template<class T> int L::logInt (T x, T base)
 {
    if (base < 2)  throw InvalidLogBase (base);
+   if (x == 0)  return -1;
    
    unsigned result = 0;
    x /= base;
@@ -128,10 +129,13 @@ template<class T> unsigned L::logInt (T x, T base)
 
 namespace HIntLib
 {
-#define HINTLIB_INSTANTIATE(X) template unsigned logInt (X, X);
+#define HINTLIB_INSTANTIATE(X) template int logInt (X, X);
 
    HINTLIB_INSTANTIATE (unsigned);
    HINTLIB_INSTANTIATE (unsigned long);
+#ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
+   HINTLIB_INSTANTIATE (unsigned long long);
+#endif
 #undef HINTLIB_INSTANTIATE
 }
 

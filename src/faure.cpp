@@ -52,14 +52,14 @@ namespace L = HIntLib;
  */
 
 L::Faure::Faure (unsigned _dim)
-   : HeapAllocatedGeneratorMatrixGen<unsigned char> (Prime::next(_dim), _dim)
+   : HeapAllocatedGeneratorMatrixGen<unsigned char> (Prime::next(_dim), 1, _dim)
 {
    init (*this);
 }
 
 L::Faure::Faure (unsigned _dim, unsigned _m, unsigned _prec)
    : HeapAllocatedGeneratorMatrixGen<unsigned char>
-       (Prime::next (_dim), _dim, _m, _prec)
+       (Prime::next (_dim), 1, _dim, _m, _prec)
 {
    init (*this);
 }
@@ -76,22 +76,22 @@ void L::Faure::init (MutableGeneratorMatrixGen<unsigned char> &gm)
    if (gm.getDimension() < 1)  return;
    gm.makeIdentityMatrix (0);
 
-   ModularIntegerRing<unsigned char> a (gm.getBase());
+   ModularArith<unsigned char> a (gm.getBase());
 
    if (gm.getDimension() < 2)  return;
 
    // Create Pascal's Triangle in Matrix d=1
 
-   gm.set (1, 0, 0, a.one ());
+   gm.setv (1, 0, 0, a.one ());
 
    for (unsigned r = 1; r < gm.getM(); ++r)
    {
-      gm.set (1, r, 0, a.one());
-      if (r < gm.getPrecision())  gm.set (1, r, r, a.one());
+      gm.setv (1, r, 0, a.one());
+      if (r < gm.getPrec())  gm.setv (1, r, r, a.one());
 
-      for (unsigned b = 1; b < std::min (r, gm.getPrecision()); ++b)
+      for (unsigned b = 1; b < std::min (r, gm.getPrec()); ++b)
       {
-         gm.set (1, r, b, a.add (gm (1, r-1, b-1), gm (1, r-1, b)));
+         gm.setv (1, r, b, a.add (gm (1, r-1, b-1), gm (1, r-1, b)));
       }
    }
    
@@ -101,14 +101,14 @@ void L::Faure::init (MutableGeneratorMatrixGen<unsigned char> &gm)
    {
       for (unsigned r = 0; r < gm.getM(); ++r)
       {
-         for (unsigned b = 0; b < std::min (r, gm.getPrecision()); ++b)
+         for (unsigned b = 0; b < std::min (r, gm.getPrec()); ++b)
          {
             unsigned char x = gm (1, r, b);
             for (unsigned i = 0; i < (r-b); ++i)  a.mulBy (x, d);
-            gm.set (d, r, b, x);
+            gm.setv (d, r, b, x);
          }
 
-         if (r < gm.getPrecision())  gm.set (d, r, r, a.one());
+         if (r < gm.getPrec())  gm.setv (d, r, r, a.one());
       }
    }
 }

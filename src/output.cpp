@@ -43,7 +43,6 @@
 namespace L = HIntLib;
 
 using std::ostream;
-using std::ostringstream;
 
 
 /**
@@ -58,7 +57,7 @@ using std::ostringstream;
 
 ostream& L::operator<< (ostream &o, const EstErr &ee)
 {
-   ostringstream ss;
+   std::ostringstream ss;
    ss.flags (o.flags());
    ss.precision (o.precision());
 #ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
@@ -67,7 +66,7 @@ ostream& L::operator<< (ostream &o, const EstErr &ee)
 
    ss << ee.getEstimate () << "(+/-" << ee.getError () << ')';
  
-   return o << ss.str();
+   return o << ss.str().c_str();
 }
 
 
@@ -77,7 +76,7 @@ ostream& L::operator<< (ostream &o, const EstErr &ee)
 
 ostream & L::operator<< (ostream &o, const Hypercube &h)
 {
-   ostringstream ss;
+   std::ostringstream ss;
    ss.flags (o.flags());
    ss.precision (o.precision());
 #ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
@@ -91,7 +90,7 @@ ostream & L::operator<< (ostream &o, const Hypercube &h)
       ss << "x[" << h.getLowerBound (i) << ',' << h.getUpperBound (i) << ']';
    }
 
-   return o << ss.str();
+   return o << ss.str().c_str();
 }
 
 
@@ -101,7 +100,7 @@ ostream & L::operator<< (ostream &o, const Hypercube &h)
 
 ostream & L::operator<< (ostream &o, const Region &r)
 {
-   ostringstream ss;
+   std::ostringstream ss;
    ss.flags (o.flags());
    ss.precision (o.precision());
 #ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
@@ -110,7 +109,7 @@ ostream & L::operator<< (ostream &o, const Region &r)
 
    ss << r.getHypercube () << ' ' << r.getEstErr();
 
-   return o << ss.str();
+   return o << ss.str().c_str();
 }
 
 
@@ -127,6 +126,44 @@ ostream & L::operator<< (ostream &o, const ZRing &)
 ostream & L::operator<< (ostream &o, const RRing &)
 {
    return o << 'R';
+}
+
+
+/**
+ *  Modular Integer Ring Base
+ */
+
+void L::Priv::ModularIntegerRingBase::prnSuffix (std::ostream &o) const
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << '(' << m << ')';
+
+   o << ss.str().c_str();
+}
+
+void L::Priv::ModularIntegerRingBase::prnShort (std::ostream &o, unsigned a)
+{
+   o << a;
+}
+
+void L::Priv::ModularIntegerRingBase::prn (std::ostream &o, unsigned a) const
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << a << " (" << m << ')';
+
+   o << ss.str().c_str();
 }
 
 

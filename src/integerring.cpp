@@ -22,21 +22,78 @@
 #pragma implementation
 #endif
 
+#include <iostream>
+
 #include <HIntLib/integerring.h>
 
 #include <HIntLib/prime.h>
 
+
 namespace L = HIntLib;
 
-template<class T>
+/**
+ *  IntegerRing
+ */
+
+template<typename T>
+T L::IntegerRing<T>::element (unsigned i) const
+{
+   return odd(i)  ?  T(i/2 + 1)  :  -T(i/2);
+}
+
+template<typename T>
+unsigned L::IntegerRing<T>::index (T x) const
+{
+   return (x > 0)  ?  x*2 - 1  :  x * -2;
+}
+
+template<typename T>
 bool L::IntegerRing<T>::isPrime (T x) const
 {
    return Prime::test (unsigned (abs(x)));
 }
 
+template<typename T>
+bool L::IntegerRing<T>::isComposit (T x) const
+{
+   unsigned xx = abs (x);
+   return xx > 3 && ! Prime::test (xx);
+}
+
+
+/**
+ *  RealField
+ */
+
+template<typename T>
+T L::RealField<T>::element (unsigned i) const
+{
+   if (i == 0)  return T(0);
+   else return odd(i)  ?  T(i/2 + 1)  :  -T(i/2);
+}
+
+template<typename T>
+unsigned L::RealField<T>::index (T r) const
+{
+   int x = int (r); return x > 0  ?  x*2 - 1 :  x * -2;
+}
+
 namespace HIntLib
 {
-   template class IntegerRing<int>;
-   template class RealField<real>;
+#define HINTLIB_INSTANTIATE(X) \
+   template X IntegerRing<X>::element(unsigned) const; \
+   template unsigned IntegerRing<X>::index(X) const; \
+   template bool IntegerRing<X>::isPrime(X) const; \
+   template bool IntegerRing<X>::isComposit(X) const;
+
+   HINTLIB_INSTANTIATE(int);
+#undef HINTLIB_INSTANTIATE
+
+#define HINTLIB_INSTANTIATE(X) \
+   template X RealField<X>::element(unsigned) const; \
+   template unsigned RealField<X>::index(X) const; \
+
+   HINTLIB_INSTANTIATE(real);
+#undef HINTLIB_INSTANTIATE
 }
 

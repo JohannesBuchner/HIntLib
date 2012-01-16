@@ -282,12 +282,12 @@ void L::NotAPrimePower::makeString() const
    setString (ms(ss));
 }
 
-void L::PrecalculatedFieldCopy::makeString() const
+void L::LookupFieldCopy::makeString() const
 {
    setStringCopy ("Error while copying an arithmetic into a PrecalculatedField!");
 }
 
-void L::PrecalculatedFieldSet::makeString() const
+void L::LookupFieldSet::makeString() const
 {
    ostringstream ss;
    ss << "Index " << index << " is too large for field of size " << size << '!';

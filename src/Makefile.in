@@ -73,6 +73,7 @@ LIBTOOL = @LIBTOOL@
 LIB_HINTLIB_MPI = @LIB_HINTLIB_MPI@
 LN_S = @LN_S@
 MAKEINFO = @MAKEINFO@
+NOUNDEFINED = @NOUNDEFINED@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
@@ -98,17 +99,17 @@ noinst_LTLIBRARIES = libcreatematrix.la
 lib_LTLIBRARIES = libhintlib.la @LIB_HINTLIB_MPI@
 EXTRA_LTLIBRARIES = libhintlibmpi.la
 
-libcreatematrix_la_SOURCES =     bitop.cpp    exception.cpp    hypercube.cpp    generatormatrix.cpp    prime.cpp    prime_generated.cpp    mymath.cpp    integerring.cpp    niederreitermatrixgen.cpp    modulararithmetic.cpp    polynomial.cpp    polynomial2.cpp    precalculatedfield.cpp    precalculatedgaloisfield.cpp    galoisfield.cpp    gcd.cpp    output.cpp    stl.cpp
+libcreatematrix_la_SOURCES =     bitop.cpp    exception.cpp    hypercube.cpp    generatormatrix.cpp    prime.cpp    prime_generated.cpp    mymath.cpp    integerring.cpp    niederreitermatrixgen.cpp    modulararithmetic.cpp    polynomial.cpp    polynomial2.cpp    lookupfield.cpp    lookupgaloisfield.cpp    galoisfield.cpp    gcd.cpp    output.cpp    stl.cpp
 
 
 libcreatematrix_la_LIBADD = -lm
 
 libhintlib_la_SOURCES = $(ALLSRCSEQ)
-libhintlib_la_LDFLAGS = -no-undefined
+libhintlib_la_LDFLAGS = @NOUNDEFINED@
 libhintlib_la_LIBADD = libcreatematrix.la
 
 libhintlibmpi_la_SOURCES = $(ALLSRCMPI)
-libhintlibmpi_la_LDFLAGS = -no-undefined -rpath $(libdir)
+libhintlibmpi_la_LDFLAGS = @NOUNDEFINED@ -rpath $(libdir)
 libhintlibmpi_la_LIBADD = libcreatematrix.la
 
 noinst_PROGRAMS = create_sobol create_niederreiter create_bitop
@@ -165,8 +166,8 @@ libcreatematrix_la_DEPENDENCIES =
 libcreatematrix_la_OBJECTS =  bitop.lo exception.lo hypercube.lo \
 generatormatrix.lo prime.lo prime_generated.lo mymath.lo integerring.lo \
 niederreitermatrixgen.lo modulararithmetic.lo polynomial.lo \
-polynomial2.lo precalculatedfield.lo precalculatedgaloisfield.lo \
-galoisfield.lo gcd.lo output.lo stl.lo
+polynomial2.lo lookupfield.lo lookupgaloisfield.lo galoisfield.lo \
+gcd.lo output.lo stl.lo
 noinst_PROGRAMS =  create_sobol$(EXEEXT) create_niederreiter$(EXEEXT) \
 create_bitop$(EXEEXT)
 PROGRAMS =  $(noinst_PROGRAMS)
@@ -484,36 +485,40 @@ create_bitop.o: create_bitop.cpp HIntLib/old_bitop.h
 create_niederreiter.o: create_niederreiter.cpp \
 	HIntLib/niederreitermatrix.h HIntLib/defaults.h \
 	HIntLib/fallback_limits.h HIntLib/generatormatrix.h \
-	HIntLib/bitop.h HIntLib/niederreitermatrixgen.h \
-	HIntLib/polynomial.h HIntLib/mymath.h \
-	HIntLib/modulararithmetic.h
+	HIntLib/bitop.h HIntLib/mymath.h \
+	HIntLib/niederreitermatrixgen.h HIntLib/polynomial.h \
+	HIntLib/algebra.h HIntLib/modulararithmetic.h
 create_sobol.o: create_sobol.cpp HIntLib/polynomial2.h \
 	HIntLib/defaults.h HIntLib/fallback_limits.h HIntLib/bitop.h \
 	HIntLib/prime.h HIntLib/exception.h HIntLib/prime_generated.h \
-	HIntLib/sobolmatrix.h HIntLib/generatormatrix.h
+	HIntLib/algebra.h HIntLib/sobolmatrix.h \
+	HIntLib/generatormatrix.h HIntLib/mymath.h
 cubepartitioner.lo cubepartitioner.o : cubepartitioner.cpp \
 	HIntLib/cubepartitioner.h HIntLib/defaults.h \
 	HIntLib/hypercube.h HIntLib/mymath.h HIntLib/fallback_limits.h \
 	HIntLib/array.h HIntLib/exception.h
 digitalnet2.lo digitalnet2.o : digitalnet2.cpp HIntLib/digitalnet2.h \
 	HIntLib/generatormatrix.h HIntLib/defaults.h \
-	HIntLib/fallback_limits.h HIntLib/bitop.h \
-	HIntLib/qrnsequencebase.h HIntLib/hypercube.h HIntLib/mymath.h \
-	HIntLib/array.h HIntLib/shiftscale.h HIntLib/pointset.h \
-	HIntLib/statistic.h HIntLib/minmaxfinder.h \
-	HIntLib/qmcintegration.h HIntLib/function.h \
+	HIntLib/fallback_limits.h HIntLib/bitop.h HIntLib/mymath.h \
+	HIntLib/qrnsequencebase.h HIntLib/hypercube.h HIntLib/array.h \
+	HIntLib/shiftscale.h HIntLib/pointset.h HIntLib/statistic.h \
+	HIntLib/minmaxfinder.h HIntLib/qmcintegration.h \
+	HIntLib/function.h HIntLib/polynomial2.h HIntLib/prime.h \
+	HIntLib/exception.h HIntLib/prime_generated.h HIntLib/algebra.h \
 	HIntLib/mersennetwister.h HIntLib/mcpointset.h \
 	HIntLib/distribution.h HIntLib/mcintegration.h \
-	HIntLib/cubepartitioner.h HIntLib/exception.h
+	HIntLib/cubepartitioner.h
 digitalnetgen.lo digitalnetgen.o : digitalnetgen.cpp \
-	HIntLib/digitalnetgen.h HIntLib/generatormatrix.h \
-	HIntLib/defaults.h HIntLib/fallback_limits.h HIntLib/bitop.h \
-	HIntLib/qrnsequencebase.h HIntLib/hypercube.h HIntLib/mymath.h \
-	HIntLib/array.h HIntLib/shiftscale.h HIntLib/pointset.h \
-	HIntLib/statistic.h HIntLib/minmaxfinder.h \
-	HIntLib/qmcintegration.h HIntLib/function.h HIntLib/exception.h \
-	HIntLib/modulararithmetic.h HIntLib/precalculatedfield.h \
-	HIntLib/bitvectorring.h
+	HIntLib/digitalnetgen.tcc HIntLib/digitalnetgen.h \
+	HIntLib/generatormatrix.h HIntLib/defaults.h \
+	HIntLib/fallback_limits.h HIntLib/bitop.h HIntLib/mymath.h \
+	HIntLib/qrnsequencebase.h HIntLib/hypercube.h HIntLib/array.h \
+	HIntLib/shiftscale.h HIntLib/pointset.h HIntLib/statistic.h \
+	HIntLib/minmaxfinder.h HIntLib/qmcintegration.h \
+	HIntLib/function.h HIntLib/exception.h \
+	HIntLib/modulararithmetic.h HIntLib/algebra.h \
+	HIntLib/lookupfield.h HIntLib/polynomial2.h HIntLib/prime.h \
+	HIntLib/prime_generated.h HIntLib/onedimvectorspace.h
 exception.lo exception.o : exception.cpp HIntLib/defaults.h \
 	HIntLib/exception.h HIntLib/hypercube.h HIntLib/mymath.h \
 	HIntLib/fallback_limits.h HIntLib/array.h
@@ -522,16 +527,16 @@ exception_MPI.lo exception_MPI.o : exception_MPI.cpp HIntLib/defaults.h \
 	HIntLib/exception_MPI.h HIntLib/exception.h
 faure.lo faure.o : faure.cpp HIntLib/faure.h HIntLib/generatormatrix.h \
 	HIntLib/defaults.h HIntLib/fallback_limits.h HIntLib/bitop.h \
-	HIntLib/modulararithmetic.h HIntLib/mymath.h HIntLib/prime.h \
-	HIntLib/exception.h HIntLib/prime_generated.h
+	HIntLib/mymath.h HIntLib/modulararithmetic.h HIntLib/algebra.h \
+	HIntLib/prime.h HIntLib/exception.h HIntLib/prime_generated.h
 galoisfield.lo galoisfield.o : galoisfield.cpp HIntLib/defaults.h \
-	HIntLib/galoisfield.h HIntLib/polynomial.h \
-	HIntLib/modulararithmetic.h HIntLib/mymath.h \
-	HIntLib/fallback_limits.h HIntLib/exception.h
+	HIntLib/galoisfield.h HIntLib/polynomial.h HIntLib/algebra.h \
+	HIntLib/modulararithmetic.h HIntLib/fallback_limits.h \
+	HIntLib/exception.h
 gcd.lo gcd.o : gcd.cpp HIntLib/gcd.h HIntLib/integerring.h \
 	HIntLib/mymath.h HIntLib/defaults.h HIntLib/fallback_limits.h \
-	HIntLib/polynomial2.h HIntLib/bitop.h HIntLib/prime.h \
-	HIntLib/exception.h HIntLib/prime_generated.h \
+	HIntLib/algebra.h HIntLib/polynomial2.h HIntLib/bitop.h \
+	HIntLib/prime.h HIntLib/exception.h HIntLib/prime_generated.h \
 	HIntLib/modulararithmetic.h HIntLib/polynomial.h
 generatormatrix.lo generatormatrix.o : generatormatrix.cpp \
 	HIntLib/generatormatrix.h HIntLib/defaults.h \
@@ -553,7 +558,8 @@ hypercube_MPI.lo hypercube_MPI.o : hypercube_MPI.cpp HIntLib/mympi.h \
 	HIntLib/buffer.h
 integerring.lo integerring.o : integerring.cpp HIntLib/integerring.h \
 	HIntLib/mymath.h HIntLib/defaults.h HIntLib/fallback_limits.h \
-	HIntLib/prime.h HIntLib/exception.h HIntLib/prime_generated.h
+	HIntLib/algebra.h HIntLib/prime.h HIntLib/exception.h \
+	HIntLib/prime_generated.h
 integrator.lo integrator.o : integrator.cpp HIntLib/integrator.h \
 	HIntLib/esterr.h HIntLib/mymath.h HIntLib/defaults.h \
 	HIntLib/fallback_limits.h HIntLib/exception.h \
@@ -562,7 +568,17 @@ kahanadd.lo kahanadd.o : kahanadd.cpp HIntLib/kahanadd.h \
 	HIntLib/defaults.h
 loadlibseq.lo loadlibseq.o : loadlibseq.cpp HIntLib/defaults.h \
 	HIntLib/generatormatrix.h HIntLib/fallback_limits.h \
-	HIntLib/bitop.h HIntLib/prime.h HIntLib/exception.h \
+	HIntLib/bitop.h HIntLib/mymath.h HIntLib/prime.h \
+	HIntLib/exception.h HIntLib/prime_generated.h
+lookupfield.lo lookupfield.o : lookupfield.cpp HIntLib/defaults.h \
+	HIntLib/lookupfield.h HIntLib/mymath.h \
+	HIntLib/fallback_limits.h HIntLib/algebra.h HIntLib/exception.h \
+	HIntLib/bitop.h HIntLib/array.h
+lookupgaloisfield.lo lookupgaloisfield.o : lookupgaloisfield.cpp \
+	HIntLib/defaults.h HIntLib/lookupfield.h HIntLib/mymath.h \
+	HIntLib/fallback_limits.h HIntLib/algebra.h \
+	HIntLib/galoisfield.h HIntLib/polynomial.h \
+	HIntLib/modulararithmetic.h HIntLib/prime.h HIntLib/exception.h \
 	HIntLib/prime_generated.h
 make.lo make.o : make.cpp HIntLib/defaults.h HIntLib/make.h \
 	HIntLib/exception.h
@@ -584,18 +600,19 @@ makeqrnsequence.lo makeqrnsequence.o : makeqrnsequence.cpp \
 	HIntLib/defaults.h HIntLib/make.h HIntLib/exception.h \
 	HIntLib/qrnsequence.h HIntLib/sobolmatrix.h \
 	HIntLib/fallback_limits.h HIntLib/generatormatrix.h \
-	HIntLib/bitop.h HIntLib/niederreitermatrix.h \
+	HIntLib/bitop.h HIntLib/mymath.h HIntLib/niederreitermatrix.h \
 	HIntLib/niederreitermatrixgen.h HIntLib/polynomial.h \
-	HIntLib/mymath.h HIntLib/faure.h HIntLib/halton.h \
+	HIntLib/algebra.h HIntLib/faure.h HIntLib/halton.h \
 	HIntLib/qrnsequencebase.h HIntLib/hypercube.h HIntLib/array.h \
 	HIntLib/shiftscale.h HIntLib/digitalnet2.h HIntLib/pointset.h \
 	HIntLib/statistic.h HIntLib/minmaxfinder.h \
 	HIntLib/qmcintegration.h HIntLib/function.h \
+	HIntLib/polynomial2.h HIntLib/prime.h HIntLib/prime_generated.h \
 	HIntLib/digitalnetgen.h HIntLib/modulararithmetic.h \
-	HIntLib/precalculatedfield.h HIntLib/prime.h \
-	HIntLib/prime_generated.h HIntLib/mersennetwister.h \
-	HIntLib/mcpointset.h HIntLib/distribution.h \
-	HIntLib/mcintegration.h HIntLib/cubepartitioner.h
+	HIntLib/lookupfield.h HIntLib/onedimvectorspace.h \
+	HIntLib/mersennetwister.h HIntLib/mcpointset.h \
+	HIntLib/distribution.h HIntLib/mcintegration.h \
+	HIntLib/cubepartitioner.h
 mcintegrator.lo mcintegrator.o : mcintegrator.cpp HIntLib/mcintegrator.h \
 	HIntLib/integrator.h HIntLib/esterr.h HIntLib/mymath.h \
 	HIntLib/defaults.h HIntLib/fallback_limits.h \
@@ -625,28 +642,30 @@ miser.lo miser.o : miser.cpp HIntLib/miser.h HIntLib/integrator.h \
 	HIntLib/function.h HIntLib/pointset.h HIntLib/distribution.h \
 	HIntLib/shiftscale.h HIntLib/exception.h
 modulararithmetic.lo modulararithmetic.o : modulararithmetic.cpp \
-	HIntLib/defaults.h HIntLib/modulararithmetic.h HIntLib/mymath.h \
-	HIntLib/fallback_limits.h HIntLib/prime.h HIntLib/exception.h \
-	HIntLib/prime_generated.h HIntLib/polynomial.h HIntLib/gcd.h \
-	HIntLib/integerring.h
+	HIntLib/defaults.h HIntLib/modulararithmetic.h \
+	HIntLib/algebra.h HIntLib/fallback_limits.h HIntLib/prime.h \
+	HIntLib/exception.h HIntLib/prime_generated.h \
+	HIntLib/polynomial.h HIntLib/gcd.h HIntLib/integerring.h \
+	HIntLib/mymath.h
 mymath.lo mymath.o : mymath.cpp HIntLib/mymath.h HIntLib/defaults.h \
 	HIntLib/fallback_limits.h HIntLib/polynomial2.h HIntLib/bitop.h \
 	HIntLib/prime.h HIntLib/exception.h HIntLib/prime_generated.h \
-	HIntLib/modulararithmetic.h HIntLib/polynomial.h
+	HIntLib/algebra.h HIntLib/modulararithmetic.h \
+	HIntLib/polynomial.h
 mympi.lo mympi.o : mympi.cpp HIntLib/mympi.h HIntLib/defaults.h \
 	HIntLib/fallback_limits.h HIntLib/exception_MPI.h \
 	HIntLib/exception.h
 niederreitermatrix.lo niederreitermatrix.o : niederreitermatrix.cpp \
 	HIntLib/niederreitermatrix.h HIntLib/defaults.h \
 	HIntLib/fallback_limits.h HIntLib/generatormatrix.h \
-	HIntLib/bitop.h
+	HIntLib/bitop.h HIntLib/mymath.h
 niederreitermatrixgen.lo niederreitermatrixgen.o : \
 	niederreitermatrixgen.cpp HIntLib/niederreitermatrixgen.h \
 	HIntLib/generatormatrix.h HIntLib/defaults.h \
-	HIntLib/fallback_limits.h HIntLib/bitop.h HIntLib/polynomial.h \
-	HIntLib/mymath.h HIntLib/modulararithmetic.h \
-	HIntLib/precalculatedfield.h HIntLib/prime.h \
-	HIntLib/exception.h HIntLib/prime_generated.h
+	HIntLib/fallback_limits.h HIntLib/bitop.h HIntLib/mymath.h \
+	HIntLib/polynomial.h HIntLib/algebra.h \
+	HIntLib/modulararithmetic.h HIntLib/lookupfield.h \
+	HIntLib/prime.h HIntLib/exception.h HIntLib/prime_generated.h
 orbitrule.lo orbitrule.o : orbitrule.cpp HIntLib/orbitrule.h \
 	HIntLib/defaults.h HIntLib/function.h HIntLib/array.h \
 	HIntLib/bitop.h HIntLib/fallback_limits.h \
@@ -655,7 +674,7 @@ output.lo output.o : output.cpp HIntLib/defaults.h HIntLib/region.h \
 	HIntLib/esterr.h HIntLib/mymath.h HIntLib/fallback_limits.h \
 	HIntLib/embeddedrule.h HIntLib/cubaturerule.h \
 	HIntLib/hypercube.h HIntLib/array.h HIntLib/integerring.h \
-	HIntLib/modulararithmetic.h
+	HIntLib/algebra.h HIntLib/modulararithmetic.h
 pointset.lo pointset.o : pointset.cpp HIntLib/pointset.h \
 	HIntLib/defaults.h HIntLib/statistic.h HIntLib/minmaxfinder.h \
 	HIntLib/fallback_limits.h HIntLib/mymath.h \
@@ -664,24 +683,27 @@ pointset.lo pointset.o : pointset.cpp HIntLib/pointset.h \
 	HIntLib/shiftscale.h HIntLib/mcintegration.h \
 	HIntLib/cubepartitioner.h
 polynomial.lo polynomial.o : polynomial.cpp HIntLib/defaults.h \
-	HIntLib/polynomial.h HIntLib/integerring.h HIntLib/mymath.h \
-	HIntLib/fallback_limits.h HIntLib/modulararithmetic.h \
-	HIntLib/precalculatedfield.h HIntLib/exception.h
+	HIntLib/polynomial.h HIntLib/algebra.h HIntLib/integerring.h \
+	HIntLib/mymath.h HIntLib/fallback_limits.h \
+	HIntLib/modulararithmetic.h HIntLib/lookupfield.h \
+	HIntLib/exception.h HIntLib/polynomial2.h HIntLib/bitop.h \
+	HIntLib/prime.h HIntLib/prime_generated.h
 polynomial2.lo polynomial2.o : polynomial2.cpp HIntLib/defaults.h \
 	HIntLib/polynomial2.h HIntLib/fallback_limits.h HIntLib/bitop.h \
 	HIntLib/prime.h HIntLib/exception.h HIntLib/prime_generated.h \
-	HIntLib/integerring.h HIntLib/mymath.h \
+	HIntLib/algebra.h HIntLib/integerring.h HIntLib/mymath.h \
 	HIntLib/modulararithmetic.h
 precalculatedfield.lo precalculatedfield.o : precalculatedfield.cpp \
-	HIntLib/precalculatedfield.h HIntLib/mymath.h \
-	HIntLib/defaults.h HIntLib/fallback_limits.h \
+	HIntLib/defaults.h HIntLib/precalculatedfield.h \
+	HIntLib/mymath.h HIntLib/fallback_limits.h HIntLib/algebra.h \
 	HIntLib/exception.h
 precalculatedgaloisfield.lo precalculatedgaloisfield.o : \
 	precalculatedgaloisfield.cpp HIntLib/defaults.h \
 	HIntLib/precalculatedfield.h HIntLib/mymath.h \
-	HIntLib/fallback_limits.h HIntLib/galoisfield.h \
-	HIntLib/polynomial.h HIntLib/modulararithmetic.h \
-	HIntLib/prime.h HIntLib/exception.h HIntLib/prime_generated.h
+	HIntLib/fallback_limits.h HIntLib/algebra.h \
+	HIntLib/galoisfield.h HIntLib/polynomial.h \
+	HIntLib/modulararithmetic.h HIntLib/prime.h HIntLib/exception.h \
+	HIntLib/prime_generated.h
 prime.lo prime.o : prime.cpp HIntLib/prime.h HIntLib/exception.h \
 	HIntLib/defaults.h HIntLib/prime_generated.h
 prime_generated.lo prime_generated.o : prime_generated.cpp \
@@ -824,7 +846,7 @@ shiftscale.lo shiftscale.o : shiftscale.cpp HIntLib/shiftscale.h \
 	HIntLib/fallback_limits.h HIntLib/array.h HIntLib/exception.h
 sobolmatrix.lo sobolmatrix.o : sobolmatrix.cpp HIntLib/sobolmatrix.h \
 	HIntLib/defaults.h HIntLib/fallback_limits.h \
-	HIntLib/generatormatrix.h HIntLib/bitop.h
+	HIntLib/generatormatrix.h HIntLib/bitop.h HIntLib/mymath.h
 staticloadbalancer.lo staticloadbalancer.o : staticloadbalancer.cpp \
 	HIntLib/mympi.h HIntLib/defaults.h HIntLib/fallback_limits.h \
 	HIntLib/staticloadbalancer.h HIntLib/exception.h
@@ -835,8 +857,8 @@ testfunction.lo testfunction.o : testfunction.cpp HIntLib/testfunction.h \
 	HIntLib/exception.h
 tparameter.lo tparameter.o : tparameter.cpp HIntLib/generatormatrix.h \
 	HIntLib/defaults.h HIntLib/fallback_limits.h HIntLib/bitop.h \
-	HIntLib/array.h HIntLib/myalgorithm.h HIntLib/exception.h \
-	HIntLib/mymath.h HIntLib/precalculatedfield.h
+	HIntLib/mymath.h HIntLib/array.h HIntLib/myalgorithm.h \
+	HIntLib/exception.h HIntLib/lookupfield.h HIntLib/algebra.h
 vegas.lo vegas.o : vegas.cpp HIntLib/vegas.h HIntLib/integrator.h \
 	HIntLib/esterr.h HIntLib/mymath.h HIntLib/defaults.h \
 	HIntLib/fallback_limits.h HIntLib/kahanadd.h \

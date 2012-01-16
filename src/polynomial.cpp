@@ -40,8 +40,9 @@
 
 #include <HIntLib/integerring.h>
 #include <HIntLib/modulararithmetic.h>
-#include <HIntLib/precalculatedfield.h>
+#include <HIntLib/lookupfield.h>
 #include <HIntLib/exception.h>
+#include <HIntLib/polynomial2.h>
 
 namespace L = HIntLib;
 
@@ -49,21 +50,12 @@ namespace L = HIntLib;
 /********************** Polynomial <> ****************************************/
 
 /**
- *  Constructor
- */
-
-template<class T>
-L::Polynomial<T>::Polynomial (unsigned size, const T* coef)
-   : c (coef, coef+size)
-{}
-
-
-/**
  *  Assignment
  */
 
-template<class T>
-L::Polynomial<T>& L::Polynomial<T>::operator= (const L::Polynomial<T>& p)
+template<typename T>
+L::Polynomial<T>&
+L::Polynomial<T>::operator= (const L::Polynomial<T>& p)
 {
    if (this != &p) c = p.c;
    return *this;
@@ -75,15 +67,17 @@ L::Polynomial<T>& L::Polynomial<T>::operator= (const L::Polynomial<T>& p)
  *  mulByXPow()
  */
 
-template<class A>
-L::Polynomial<A>& L::Polynomial<A>::divByXPow (unsigned k)
+template<typename A>
+L::Polynomial<A>&
+L::Polynomial<A>::divByXPow (unsigned k)
 {
    for (unsigned i = 0; i < k; ++i)  divByX();
    return *this;
 }
 
-template<class A>
-L::Polynomial<A>& L::Polynomial<A>::mulByXPow (unsigned k)
+template<typename A>
+L::Polynomial<A>&
+L::Polynomial<A>::mulByXPow (unsigned k)
 {
    for (unsigned i = 0; i < k; ++i)  mulByX();
    return *this;
@@ -94,11 +88,16 @@ L::Polynomial<A>& L::Polynomial<A>::mulByXPow (unsigned k)
  *  Prints a polynomial to an output stream.
  */
 
-template<class A>
-std::ostream& L::operator<<
-   (std::ostream& o, const L::Polynomial<A>& p)
+template<typename A>
+std::ostream&
+L::operator<< (std::ostream& o, const L::Polynomial<A>& p)
 {
    std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
 
    bool output = false;
 
@@ -122,9 +121,7 @@ std::ostream& L::operator<<
 
    if (! output)  ss << '0';
 
-   o << ss.str().c_str();
-
-   return o;
+   return o << ss.str().c_str();
 }
 
 
@@ -134,10 +131,11 @@ std::ostream& L::operator<<
  *  one()
  */
 
-template<class A>
-typename L::PolynomialRing<A>::type L::PolynomialRing<A>::one() const
+template<typename A>
+typename L::PolynomialRingBB<A>::type
+L::PolynomialRingBB<A>::one() const
 {
-   P p (1);
+   type p (1);
    p.mulAndAdd (a.one());
    return p;
 }
@@ -147,8 +145,9 @@ typename L::PolynomialRing<A>::type L::PolynomialRing<A>::one() const
  *  is1 ()
  */
 
-template<class A>
-bool L::PolynomialRing<A>::is1 (const P &p) const
+template<typename A>
+bool
+L::PolynomialRingBB<A>::is1 (const type &p) const
 {
    return p.degree() == 0 && a.is1(p.lc());
 }
@@ -159,9 +158,10 @@ bool L::PolynomialRing<A>::is1 (const P &p) const
  */
 
 template<class A>
-bool L::PolynomialRing<A>::isMonic (const P &p) const
+bool
+L::PolynomialRingBB<A>::isMonic (const type &p) const
 {
-   return p.degree() >= 0 && a.is1(p.lc());
+   return p.degree() < 0 || a.is1(p.lc());
 }
 
 
@@ -169,9 +169,9 @@ bool L::PolynomialRing<A>::isMonic (const P &p) const
  *  element()
  */
 
-template<class A>
-typename L::PolynomialRing<A>::type
-L::PolynomialRing<A>::element(unsigned i) const
+template<typename A>
+typename L::PolynomialRingBB<A>::type
+L::PolynomialRingBB<A>::element(unsigned i) const
 {
    unsigned s = a.size()  ?  a.size()  : 5;
 
@@ -183,7 +183,7 @@ L::PolynomialRing<A>::element(unsigned i) const
       ii /= s;
    }
    
-   P p (num);
+   type p (num);
    p.mulByXPow (num);
 
    unsigned j = 0;
@@ -200,8 +200,9 @@ L::PolynomialRing<A>::element(unsigned i) const
  *  index()
  */
 
-template<class A>
-unsigned L::PolynomialRing<A>::index (const P &p) const
+template<typename A>
+unsigned
+L::PolynomialRingBB<A>::index (const type &p) const
 {
    unsigned s = a.size()  ?  a.size()  : 5;
 
@@ -215,8 +216,9 @@ unsigned L::PolynomialRing<A>::index (const P &p) const
  *  negate()
  */
 
-template<class A>
-typename L::PolynomialRing<A>::type & L::PolynomialRing<A>::negate (P& p) const
+template<typename A>
+typename L::PolynomialRingBB<A>::type &
+L::PolynomialRingBB<A>::negate (type& p) const
 { 
    for (int i = p.degree(); i >= 0; --i)  a.negate (p[i]);
    return p;
@@ -227,10 +229,11 @@ typename L::PolynomialRing<A>::type & L::PolynomialRing<A>::negate (P& p) const
  *  neg()
  */
 
-template<class A>
-typename L::PolynomialRing<A>::type L::PolynomialRing<A>::neg (const P& p) const
+template<typename A>
+typename L::PolynomialRingBB<A>::type
+L::PolynomialRingBB<A>::neg (const type& p) const
 {
-   P n (p.degree() + 1);
+   type n (p.degree() + 1);
    for (int i = p.degree(); i >= 0; --i)  n.mulAndAdd (a.neg (p[i]));
    return n;
 }
@@ -240,22 +243,22 @@ typename L::PolynomialRing<A>::type L::PolynomialRing<A>::neg (const P& p) const
  *  add()
  */
 
-template<class A>
-typename L::PolynomialRing<A>::type
-L::PolynomialRing<A>::add (const P& p1, const P& p2) const
+template<typename A>
+typename L::PolynomialRingBB<A>::type
+L::PolynomialRingBB<A>::add (const type& p1, const type& p2) const
 {
    const int deg1 = p1.degree();
    const int deg2 = p2.degree();
    const int maxDeg = std::max (deg1, deg2); 
 
-   P p (maxDeg + 1);
+   type p (maxDeg + 1);
    int start;
    
    if (deg1 != deg2)
    {
       p.mulByXPow (maxDeg + 1);
       start = std::min (deg1, deg2);
-      const P& greater = deg1 > deg2 ? p1 : p2; 
+      const type& greater = deg1 > deg2 ? p1 : p2; 
 
       for (int i = maxDeg; i > start; --i)  p[i] = greater[i];
    }
@@ -278,24 +281,24 @@ L::PolynomialRing<A>::add (const P& p1, const P& p2) const
  *  mul()
  */
 
-template<class A>
-typename L::PolynomialRing<A>::type
-L::PolynomialRing<A>::mul (const P& _p1, const P& _p2) const
+template<typename A>
+typename L::PolynomialRingBB<A>::type
+L::PolynomialRingBB<A>::mul (const type& _p1, const type& _p2) const
 {
-   const P& p1 = _p1.degree() > _p2.degree()  ?  _p1 : _p2;
-   const P& p2 = _p1.degree() > _p2.degree()  ?  _p2 : _p1;
+   const type& p1 = _p1.degree() > _p2.degree()  ?  _p1 : _p2;
+   const type& p2 = _p1.degree() > _p2.degree()  ?  _p2 : _p1;
    
    const int deg1 = p1.degree();
    const int deg2 = p2.degree();
 
-   if (deg1 < 0 || deg2 < 0)  return P(0);
+   if (deg1 < 0 || deg2 < 0)  return type(0);
 
-   P p (deg1 + deg2 + 1);
+   type p (deg1 + deg2 + 1);
    bool nonZero = false;
 
    for (int k = deg1 + deg2; k >= 0; --k)
    {
-      T c = a.zero();
+      typename A::type c = a.zero();
 
       for (int i = std::max (k - deg2, 0); i <= std::min (k, deg1); ++i)
       {
@@ -317,16 +320,16 @@ L::PolynomialRing<A>::mul (const P& _p1, const P& _p2) const
  *  times()
  */
 
-template<class A>
-typename L::PolynomialRing<A>::type
-L::PolynomialRing<A>::times (const P& p, unsigned k) const
+template<typename A>
+typename L::PolynomialRingBB<A>::type
+L::PolynomialRingBB<A>::times (const type& p, unsigned k) const
 {
-   P n (p.degree() + 1);
+   type n (p.degree() + 1);
    bool nonZero = false;
 
    for (int i = p.degree(); i >= 0; --i)
    {
-      T c = a.times (p[i], k);
+      typename A::type c = a.times (p[i], k);
 
       if (nonZero || ! a.is0 (c))
       {
@@ -339,14 +342,117 @@ L::PolynomialRing<A>::times (const P& p, unsigned k) const
 
 
 /**
+ *  evaluate()
+ */
+
+template<typename A>
+typename A::type
+L::PolynomialRingBB<A>::evaluate (const type& p, const coeff_type& x) const
+{
+   if (p.degree() < 0)  return a.zero();
+
+   coeff_type xx = x;
+   coeff_type res = p[0];
+
+   for (int i = 1; i <= p.degree(); ++i)
+   {
+      a.addTo (res, a.mul(x, p[i]));
+      a.mulBy (xx, x);
+   }
+
+   return res;
+}
+
+
+/**
  *  operator<<
  */
 
-template<class A>
+template<typename A>
 std::ostream&
-L::operator<< (std::ostream &o, const PolynomialRing<A> &a)
+L::operator<< (std::ostream &o, const PolynomialRingBB<A> &a)
 {
-   return o << a.arithmetic() << "[x]";
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << a.getCoeffAlgebra() << "[x]";
+
+   return o << ss.str().c_str();
+}
+
+template<typename A>
+void
+L::PolynomialRingBB<A>::printShort (std::ostream& o, const type& p) const
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   bool output = false;
+
+   for (int i = p.degree(); i >= 0; --i)
+   {
+      typename A::type coef = p[i];
+      if (a.is0(coef))  continue;
+
+      bool coefPrinted = false;
+
+      if (a.is1(coef))
+      {
+         if (output)  ss << '+';
+      }
+      else if (a.is1(a.neg(coef)))
+      {
+         ss << '-';
+      }
+      else
+      {
+         if (output)  ss << '+';
+         a.printShort (ss, coef);
+         coefPrinted = true;
+      }
+
+      switch (i)
+      {
+         case 0:  if (! coefPrinted)  a.printShort (ss, a.one());
+                  break;
+         case 1:  ss << 'x'; break;
+         case 2:  ss << "x\262"; break;
+         case 3:  ss << "x\263"; break;
+         default: ss << "x^" << i;
+      }
+
+      output = true;
+   }
+
+   if (! output)  a.printShort (ss, a.zero());
+
+   o << ss.str().c_str();
+}
+
+template<typename A>
+void
+L::PolynomialRingBB<A>::print (std::ostream& o, const type& p) const
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   printShort (ss, p);
+   ss << ' ';
+   printSuffix (ss);
+
+   o << ss.str().c_str();
 }
 
 
@@ -362,8 +468,8 @@ L::operator<< (std::ostream &o, const PolynomialRing<A> &a)
  */
 
 template<class A>
-void L::PolynomialRingField<A>::div
-   (const P& u, const P& v, P& _q, P& _r) const
+void L::PolynomialRingBase<A,L::field_tag>::div
+   (const type& u, const type& v, type& _q, type& _r) const
 {
    const int vdeg = v.degree();
    if (vdeg == -1)  throw DivisionByZero();
@@ -376,13 +482,13 @@ void L::PolynomialRingField<A>::div
       return;
    }
 
-   T qq = a.recip (v.lc());
-   P uu (u);
-   P q (udeg - vdeg + 1);
+   typename A::type qq = a.recip (v.lc());
+   type uu (u);
+   type q (udeg - vdeg + 1);
 
    for (int k = udeg-vdeg; k >= 0; --k)
    {
-      T lc = a.mul (uu[vdeg+k], qq);
+      typename A::type lc = a.mul (uu[vdeg+k], qq);
       q.mulAndAdd (lc);
 
       for (int j = vdeg + k - 1; j >= k; --j)
@@ -394,7 +500,7 @@ void L::PolynomialRingField<A>::div
    _q = q;
    
    bool nonZero = false;
-   P r (vdeg);
+   type r (vdeg);
    for (int i = vdeg-1; i >= 0; --i)
    {
       if (nonZero || ! a.is0(uu[i]))
@@ -408,11 +514,86 @@ void L::PolynomialRingField<A>::div
 
 
 /**
+ *  quot()
+ */
+
+template<class A>
+typename L::PolynomialRingBase<A,L::field_tag>::type
+L::PolynomialRingBase<A,L::field_tag>::quot (const type& u, const type& v) const
+{
+   const int vdeg = v.degree();
+   if (vdeg == -1)  throw DivisionByZero();
+   const int udeg = u.degree();
+
+   if (udeg < vdeg)  return type(0);
+
+   typename A::type qq = a.recip (v.lc());
+   type uu (u);
+   type q (udeg - vdeg + 1);
+
+   for (int k = udeg-vdeg; k >= 0; --k)
+   {
+      typename A::type lc = a.mul (uu[vdeg+k], qq);
+      q.mulAndAdd (lc);
+
+      for (int j = vdeg + k - 1; j >= k; --j)
+      {
+         a.subFrom (uu[j], a.mul (lc, v[j-k]));
+      }
+   }
+
+   return q;
+}
+
+
+/**
+ *  rem()
+ */
+
+template<class A>
+typename L::PolynomialRingBase<A,L::field_tag>::type
+L::PolynomialRingBase<A,L::field_tag>::rem (const type& u, const type& v) const
+{
+   const int vdeg = v.degree();
+   if (vdeg == -1)  throw DivisionByZero();
+   const int udeg = u.degree();
+
+   if (udeg < vdeg)  return u;
+
+   typename A::type qq = a.recip (v.lc());
+   type uu (u);
+
+   for (int k = udeg-vdeg; k >= 0; --k)
+   {
+      typename A::type lc = a.mul (uu[vdeg+k], qq);
+
+      for (int j = vdeg + k - 1; j >= k; --j)
+      {
+         a.subFrom (uu[j], a.mul (lc, v[j-k]));
+      }
+   }
+   
+   bool nonZero = false;
+   type r (vdeg);
+   for (int i = vdeg-1; i >= 0; --i)
+   {
+      if (nonZero || ! a.is0(uu[i]))
+      {
+         r.mulAndAdd (uu[i]);
+         nonZero = true;
+      }
+   }
+
+   return r;
+}
+
+
+/**
  * is Prime()
  */
 
 template<class A>
-bool L::PolynomialRingField<A>::isPrime (const P& p) const
+bool L::PolynomialRingBase<A,L::field_tag>::isPrime (const type& p) const
 {
    if (p.degree() <= 0)  return false;
    if (p.degree() == 1)  return true;
@@ -421,11 +602,11 @@ bool L::PolynomialRingField<A>::isPrime (const P& p) const
 
    for (unsigned i = a.size(); ; ++i)
    {
-      P q = element (i);
+      type q = element (i);
 
       if (2 * q.degree() > p.degree())  return true;
 
-      P x, r;
+      type x, r;
       div (p, q, x, r);
       if (is0(r))  return false;
    }
@@ -437,7 +618,8 @@ bool L::PolynomialRingField<A>::isPrime (const P& p) const
  */
 
 template<class A>
-unsigned L::PolynomialRingField<A>::numOfRemainders (const P& p) const
+unsigned
+L::PolynomialRingBase<A,L::field_tag>::numOfRemainders (const type& p) const
 {
    return a.size()  ?  powInt (a.size(), p.degree()) : 0;
 }
@@ -447,60 +629,77 @@ namespace HIntLib
    // Instantiate Polynomial<>
 
 #define HINTLIB_INSTANTIATE(X) \
-   template Polynomial<X>::Polynomial (unsigned, const X*); \
    template Polynomial<X>& Polynomial<X>::operator= (const Polynomial<X>&); \
    template Polynomial<X>& Polynomial<X>::divByXPow (unsigned); \
    template Polynomial<X>& Polynomial<X>::mulByXPow (unsigned); \
    template std::ostream& operator<< (std::ostream &, const Polynomial<X> &);
-
-   // template class Polynomial<X>;
 
    HINTLIB_INSTANTIATE (int)
    HINTLIB_INSTANTIATE (unsigned char)
    HINTLIB_INSTANTIATE (unsigned short)
 #undef HINTLIB_INSTANTIATE
 
-   // Instantiate PolynomialRing<>
+   // Instantiate PolynomialRingBB<>
 
 #define HINTLIB_INSTANTIATE(X) \
-   template PolynomialRing<X>::type PolynomialRing<X>::one() const; \
-   template bool PolynomialRing<X>::is1 (const P&) const; \
-   template bool PolynomialRing<X>::isMonic (const P&) const; \
-   template PolynomialRing<X>::type \
-            PolynomialRing<X>::element(unsigned) const; \
-   template unsigned PolynomialRing<X>::index (const P&) const; \
-   template PolynomialRing<X>::type& PolynomialRing<X>::negate (P&) const; \
-   template PolynomialRing<X>::type PolynomialRing<X>::neg (const P&) const; \
-   template PolynomialRing<X>::type \
-            PolynomialRing<X>::add (const P&, const P&) const; \
-   template PolynomialRing<X>::type \
-            PolynomialRing<X>::mul (const P&, const P&) const; \
-   template PolynomialRing<X>::type \
-            PolynomialRing<X>::times (const P&, unsigned) const; \
+   template PolynomialRingBB<X>::type \
+            PolynomialRingBB<X>::one() const; \
+   template bool PolynomialRingBB<X>::is1 (const type&) const; \
+   template bool PolynomialRingBB<X>::isMonic (const type&) const; \
+   template PolynomialRingBB<X>::type \
+            PolynomialRingBB<X>::element(unsigned) const; \
+   template unsigned PolynomialRingBB<X>::index (const type&) const; \
+   template PolynomialRingBB<X>::type& \
+            PolynomialRingBB<X>::negate (type&) const; \
+   template PolynomialRingBB<X>::type \
+            PolynomialRingBB<X>::neg (const type&) const; \
+   template PolynomialRingBB<X>::type \
+            PolynomialRingBB<X>::add (const type&, const type&) const; \
+   template PolynomialRingBB<X>::type \
+            PolynomialRingBB<X>::mul (const type&, const type&) const; \
+   template PolynomialRingBB<X>::type \
+            PolynomialRingBB<X>::times (const type&, unsigned) const; \
+   template X::type \
+            PolynomialRingBB<X>::evaluate \
+                (const type&, const coeff_type&) const; \
    template std::ostream& \
-      operator<< (std::ostream &, const PolynomialRing<X> &);
+      operator<< (std::ostream &, const PolynomialRingBB<X> &); \
+   template void \
+            PolynomialRingBB<X>::print (std::ostream &, const type&) const; \
+   template void \
+            PolynomialRingBB<X>::printShort (std::ostream &, const type&) const;
 
    HINTLIB_INSTANTIATE (IntegerRing<int>)
-   HINTLIB_INSTANTIATE (ModularIntegerRing<unsigned char>)
-   HINTLIB_INSTANTIATE (ModularIntegerRing<unsigned short>)
-   HINTLIB_INSTANTIATE (ModularIntegerField<unsigned char>)
-   HINTLIB_INSTANTIATE (ModularIntegerField<unsigned short>)
-   HINTLIB_INSTANTIATE (PrecalculatedField<unsigned char>)
-   HINTLIB_INSTANTIATE (PrecalculatedField<unsigned short>)
+   HINTLIB_INSTANTIATE (GF2)
+   HINTLIB_INSTANTIATE (ModularArith<unsigned char>)
+   HINTLIB_INSTANTIATE (ModularArith<unsigned short>)
+   HINTLIB_INSTANTIATE (ModularArithField<unsigned char>)
+   HINTLIB_INSTANTIATE (ModularArithField<unsigned short>)
+   HINTLIB_INSTANTIATE (LookupField<unsigned char>)
+   HINTLIB_INSTANTIATE (LookupFieldPow2<unsigned char>)
+   HINTLIB_INSTANTIATE (LookupFieldPrime<unsigned char>)
 #undef HINTLIB_INSTANTIATE
 
-   // Instantiate PolynomialRingField<>
+   // Instantiate PolynomialRingBase<field_tag>
 
 #define HINTLIB_INSTANTIATE(X) \
-   template void PolynomialRingField<X>::div \
-      (const P&, const P&, P&, P&) const; \
-   template bool PolynomialRingField<X>::isPrime (const P&) const; \
-   template unsigned PolynomialRingField<X>::numOfRemainders (const P&) const;
+   template void PolynomialRingBase<X,field_tag>::div \
+      (const type&, const type&, type&, type&) const; \
+   template PolynomialRingBase<X,field_tag>::type \
+            PolynomialRingBase<X,field_tag>::quot \
+               (const type&, const type&) const; \
+   template PolynomialRingBase<X,field_tag>::type \
+            PolynomialRingBase<X,field_tag>::rem \
+               (const type&, const type&) const; \
+   template bool PolynomialRingBase<X,field_tag>::isPrime (const type&) const; \
+   template unsigned PolynomialRingBase<X,field_tag>::numOfRemainders (const type&) const;
 
-   HINTLIB_INSTANTIATE (ModularIntegerField<unsigned char>)
-   HINTLIB_INSTANTIATE (ModularIntegerField<unsigned short>)
-   HINTLIB_INSTANTIATE (PrecalculatedField<unsigned char>)
-   HINTLIB_INSTANTIATE (PrecalculatedField<unsigned short>)
+   HINTLIB_INSTANTIATE (GF2)
+   HINTLIB_INSTANTIATE (ModularArithField<unsigned char>)
+   HINTLIB_INSTANTIATE (ModularArithField<unsigned short>)
+   HINTLIB_INSTANTIATE (LookupField<unsigned char>)
+   HINTLIB_INSTANTIATE (LookupFieldPow2<unsigned char>)
+   HINTLIB_INSTANTIATE (LookupFieldPrime<unsigned char>)
 #undef HINTLIB_INSTANTIATE
 }
 

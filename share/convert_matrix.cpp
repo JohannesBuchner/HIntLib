@@ -37,7 +37,7 @@ int main (int argc, char** argv)
    try
    {
       HIntLib::GeneratorMatrix* m = HIntLib::loadLibSeq (argv [1]);
-      m->dumpBinary (argv [2]);
+      m->binaryDump (argv [2]);
       delete m;
    }
    catch (std::exception &e)

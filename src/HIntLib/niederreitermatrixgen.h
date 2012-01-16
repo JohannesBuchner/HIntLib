@@ -38,7 +38,7 @@ namespace HIntLib
    {
    private:
       typedef typename A::type T;
-      typedef PolynomialRingField<A> PolyRing;
+      typedef PolynomialRing<A> PolyRing;
       typedef typename PolyRing::type Poly;
 
    public:
@@ -60,23 +60,23 @@ namespace HIntLib
    {
    public:
       NiederreiterMatrixPP (unsigned _dim, unsigned char size)
-         : HeapAllocatedGeneratorMatrixGen<unsigned char> (size, _dim)
+         : HeapAllocatedGeneratorMatrixGen<unsigned char> (size, 1, _dim)
          {  init (size); }
       NiederreiterMatrixPP (unsigned _dim, unsigned char prime, unsigned power)
          : HeapAllocatedGeneratorMatrixGen<unsigned char>
-                  (powInt (unsigned (prime), power), _dim)
+                  (powInt (unsigned (prime), power), 1, _dim)
          {  init (prime, power); }
 
       NiederreiterMatrixPP (
          unsigned _dim, unsigned _m, unsigned _prec,
          unsigned char size)
-      : HeapAllocatedGeneratorMatrixGen<unsigned char> (size, _dim, _m, _prec)
+      : HeapAllocatedGeneratorMatrixGen<unsigned char> (size,1, _dim, _m, _prec)
          {  init (size); }
       NiederreiterMatrixPP (
          unsigned _dim, unsigned _m, unsigned _prec,
          unsigned char prime, unsigned power)
       : HeapAllocatedGeneratorMatrixGen<unsigned char>
-               (powInt (unsigned (prime), power), _dim, _m, _prec)
+               (powInt (unsigned (prime), power), 1, _dim, _m, _prec)
          {  init (prime, power); }
 
    private:

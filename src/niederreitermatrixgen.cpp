@@ -25,7 +25,7 @@
 #include <HIntLib/niederreitermatrixgen.h>
 
 #include <HIntLib/modulararithmetic.h>
-#include <HIntLib/precalculatedfield.h>
+#include <HIntLib/lookupfield.h>
 #include <HIntLib/prime.h>
 #include <HIntLib/exception.h>
 
@@ -42,7 +42,7 @@ template<class A>
 L::NiederreiterMatrixGen<A>::NiederreiterMatrixGen
    (const A& a, unsigned _dim, unsigned _m, unsigned _prec)
    : HeapAllocatedGeneratorMatrixGen<typename A::type>
-      (a.size(), _dim, _m, _prec)
+      (a.size(), 1, _dim, _m, _prec)
 {
    init (*this, a);
 }
@@ -95,7 +95,7 @@ void L::NiederreiterMatrixGen<A>::init
 
    int u = 0;
 
-   for (unsigned j = 0; j < gm.getPrecision(); j++)
+   for (unsigned j = 0; j < gm.getPrec(); j++)
    {
       // cout << "  j=" << j << endl;
       // Do we need a new v?
@@ -166,7 +166,7 @@ void L::NiederreiterMatrixGen<A>::init
       for (unsigned r = 0; r < gm.getM(); ++r)
       {
          // cout << " " << v[r+u];
-         gm.set (d,r,j, v[r+u]);
+         gm.setv (d,r,j, v[r+u]);
       }
       // cout << endl;
 
@@ -188,13 +188,13 @@ void L::NiederreiterMatrixPP::init (unsigned char prime, unsigned power)
    if (power == 0)  throw GaloisFieldExponent();
    else if (power == 1)
    {
-      ModularIntegerField<unsigned char> a (prime);
-      NiederreiterMatrixGen<ModularIntegerField<unsigned char> >::init (*this, a);
+      ModularArithField<unsigned char> a (prime);
+      NiederreiterMatrixGen<ModularArithField<unsigned char> >::init (*this, a);
    }
    else  // general case (power > 1)
    {
-      PrecalculatedGaloisField<unsigned char> field (prime, power);
-      NiederreiterMatrixGen<PrecalculatedField<unsigned char> >
+      LookupGaloisField<unsigned char> field (prime, power);
+      NiederreiterMatrixGen<LookupField<unsigned char> >
          ::init (*this, field);
    }
 }
@@ -204,15 +204,15 @@ void L::NiederreiterMatrixPP::init (unsigned char size)
    if (Prime::test (size))  init (size, 1);
    else
    {
-      PrecalculatedGaloisField<unsigned char> field (size);
-      NiederreiterMatrixGen<PrecalculatedField<unsigned char> >
+      LookupGaloisField<unsigned char> field (size);
+      NiederreiterMatrixGen<LookupField<unsigned char> >
          ::init (*this, field);
    }
 }
 
 namespace HIntLib
 {
-   template class NiederreiterMatrixGen<ModularIntegerField<unsigned char> >;
-   template class NiederreiterMatrixGen<PrecalculatedField<unsigned char> >;
+   template class NiederreiterMatrixGen<ModularArithField<unsigned char> >;
+   template class NiederreiterMatrixGen<LookupField<unsigned char> >;
 }
 

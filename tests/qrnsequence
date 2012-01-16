@@ -7,7 +7,6 @@ p=10
 echo "Testing base 2 sequence generation..."
 
 res=0
-./test_qrnsequence -s -p $p -d $dim seq 1001 $points > nied_2_naive.txt || res=1
 ./test_qrnsequence -s -p $p -d $dim seq 1101 $points > nied_2_normal.txt || res=1
 ./test_qrnsequence -s -p $p -d $dim seq 1201 $points > nied_2_gray.txt || res=1
 ./test_qrnsequence -s -p $p -d $dim seq 2002 $points > nied_gen_naive.txt || res=1
@@ -16,18 +15,15 @@ res=0
 
 if test $res -ne 0; then
   echo "test_qrnsequence failed!"
-  (exit1); exit 1
+  (exit 1); exit 1
 fi
 
 # All correct-order sequences should be equal
 
-./numericdiff nied_2_naive.txt nied_2_normal.txt ||
-  { echo "nied_2_naive.txt and nied_2_normal.txt do not match!"; { (exit 1); exit 1; }; }
-
-./numericdiff nied_2_naive.txt nied_gen_normal.txt ||
+./numericdiff nied_2_normal.txt nied_gen_normal.txt ||
   { echo "nied_2_naive.txt and nied_gen_normal.txt do not match!"; { (exit 1); exit 1; }; }
 
-./numericdiff nied_2_naive.txt nied_gen_naive.txt ||
+./numericdiff nied_2_normal.txt nied_gen_naive.txt ||
   { echo "nied_2_naive.txt and nied_gen_naive.txt do not match!"; { (exit 1); exit 1; }; }
 
 # All gray-code-order sequences should be equal
@@ -37,7 +33,7 @@ fi
 
 # Compare with gray (requires sorting)
 
-sort nied_2_naive.txt > x1.txt
+sort nied_2_normal.txt > x1.txt
 sort nied_2_gray.txt  > x2.txt
 
 ./numericdiff x1.txt x2.txt ||
@@ -45,7 +41,7 @@ sort nied_2_gray.txt  > x2.txt
 
 # Check if starting in the middle works
 
-tail -100 nied_2_naive.txt > nied_back1.txt
+tail -100 nied_2_normal.txt > nied_back1.txt
 
 ./test_qrnsequence -s -p $p -d $dim seq 2102 3996 $points > nied_back2.txt ||
   { echo "test_qrnsequence failed!"; { (exit 1); exit 1; }; }
@@ -65,7 +61,7 @@ points=3125
 
 if test $res -ne 0; then
   echo "test_qrnsequence failed!"
-  (exit1); exit 1
+  (exit 1); exit 1
 fi
 
 ./numericdiff nied_gen5_naive.txt nied_gen5_normal.txt ||
@@ -89,7 +85,7 @@ points=6561
 
 if test $res -ne 0; then
   echo "test_qrnsequence failed!"
-  (exit1); exit 1
+  (exit 1); exit 1
 fi
 
 ./numericdiff nied_gen9_naive.txt nied_gen9_normal.txt ||
@@ -101,12 +97,37 @@ sort nied_gen9_gray.txt  > x2.txt
 ./numericdiff x1.txt x2.txt ||
   { echo "nied_gen9_naive.txt and nied_gen9_gray.txt do not match after sorting!"; { (exit 1); exit 1; }; }
 
+# Tests for power of 2
+
+echo "Testing power-of-two base sequence generation..."
+
+points=4096
+
+./test_qrnsequence -s -p $p -d $dim seq 2008 $points > nied_gen8_naive.txt || res=1
+./test_qrnsequence -s -p $p -d $dim seq 2108 $points > nied_gen8_normal.txt || res=1
+./test_qrnsequence -s -p $p -d $dim seq 2208 $points > nied_gen8_gray.txt || res=1
+
+if test $res -ne 0; then
+  echo "test_qrnsequence failed!"
+  (exit 1); exit 1
+fi
+
+./numericdiff nied_gen8_naive.txt nied_gen8_normal.txt ||
+  { echo "nied_gen8_naive.txt and nied_gen8_normal.txt do not match!"; { (exit 1); exit 1; }; }
+
+sort nied_gen8_naive.txt > x1.txt
+sort nied_gen8_gray.txt  > x2.txt
+
+./numericdiff x1.txt x2.txt ||
+  { echo "nied_gen8_naive.txt and nied_gen8_gray.txt do not match after sorting!"; { (exit 1); exit 1; }; }
+
 # Cleanup
 
-rm nied_2_naive.txt nied_2_normal.txt nied_2_gray.txt \
+rm nied_2_normal.txt nied_2_gray.txt \
    nied_gen_naive.txt nied_gen_normal.txt nied_gen_gray.txt \
    nied_gen5_naive.txt nied_gen5_normal.txt nied_gen5_gray.txt \
    nied_gen9_naive.txt nied_gen9_normal.txt nied_gen9_gray.txt \
+   nied_gen8_naive.txt nied_gen8_normal.txt nied_gen8_gray.txt \
    x1.txt x2.txt \
    nied_back1.txt nied_back2.txt
 

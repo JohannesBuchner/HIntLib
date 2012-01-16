@@ -80,8 +80,8 @@ libcreatematrix_la_SOURCES = \
    modulararithmetic.cpp \
    polynomial.cpp \
    polynomial2.cpp \
-   precalculatedfield.cpp \
-   precalculatedgaloisfield.cpp \
+   lookupfield.cpp \
+   lookupgaloisfield.cpp \
    galoisfield.cpp \
    gcd.cpp \
    output.cpp \
@@ -90,11 +90,11 @@ libcreatematrix_la_SOURCES = \
 libcreatematrix_la_LIBADD = -lm
 
 libhintlib_la_SOURCES = $(ALLSRCSEQ)
-libhintlib_la_LDFLAGS = -no-undefined
+libhintlib_la_LDFLAGS = @NOUNDEFINED@
 libhintlib_la_LIBADD = libcreatematrix.la
 
 libhintlibmpi_la_SOURCES = $(ALLSRCMPI)
-libhintlibmpi_la_LDFLAGS = -no-undefined -rpath $(libdir)
+libhintlibmpi_la_LDFLAGS = @NOUNDEFINED@ -rpath $(libdir)
 libhintlibmpi_la_LIBADD = libcreatematrix.la
 
 noinst_PROGRAMS = create_sobol create_niederreiter create_bitop

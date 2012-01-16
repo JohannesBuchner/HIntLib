@@ -38,6 +38,7 @@
 #endif
 
 #include <HIntLib/bitop.h>
+#include <HIntLib/mymath.h>
 
 
 namespace HIntLib
@@ -65,38 +66,48 @@ public:
    // no public constructor!
    virtual ~GeneratorMatrix() {};
 
-   unsigned getBase() const      { return base; }
-   unsigned getDimension() const { return dim; }
-   unsigned getM() const         { return m; }
-   unsigned getPrecision() const { return prec; }
+   unsigned getBase() const          { return base; }
+   unsigned getVectorization() const { return vec; }
+   unsigned getPrec() const          { return prec; }      // # vecBase digits
+   unsigned getDimension() const     { return dim; }
+   unsigned getM() const             { return m; }
+   unsigned getTotalPrec() const     { return totalPrec; } // # base digits
 
-   virtual void     setDigit (unsigned d, unsigned r, unsigned b, unsigned x);
-   virtual unsigned getDigit (unsigned d, unsigned r, unsigned b) const = 0;
+   virtual void     setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
+   virtual void     setVector (unsigned d, unsigned r, unsigned b, u64 x);
+   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const = 0;
+   virtual u64      getVector (unsigned d, unsigned r, unsigned b) const = 0;
 
    void dump       (std::ostream &) const;
-   void dumpLibSeq (std::ostream &) const;
-   void dumpLibSeq (const char *) const;
-   void dumpBinary (std::ostream &) const;
-   void dumpBinary (const char *) const;
+   void vectorDump (std::ostream &) const;
+   void libSeqDump (std::ostream &) const;
+   void libSeqDump (const char *) const;
+   void binaryDump (std::ostream &) const;
+   void binaryDump (const char *) const;
 
    GeneratorMatrix& operator= (const GeneratorMatrix &);
 
 protected:
-   GeneratorMatrix (
-      unsigned _base, unsigned _dim, unsigned _m, unsigned _prec)
-   : base (_base),
-     dim (_dim),
-     m   (_m),
-     prec(_prec) {}
+   GeneratorMatrix (unsigned _base, unsigned _vec,
+                    unsigned _dim, unsigned _m, unsigned _totalPrec)
+      : base (_base),
+        vec (_vec),
+        prec ((_totalPrec-1) / _vec + 1),
+        dim (_dim),
+        m   (_m),
+        totalPrec (_totalPrec) {}
    GeneratorMatrix (const GeneratorMatrix &);
 
    const unsigned base;
+   const unsigned vec;
+   const unsigned prec;
    const unsigned dim;
    const unsigned m;
-         unsigned prec;
+         unsigned totalPrec;
 };
 
 bool operator== (const GeneratorMatrix &, const GeneratorMatrix &);
+
 
 /**
  *  Generator Matrix 2 Base
@@ -112,16 +123,17 @@ bool operator== (const GeneratorMatrix &, const GeneratorMatrix &);
 class GeneratorMatrix2Base : public GeneratorMatrix
 {
 public:
-   virtual u64 getVector (unsigned d, unsigned r) const = 0;
+   void CArrayDump (std::ostream &) const;
 
-   void binaryDump   (std::ostream &) const;
-   void dumpAsCArray (std::ostream &) const;
+   unsigned getPrec() const  { return 1; }
 
 protected:
-   GeneratorMatrix2Base (unsigned _dim, unsigned _m, unsigned _prec)
-      : GeneratorMatrix (2, _dim, _m, _prec) {}
+   GeneratorMatrix2Base
+      (unsigned availableBits, unsigned _dim, unsigned _m, unsigned _totalPrec)
+      : GeneratorMatrix (2, availableBits, _dim, _m, _totalPrec) {} 
+
    GeneratorMatrix2Base (const GeneratorMatrix2Base &gm)
-      : GeneratorMatrix (gm) {}
+      : GeneratorMatrix (gm)  {}
 };
 
 
@@ -141,38 +153,39 @@ public:
 
    // no public constructor!
 
-   const T* getMatrix() const    { return c; }
-
    // geting matrix entries
    
+   const T* getMatrix() const  { return c; }
    const T* operator() (unsigned r) const  { return &c[r*dim]; }
    T operator() (unsigned d, unsigned r) const  { return c[r*dim + d]; }
-   char operator() (unsigned d, unsigned r, unsigned b) const
-      { return bit (operator()(d,r), prec-(b+1)) != 0; }
+   unsigned char operator() (unsigned d, unsigned r, unsigned b) const
+      { return (operator()(d,r) >> (totalPrec - b - 1)) & T(1); }
 
-   unsigned getDigit (unsigned d, unsigned r, unsigned b) const;
-   u64 getVector (unsigned d, unsigned r) const;
+   virtual unsigned getDigit (unsigned d, unsigned r, unsigned b) const;
+   virtual u64 getVector (unsigned d, unsigned r, unsigned) const;
 
    // Comparison
    
    bool operator== (const GeneratorMatrix2<T> &) const;
    bool operator!= (const GeneratorMatrix2<T> &gm) const
-      { return ! this->operator==(gm); }
+      { return ! operator==(gm); }
 
 protected:
 
    GeneratorMatrix2 (
-      unsigned _dim, unsigned _m, unsigned _prec, const T* _c = 0)
-      : GeneratorMatrix2Base (_dim,_m,_prec), c(const_cast<T*>(_c))
-      { checkPrec(); }
+          unsigned _dim, unsigned _m, unsigned _totalPrec,
+          const T* _c = 0)
+      : GeneratorMatrix2Base
+           (std::numeric_limits<T>::digits, _dim, _m, _totalPrec),
+        c (const_cast<T*>(_c))
+      { checkTotalPrec(); }
    GeneratorMatrix2 (const GeneratorMatrix2<T> &gm, const T* p)
-      : GeneratorMatrix2Base (gm), c(const_cast<T*>(p))  {}
-   GeneratorMatrix2 (const GeneratorMatrix2Base &gm, const T* p)
-      : GeneratorMatrix2Base (gm), c(const_cast<T*>(p))  { checkPrec(); }
+      : GeneratorMatrix2Base (gm),
+        c(const_cast<T*>(p)) {}
 
-   void checkPrec() const;
+   void checkTotalPrec() const;
 
-    T* c; 
+   T* c; 
 
 private:
    GeneratorMatrix2 (const GeneratorMatrix2<T> &);   // no copy
@@ -189,16 +202,14 @@ class MutableGeneratorMatrix2 : public GeneratorMatrix2<T>
 public:
    ~MutableGeneratorMatrix2 () {}   // make GCC 3.2 happy
 
-   void set      (unsigned d, unsigned r, T x)  { c[r*dim + d] = x; }
-   void setDigit (unsigned d, unsigned r, unsigned b, unsigned x);
-   void set      (unsigned d, unsigned r, unsigned b, unsigned x)
-   {
-      T mask = T(1) << (prec-(b+1));
-      if (x == 0)  c[r*dim + d] &= ~mask;
-      else         c[r*dim + d] |= mask;
-   }
+   void setv (unsigned d, unsigned r, T x)  { c[r*dim + d] = x; }
+   void setv (unsigned d, unsigned r, unsigned, T x)  { setv (d,r,x); }
+   void set  (unsigned d, unsigned r, unsigned b, unsigned char x);
 
-   void adjustPrecision (unsigned);
+   virtual void setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
+   virtual void setVector (unsigned d, unsigned r, unsigned b, u64 x);
+
+   void adjustTotalPrec (unsigned);
    void makeEquidistributedCoordinate (unsigned);
    void makeIdentityMatrix (unsigned);
    void makeZeroMatrix (unsigned);
@@ -206,12 +217,9 @@ public:
    void restoreFromGrayCode ();
 
 protected:
-   MutableGeneratorMatrix2 (
-      unsigned _dim, unsigned _m, unsigned _prec)
-      : GeneratorMatrix2<T> (_dim, _m, _prec, 0)  {}
+   MutableGeneratorMatrix2 (unsigned _dim, unsigned _m, unsigned _totalPrec)
+      : GeneratorMatrix2<T> (_dim, _m, _totalPrec, 0)  {}
    MutableGeneratorMatrix2 (const GeneratorMatrix2<T> &gm, const T* p)
-      : GeneratorMatrix2<T> (gm, p)  {}
-   MutableGeneratorMatrix2 (const GeneratorMatrix2Base &gm, const T* p)
       : GeneratorMatrix2<T> (gm, p)  {}
 };
 
@@ -228,24 +236,62 @@ class HeapAllocatedGeneratorMatrix2: public MutableGeneratorMatrix2<T>
 public:
    HeapAllocatedGeneratorMatrix2 (
          unsigned _dim,
-         unsigned _m    = std::numeric_limits<Index>::digits - 1,
-         unsigned _prec = std::numeric_limits<real>::digits - 1);
+         unsigned _m         = std::numeric_limits<Index>::digits - 1,
+         unsigned _totalPrec = std::numeric_limits<real> ::digits - 1);
    ~HeapAllocatedGeneratorMatrix2 () { delete[] c; }
 
 protected:
    HeapAllocatedGeneratorMatrix2 (
-      unsigned _dim, unsigned _m, unsigned _prec, bool alloc)
-      : MutableGeneratorMatrix2<T> (_dim,_m,_prec)
-   { if (alloc)  allocate(); }
+      unsigned _dim, unsigned _m, unsigned _totalPrec, bool alloc)
+   : MutableGeneratorMatrix2<T> (_dim, _m, _totalPrec)
+      { if (alloc)  allocate(); }
 
-   HeapAllocatedGeneratorMatrix2 (const GeneratorMatrix2<T> &gm, bool alloc)
-      : MutableGeneratorMatrix2<T> (gm, 0)  { if (alloc)  allocate(); }
-   HeapAllocatedGeneratorMatrix2 (const GeneratorMatrix2Base &gm,bool alloc)
+   HeapAllocatedGeneratorMatrix2 (const GeneratorMatrix2<T> &gm,  bool alloc)
       : MutableGeneratorMatrix2<T> (gm, 0)  { if (alloc)  allocate(); }
 
    void allocate();
 };
 
+
+/**
+ *  GM Copy
+ */
+
+class GMCopy
+{
+public:
+   GMCopy ();
+
+   GMCopy& dim (int x)          { dimValue = x; return *this; } 
+   GMCopy& maxDim (int x)       { maxDimValue = x; return *this; }
+   GMCopy& m (int x)            { mValue = x; return *this; }
+   GMCopy& maxM (int x)         { maxMValue = x; return *this; }
+   GMCopy& totalPrec (int x)    { totalPrecValue = x; return *this; }
+   GMCopy& maxTotalPrec (int x) { maxTotalPrecValue = x; return *this; }
+   GMCopy& vec (int x)   { vecValue = x; return *this; }
+   GMCopy& noVec ()      { vecValue = 1; return *this; }
+   GMCopy& keepVec()     { vecValue = -2; return *this; }
+   // GMCopy& optimalVec()  { vecValue = -3; return *this; }
+   GMCopy& equi()        { equiValue = true; return *this; }
+   GMCopy& equi(bool e)  { equiValue = e; return *this; }
+
+   unsigned getDimension (const GeneratorMatrix &) const;
+   unsigned getM         (const GeneratorMatrix &) const;
+   unsigned getTotalPrec (const GeneratorMatrix &, unsigned max = 0) const;
+   unsigned getVectorization (const GeneratorMatrix &, unsigned bits) const;
+   bool getEqui () const  { return equiValue; }
+   void checkNoVec () const;
+
+private:
+   int dimValue;
+   int maxDimValue;
+   int mValue;
+   int maxMValue;
+   int totalPrecValue;
+   int maxTotalPrecValue;
+   int vecValue;
+   bool equiValue;
+};
 
 /**
  *  Generator Matrix 2 Copy
@@ -256,9 +302,6 @@ protected:
  */
 
 template<class T>
-class GeneratorMatrixGen;
-
-template<class T>
 class GeneratorMatrix2Copy : public HeapAllocatedGeneratorMatrix2<T>
 {
 public:
@@ -267,44 +310,14 @@ public:
    GeneratorMatrix2Copy (const GeneratorMatrix2<T> &);
    GeneratorMatrix2Copy (const GeneratorMatrix2Copy<T> &);
 
-   // Normal copy for different base type
-   template<class TT>
-   GeneratorMatrix2Copy (const GeneratorMatrix2<TT> &);
-
    // Copy from arbitrary GeneratorMatrix
    GeneratorMatrix2Copy (const GeneratorMatrix &);
 
    // Truncate a given matrix
-   GeneratorMatrix2Copy (
-      const GeneratorMatrix2<T> &, unsigned, unsigned, unsigned, bool = false);
-   GeneratorMatrix2Copy (
-      const GeneratorMatrix &, unsigned, unsigned, unsigned, bool = false);
+   GeneratorMatrix2Copy (const GeneratorMatrix &, const GMCopy &);
 };
 
 }  // namespace HIntLib
-
-
-// *** Implementation ***
-
-
-template<class T>
-template<class TT>
-inline
-HIntLib::GeneratorMatrix2Copy<T>::GeneratorMatrix2Copy (
-   const GeneratorMatrix2<TT> &gm)
-: HeapAllocatedGeneratorMatrix2<T> (
-     gm.getDimension(),
-     gm.getM(),
-     std::min(gm.getPrecision(), unsigned(std::numeric_limits<T>::digits)),
-     true)
-{
-   int shift = gm.getPrecision() > prec ? gm.getPrecision() - prec : 0;
-
-   for (unsigned r = 0; r < m; ++r)
-   {
-      for (unsigned d = 0; d < dim; ++d)  c[r*dim + d] = T(gm(d,r) >> shift);
-   }
-}
 
 
 /*****************************************************************************/
@@ -321,22 +334,29 @@ namespace HIntLib
 class GeneratorMatrixGenBase : public GeneratorMatrix
 {
 public:
+   unsigned getVecBase() const  { return vecBase; }
 
    // no public constructor!
 
 protected:
    // Constructor with direct initialization
    GeneratorMatrixGenBase
-      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec)
-   : GeneratorMatrix (_base, _dim, _m, _prec), dimPrec (dim*prec) {}
+      (unsigned _base, unsigned _vec,
+       unsigned _dim, unsigned _m, unsigned _totalPrec)
+   : GeneratorMatrix (_base, _vec, _dim, _m, _totalPrec),
+     dimPrec (dim*prec),
+     vecBase (powInt (base, vec)) {}
 
    // protected copy constructor
+
    GeneratorMatrixGenBase (const GeneratorMatrix &gm)
-      : GeneratorMatrix (gm), dimPrec (dim*prec) {}
+      : GeneratorMatrix (gm), dimPrec (dim*prec), vecBase (powInt (base, vec))
+      {}
    GeneratorMatrixGenBase (const GeneratorMatrixGenBase &gm)
-      : GeneratorMatrix (gm), dimPrec (dim*prec) {}
+      : GeneratorMatrix (gm), dimPrec (gm.dimPrec), vecBase (gm.vecBase) {}
 
    const unsigned dimPrec;
+   const unsigned vecBase;
 };
 
 
@@ -352,6 +372,7 @@ template<class T>
 class GeneratorMatrixGen : public GeneratorMatrixGenBase
 {
 public:
+   typedef T D;
 
    // no public constructor!
 
@@ -362,8 +383,11 @@ public:
       { return &c[r*dimPrec + d*prec]; }
    T operator() (unsigned d, unsigned r, unsigned b) const
       { return c[r*dimPrec + d*prec + b]; }
+   D getd (unsigned d, unsigned r, unsigned b) const;
+   
 
-   unsigned getDigit (unsigned d, unsigned r, unsigned b) const;
+   virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
+   virtual u64      getVector (unsigned d, unsigned r, unsigned b) const;
 
    // Comparision
    
@@ -376,19 +400,20 @@ public:
 protected:
 
    GeneratorMatrixGen (
-      unsigned _base, unsigned _dim, unsigned _m, unsigned _prec)
-      : GeneratorMatrixGenBase (_base,_dim,_m,_prec), c(0)
-   { checkBase(); }
+      unsigned _base, unsigned _vec,
+      unsigned _dim, unsigned _m, unsigned _totalPrec)
+      : GeneratorMatrixGenBase (_base, _vec, _dim, _m, _totalPrec), c(0)
+   { checkVecBase(); }
 
    GeneratorMatrixGen (const GeneratorMatrixGen<T> &gm, const T* _c)
       : GeneratorMatrixGenBase (gm), c(const_cast<T*>(_c))  {}
    GeneratorMatrixGen (const GeneratorMatrix &gm, const T* _c)
-      : GeneratorMatrixGenBase (gm), c(const_cast<T*>(_c))  { checkBase(); }
+      : GeneratorMatrixGenBase (gm), c(const_cast<T*>(_c))  { checkVecBase(); }
 
    T* c; 
 
 private:
-   void checkBase() const;
+   void checkVecBase() const;
    GeneratorMatrixGen (const GeneratorMatrixGen<T> &);  // dont copy
 };
 
@@ -407,6 +432,11 @@ template<class T> int t_parameter (const GeneratorMatrixGen<T> &gm)
    return t_parameter (gm, 0, gm.getM());
 }
 
+template<class T> int t_parameter2 (
+   const GeneratorMatrix2<T> &, int lb, int ub, int maxRows);
+template<class T> int t_parameter2 (
+   const GeneratorMatrixGen<T> &, int lb, int ub, int maxRows);
+
 
 /**
  *  Mutable Generator Matrix Gen
@@ -416,9 +446,13 @@ template<class T>
 class MutableGeneratorMatrixGen : public GeneratorMatrixGen<T>
 {
 public:
-   void setDigit (unsigned d, unsigned r, unsigned b, unsigned x);
-   void set      (unsigned d, unsigned r, unsigned b, unsigned x)
+   void setv (unsigned d, unsigned r, unsigned b, T x)
       { c[r*dimPrec + d*prec + b] = x; }
+   void setd (unsigned d, unsigned r, unsigned b,
+              typename GeneratorMatrixGen<T>::D x);
+
+   virtual void setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
+   virtual void setVector (unsigned d, unsigned r, unsigned b, u64 x);
 
    void makeEquidistributedCoordinate (unsigned);
    void makeIdentityMatrix (unsigned);
@@ -426,8 +460,9 @@ public:
 
 protected:
    MutableGeneratorMatrixGen (
-      unsigned _base, unsigned _dim, unsigned _m, unsigned _prec)
-      : GeneratorMatrixGen<T> (_base,_dim,_m,_prec)  {}
+      unsigned _base, unsigned _vec,
+      unsigned _dim, unsigned _m, unsigned _totalPrec)
+      : GeneratorMatrixGen<T> (_base, _vec, _dim, _m, _totalPrec)  {}
 
    MutableGeneratorMatrixGen
       (const MutableGeneratorMatrixGen<T> &gm, const T* _c)
@@ -448,14 +483,17 @@ class HeapAllocatedGeneratorMatrixGen: public MutableGeneratorMatrixGen<T>
 {
 public:
    HeapAllocatedGeneratorMatrixGen
-      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec);
-   HeapAllocatedGeneratorMatrixGen (unsigned _base, unsigned _dim);
+      (unsigned _base, unsigned _vec,
+       unsigned _dim, unsigned _m, unsigned _totalPrec);
+   HeapAllocatedGeneratorMatrixGen
+      (unsigned _base, unsigned _vec, unsigned _dim);
    ~HeapAllocatedGeneratorMatrixGen () { delete[] c; }
 
 protected:
    HeapAllocatedGeneratorMatrixGen (
-      unsigned _base, unsigned _dim, unsigned _m, unsigned _prec, bool alloc)
-      : MutableGeneratorMatrixGen<T> (_base,_dim,_m,_prec)
+      unsigned _base, unsigned _vec,
+      unsigned _dim, unsigned _m, unsigned _totalPrec, bool alloc)
+      : MutableGeneratorMatrixGen<T> (_base, _vec, _dim, _m, _totalPrec)
    { if (alloc)  allocate(); }
 
    HeapAllocatedGeneratorMatrixGen
@@ -494,12 +532,8 @@ public:
    GeneratorMatrixGenCopy (const GeneratorMatrix &);
 
    // Truncate a given Matrix
-   GeneratorMatrixGenCopy (
-      const GeneratorMatrixGen<T> &,
-      unsigned, unsigned, unsigned, bool = false);
-
-   GeneratorMatrixGenCopy (
-      const GeneratorMatrix &, unsigned, unsigned, unsigned, bool = false);
+   GeneratorMatrixGenCopy (const GeneratorMatrixGen<T> &, const GMCopy &);
+   GeneratorMatrixGenCopy (const GeneratorMatrix &, const GMCopy &);
 };
 
 
@@ -512,19 +546,6 @@ template<class T>
 void assign (const GeneratorMatrix &, unsigned,
                    MutableGeneratorMatrixGen<T> &, unsigned);
 
-
-/**
- *  Generator Matrix Gen Vectorize
- *
- *  Combines a number of digits into one digit
- */
-
-template<class T>
-class GeneratorMatrixGenVectorize : public HeapAllocatedGeneratorMatrixGen<T>
-{
-public:
-   GeneratorMatrixGenVectorize (const GeneratorMatrixGen<T> &, unsigned);
-};
 
 typedef GeneratorMatrixGenCopy<unsigned char> GeneratorMatrixGenCopy8;
 typedef GeneratorMatrixGenCopy<unsigned short> GeneratorMatrixGenCopy16;

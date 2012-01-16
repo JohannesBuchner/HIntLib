@@ -86,7 +86,7 @@ void eratosthenes (bool* field, unsigned size, const T&)
       if (prime * prime > last) break;
 
  
-      // Multiply it with ervery possible value larger than primeCode
+      // Multiply it with every possible value larger than primeCode
  
       for (unsigned i = primeCode; ; i++)
       {
@@ -97,6 +97,50 @@ void eratosthenes (bool* field, unsigned size, const T&)
          unsigned a = static_cast<unsigned> (product);
 
          if (a < size) field [a] = false;
+      }
+   }
+}
+
+template <class A>
+void eratosthenes (A a, bool* field, unsigned size)
+{
+   typename A::type last (size);
+
+   field [0] = false;  // 0 is never prime 
+
+   unsigned i = 1;
+
+   while (a.isUnit (a.element(i)))  field[i++] = false;
+
+   // Assume that all other elements are prime
+ 
+   for (i = 2; i < size; i++)  field [i] = true;
+ 
+   // Sieve
+ 
+   for (i = 2; ; i++)
+   {
+      // if it's not prime, skip it
+ 
+      if (! field [i]) continue;
+ 
+      // Convert it
+ 
+      typename A::type prime (i);
+
+      if (a.norm(a.mul (prime,prime)) > a.norm(last)) break;
+ 
+      // Multiply it with ervery possible value larger than primeCode
+ 
+      for (unsigned j = i; ; j++)
+      {
+         typename A::type product = a.mul (prime * a.element(i));
+
+         if (a.norm(product) > a.norm(last)) break;
+
+         unsigned index = a.index(product);
+
+         if (index < size) field [index] = false;
       }
    }
 }

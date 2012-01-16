@@ -114,7 +114,7 @@ void test (int argc, char **)
 
    NORMAL  cout << "Testing Eratosthenes for 'u32'..." << endl;
    doIt (SIZE, u32 (0));
-   NORMAL  cout << "Testing Eratosthenes for 'Polynomial2'..." << endl;
-   doIt (SIZE, L::Polynomial2<L::u32> (0));
+//    NORMAL  cout << "Testing Eratosthenes for 'Polynomial2'..." << endl;
+//   doIt (SIZE, L::Polynomial2<L::u32> (0));
 }
 

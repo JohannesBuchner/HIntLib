@@ -6,7 +6,7 @@ noinst_HEADERS = include.h
 
 lib_LTLIBRARIES = libhintlibtest.la
 libhintlibtest_la_SOURCES = func.cpp lib.cpp
-libhintlibtest_la_LDFLAGS = -no-undefined
+libhintlibtest_la_LDFLAGS = @NOUNDEFINED@
 
 noinst_PROGRAMS = main
 main_SOURCES = main.cpp

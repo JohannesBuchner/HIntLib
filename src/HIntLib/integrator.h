@@ -112,8 +112,8 @@ inline
 Integrator::Status Integrator::checkRequestedError (
    const EstErr &ee, real reqAbsError, real reqRelError)
 {
-   if (ee.getError ()    < reqAbsError) return ABS_ERROR_REACHED;
-   if (ee.getRelError () < reqRelError) return REL_ERROR_REACHED;
+   if (ee.getError ()    <= reqAbsError) return ABS_ERROR_REACHED;
+   if (ee.getRelError () <= reqRelError) return REL_ERROR_REACHED;
  
    return ERROR;
 }

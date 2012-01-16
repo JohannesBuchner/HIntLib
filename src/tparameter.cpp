@@ -24,7 +24,7 @@
 #include <HIntLib/myalgorithm.h>
 #include <HIntLib/exception.h>
 #include <HIntLib/mymath.h>
-#include <HIntLib/precalculatedfield.h>
+#include <HIntLib/lookupfield.h>
 
 #include <iomanip>
 
@@ -300,6 +300,9 @@ bool isLinearlyIndependent (Bi first, Bi last)
 }  // namespace
 
 
+/***********  Base 2  ********************************************************/
+
+
 template<class T>
 int L::t_parameter (
    const L::GeneratorMatrix2<T> &gm, int lb, int ub, bool dimOpt)
@@ -314,17 +317,18 @@ int L::t_parameter (
    //   floor (log_b (s)) - 1 =
    //   ms1 (s) - 1
 
-   lb = max (lb, max (0, min (M - 1, ms1 (DIM) - 1)));
+   lb = max (lb,
+        max (0,
+        max (M - int (gm.getTotalPrec()),
+             min (M - 1, ms1 (DIM) - 1))));
    ub = min (ub, M);
 
    if (lb > ub)  throw InternalError (__FILE__, __LINE__);
    if (lb == ub)  return lb;
 
-   if (int (gm.getPrecision()) < M)  throw InternalError (__FILE__, __LINE__);
-
    Array<T> c (M * DIM);
    Array<T> selection (M-lb);
-   Array<unsigned> partition (DIM);
+   Array<int> partition (DIM);
 
    // Copy Generator Matrix into c-array (containing tranposed matrices)
 
@@ -346,8 +350,7 @@ int L::t_parameter (
    {
       // choose these _numVectors_ vectors from c
       
-      partition [0] = numVectors;
-      std::fill (&partition[1], &partition[DIM], 0);
+      initial_partition (&partition[0], &partition[DIM], numVectors);
 
       // if we have checkt a low-dimensional submatrix already, at least one
       // vector has to come from the new dimension
@@ -379,7 +382,7 @@ int L::t_parameter (
             {
                selection [0] ^= c [d * M + partition[d]-1];
 
-               for (unsigned i = 0; i < partition[d]-1; ++i)
+               for (int i = 0; i < partition[d]-1; ++i)
                {
                   selection[l++] = c [d * M + i];
                }
@@ -408,33 +411,129 @@ int L::t_parameter (
    return lb;
 }
 
+
+template<class T>
+int L::t_parameter2 (
+   const L::GeneratorMatrix2<T> &gm, int lb, int ub, int maxRows)
+{
+   const int DIM = gm.getDimension();
+   const int M   = gm.getM();
+
+   if (maxRows > int (gm.getTotalPrec()))
+   {
+      throw InternalError (__FILE__, __LINE__);
+   }
+
+   lb = max (lb, 0);
+   ub = min (ub, M);
+
+   if (lb > ub)  throw InternalError (__FILE__, __LINE__);
+   if (lb == ub)  return lb;
+
+   Array<T> c (M * DIM);
+   Array<T> selection (M-lb);
+   Array<int> partition (DIM);
+
+   // Copy Generator Matrix into c-array (containing tranposed matrices)
+
+   for (int d = 0; d < DIM; ++d)
+   {
+      for (int b = 0; b < M; ++b)
+      {
+         T x = 0;
+
+         for (int r = 0; r < M; ++r)  x = (x << 1) + gm(d,r,b);
+
+         c [d * M + b] = x;
+      }
+   }
+
+   // try to select 1, 2, 3, ... M vectors (modulo ub/lb)
+   
+   for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
+   {
+      if (numVectors > maxRows * DIM)  break;
+
+      // choose these _numVectors_ vectors from c
+      
+      initial_partition (&partition[0], &partition[DIM], maxRows, numVectors);
+
+#if 0
+      // if we have checkt a low-dimensional submatrix already, at least one
+      // vector has to come from the new dimension
+
+      if (dimOpt)
+      {
+         ++partition [DIM-1];
+         --partition [0];
+      }
+#endif
+
+      do
+      {
+         // copy the selected vectors
+         // the last vectors for each dimension MUST be part of the linear
+         // combination. We add them up and put them into selection[0].
+
+         selection [0] = 0;
+         unsigned l = 1;
+
+         for (int d = 0; d < DIM; ++d)
+         {
+            if (partition[d] > 0)
+            {
+               selection [0] ^= c [d * M + partition[d]-1];
+
+               for (int i = 0; i < partition[d]-1; ++i)
+               {
+                  selection[l++] = c [d * M + i];
+               }
+            }
+         }
+
+         if (! isLinearlyIndependent (&selection[0], &selection[l]))
+         {
+            return M - numVectors + 1;
+         }
+      }
+      while (next_partition (&partition[0], &partition[DIM], maxRows));
+   }
+
+   return lb;
+}
+
+
+/***********  General Case  **************************************************/
+
+
 template<class T>
 int L::t_parameter (
    const L::GeneratorMatrixGen<T> &gm, int lb, int ub, bool dimOpt)
 {
-   const unsigned DIM = gm.getDimension();
+   if (gm.getVectorization() != 1)  throw FIXME (__FILE__, __LINE__);
+
+   const int DIM = gm.getDimension();
    const int M   = gm.getM();
 
    // theoretical lower bound:
    //
    // ceil (log_b (b*s - s + 1)) - 2 =
    //   ceil (log_b (s + 1)) - 2 =
-   //   floor (log_b (s)) - 1 =
-   //   ms1 (s) - 1
+   //   floor (log_b (s)) - 1
 
-   lb = max (lb, max (0,
-          min (M - 1,
-               int (logInt ((gm.getBase()-1) * DIM, gm.getBase()) - 1))));
+   lb = max (lb,
+        max (0,
+        max (M - int (gm.getTotalPrec()),
+             min (M - 1,
+                  int (logInt ((gm.getBase()-1) * DIM, gm.getBase()) - 1)))));
    ub = min (ub, M);
 
    if (lb > ub)  throw InternalError (__FILE__, __LINE__);
    if (lb == ub)  return lb;
 
-   if (int (gm.getPrecision()) < M)  throw InternalError (__FILE__, __LINE__);
-
    Array<T> selection ((M-lb) * M);
-   Array<unsigned> partition (DIM);
-   PrecalculatedGaloisField<unsigned char> field (gm.getBase());
+   Array<int> partition (DIM);
+   LookupGaloisField<unsigned char> field (gm.getBase());
 
    // try to select 1, 2, 3, ... M vectors (modulo ub/lb)
    
@@ -442,11 +541,10 @@ int L::t_parameter (
    {
       // choose these _numVectors_ vectors from c
       
-      partition [0] = numVectors;
-      std::fill (&partition[1], &partition[DIM], 0);
+      initial_partition (&partition[0], &partition[DIM], numVectors);
 
-      // if we have checkt a low-dimensional submatrix already, at least one
-      // vector has to come from the new dimension
+      // if we have checked a low-dimensional submatrix already, at least one
+      // vector must come from the new dimension
 
       if (dimOpt)
       {
@@ -462,9 +560,9 @@ int L::t_parameter (
 
          unsigned l = 0;
 
-         for (unsigned d = 0; d < DIM; ++d)
+         for (int d = 0; d < DIM; ++d)
          {
-            for (unsigned i = 0; i < partition[d]; ++i)
+            for (int i = 0; i < partition[d]; ++i)
             {
                for (int j = 0; j < M; ++j)
                {
@@ -485,17 +583,95 @@ int L::t_parameter (
    return lb;
 }
 
+template<class T>
+int L::t_parameter2 (
+   const L::GeneratorMatrixGen<T> &gm, int lb, int ub, int maxRows)
+{
+   if (gm.getVectorization() != 1)  throw FIXME (__FILE__, __LINE__);
+
+   const int DIM = gm.getDimension();
+   const int M   = gm.getM();
+
+   if (maxRows > int (gm.getTotalPrec()))
+   {
+      throw InternalError (__FILE__, __LINE__);
+   }
+
+   lb = max (lb, 0);
+   ub = min (ub, M);
+
+   if (lb > ub)  throw InternalError (__FILE__, __LINE__);
+   if (lb == ub)  return lb;
+
+   Array<T> selection ((M-lb) * M);
+   Array<int> partition (DIM);
+   LookupGaloisField<unsigned char> field (gm.getBase());
+
+   // try to select 1, 2, 3, ... M vectors (modulo ub/lb)
+   
+   for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
+   {
+      // choose these _numVectors_ vectors from c
+      
+      if (numVectors > maxRows * DIM)  break;
+
+      initial_partition (&partition[0], &partition[DIM], maxRows, numVectors);
+
+#if 0
+      // if we have checked a low-dimensional submatrix already, at least one
+      // vector must come from the new dimension
+
+      if (dimOpt)
+      {
+         ++partition [DIM-1];
+         --partition [0];
+      }
+#endif
+
+      do
+      {
+         // copy the selected vectors
+         // the last vectors for each dimension MUST be part of the linear
+         // combination. We add them up and put them into selection[0].
+
+         unsigned l = 0;
+
+         for (int d = 0; d < DIM; ++d)
+         {
+            for (int i = 0; i < partition[d]; ++i)
+            {
+               for (int j = 0; j < M; ++j)
+               {
+                  selection [l * M + j] = gm (d, j, i);
+               }
+               ++l;
+            }
+         }
+
+         if (! isLinearlyIndependent (field, &selection[0], M, l))
+         {
+            return M - numVectors + 1;
+         }
+      }
+      while (next_partition (&partition[0], &partition[DIM], maxRows));
+   }
+
+   return lb;
+}
+
 namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) \
-   template int t_parameter<>(const GeneratorMatrix2<X> &, int, int, bool);
+   template int t_parameter<> (const GeneratorMatrix2<X> &, int, int, bool); \
+   template int t_parameter2<>(const GeneratorMatrix2<X> &, int, int, int);
 
    HINTLIB_INSTANTIATE (u32)
    HINTLIB_INSTANTIATE (u64)
 #undef HINTLIB_INSTANTIATE
 
 #define HINTLIB_INSTANTIATE(X) \
-   template int t_parameter<>(const GeneratorMatrixGen<X> &, int, int, bool);
+   template int t_parameter<> (const GeneratorMatrixGen<X> &, int, int, bool); \
+   template int t_parameter2<>(const GeneratorMatrixGen<X> &, int, int, int);
 
    HINTLIB_INSTANTIATE (unsigned char)
 #undef HINTLIB_INSTANTIATE

@@ -47,8 +47,8 @@ using namespace HIntLib;
 
 int main (void)
 {
-   ModularIntegerField<unsigned char> field (2);
-   NiederreiterMatrixGen<ModularIntegerField<unsigned char> >
+   ModularArithField<unsigned char> field (2);
+   NiederreiterMatrixGen<ModularArithField<unsigned char> >
       matrix (field, NiederreiterMatrix::MAX_DIM,
                      NiederreiterMatrix::MAX_LOG_N,
                      NiederreiterMatrix::PRECISION);
@@ -75,7 +75,7 @@ int main (void)
            "\n"
            "const L::u64 L::NiederreiterMatrix::v_mem [MAX_LOG_N][MAX_DIM] =\n";
  
-   matrixBase2.dumpAsCArray (cout);
+   matrixBase2.CArrayDump (cout);
 
    cout << "\n" 
            "const unsigned L::NiederreiterMatrix::t_s [MAX_DIM] =\n"

@@ -89,7 +89,6 @@ class DigitalNet
 {
 protected:
    DigitalNet (unsigned base, unsigned m);  // implemented in digitalnetgen.cpp
-   DigitalNet (unsigned m);                 // implemented in digttalnet2.cpp
 
    const unsigned m;
    const Index size;

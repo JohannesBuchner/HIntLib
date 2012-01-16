@@ -40,23 +40,18 @@ namespace HIntLib
 
 template <class B>
 class GaloisField
- : public ModularArithmeticField<PolynomialRingField<ModularIntegerField<B> > >
+ : public ModularArithField<PolynomialRing<ModularArithField<B> > >
 {
 public:
    GaloisField (unsigned base, unsigned exponent);
+   GaloisField (unsigned size);
 private:
-   typedef ModularIntegerField<B> Field;
-   typedef PolynomialRingField<Field> Poly;
+   typedef ModularArithField<B> Field;
+   typedef PolynomialRing<Field> Poly;
    typedef typename Poly::type T;
 
    T findPoly (unsigned base, unsigned exponent);
 };
-
-
-#if 0
-template<class T>
-std::ostream& operator<< (std::ostream &, const GaloisField<T> &);
-#endif
 
 }  // namespace HIntLib
 

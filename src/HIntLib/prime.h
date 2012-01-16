@@ -49,6 +49,8 @@ public:
    template<class T> static T     next (T n)  HINTLIB_GNU_CONST;
    template<class T> static T eulerPhi (T n)  HINTLIB_GNU_CONST;
    static void factorPrimePower (unsigned x, unsigned &_p, unsigned &_exp);
+   static bool isPrimePower (unsigned x, unsigned &_p, unsigned &_exp);
+   static bool isPrimePower (unsigned x);
    static unsigned nth (unsigned n)  HINTLIB_GNU_CONST;
 
 private:

@@ -43,15 +43,116 @@
 
 namespace L = HIntLib;
 
+/******************************  GF2  ****************************************/
+
+
+std::ostream &
+L::operator<< (std::ostream &o, const GF2 &)
+{
+   return o << "GF2";
+}
+
+void
+L::GF2::print (std::ostream& o, type x) const
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << unsigned (x) << " (2)";
+
+   o << ss.str().c_str();
+}
+
+void
+L::GF2::printShort (std::ostream& o, type x) const
+{
+   o << unsigned (x);
+}
+
+void
+L::GF2::printSuffix (std::ostream& o) const
+{
+   o << "(2)";
+}
+
+
+/******************************  GF2 Vector Space  ***************************/
+
+std::ostream &
+L::operator<< (std::ostream &o, const GF2VectorSpaceBase &v)
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << "GF2^" << v.dimension();
+
+   return o << ss.str().c_str();
+}
+
+template<typename T>
+void
+L::GF2VectorSpace<T>::printShort (std::ostream& o, const type& v) const
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << '(';
+   for (unsigned i = 0; i < dim; ++i)
+   {
+      if (i > 0)  ss << ',';
+      ss << unsigned (coord(v, i));
+   }
+   ss << ')';
+
+   o << ss.str().c_str();
+}
+
+template<typename T>
+void
+L::GF2VectorSpace<T>::print (std::ostream& o, const type& v) const
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   printShort (o, v);
+   ss << " (2)";
+
+   o << ss.str().c_str();
+}
+
+
+/*************************  Polynomial2  *************************************/
+
 
 /**
  *  Prints a polynomial to an output stream.
  */
 
-template<class T>
+template<typename T>
 std::ostream& L::operator<< (std::ostream& o, const L::Polynomial2<T> p)
 {
    std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
 
    bool output = false;
 
@@ -76,14 +177,14 @@ std::ostream& L::operator<< (std::ostream& o, const L::Polynomial2<T> p)
 
    if (! output)  ss << '0';
 
-   return o << ss.str();
+   return o << ss.str().c_str();
 }
 
 /**
  *  Multiply two polynomials
  */
 
-template<class T>
+template<typename T>
 L::Polynomial2<T> L::Polynomial2<T>::operator* (const P p) const
 {
    // Initialize result to f(x)=0
@@ -130,7 +231,7 @@ L::Polynomial2<T> L::Polynomial2<T>::operator* (const P p) const
  *  See D.E.Knuth, Art o Computer Programming, 4.6.1, Algo D
  */
 
-template<class T>
+template<typename T>
 void L::Polynomial2<T>::div (P u, const P v, P &q, P &r)
 {
    const int m = u.degree();
@@ -187,7 +288,7 @@ void L::Polynomial2<T>::div (P u, const P v, P &q, P &r)
 }
 
 
-template<class T>
+template<typename T>
 bool L::Polynomial2<T>::isPrimitive () const
 {
    const int deg = degree();
@@ -220,7 +321,7 @@ bool L::Polynomial2<T>::isPrimitive () const
    return true;
 }
 
-template<class T>
+template<typename T>
 bool L::Polynomial2<T>::isIrreducible() const
 {
    if (d < 2)  return false;
@@ -234,10 +335,60 @@ bool L::Polynomial2<T>::isIrreducible() const
    return true;
 }
 
+template<typename T>
+unsigned char L::Polynomial2<T>::evaluate (unsigned char x) const
+{
+   if (x)
+   {
+      unsigned char res = 0;
+      T dd = d;
+      while (dd)
+      {
+         if (dd & 1)  res ^= 1;
+         dd >>= 1;
+      }
+      return res;
+   }
+   else
+   {
+      return d & 1;
+   }
+}
+
+/**********************  Polynomial 2 Ring Base  *****************************/
+
 std::ostream & L::operator<< (std::ostream &o, const Polynomial2RingBase &)
 {
    return o << "GF2[x]";
 }
+
+void
+L::Polynomial2RingBase::printSuffix (std::ostream& o) const
+{
+   o << "(2)";
+}
+
+
+/**********************  Polynomial 2 Ring  **********************************/
+
+template<typename T>
+void
+L::Polynomial2Ring<T>::print (std::ostream& o, const type& x) const
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << x << " (2)";
+   o << ss.str().c_str();
+}
+
+
+/********************  Instantiations  ***************************************/
+
 
 namespace HIntLib
 {
@@ -249,7 +400,11 @@ namespace HIntLib
    template void Polynomial2<X>::div \
      (Polynomial2<X>,const Polynomial2<X>,Polynomial2<X> &,Polynomial2<X> &); \
    template bool Polynomial2<X>::isPrimitive () const; \
-   template bool Polynomial2<X>::isIrreducible() const;
+   template bool Polynomial2<X>::isIrreducible() const; \
+   template unsigned char Polynomial2<X>::evaluate (unsigned char) const; \
+   template void Polynomial2Ring<X>::print (std::ostream&, const type&) const; \
+   template void GF2VectorSpace<X>::print (std::ostream&, const type&) const; \
+   template void GF2VectorSpace<X>::printShort (std::ostream&, const type&) const;
 
    HINTLIB_INSTANTIATE (u32)
 #ifdef HINTLIB_U32_NOT_EQUAL_U64

@@ -357,9 +357,9 @@ L::loadLibSeq (std::istream &str)
 
                m = v.size();
                gm = new HeapAllocatedGeneratorMatrixGen<unsigned char>
-                              (base, dim, m, prec);
+                              (base, 1, dim, m, prec);
 
-               for (unsigned r = 0; r < m; ++r)  gm->set (d, r, b, v[r]);
+               for (unsigned r = 0; r < m; ++r)  gm->setv (d, r, b, v[r]);
             }
             else
             {
@@ -368,7 +368,7 @@ L::loadLibSeq (std::istream &str)
                   t.expectNumber ();
                   unsigned x = t.getNumber();
                   if (x >= base)  t.throwException ("Entry larger than base");
-                  gm->set (d, r, b, x);
+                  gm->setv (d, r, b, x);
                }
                t.expectName (keyEndLine);
             }
@@ -399,7 +399,7 @@ L::loadLibSeq (const char* s)
  */
 
 
-void L::GeneratorMatrix::dumpLibSeq (std::ostream &o) const
+void L::GeneratorMatrix::libSeqDump (std::ostream &o) const
 {
    o <<
       keyBeginMatrix << '\n' <<
@@ -407,14 +407,14 @@ void L::GeneratorMatrix::dumpLibSeq (std::ostream &o) const
       keyRingName <<
       (Prime::test (getBase()) ? " Z/qZ\n" : " GF(p,n)\n") <<
       keyBase       << ' ' << getBase() << '\n' <<
-      keyPrecision  << ' ' << getPrecision() << '\n' <<
+      keyPrecision  << ' ' << getPrec() << '\n' <<
       keyDimension  << ' ' << getDimension() << "\n\n";
 
    for (unsigned d = 0; d < getDimension(); ++d)
    {
       o << keyBeginDim << ' ' << d << '\n';
 
-      for (unsigned b = 0; b < getPrecision(); ++b)
+      for (unsigned b = 0; b < getPrec(); ++b)
       {
          for (unsigned r = 0; r < getM(); ++r)
          {
@@ -430,10 +430,10 @@ void L::GeneratorMatrix::dumpLibSeq (std::ostream &o) const
    o << keyEndMatrix << '\n';
 }
 
-void L::GeneratorMatrix::dumpLibSeq (const char* fName) const
+void L::GeneratorMatrix::libSeqDump (const char* fName) const
 {
    std::ofstream f (fName);
-   dumpLibSeq (f);
+   libSeqDump (f);
 }
 
 
@@ -453,8 +453,9 @@ L::loadBinary (std::istream &str)
 {
    char s [sizeof (binaryMagic) - 1]; 
    str.read (s, sizeof (binaryMagic) - 1);
+   if (! str)  throw FIXME (__FILE__, __LINE__);
 
-   if (! std::equal (binaryMagic, binaryMagic + sizeof(binaryMagic), s))
+   if (! std::equal (s, s + sizeof (s), binaryMagic))
    {
       throw FIXME (__FILE__, __LINE__);
    }
@@ -468,18 +469,18 @@ L::loadBinary (std::istream &str)
    if (! str)  throw FIXME (__FILE__, __LINE__);
 
    HeapAllocatedGeneratorMatrixGen<unsigned char>* gm =
-      new HeapAllocatedGeneratorMatrixGen<unsigned char> (base, dim, m, prec);
+      new HeapAllocatedGeneratorMatrixGen<unsigned char>(base, 1, dim, m, prec);
 
    char check = 0;
    
    for (unsigned d = 0; d < gm->getDimension(); ++d)
    {
-      for (unsigned b = 0; b < gm->getPrecision(); ++b)
+      for (unsigned b = 0; b < gm->getPrec(); ++b)
       {
          for (unsigned r = 0; r < gm->getM(); ++r)
          {
             char digit = str.get ();
-            gm->set (d, r, b, digit);
+            gm->setv (d, r, b, digit);
             check ^= digit;
          }
       }
@@ -497,6 +498,7 @@ L::MutableGeneratorMatrixGen<unsigned char>*
 L::loadBinary (const char* s)
 {
    std::ifstream str (s);
+   if (! str)  throw FIXME (__FILE__, __LINE__);
    return loadBinary (str);
 }
 
@@ -506,12 +508,12 @@ L::loadBinary (const char* s)
  */
 
 
-void L::GeneratorMatrix::dumpBinary (std::ostream &o) const
+void L::GeneratorMatrix::binaryDump (std::ostream &o) const
 {
    if (   getBase ()      > numeric_limits<unsigned char>::max()
        || getDimension()  > (1u << 2 * numeric_limits<char>::digits)
        || getM ()         > numeric_limits<unsigned char>::max()
-       || getPrecision () > numeric_limits<unsigned char>::max())
+       || getPrec() > numeric_limits<unsigned char>::max())
    {
       throw FIXME (__FILE__, __LINE__);
    }
@@ -521,13 +523,13 @@ void L::GeneratorMatrix::dumpBinary (std::ostream &o) const
    o.put (getDimension() & char (-1));
    o.put (getDimension() >> numeric_limits<char>::digits);
    o.put (getM());
-   o.put (getPrecision());
+   o.put (getPrec());
 
    char check = 0;
 
    for (unsigned d = 0; d < getDimension(); ++d)
    {
-      for (unsigned b = 0; b < getPrecision(); ++b)
+      for (unsigned b = 0; b < getPrec(); ++b)
       {
          for (unsigned r = 0; r < getM(); ++r)
          {
@@ -541,10 +543,10 @@ void L::GeneratorMatrix::dumpBinary (std::ostream &o) const
    o.put (check);
 }
 
-void L::GeneratorMatrix::dumpBinary (const char* fName) const
+void L::GeneratorMatrix::binaryDump (const char* fName) const
 {
    std::ofstream f (fName);
-   dumpBinary (f);
+   binaryDump (f);
 }
 
 
@@ -558,6 +560,7 @@ L::loadNiederreiterXing (unsigned dim)
    std::ostringstream ss;
    ss << HINTLIB_DATADIR << "/fkmat"
       << std::setw(2) << std::setfill ('0') << dim << ".bin";
+
    try
    {
       MutableGeneratorMatrixGen<unsigned char>* m =

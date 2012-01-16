@@ -67,9 +67,20 @@ void purge (In first, In last)
  *  Generates the next partion.
  *
  *  We search for the first stack that is not empty.
- *  All elements but one return to first stack. The remaining elemnt moves on
- *  to the next stack.
+ *  All elements but one return to the first stack. The remaining elements move
+ *  on to the next stack.
+ *
+ *  If no new partition can be created, false is returned.
  */
+
+template<class Bi>
+inline
+void initial_partition
+   (Bi first, Bi last, typename std::iterator_traits<Bi>::value_type num)
+{
+   *first = num;
+   std::fill (first + 1, last, 0);
+}
 
 template<class Bi>
 inline
@@ -80,7 +91,7 @@ bool next_partition (Bi first, Bi last)
    if (first + 1 >= last)  return false;
    
    // Check if the first stack is not empty
-   // This special case is treated seperately
+   // This (frequent) case is treated seperately
 
    if (*first > 0)
    {
@@ -93,15 +104,95 @@ bool next_partition (Bi first, Bi last)
 
    for (Bi i = first + 1; i < last-1; ++i)
    {
-      if (*i > 0)   // find postion that is not empty
+      if (*i > 0)   // is the current stack non-empty?
       {
-         *first = *i - 1;   // all but one elment goes back to stack # 0
+         *first = *i - 1;   // all but one elment go back to stack # 0
          *i = 0;
 
          ++ *(i+1);  // the remaining element moves on to the next stack
 
          return true;
-      };
+      }
+   }
+
+   return false;
+}
+
+
+/**
+ *  next_partition ()
+ *
+ *  Generates the next partion.
+ *
+ *  We search for the first stack that is not empty.
+ *  All elements but one return to the first stack. The remaining elements move
+ *  on to the next stack.
+ *
+ *  If no new partition can be created, false is returned.
+ */
+
+template<class Bi>
+inline
+void initial_partition
+   (Bi first, Bi last, typename std::iterator_traits<Bi>::value_type max,
+    typename std::iterator_traits<Bi>::value_type num)
+{
+   Bi i = first;
+
+   while (num > max)
+   {
+      *(i++) = max;
+      num -= max;
+   }
+
+   *(i++) = num;
+
+   std::fill (i, last, 0);
+}
+
+template<class Bi>
+inline
+bool next_partition
+   (Bi first, Bi last, typename std::iterator_traits<Bi>::value_type max)
+{
+   // make sure there are at least two stacks
+
+   if (first + 1 >= last)  return false;
+   
+   // search for the first non-empty stack
+
+   for (Bi i = first; i < last-1; ++i)
+   {
+      if (*i > 0)   // is the current stack non-empty?
+      {
+         // track end-position for redistribution
+
+         Bi end = first;
+
+         // search for the next stack with room for an element
+
+         for (Bi j = i + 1; j < last; ++j)
+         {
+            if (*j < max)
+            {
+               ++ *j;   // one elment goes to this stack
+
+               // all other elements back to the beginning
+
+               *end = *i - 1;
+               std::fill (first, end, max);
+               std::fill (end + 1, j, 0);
+
+               return true;
+            }
+            else
+            {
+               ++end;
+            }
+         }
+
+         return false;
+      }
    }
 
    return false;

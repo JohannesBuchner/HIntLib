@@ -22,7 +22,8 @@
  *  Digital Net 2
  *  Digital Net 2 <T>
  *
- *  Constracts digital nets (and sequences) in base 2 based on GeneratorMatrix2
+ *  Constracts digital nets (and sequences) in base 2 based on
+ *  GeneratorMatrix2 GF2VectorSpace
  */
 
 #ifndef HINTLIB_DIGITAL_NET_2_H
@@ -37,6 +38,7 @@
 #include <HIntLib/shiftscale.h>
 #include <HIntLib/pointset.h>
 #include <HIntLib/qmcintegration.h>
+#include <HIntLib/polynomial2.h>
 
 namespace HIntLib
 {
@@ -59,7 +61,7 @@ namespace HIntLib
  *
  *  A Digital Net in base 2
  *
- *  T .. unsigned integer type at least  _prec_  bits
+ *  T .. unsigned integer type at least  _totalPrec  bits
  *         usually either "u32" or "u64"
  */
 
@@ -74,7 +76,12 @@ public:
    void randomize (PRNG &);
 
 protected:
-   const unsigned prec;
+   typedef GF2VectorSpace<T> A;
+   typedef typename A::scalar_algebra SA;
+
+   A alg;
+   SA scalAlg;
+   const unsigned totalPrec;
    GeneratorMatrix2Copy<T> c;
    Array<T> x;      // current vector (size dim)
    Array<T> xStart; // Inital values for x (size dim)
@@ -104,33 +111,6 @@ private:
 
 
 /**
- *  Digital Net 2 Naive
- *
- *  Traverses the net in normal order - naive implementation
- */
-
-template<class T>
-class DigitalNet2Naive : public DigitalNet2<T>
-{
-public:
-   DigitalNet2Naive
-      (const GeneratorMatrix2<T> &gm, const Hypercube &_h,
-       unsigned m, Index i, bool equi, DigitalNet::Truncation t)
-      : DigitalNet2<T> (gm, _h, m, i, equi, t) {}
-
-   DigitalNet2Naive
-      (const GeneratorMatrix2<T> &gm, const Hypercube &_h)
-      : DigitalNet2<T> (gm, _h, gm.getM(), 0, false, FULL) {}
-
-   void first          (real *p, Index _n = 0)  { resetX          (n = _n, p); }
-   void firstDontScale (real *p, Index _n = 0)  { resetXDontScale (n = _n, p); }
-
-   void next           (real *p)  { resetX          (++n, p); }
-   void nextDontScale  (real *p)  { resetXDontScale (++n, p); }
-};
-
-
-/**
  *  Digital Net 2 Gray
  *
  *  Traverses the net in gray-code order
@@ -141,12 +121,17 @@ class DigitalNet2Gray : public DigitalNet2<T>
 {
 public:
    DigitalNet2Gray
-      (const GeneratorMatrix2<T> &, const Hypercube &,
-       unsigned m, Index i, bool equi, DigitalNet::Truncation,
-       bool correct = true);
+      (const GeneratorMatrix2<T> & gm, const Hypercube& _h,
+       unsigned m, Index i, bool equi, DigitalNet::Truncation t,
+       bool correct = true)
+      : DigitalNet2<T> (gm, _h, m, i, equi, t)
+      { if (correct)  c.prepareForGrayCode(); }
 
    DigitalNet2Gray
-      (const GeneratorMatrix2<T> &, const Hypercube &, bool correct = true);
+      (const GeneratorMatrix2<T> &gm, const Hypercube& _h,
+       bool correct = true)
+      : DigitalNet2<T> (gm, _h, gm.getM(), 0, false, FULL)
+      { if (correct)  c.prepareForGrayCode(); }
 
    void first          (real*p, Index _n = 0)
       { resetX          (grayCode(n = _n), p); }
@@ -176,7 +161,7 @@ void HIntLib::DigitalNet2<T>::copyXtoP (real* point)
       floatType *p = reinterpret_cast<floatType*>(&x[0]);
       for (unsigned d = 0; d < getDimension(); ++d)
       {
-         point[d] = ssMagic[d] (p[d] + -1.0);
+         point[d] = ssMagic[d] (p[d]);
       }
    }
    else
@@ -203,10 +188,7 @@ void HIntLib::DigitalNet2<T>::copyXtoPDontScale (real* point)
    }
    else
 #endif
-   for (unsigned d = 0; d < getDimension(); ++d)
-   {
-      point[d] = x[d] * trivialScale;
-   }
+   for (unsigned d = 0; d < getDimension(); ++d) point[d] = x[d] * trivialScale;
 }
 
 
@@ -221,9 +203,9 @@ template<class T>
 inline
 void HIntLib::DigitalNet2Gray<T>::next (real* point)
 {
-   const T *vp = c (ls0 (n++));  // determin bit that has to be changed
+   const T *vp = c (ls0 (n++));  // determine digit that changed
 
-   for (unsigned d = 0; d < getDimension(); ++d)  x[d] ^= vp[d];
+   for (unsigned d = 0; d < getDimension(); ++d)  alg.addTo (x[d], vp[d]);
 
    copyXtoP (point);
 } 
@@ -232,9 +214,9 @@ template<class T>
 inline
 void HIntLib::DigitalNet2Gray<T>::nextDontScale (real* point)
 {
-   const T *vp = c (ls0 (n++));  // determin bit that has to be changed
+   const T *vp = c (ls0 (n++)); // determine digit that changed
 
-   for (unsigned d = 0; d < getDimension(); ++d)  x[d] ^= vp[d];
+   for (unsigned d = 0; d < getDimension(); ++d)  alg.addTo (x[d], vp[d]);
 
    copyXtoPDontScale (point);
 } 
@@ -300,13 +282,8 @@ protected:
    int calculateM (Index) const;
 
    DigitalNet2PointSetBase (
-      const GeneratorMatrix2<u32>& _gm, bool _equi, Truncation t, Index i)
+      const GeneratorMatrix& _gm, bool _equi, Truncation t, Index i)
       : gm(_gm), equi(_equi), trunc(t), index (i), h (0) {}
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   DigitalNet2PointSetBase (
-      const GeneratorMatrix2<u64>& _gm, bool _equi, Truncation t, Index i)
-      : gm(_gm), equi(_equi), trunc(t), index (i), h (0) {}
-#endif
 
 public:
    virtual void setCube (const Hypercube*);
@@ -324,17 +301,10 @@ class DigitalNet2PointSet: public DigitalNet2PointSetBase
 {
 public:
    DigitalNet2PointSet (
-      const GeneratorMatrix2<u32>& _gm,
+      const GeneratorMatrix& _gm,
       bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
       Index i = 0)
    : DigitalNet2PointSetBase(_gm, e, t, i) {}
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   DigitalNet2PointSet (
-      const GeneratorMatrix2<u64>& _gm,
-      bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
-      Index i = 0)
-   : DigitalNet2PointSetBase(_gm, e, t, i) {}
-#endif
 
    void integratePartition (real *, Function &, Index, Index, Index, Stat&);
    void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
@@ -347,17 +317,10 @@ class DigitalNet2PointSet<real>: public DigitalNet2PointSetBase
 {
 public:
    DigitalNet2PointSet<real> (
-      const GeneratorMatrix2<u32>& gm,
+      const GeneratorMatrix& gm,
       bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
       Index i = 0)
    : DigitalNet2PointSetBase(gm, e, t, i) {}
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   DigitalNet2PointSet<real> (
-      const GeneratorMatrix2<u64>& gm,
-      bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
-      Index i = 0)
-   : DigitalNet2PointSetBase(gm, e, t, i) {}
-#endif
 
    void integratePartition (real *, Function &, Index, Index, Index, Stat&);
    void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
@@ -423,13 +386,9 @@ protected:
 
    void checkSize (const DigitalNet2<BaseType> &, Index) const;
 
-   DigitalSeq2PointSetBase (const GeneratorMatrix2<u32> &_gm, bool _reset)
-      : gm (_gm), net (0), offset (0), reset (_reset) {}
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   DigitalSeq2PointSetBase (const GeneratorMatrix2<u64> &_gm, bool _reset)
+   DigitalSeq2PointSetBase (const GeneratorMatrix& _gm, bool _reset)
       : gm (_gm), net (0), offset (0), reset (_reset) {}
    ~DigitalSeq2PointSetBase ();
-#endif
 
 public:
    virtual Index getOptimalNumber (Index max, const Hypercube &);
@@ -447,12 +406,8 @@ template<class Sum>
 class DigitalSeq2PointSet: public DigitalSeq2PointSetBase
 {
 public:
-   DigitalSeq2PointSet (const GeneratorMatrix2<u32>& gm, bool reset)
+   DigitalSeq2PointSet (const GeneratorMatrix& gm, bool reset)
       : DigitalSeq2PointSetBase(gm, reset) {}
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   DigitalSeq2PointSet (const GeneratorMatrix2<u64>& gm, bool reset)
-      : DigitalSeq2PointSetBase(gm, reset) {}
-#endif
 
    void integratePartition (real *, Function &, Index, Index, Index, Stat&);
    void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
@@ -464,12 +419,8 @@ template<>
 class DigitalSeq2PointSet<real>: public DigitalSeq2PointSetBase
 {
 public:
-   DigitalSeq2PointSet<real> (const GeneratorMatrix2<u32>& gm, bool reset)
+   DigitalSeq2PointSet<real> (const GeneratorMatrix& gm, bool reset)
       : DigitalSeq2PointSetBase(gm, reset) {}
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   DigitalSeq2PointSet<real> (const GeneratorMatrix2<u64>& gm, bool reset)
-      : DigitalSeq2PointSetBase(gm, reset) {}
-#endif
 
    void integratePartition (real *, Function &, Index, Index, Index, Stat&);
    void integratePartition (real *, Function &, Index, Index, Index, StatVar&);

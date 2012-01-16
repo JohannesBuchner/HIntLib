@@ -19,7 +19,7 @@
  */
 
 /**
- *  Digital Net for a prime base  and its corresponding QMCRoutines
+ *  Digital Net for arbitrary bases and its corresponding QMCRoutines
  */
 
 #ifndef HINTLIB_DIGITAL_NET_GEN_H
@@ -43,7 +43,7 @@ namespace HIntLib
  *
  *  A Digital Net with arbitrary
  *
- *  A .. the Arithmetic used for all calculations
+ *  A .. the Arithmetic used for all calculations (a vector space)
  *  S .. unsigned integer type that can hold base^prec-1
  */
 
@@ -62,18 +62,20 @@ public:
 protected:
 
    const A arith;
-   const unsigned prec;
+   const typename A::scalar_algebra scalArith;
+   const T base;
+   const unsigned totalPrec;
    GeneratorMatrixGenCopy<T> c;
+   const unsigned prec;
+   const S vecBase;
    Array<T> x;      // current vector (size dim)
    Array<T> xStart; // Inital values for x (size dim)
    const Truncation trunc;
    ShiftScale ss;
    const real trivialScale;
 
-   T base() const  { return arith.size(); }
-
    DigitalNetGen
-      (const GeneratorMatrixGen<T> &, const A &, const Hypercube &,
+      (const A &, const GeneratorMatrix &, const Hypercube &,
        unsigned m, Index index, bool equi, Truncation);
 
    void resetX          (Index n, real* p) { resetX(n); copyXtoP(p); }
@@ -98,15 +100,13 @@ class DigitalNetGenNaive : public DigitalNetGen<A,S>
 {
 public:
    DigitalNetGenNaive
-      (const GeneratorMatrixGen<typename A::type> &gm,
-       const A &_arith, const Hypercube &_h,
+      (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h,
        unsigned m, Index i, bool equi, DigitalNet::Truncation t)
-      : DigitalNetGen<A,S> (gm, _arith, _h, m, i, equi, t) {}
+      : DigitalNetGen<A,S> (_arith, gm, _h, m, i, equi, t) {}
 
    DigitalNetGenNaive
-      (const GeneratorMatrixGen<typename A::type> &gm,
-       const A &_arith, const Hypercube &_h)
-      : DigitalNetGen<A,S> (gm, _arith, _h, gm.getM(), 0, false, FULL) {}
+      (const A &_arith, const GeneratorMatrix &gm, const Hypercube &_h)
+      : DigitalNetGen<A,S> (_arith, gm, _h, gm.getM(), 0, false, FULL) {}
 
    void first          (real *p, Index new_n){ resetX          (n = new_n, p); }
    void firstDontScale (real *p, Index new_n){ resetXDontScale (n = new_n, p); }
@@ -126,15 +126,13 @@ class DigitalNetGenNormal : public DigitalNetGen<A,S>
 {
 public:
    DigitalNetGenNormal
-      (const GeneratorMatrixGen<typename A::type> &gm,
-       const A &_arith, const Hypercube &_h,
+      (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h,
        unsigned m, Index i, bool equi, DigitalNet::Truncation t)
-      : DigitalNetGen<A,S> (gm, _arith, _h, m, i, equi, t) {}
+      : DigitalNetGen<A,S> (_arith, gm, _h, m, i, equi, t) {}
 
    DigitalNetGenNormal
-      (const GeneratorMatrixGen<typename A::type> &gm,
-       const A &_arith, const Hypercube &_h)
-      : DigitalNetGen<A,S> (gm, _arith, _h, gm.getM(), 0, false, FULL) {}
+      (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h)
+      : DigitalNetGen<A,S> (_arith, gm, _h, gm.getM(), 0, false, FULL) {}
 
    void first          (real *p, Index new_n){ resetX (n = new_n, p); }
    void firstDontScale (real *p, Index new_n){ resetXDontScale (n = new_n, p); }
@@ -158,15 +156,13 @@ class DigitalNetGenGray : public DigitalNetGen<A,S>
 {
 public:
    DigitalNetGenGray
-      (const GeneratorMatrixGen<typename A::type> &gm,
-       const A &_arith, const Hypercube &_h,
+      (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h,
        unsigned m, Index i, bool equi, DigitalNet::Truncation t)
-      : DigitalNetGen<A,S> (gm, _arith, _h, m, i, equi, t) {}
+      : DigitalNetGen<A,S> (_arith, gm, _h, m, i, equi, t) {}
 
    DigitalNetGenGray
-      (const GeneratorMatrixGen<typename A::type> &gm,
-       const A &_arith, const Hypercube &_h)
-      : DigitalNetGen<A,S> (gm, _arith, _h, gm.getM(), 0, false, FULL) {}
+      (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h)
+      : DigitalNetGen<A,S> (_arith, gm, _h, gm.getM(), 0, false, FULL) {}
 
    void first          (real *p, Index new_n){ resetX (n = new_n, p); }
    void firstDontScale (real *p, Index new_n){ resetXDontScale (n = new_n, p); }
@@ -193,15 +189,13 @@ class DigitalNetGenCyclicGray : public DigitalNetGen<A,S>
 {
 public:
    DigitalNetGenCyclicGray
-      (const GeneratorMatrixGen<typename A::type> &gm,
-       const A &_arith, const Hypercube &_h,
+      (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h,
        unsigned m, Index i, bool equi, DigitalNet::Truncation t)
-      : DigitalNetGen<A,S> (gm, _arith, _h, m, i, equi, t) {}
+      : DigitalNetGen<A,S> (_arith, gm, _h, m, i, equi, t) {}
 
    DigitalNetGenCyclicGray
-      (const GeneratorMatrixGen<typename A::type> &gm,
-       const A &_arith, const Hypercube &_h)
-      : DigitalNetGen<A,S> (gm, _arith, _h, gm.getM(), 0, false, FULL) {}
+      (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h)
+      : DigitalNetGen<A,S> (_arith, gm, _h, gm.getM(), 0, false, FULL) {}
 
    void first          (real *p, Index new_n){ resetX (n = new_n, p); }
    void firstDontScale (real *p, Index new_n){ resetXDontScale (n = new_n, p); }

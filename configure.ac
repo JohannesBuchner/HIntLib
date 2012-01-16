@@ -4,8 +4,8 @@
 # Header
 ###############################################################################
 
-AC_INIT(HIntLib, 0.0.3, [rudolf.schuerer@sbg.ac.at] )
-AM_INIT_AUTOMAKE(HIntLib, 0.0.3)
+AC_INIT(HIntLib, 0.0.4, [rudolf.schuerer@sbg.ac.at] )
+AM_INIT_AUTOMAKE(HIntLib, 0.0.4)
 AM_CONFIG_HEADER(config.h)
 
 # Information on the package
@@ -95,15 +95,31 @@ AH_TEMPLATE([INSTANTIATE_STL],
        [Define if templates from the STL have to be instantiated manually.])
 
 case $host/$CXX in
-*-sgi-irix*/CC | "*-sgi-irix*/CC *" )
+*-sgi-irix*/CC | *-sgi-irix*/CC\ * )
    AC_MSG_RESULT(yes)
    CXXFLAGS="${CXXFLAGS} -LANG:std"
    AC_DEFINE(SGI)
    AC_DEFINE(INSTANTIATE_STL)
    AC_MSG_NOTICE([Adding compiler flag -LANG:std])
    ;;
-   *) AC_MSG_RESULT(no) ;;
+*) AC_MSG_RESULT(no) ;;
 esac
+
+# Cygwin stuff
+
+NOUNDEFINED=
+
+AC_MSG_CHECKING([whether we use Cygwin])
+
+case $host in
+*cygwin* )
+   AC_MSG_RESULT(yes)
+   NOUNDEFINED=-no-undefined
+   ;;
+*) AC_MSG_RESULT(no) ;;
+esac
+
+AC_SUBST(NOUNDEFINED)
 
 # Check for GNU g++ and ad compiler options
 

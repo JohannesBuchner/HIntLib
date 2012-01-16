@@ -142,7 +142,12 @@ powerMod (const A &a, typename A::type x, unsigned exponent,
  *  logInt()
  */
 
-template<class T> unsigned logInt (T x, T base);
+template<class T> int logInt (T x, T base);
+
+template<> inline int logInt (unsigned char x, unsigned char b)
+   { return logInt (unsigned(x), unsigned (b)); }
+template<> inline int logInt (unsigned short x, unsigned short b)
+   { return logInt (unsigned(x), unsigned (b)); }
 
 
 /**

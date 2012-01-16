@@ -30,6 +30,12 @@
   #include <iostream>
 #endif
 
+#ifdef HINTLIB_HAVE_SSTREAM
+  #include <sstream>
+#else
+  #include <HIntLib/fallback_sstream.h>
+#endif
+
 #include <HIntLib/modulararithmetic.h>
 
 #include <HIntLib/prime.h>
@@ -40,67 +46,119 @@ namespace L = HIntLib;
 
 
 /**
- *  Modular Integer Ring
+ *  Modular Integer Ring Base
  */
 
-std::ostream& L::operator<< (std::ostream &o, const ModularIntegerRingBase &a)
+std::ostream&
+L::Priv::operator<< (std::ostream &o, const ModularIntegerRingBase &a)
 {
    return o << "Z_" << a.modulus();
 }
 
-
-/**
- *  Modular Arithmetic Ring
- */
-
-template<class A>
-typename L::ModularArithmeticRing<A>::T
-L::ModularArithmeticRing<A>::rem (const T& x) const
+void L::Priv::ModularIntegerRingBase::checkField() const
 {
-   T q, r;
-   a.div (x, m, q, r);
-   return r;
+   if (! Prime::test (m))  throw InvalidModularFieldSize (m);
 }
 
-template<class A>
+unsigned L::Priv::ModularIntegerRingBase::fieldRecip (unsigned x) const
+{
+   if (x == 0)  throw DivisionByZero();
+   if (x == 1)  return 1;
+
+   if (m < 8)
+   {
+      for (unsigned i = 2; ; ++i)
+      {
+         if ((i * x) % m == 1)  return i;
+      }
+   }
+   else
+   {
+      int a;
+      gcd (int (x), int (m), a);
+      if (a < 0)  a+= m;
+      return a;
+   }
+}
+
+
+/**
+ *  Modular Arith Ring
+ */
+
+template<typename A>
 std::ostream&
-L::operator<< (std::ostream &o, const ModularArithmeticRing<A> &a)
+L::operator<< (std::ostream &o, const ModularArith<A> &a)
 {
-   return o << a.arithmetic() << " mod " << a.modulus();
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << a.arithmetic() << " mod ";
+   a.arithmetic().printShort (ss, a.modulus());
+   return o << ss.str().c_str();
+}
+
+template<typename A>
+void
+L::ModularArith<A>::print (std::ostream &o, const type& x) const
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   a.printShort (ss, x);
+   ss << " (";
+   a.printShort (ss, m);
+   ss << ')';
+   a.printSuffix (ss);
+
+   o << ss.str().c_str();
+}
+
+template<typename A>
+void
+L::ModularArith<A>::printShort (std::ostream &o, const type& x) const
+{
+   a.printShort (o, x);
+}
+
+template<typename A>
+void
+L::ModularArith<A>::printSuffix (std::ostream &o) const
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << '(';
+   a.printShort (ss, m);
+   ss << ')';
+   a.printSuffix (ss);
+
+   o << ss.str().c_str();
 }
 
 
 /**
- *  Modular Integer Field
+ *  Modular Arith Field
  */
 
-template<class T>
-L::ModularIntegerField<T>::ModularIntegerField (const T _m)
-   : ModularIntegerRing<T> (_m)
+template<typename A>
+typename L::ModularArithField<A>::type
+L::ModularArithField<A>::recip (const type& x) const
 {
-   if (! Prime::test (unsigned (_m)))  throw InvalidModularFieldSize (_m);
-}
-
-template<class T>
-T L::ModularIntegerField<T>::recip (const T& x) const
-{
-   int a;
-   gcd (int (x), int (m), a);
-   if (a < 0)  a+= m;
-   return a;
-}
-
-
-/**
- *  Modular Arithmetic Field
- */
-
-template<class A>
-typename L::ModularArithmeticField<A>::T
-L::ModularArithmeticField<A>::recip (const T& x) const
-{
-   T b, bb;
-   T res = genGcd (a, x, m, b, bb);
+   type b;
+   type res = genGcd (a, x, m, b);
    if (! a.isUnit (res))
    {
       throw InternalError (__FILE__, __LINE__);
@@ -108,31 +166,34 @@ L::ModularArithmeticField<A>::recip (const T& x) const
    return mul (a.unitRecip(res), b);
 }
 
+
+template<typename A>
+unsigned
+L::ModularArithField<A>::characteristic () const
+{
+   if (size() == 0)  return 0;
+
+   unsigned prime;
+   unsigned power;
+
+   Prime::factorPrimePower (size(), prime, power);
+
+   return prime;
+}
+
 namespace HIntLib
 {
-   // Instantiate ModularIntegerField<>
-
 #define HINTLIB_INSTANTIATE(X) \
-   template ModularIntegerField<X>::ModularIntegerField (const X); \
-   template X ModularIntegerField<X>::recip (const X&) const; 
+   template ModularArithField<X>::type \
+            ModularArithField<X>::recip (const type&) const; \
+   template unsigned ModularArithField<X>::characteristic() const; \
+   template std::ostream& operator<< (std::ostream&, const ModularArith<X>&); \
+   template void ModularArith<X>::print (std::ostream&, const type&) const; \
+   template void ModularArith<X>::printShort(std::ostream&, const type&) const;\
+   template void ModularArith<X>::printSuffix (std::ostream&) const;
 
-   HINTLIB_INSTANTIATE (unsigned char);
-   HINTLIB_INSTANTIATE (unsigned short);
-#undef HINTLIB_INSTANTIATE
-
-   // Instantiate ModularArithmeticRing<>
-   //             ModularArithmeticField<>
-
-#define HINTLIB_INSTANTIATE(X) \
-   template ModularArithmeticRing<X>::type \
-            ModularArithmeticRing<X>::rem (const T&) const; \
-   template ModularArithmeticField<X>::type \
-            ModularArithmeticField<X>::recip (const T&) const; \
-   template std::ostream& \
-      operator<< (std::ostream &, const ModularArithmeticRing<X> &);
-
-   HINTLIB_INSTANTIATE (PolynomialRingField<ModularIntegerField<unsigned char> >);
-   HINTLIB_INSTANTIATE (PolynomialRingField<ModularIntegerField<unsigned short> >);
+   HINTLIB_INSTANTIATE (PolynomialRing<ModularArithField<unsigned char> >);
+   HINTLIB_INSTANTIATE (PolynomialRing<ModularArithField<unsigned short> >);
 #undef HINTLIB_INSTANTIATE
 
 }
