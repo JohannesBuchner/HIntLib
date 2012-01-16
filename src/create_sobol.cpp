@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -28,8 +28,11 @@
 #include <iostream>
 #include <iomanip>
 
-#include <HIntLib/polynomial2.h>
+// This is not really a library object. However, since library files are
+// linked static, we do not require DLL-export names.
+#define HINTLIB_LIBRARY_OBJECT
 
+#include <HIntLib/polynomial2.h>
 #include <HIntLib/sobolmatrix.h>
 
 using std::cout;
@@ -99,13 +102,13 @@ const unsigned MAX_DEGREE = 8;  // Maximum degree of polynomials
 /**
  *  Initial values for the recursion
  *
- *  We don't know how to calculate these values, so it's impossible to use 
- *  this class for dimensions >40. :-( 
+ *  We don't know how to calculate these values, so it's impossible to use
+ *  this class for dimensions >40. :-(
  *
  *  The values listed here are taken from Bratley and Fox, ACM TOMS 14.1 (1988)
  *  pages 88-100
  */
-  
+
 const u64 vinit [SobolMatrix::MAX_DIM][MAX_DEGREE] =
 {  //  x   x²   x³  x^4  x^5  x^6  x^7  x^8
    {   1,   0,   0,   0,   0,   0,   0,   0},
@@ -202,14 +205,14 @@ int main (void)
       for (unsigned i = 0; i < SobolMatrix::MAX_DIM; ++i)
       {
          sum += polynomials [i].degree() - 1;
-   
+
          cout << setw(6) << sum << ",   // t_s [" << i + 1 << "]\n";
       }
 
       cout << "};\n\n";
- 
+
       return 0;
-   } 
+   }
    catch (std::exception &e)
    {
       std::cerr << "Exception: " << e.what() << std::endl;

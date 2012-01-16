@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -33,6 +33,8 @@
 #endif
 
 #include <memory>
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/compruleintegrator.h>
 
@@ -89,7 +91,7 @@ Integrator::Status L::CompRuleIntegrator::integrate (
       #endif
    }
 
-   // Calculate the number of sections 
+   // Calculate the number of sections
 
    std::auto_ptr<CubatureRule> rule (getRule(h.getDimension()));
 
@@ -132,24 +134,24 @@ namespace {
    public:
       MyErrCubePartitioner (Integrand &f, EmbeddedRule &rule)
          : f (f), rule (rule), estimate (0.0), error (0.0) {}
- 
+
       virtual void action (const Hypercube &h);
- 
+
    private:
       Integrand &f;
       EmbeddedRule &rule;
- 
+
    public:
       KahanAdd estimate;
       KahanAdd error;
    };
- 
+
    void MyErrCubePartitioner::action (const Hypercube &h)
    {
       EstErr ee (0.0, 0.0);
 
       rule.evalError (f, h, ee);       // Evaluate the EmbeddedRule
- 
+
       estimate += ee.getEstimate ();   // ...and update totals
       error    += ee.getError ();
    }
@@ -174,11 +176,11 @@ Integrator::Status L::CompRuleIntegratorErr::integrate (
    std::auto_ptr<EmbeddedRule> rule (getRule(h.getDimension()));
 
    // Calculate the number of sections
- 
+
    Index numSections = maxEval / rule->getNumPoints ();
- 
+
    // We need at least one section to apply the basic rule once
- 
+
    if (numSections == 0)
    {
       #ifdef HINTLIB_NO_EXCEPTIONS
@@ -190,17 +192,17 @@ Integrator::Status L::CompRuleIntegratorErr::integrate (
    }
 
    // Use CubePartitioner to perform action an every sub-cube
- 
+
    MyErrCubePartitioner cp (f, *rule);
- 
+
    cp (h, numSections, cp. EQUIDISTANT);
- 
+
    // Copy to final result
 
    ee.set (cp.estimate, cp.error);
- 
+
    // Return status depending on estimated error
- 
+
    Status status = checkRequestedError (ee, reqAbsError, reqRelError);
 
    return (status == ERROR) ? MAX_EVAL_REACHED : status;

@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/defaults.h>
 
@@ -82,7 +84,7 @@ L::GaloisField<B>::findPoly (unsigned base, unsigned deg, bool xPrim)
    if (deg == 1)  return poly.x();
 
    // Find an irreducible polynomial
-   
+
    typename Poly::PrimeGenerator ig (poly, deg);
    T p = ig.next();
 
@@ -106,7 +108,7 @@ L::GaloisField<B>::findPoly (unsigned base, unsigned deg, bool xPrim)
          // field.  If this is is the case already, we are done
 
          if (n == base)  return p;
-         
+
          break;
       }
    }
@@ -131,7 +133,7 @@ L::GaloisField<B>::findPoly (unsigned base, unsigned deg, bool xPrim)
 
       ef.mulBy (x, prim);
    }
-  
+
    // we need the inverse mapping, so we invert the matrix
 
    matrixInverse (field, matrix.begin(), deg);

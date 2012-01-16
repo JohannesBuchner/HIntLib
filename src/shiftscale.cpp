@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/shiftscale.h>
 
@@ -91,7 +93,7 @@ void L::ShiftScale::set (const Hypercube &h, real lb, real ub)
 void L::ShiftScale::set (const Hypercube &dest, const Hypercube &src)
 {
    checkDimensionEqual (dest.getDimension(), src.getDimension());
-   
+
    for (unsigned i = 0; i != dest.getDimension(); ++i)
    {
       t[i].set (

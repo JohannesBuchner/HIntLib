@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -32,11 +32,13 @@
  *  It is also presented in
  *     A. H. Stoud. Approximate Calculation of Multiple Integrals (1971)
  *  as formula Cn: 7-1
- */                                                                             
+ */
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/rule7phillips.h>
 
@@ -112,7 +114,7 @@ real L::Rule7Phillips::getSumAbsWeight() const
         + numR0_0fs   () * (abs (weightB1) + abs (weightB2))
         + num0_0      () * abs (weightA);
 }
- 
+
 
 /**
  *  Do the actual function evaluation
@@ -141,7 +143,7 @@ real L::Rule7Phillips::eval (Integrand &f, const Hypercube &h)
       + weightB1 * evalR0_0fs   (f, c, width)     // rB1 = 1.0
       + weightB2 * evalR0_0fs   (f, c, scalerB2)
       + weightA  * eval0_0      (f)
-   ); 
+   );
 }
 
 /**

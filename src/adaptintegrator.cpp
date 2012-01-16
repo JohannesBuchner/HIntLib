@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -29,6 +29,8 @@
 
 #include <memory>
 
+#define HINTLIB_LIBRARY_OBJECT
+
 #include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_LIMITS
@@ -48,7 +50,7 @@ namespace L = HIntLib;
 
 L::Integrator::Status L::AdaptIntegrator::integrate (
    Integrand &f, const Hypercube &h, Index max,
-   real reqAbsError, real reqRelError, EstErr &ee) 
+   real reqAbsError, real reqRelError, EstErr &ee)
 {
    checkDimension (h, f);
 
@@ -68,7 +70,7 @@ L::Integrator::Status L::AdaptIntegrator::integrate (
             ee.set (0.0, 0.0);
             return ERROR;
          #else
-            throw NoEvaluationsPossible(max); 
+            throw NoEvaluationsPossible(max);
          #endif
       }
 
@@ -77,7 +79,7 @@ L::Integrator::Status L::AdaptIntegrator::integrate (
    else
    {
       maxEvaluations = std::numeric_limits<Index>::max();
-   } 
+   }
 
    // Create a Region Collection
 

@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -22,6 +22,8 @@
 #pragma implementation
 #pragma implementation "mcroutines.h"
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/mcpointset.h>
 

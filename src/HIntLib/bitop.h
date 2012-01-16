@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -50,8 +50,8 @@ namespace HIntLib
 
 namespace Private
 {
-   extern const int ms1_data [];
-   extern const int ls0_data [];
+   extern HINTLIB_IMPORT const int ms1_data [];
+   extern HINTLIB_IMPORT const int ls0_data [];
 }
 
 
@@ -172,13 +172,13 @@ template<class T>
 inline int ms1 (T n)
 {
    int result = 0;
- 
+
    while ((~T() ^ T(0xff)) & n)
    {
       n >>= 8;
       result += 8;
    }
- 
+
    return result + Private::ms1_data [n];
 }
 

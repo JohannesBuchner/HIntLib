@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -29,6 +29,8 @@
 #pragma implementation
 #endif
 
+#define HINTLIB_LIBRARY_OBJECT
+
 #include <memory>
 
 #include <HIntLib/ruleintegrator.h>
@@ -43,7 +45,7 @@ L::Integrator::Status L::RuleIntegrator::integrate (
    real /* reqAbsError */, real /* reqRelError */, EstErr &ee)
 {
    checkDimension(h, f);
-   
+
    std::auto_ptr<CubatureRule> rule (getRule(h.getDimension()));
 
    if (maxEval < rule->getNumPoints ())
@@ -66,7 +68,7 @@ L::Integrator::Status L::RuleIntegratorErr::integrate (
    real reqAbsError, real reqRelError, EstErr &ee)
 {
    checkDimension(h, f);
-   
+
    std::auto_ptr<EmbeddedRule> rule (getRule(h.getDimension()));
 
    if (maxEval < rule->getNumPoints ())

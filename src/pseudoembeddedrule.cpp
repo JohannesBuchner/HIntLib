@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -22,6 +22,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <algorithm>
 
@@ -101,12 +103,12 @@ unsigned L::PseudoDoubleEmbeddedRule::evalError (Integrand &f,
    real result3 = r3->eval (f, h);
 
    // Set estimate from r1 and estimated error in result
- 
+
    ee.set (ee.getEstimate(),
            std::max (ee.getError(), abs (ee.getEstimate() - result3)));
 
    return split;
-} 
+}
 
 
 /**
@@ -117,7 +119,7 @@ L::PseudoEmbeddedRuleFactory* L::PseudoEmbeddedRuleFactory::clone() const
 {
    return new PseudoEmbeddedRuleFactory (factory1->clone(), factory2->clone());
 }
- 
+
 L::PseudoEmbeddedRule* L::PseudoEmbeddedRuleFactory::create (unsigned dim)
 {
    return new PseudoEmbeddedRule (dim, factory1.get(), factory2.get());
@@ -134,7 +136,7 @@ L::PseudoDoubleEmbeddedRuleFactory::clone() const
    return new PseudoDoubleEmbeddedRuleFactory (
          factory1->clone(), factory2->clone(), factory3->clone());
 }
- 
+
 L::PseudoDoubleEmbeddedRule*
 L::PseudoDoubleEmbeddedRuleFactory::create (unsigned dim)
 {

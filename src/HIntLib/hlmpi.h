@@ -89,8 +89,10 @@ template<> class MPIType<float>
    { public: static const MPI_Datatype type = MPI_FLOAT; };
 template<> class MPIType<double>
    { public: static const MPI_Datatype type = MPI_DOUBLE; };
+#ifdef HINTLIB_HAVE_LONG_DOUBLE
 template<> class MPIType<long double>
    { public: static const MPI_Datatype type = MPI_LONG_DOUBLE; };
+#endif
 
 }  // namespace HIntLib
 

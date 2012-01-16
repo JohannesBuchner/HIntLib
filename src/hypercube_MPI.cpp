@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -17,6 +17,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/hlmpi.h>
 #include <HIntLib/hypercube.h>
@@ -47,7 +49,7 @@ L::Hypercube::Hypercube (unsigned _dim, RecvBuffer &b)
    b >> *this;
 }
 
- 
+
 int
 L::Hypercube::send (int dest, int tag, MPI_Comm comm) const
 {
@@ -63,13 +65,13 @@ L::Hypercube::isend (int dest, int tag, MPI_Comm comm) const
    const real* p = data;
 
    MPI_Request request;
- 
+
    MPI_Isend (const_cast<real*> (p), 2 * dim, MPIType<real>::type,
               dest, tag, comm, &request);
 
    MPI_Request_free (&request);
 }
- 
+
 int
 L::Hypercube::recv (int source, int tag, MPI_Comm comm, MPI_Status *status)
 {
@@ -77,12 +79,12 @@ L::Hypercube::recv (int source, int tag, MPI_Comm comm, MPI_Status *status)
 
     int res = MPI_Recv (const_cast<real*> (p),
                     2 * dim, MPIType<real>::type, source, tag, comm, status);
- 
+
     calcVolume();
 
     return res;
 }
- 
+
 L::Hypercube::Hypercube (unsigned dim,
                       int source, int tag, MPI_Comm comm, MPI_Status *status)
    : dim (dim), data (2 * dim)

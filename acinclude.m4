@@ -121,7 +121,7 @@ translit([hl_cv_abs_for_$2],[ ],[_])=${hl_fname}
 translit([hl_cv_abs_for_$2_num],[ ],[_])=${hl_counter}
 break
 ],,
-AC_MSG_ERROR([HL_ WHICH_ABS cannot be used when crosscompiling!]))
+AC_MSG_ERROR([HL\_WHICH_ABS cannot be used when crosscompiling!]))
 done
 ])
 if test translit([$hl_cv_abs_for_$2_num],[ ],[_]) -eq 0 ; then
@@ -184,15 +184,16 @@ translit([hl_cv_$1_for_$3],[ ],[_])=${hl_fname}
 translit([hl_cv_$1_for_$3_num],[ ],[_])=${hl_counter}
 break
 ],,
-AC_MSG_ERROR([HL_ WHICH_ABS cannot be used when crosscompiling!]))
+AC_MSG_ERROR([HL\_WHICH_MATH_FUN cannot be used when crosscompiling!]))
 done
 ])
-if test translit([$hl_cv_$1_for_$3_num],[ ],[_]) -eq 0 ; then
-AC_MSG_ERROR([No appropriate function found!])
-fi
-AC_DEFINE_UNQUOTED(translit([$1_FOR_$3],[ a-z],[_A-Z]),translit([$hl_cv_$1_for_$3],[ ],[_]),
+if test translit([$hl_cv_$1_for_$3_num],[ ],[_]) -ne 0 ; then
+   AC_DEFINE_UNQUOTED(translit([$1_FOR_$3],[ a-z],[_A-Z]),
+                      translit([$hl_cv_$1_for_$3],[ ],[_]),
    [function to use for $1($3)])
-AC_DEFINE_UNQUOTED(translit([$1_FOR_$3_NUM],[ a-z],[_A-Z]),translit([$hl_cv_$1_for_$3_num],[ ],[_]),
+fi
+AC_DEFINE_UNQUOTED(translit([$1_FOR_$3_NUM],[ a-z],[_A-Z]),
+                   translit([$hl_cv_$1_for_$3_num],[ ],[_]),
    [function number to use for $1($3)])
 ])dnl AC_DEFUN
 

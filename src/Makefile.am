@@ -148,21 +148,25 @@ dist-hook:
 
 bitop.cpp: create_bitop@EXEEXT@
 	@echo Creating source file \"bitop.cpp\"
+	test -x ./create_bitop@EXEEXT@ || sleep 1
 	./create_bitop@EXEEXT@ > bitop.cpp \
            || { rm -f bitop.cpp ; exit 1 ; }
 
 niederreitermatrix.cpp: create_niederreiter@EXEEXT@
 	@echo Creating source file \"niederreitermatrix.cpp\"
+	test -x ./create_niederreiter@EXEEXT@ || sleep 1
 	./create_niederreiter@EXEEXT@ > niederreitermatrix.cpp \
             || { rm -f niederreitermatrix.cpp ; exit 1 ; }
 
 sobolmatrix.cpp: create_sobol@EXEEXT@
 	@echo Creating source file \"sobolmatrix.cpp\"
+	test -x ./create_sobol@EXEEXT@ || sleep 1
 	./create_sobol@EXEEXT@ > sobolmatrix.cpp \
            || { rm -f sobolmatrix.cpp ; exit 1 ; }
 
 prime_generated.cpp: HIntLib/create_prime@EXEEXT@
 	@echo Creating source file \"prime_generated.cpp\"
+	test -x ./create_prime@EXEEXT@ || sleep 1
 	HIntLib/create_prime@EXEEXT@ cpp > prime_generated.cpp \
            || { rm -f prime_generated.cpp ; exit 1 ; }
 HIntLib/prime_generated.h:
@@ -170,6 +174,7 @@ HIntLib/prime_generated.h:
 
 lookupfield_generated.cpp: create_lookupfield@EXEEXT@
 	@echo Creating source file \"lookupfield_generated.cpp\"
+	test -x ./create_lookupfield@EXEEXT@ || sleep 1
 	./create_lookupfield@EXEEXT@ > lookupfield_generated.cpp \
            || { rm lookupfield_generated.cpp ; exit 1 ; }
 

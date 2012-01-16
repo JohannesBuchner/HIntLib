@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -37,6 +37,8 @@
 #pragma implementation
 #endif
 
+#define HINTLIB_LIBRARY_OBJECT
+
 #include <algorithm>
 
 #include <iomanip>
@@ -66,12 +68,12 @@ namespace
       void operator() (const real* point);
       void reset (real volume);
       void updateDensityFunction (Index numPoints);
-      
+
       real getSum () const  { return sum; }
       real getSumSquares () const  { return sumSquares; }
 
       real ALPHA;
-      
+
    private:
       real& sectionUB (unsigned d, unsigned j)
          { return  _sectionUB [j * dim + d]; }
@@ -143,14 +145,14 @@ namespace
       {
          for (unsigned j = 0; j < numSections; ++j)
          {
-            // XXX sectionInt(d,j) = 
+            // XXX sectionInt(d,j) =
             sectionSqrSum(d,j) = 0.0;
             sectionCount (d,j) = 0;
          }
       }
    }
 
-   
+
    /**
     *  operator()
     */
@@ -213,7 +215,7 @@ namespace
       for (unsigned d = 0; d < dim; ++d)
       {
          // Scale  sectionSqrSum  according to the number of sample points
-        
+
          for (unsigned j = 0; j < numSections; ++j)
          {
             sectionSqrSum (d,j) =
@@ -259,8 +261,8 @@ namespace
             rSum += r[j] =
                HINTLIB_MN pow (  (real(1.0) - x/sum)
                                / (HINTLIB_MN log(sum) - HINTLIB_MN log(x)),
-                               ALPHA); 
-         } 
+                               ALPHA);
+         }
 
          // Apply these corrections to the section upper bounds
 
@@ -278,7 +280,7 @@ namespace
                const real ub =                sectionUB(d,rIndex-1);
 
                sectionUBCopy[j] = ub - (ub-lb) * x / r[rIndex-1];
-            } 
+            }
          }
 
          for (unsigned j = 0; j+1 < numSections; ++j)
@@ -347,7 +349,7 @@ L::Vegas::Status L::Vegas::integrate (
 
    // Calculate an appropriate number of iterations, sections and point budgets
 
-   // Overflow precautions if Index is > 32 bits! XXX 
+   // Overflow precautions if Index is > 32 bits! XXX
 
    const unsigned numPointsPreTotal
        = unsigned (min (maxEval / 4, Index(MAX_ITER) * MAX_SECTIONS * 500));
@@ -432,7 +434,7 @@ cerr << "\n  Sections: " << numSections << "  Iterations: " << numIter << endl
          chi2a = (sumChi - sumIntegral * integral) / real(iter);
          if (chi2a < 0.0) chi2a = 0.0;
       }
-   
+
 #if 0
       cout << "Iteration " << iter << ": " << sum << " +/- " << HINTLIB_MN sqrt(variance) << endl
            << "      Total: " << integral << " +/- " << stddev

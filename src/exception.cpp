@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -27,6 +27,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <string>
 
@@ -232,7 +234,7 @@ void L::GM_CopyBase::makeString() const
 void L::DigitalNetTooLarge::makeString() const
 {
    ostringstream ss;
-   ss << "Cannot create Digital Net with " << b << '^' << m << " points! " 
+   ss << "Cannot create Digital Net with " << b << '^' << m << " points! "
          "Maximum is " << b << '^' << max << '.';
    setString (ms(ss));
 }

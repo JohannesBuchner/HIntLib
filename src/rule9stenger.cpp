@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -34,6 +34,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/rule9stenger.h>
 
@@ -80,33 +82,33 @@ L::Rule9Stenger::Rule9Stenger (unsigned dim)
    const real dimMin1 = int(dim) - 1;
    const real dimMin2 = int(dim) - 2;
    const real dimMin3 = int(dim) - 3;
- 
+
    weightF = real(1) / (real(525) * u2 * v2 * sqr(u2MinV2));
- 
+
    weightH = (24 - 5 * int(dim)) / (real(3240) * v8);
- 
+
    weightI = (real(3) - real(5) * v2)
            / (real(2160) * dimMin3 * u4 * u2 * u2MinV2);
- 
+
    weightJ = (real(1) - real(1296) * u8 * weightI) / (real(1296) * v8);
- 
+
    weightE = (real(3) - real(5) * u2) / (real(-180) * v4 * u2MinV2)
            - weightF * u2DivV2
            - real(2) * dimMin2 * (weightH + dimMin3 * weightJ);
- 
+
    weightD = (real(3) - real(5) * v2) / (real(180) * u4 * u2MinV2)
            - weightF / u2DivV2 - real(2) * dimMin2 * dimMin3 * weightI;
- 
+
    weightC = (real(3) - real(5) * u2) / (real(-30) * v2 * u2MinV2)
            - real(2 * dimMin1)
                * (weightE + weightF + dimMin2 *
                       (weightH + real(2) / real(3) * dimMin3 * weightJ));
- 
+
    weightB = (real(3) - real(5) * v2) / (real(30) * u2 * u2MinV2)
            - real(2) * dimMin1
                * (weightD + weightF
                           + real(2) / real(3) * dimMin2 * dimMin3 * weightI);
- 
+
    weightA =
         real(1)
       - real(2) * dim * (  weightB + weightC
@@ -116,7 +118,7 @@ L::Rule9Stenger::Rule9Stenger (unsigned dim)
                                            + dimMin3 * (weightI + weightJ)
                                       )
                                  )
-                    ); 
+                    );
 #if 0
    real volume = (1 << dim);
 
@@ -162,10 +164,10 @@ real L::Rule9Stenger::getSumAbsWeight() const
           + numRR0_0fs ()   * ((weightD) + (weightE))
           + numRS0_0fs ()   *  (weightF)
           + numR0_0fs ()    * ((weightB) + (weightC))
-          + num0_0 ()       *  (weightA); 
+          + num0_0 ()       *  (weightA);
 #endif
 }
- 
+
 
 /**
  *  Do the actual function evaluation
@@ -198,7 +200,7 @@ real L::Rule9Stenger::eval (Integrand &f, const Hypercube &h)
       + weightC * evalR0_0fs    (f, c, aV)
       + weightB * evalR0_0fs    (f, c, aU)
       + weightA * eval0_0       (f)
-   ); 
+   );
 }
 
 

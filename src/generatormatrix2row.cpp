@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <algorithm>
 
@@ -209,7 +211,7 @@ void L::GeneratorMatrix2Row<T>::setMatrix (const T* source)
  */
 
 template<typename T>
-bool L::GeneratorMatrix2Row<T>::operator== 
+bool L::GeneratorMatrix2Row<T>::operator==
       (const L::GeneratorMatrix2Row<T> &gm) const
 {
    return dim       == gm.dim

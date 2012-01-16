@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -65,8 +65,8 @@ private:
    void reload();
 
    #if HINTLIB_STATIC_WORKS == 1
-      static const real RANGE;
-      static const real RESOLUTION;
+      HINTLIB_IMPORT static const real RANGE;
+      HINTLIB_IMPORT static const real RESOLUTION;
    #else
       static real RANGE;
       static real RESOLUTION;

@@ -14,10 +14,12 @@ EXTRA_DIST = genin2_ori.f genin_ori.f original_source.txt COPYRIGHT.html
 
 gftabs.dat: gfarit@EXEEXT@
 	@echo "Creating \"gftabs.dat\""
+	test -x ./gfarit@EXEEXT@ || sleep 1
 	./gfarit@EXEEXT@
 
 irrtabs.dat: gfplys@EXEEXT@
 	@echo "Creating \"irrtabs.dat\""
+	test -x ./gfplys@EXEEXT@ || sleep 1
 	./gfplys@EXEEXT@
 
 

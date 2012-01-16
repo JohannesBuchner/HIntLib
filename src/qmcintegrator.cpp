@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -30,6 +30,8 @@
 #if defined __GNUG__ && ! defined HINTLIB_PARALLEL
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/qmcintegrator.h>
 
@@ -78,19 +80,19 @@ L::Integrator::Status L::NAME(QMCIntegrator)::integrate (
 
    #ifdef HINTLIB_PARALLEL
       StaticLoadBalancer slb (n);
- 
+
       ps->integratePartition (
          point, f, slb.getRange(), slb.getBegin(), slb.getEnd(), stat);
 
       stat.reduce();
- 
+
       if (slb.getRank() > 0) return WRONG_NODE;
    #else
       ps->integrate(point, f, n, stat);
    #endif
- 
+
    ee.setNoErr (stat.getMean() * h.getVolume());
- 
+
    return MAX_EVAL_REACHED;
 }
 

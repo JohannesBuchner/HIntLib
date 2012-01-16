@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <algorithm>
 #include <iostream>
@@ -49,7 +51,7 @@ using L::Index;
 template<class T>
 L::DigitalNet2<T>::DigitalNet2 (
    const GeneratorMatrix2<T> &_c, const Hypercube &_h,
-   unsigned _m, Index index, bool equi, Truncation _trunc) 
+   unsigned _m, Index index, bool equi, Truncation _trunc)
 : QRNSequenceBase(_h),
   DigitalNet (_c.getBase(), _m),
   alg(),
@@ -75,7 +77,7 @@ L::DigitalNet2<T>::DigitalNet2 (
    // Initialize Shift Scale
 
    setCube (h);
-   
+
    // Initialize xStart vector
 
    const int dd = equi;
@@ -89,7 +91,7 @@ L::DigitalNet2<T>::DigitalNet2 (
       {
          throw NetIndexTooHigh (indexCopy, _c.getM(), m);
       }
-      
+
       if (index & 1)
       {
          for (unsigned d = dd; d < c.getDimension(); ++d)
@@ -135,7 +137,7 @@ void L::DigitalNet2<T>::setCube (const Hypercube &h)
 {
   double centerShift = trunc == CENTER ? -.5 : .0;
 
-  ss.set (h, centerShift, 
+  ss.set (h, centerShift,
              centerShift + HINTLIB_MN pow(real(2.0), int (c.getTotalPrec())));
 
 #ifdef HINTLIB_IEEE_MAGIC_WORKS

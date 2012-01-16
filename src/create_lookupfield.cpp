@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -20,6 +20,10 @@
 
 #include <iostream>
 #include <iomanip>
+
+// This is not really a library object. However, since library files are
+// linked static, we do not require DLL-export names.
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/galoisfield.h>
 #include <HIntLib/prime.h>

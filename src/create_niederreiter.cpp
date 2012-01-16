@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -29,6 +29,10 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+
+// This is not really a library object. However, since library files are
+// linked static, we do not require DLL-export names.
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/niederreitermatrix.h>
 #include <HIntLib/niederreitermatrixgen.h>
@@ -61,7 +65,7 @@ int main()
    GeneratorMatrix2<u64> matrixBase2 (matrix);
 
    // Generate output file
- 
+
    cout << "/***********************************************************/\n"
            "/***   This file is program-generated!                   ***/\n"
            "/***                                                     ***/\n"
@@ -80,23 +84,23 @@ int main()
            "\n"
            "const L::u64 "
               "L::NiederreiterMatrix::v_mem [DEFAULT_M_BASE2][MAX_DIM] =\n";
- 
+
    matrixBase2.CArrayDump (cout);
 
 #if 0
-   cout << "\n" 
+   cout << "\n"
            "const unsigned L::NiederreiterMatrix::t_s [MAX_DIM] =\n"
            "{\n";
- 
+
    unsigned sum = 0;
- 
+
    for (unsigned i = 0; i < NiederreiterMatrix::MAX_DIM; ++i)
    {
       // sum += irredPolys [i].degree() - 1;
- 
+
       cout << setw(6) << sum << ",   // t_s [" << i + 1 << "]\n";
    }
- 
+
    cout << "};"
 #endif
 

@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -30,12 +30,14 @@
  *
  *  It is also presented in
  *     A. H. Stoud.  Approximate Calculation of Multiple Integrals (1971)
- *  as formula Cn: 3-1                                                          
+ *  as formula Cn: 3-1
  */
 
 #ifdef __GNUG__
 #pragma implementation
-#endif                                                                          
+#endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/rule3octahedron.h>
 

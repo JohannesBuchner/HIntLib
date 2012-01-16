@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -30,6 +30,8 @@
 
 #include <memory>
 
+#define HINTLIB_LIBRARY_OBJECT
+
 #include <HIntLib/hlmpi.h>
 
 #include <HIntLib/adaptintegratorms.h>
@@ -59,7 +61,7 @@ L::AdaptIntegratorMS::AdaptIntegratorMS
 inline
 unsigned L::AdaptIntegratorMS::numWorkers() const
 {
-   return nodes - 1; 
+   return nodes - 1;
 }
 
 void L::AdaptIntegratorMS::sendTerminationSignal ()
@@ -70,7 +72,7 @@ void L::AdaptIntegratorMS::sendTerminationSignal ()
 
       int dummy;
       MPI_Request request;
- 
+
       MPI_Isend (&dummy, 0, MPI_INT, w, DONE, comm, &request);
       MPI_Request_free (&request);
 
@@ -99,10 +101,10 @@ void L::AdaptIntegratorMS::sendTopRegionToSlave (
 
       localEE [w] += r->getEstErr();
 
-      rc.pop(); 
+      rc.pop();
       delete r;
    }
- 
+
    buffer.send (w, CUBE);
    // PA::send (PA::SE, 0, w);
 }
@@ -152,19 +154,19 @@ int L::AdaptIntegratorMS::recvRegionsFromSlave (
    // PA::send (PA::RS, workerMask, 0);
    RecvBuffer buffer (comm, workerMask, RESULT);
    // PA::send (PA::RE, workerMask, 0);
- 
+
    // PA::calc (PA::CS, 0);
 
    const int w = buffer.getStatus ()->MPI_SOURCE;
- 
+
    buffer >> localEE[w];
- 
+
    while (buffer)
    {
       Region *r = new Region (dim, buffer);
- 
+
       localEE[w] -= r->getEstErr();
- 
+
       rc.push (r);
    }
 
@@ -224,7 +226,7 @@ Integrator::Status L::AdaptIntegratorMSAsync::master (
       // Check if termination criterions
 
       if (! shutDown)
-      {         
+      {
          // Check requested errors
 
          EstErr totalEE = rc.getEstErr ();
@@ -250,13 +252,13 @@ Integrator::Status L::AdaptIntegratorMSAsync::master (
    sendTerminationSignal ();
 
    // Clean up Region Collection and recalculate result
-      
+
    rc.killQueueAndUpdateResult ();
- 
+
    ee = rc.getEstErr ();
    for (unsigned w = 1; w <= numWorkers(); ++w)  ee += localEE[w];
 
-   return (status == ERROR) ? MAX_EVAL_REACHED : status; 
+   return (status == ERROR) ? MAX_EVAL_REACHED : status;
 }
 
 
@@ -270,13 +272,13 @@ Integrator::Status L::AdaptIntegratorMSInter::master (
 {
    const unsigned dim = h.getDimension ();
    maxIter /= numWorkers();
- 
+
    Array<EstErr> localEE (nodes, EstErr (0.0, 0.0));
- 
+
    RegionCollection rc;
- 
+
    // Main loop
- 
+
    for (Index i = 1; i != maxIter; ++i)
    {
       // Collect from and deal out to each node
@@ -291,7 +293,7 @@ Integrator::Status L::AdaptIntegratorMSInter::master (
       }
 
       // Check if error criterion is met
-      
+
       EstErr totalEE = rc.getEstErr ();
       for (unsigned w = 1; w <= numWorkers(); ++w)  totalEE += localEE[w];
 
@@ -322,16 +324,16 @@ Integrator::Status L::AdaptIntegratorMSInter::master (
          sendTopRegionToAllSlaves (rc, localEE, rc.size() / numWorkers());
       }
    }  // next iteration
- 
+
    sendTerminationSignal();
 
    rc.killQueueAndUpdateResult ();
- 
+
    ee = rc.getEstErr();
    for (unsigned w = 1; w <= numWorkers(); ++w)  ee += localEE[w];
 
    Status status = checkRequestedError (ee, reqAbsError, reqRelError);
- 
+
    return (status == ERROR) ? MAX_EVAL_REACHED : status;
 }
 
@@ -343,14 +345,14 @@ Integrator::Status L::AdaptIntegratorMSInter::master (
 Integrator::Status L::AdaptIntegratorMSSync::master (
    const Hypercube &h,
    real reqAbsError, real reqRelError, EstErr &ee, Index maxIter)
-{ 
+{
    const unsigned dim = h.getDimension ();
    maxIter /= numWorkers();
- 
+
    Array<EstErr> localEE (nodes, EstErr (0.0, 0.0));
- 
+
    RegionCollection rc;
- 
+
    for (Index i = 1; ; ++i)
    {
       recvRegionsFromAllSlaves (rc, dim, localEE);
@@ -360,24 +362,24 @@ Integrator::Status L::AdaptIntegratorMSSync::master (
       EstErr totalEE = rc.getEstErr();
       for (unsigned w = 1; w <= numWorkers(); ++w)  totalEE += localEE[w];
 // cout << "Iteration: " << i << "   Error: " << totalEE.getError() << endl;
- 
+
       Status status = checkRequestedError (totalEE, reqAbsError, reqRelError);
       if (status != ERROR || i == maxIter)  break;
- 
+
       // Send new regions to slaves for processing
- 
+
       sendTopRegionToAllSlaves (rc, localEE, rc.size() / numWorkers());
    }
- 
+
    sendTerminationSignal ();
- 
+
    // Clean up Region Collection and recalculate result
- 
+
    rc.killQueueAndUpdateResult();
- 
+
    ee = rc.getEstErr ();
    for (unsigned w = 1; w <= numWorkers(); ++w)  ee += localEE[w];
- 
+
    Status status = checkRequestedError (ee, reqAbsError, reqRelError);
    return (status == ERROR) ? MAX_EVAL_REACHED : status;
 }
@@ -409,7 +411,7 @@ void L::AdaptIntegratorMS::slave (
       // PA::calc (PA::CE, rank);
 
       // Send results to manager
- 
+
       // PA::send (PA::SS, rank, 0);
       SendBuffer buffer (comm);
 
@@ -420,24 +422,24 @@ void L::AdaptIntegratorMS::slave (
            ++i)
       {
          Region *region = rc.top();
- 
+
          if (! (buffer << *region))  break;
 
-         rc.pop(); 
+         rc.pop();
          delete region;
       }
 
       buffer.send (0, RESULT);
       // PA::send (PA::SE, rank, 0);
- 
+
       // Wait for response from master
- 
+
       // PA::send (PA::RS, 0, rank);
       MPI_Status status;
       MPI_Probe (0, MPI_ANY_TAG, comm, &status);
- 
+
       // What kind of message did we receive??
- 
+
       switch (status.MPI_TAG)
       {
          case CUBE:   // Receive new Regions from master for processing
@@ -450,14 +452,14 @@ void L::AdaptIntegratorMS::slave (
 
             break;
          }
- 
+
          case DONE:   // We are done. -> return
          {
             int dummy;
             MPI_Recv (&dummy, 0, MPI_INT, 0, DONE, comm, &status);
             return;
          }
- 
+
          default:  throw InternalError(__FILE__, __LINE__);
       }
       // PA::send (PA::RE, 0, rank);
@@ -467,14 +469,14 @@ void L::AdaptIntegratorMS::slave (
 
 Integrator::Status L::AdaptIntegratorMS::integrate (
    Integrand &f, const Hypercube &h, Index maxEvaluations,
-   real reqAbsError, real reqRelError, EstErr &ee) 
+   real reqAbsError, real reqRelError, EstErr &ee)
 {
     checkDimension (h, f);
 
    // PA::calc (PA::CS, rank);
 
    // We need at least one slave for this algorithm
- 
+
    if (numWorkers() == 0)
    {
       #ifdef HINTLIB_NO_EXCEPTIONS
@@ -492,7 +494,7 @@ Integrator::Status L::AdaptIntegratorMS::integrate (
    interval = 1 + frequency / rule->getNumPoints();
 
    // Determine the number of possible iterations
- 
+
    Index maxIter = std::numeric_limits<Index>::max();
 
    if (maxEvaluations)
@@ -537,5 +539,5 @@ Integrator::Status L::AdaptIntegratorMS::integrate (
       return WRONG_NODE;
    }
 }
-             
+
 

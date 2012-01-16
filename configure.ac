@@ -6,7 +6,7 @@
 
 # autoconf setup
 
-AC_INIT([HIntLib], 0.0.7, [rudolf.schuerer@sbg.ac.at], [HIntLib])
+AC_INIT([HIntLib], 0.0.8, [rudolf.schuerer@sbg.ac.at], [HIntLib])
 AC_CONFIG_SRCDIR([src/HIntLib/integrator.h])
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile src/Makefile src/HIntLib/Makefile share/Makefile tests/Makefile tests/toms659/Makefile tests/toms738/Makefile libtest/Makefile])
@@ -121,6 +121,29 @@ esac
 
 AC_SUBST(NOUNDEFINED)
 
+case $host in
+*cygwin* )
+   if test $enable_static = yes ; then
+      if test $enable_shared = yes ; then
+        AC_MSG_WARN([
+
+-------------------------------------------------------------------------------
+You have configured HIntLib on a Cygwin system such that a static library as
+well as a shared library (DLL) is built.
+Whenever you compile an object file which is supposed to be linked against the
+static HIntLib library you have to add '-DHINTLIB_STATIC_LIB_ONLY=1' to the
+command line of the compiler.
+If you want to avoid this, configure HIntLib to use either only a static
+library (--disable-shared --endable-static) or only a DLL (default).
+-------------------------------------------------------------------------------
+])
+      else
+        AC_DEFINE(STATIC_LIB_ONLY,1,[Define if only a static library is built on Cygwin])
+      fi
+   fi
+   ;;
+esac
+
 # Turn on compiler warnings
 
 AC_MSG_CHECKING([compiler flags to turn on warnings])
@@ -233,8 +256,7 @@ dnl AC_CHECK_FUNCS([floor modf pow sqrt])
 # Checks for typedefs, structures
 
 AC_TYPE_SIZE_T
-AC_CHECK_TYPES([ptrdiff_t])
-AC_CHECK_TYPES([long long int, unsigned long long int])
+AC_CHECK_TYPES([ptrdiff_t,long long int, unsigned long long int,long double])
 
 # Size checks
 
@@ -315,14 +337,20 @@ HL_FLT_ROUNDS_CONST
 HL_NAMESPACE_REL_OPS
 HL_UNREACHABLE_CALLS_REMOVED
 HL_EQUAL_BUG
+if test "x$ac_cv_type_long_double" = xyes; then
 HL_COMPLEX_POW_BUG
+fi
 HL_IEEE_MAGIC_WORKS
 
 # Which abs() do we use for floats?  Which one for ints?
 
 HL_WHICH_ABS(::std::abs ::abs ::std::fabsf ::fabsf,float)
 HL_WHICH_ABS(::std::abs ::abs ::std::fabs  ::fabs ,double)
+if test "x$ac_cv_type_long_double" = xyes; then
 HL_WHICH_ABS(::std::abs ::abs ::std::fabsl ::fabsl,long double)
+else
+hl_cv_abs_for_long_double_num=$hl_cv_abs_for_double_num
+fi
 HL_WHICH_ABS(::std::abs ::abs ::std::abs   ::abs,int)
 HL_WHICH_ABS(::std::abs ::abs ::std::labs  ::labs,long int)
 dnl if test "x$ac_cv_type_long_long_int" = xyes; then
@@ -372,7 +400,11 @@ AC_DEFINE_UNQUOTED(ABS_STRATEGY,$hl_cv_abs_strategy,
 
 HL_WHICH_MATH_FUN(sin,::std::sin ::sin ::std::sinf ::sinf,float)
 HL_WHICH_MATH_FUN(sin,::std::sin ::sin ::std::sin  ::sin, double)
+if test "x$ac_cv_type_long_double" = xyes; then
 HL_WHICH_MATH_FUN(sin,::std::sin ::sin ::std::sinl ::sinl,long double)
+else
+hl_cv_sin_for_long_double_num=$hl_cv_sin_for_double_num
+fi
 
 AC_MSG_CHECKING([which strategy to use to get math functions right])
 if test $hl_cv_sin_for_float_num       -eq 1 \

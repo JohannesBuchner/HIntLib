@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/linearalgebra.tcc>
 
@@ -51,21 +53,21 @@ unsigned rank (Bi first, Bi last, unsigned columns)
 
    T mask (1);          // mask for current column
    unsigned rank = 0;   // number of l.i. vectors we have found so far
-   
+
    while (columns != 0 && first != last)  // Any rows and columns left?
    {
       // cout <<  "   A, mask=" << mask << "  column=" << columns << endl;
 
       // find pivot row
-      
+
       Bi i = first;
-          
+
       while ((*i & mask) == 0)  // if the coefficient == 0, we have to go on
       {
          if (++i == last)    // if we run out of rows, try a differnt column
          {
             // try next column
-               
+
             if (--columns == 0)  return rank;
             mask <<= 1;
             i = first;
@@ -82,19 +84,19 @@ unsigned rank (Bi first, Bi last, unsigned columns)
       // *first = pivot; // we are not using *first again, so no need to update
 
       // subtract pivot from all remaining rows
-      
+
       while (++i != last)
       {
          if (*i & mask)  *i ^= pivot;
       }
 
       // continue with smaller matrix
-      
+
       mask <<= 1;
       --columns;
       ++first;
    }
-   
+
    return rank;
 }
 #endif
@@ -133,7 +135,7 @@ bool L::isLinearlyIndependent (Bi first, Bi last)
       // Get the current row
 
       T pivot = *first;
-          
+
       // find a non-zero column in the current row
 
       if (!pivot)  return false;
@@ -246,7 +248,7 @@ namespace HIntLib
       unsigned char*, unsigned); \
    template void LinearAlgebraImp<X >::matrixMul ( \
       unsigned char*, const unsigned char*, const unsigned char*, unsigned);
-   
+
    HINTLIB_INSTANTIATE (LookupField<unsigned char>)
    HINTLIB_INSTANTIATE (LookupFieldPow2<unsigned char>)
    HINTLIB_INSTANTIATE (LookupFieldPrime<unsigned char>)

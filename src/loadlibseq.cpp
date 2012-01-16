@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <fstream>
 #include <iomanip>
@@ -118,7 +120,7 @@ unsigned LineReader::getUnsigned ()
    while ((c = get()) != EOF && isdigit (c))  x = 10 * x + (c - '0');
 
    if (c != EOF)  putBack();
-      
+
    return x;
 }
 
@@ -134,7 +136,7 @@ const char* LineReader::getName ()
    while ((c = get()) != EOF && (isalnum (c) || c == '_'))  name += c;
 
    if (c != EOF)  putBack();
-      
+
    return name.c_str();
 }
 
@@ -286,7 +288,7 @@ L::loadLibSeq (std::istream &str)
       t.expectName ();
       const char* token = t.getName();
 
-      if (strcmp (token, keyName) == 0) 
+      if (strcmp (token, keyName) == 0)
       {
          t.ignoreLine();
       }
@@ -449,7 +451,7 @@ namespace
 
 L::GeneratorMatrixGen<unsigned char>* L::loadBinary (std::istream &str)
 {
-   char s [sizeof (binaryMagic) - 1]; 
+   char s [sizeof (binaryMagic) - 1];
    str.read (s, sizeof (binaryMagic) - 1);
    if (! str)  throw FIXME (__FILE__, __LINE__);
 
@@ -470,7 +472,7 @@ L::GeneratorMatrixGen<unsigned char>* L::loadBinary (std::istream &str)
       new GeneratorMatrixGen<unsigned char>(base, dim, m, prec);
 
    char check = 0;
-   
+
    for (unsigned d = 0; d < gm->getDimension(); ++d)
    {
       for (unsigned b = 0; b < gm->getPrec(); ++b)

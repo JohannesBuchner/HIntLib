@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -29,6 +29,8 @@
 #pragma implementation
 #endif
 
+#define HINTLIB_LIBRARY_OBJECT
+
 #include <HIntLib/cubepartitioner.h>
 
 #include <HIntLib/hypercube.h>
@@ -47,7 +49,7 @@ int getNumSplits (
    const L::Array<L::Index>& splitThresholds)
 {
    // By default, choose avgNumSplits
-   // Usue avgNumSplits+1 only if using avgNumSplits is not enough to 
+   // Usue avgNumSplits+1 only if using avgNumSplits is not enough to
    //    to split remaining dimensions avgNumSplit+1 times.
    // Using the lower split values in the first dimensions speeds up the
    //    algorithm.
@@ -68,7 +70,7 @@ void L::CubePartitioner::operator() (
    if (numSections < 1 || dim < 1)  return;
 
    // Hypercube hh represents the current section.
- 
+
    Hypercube hh (h);
 
    // The average number of splits along each axis
@@ -105,7 +107,7 @@ void L::CubePartitioner::operator() (
          {
             for (int j = i+1; j != dim; ++j)
                splitThresholds [dim-j-1] = std::numeric_limits<Index>::max();
- 
+
             break;
          }
 
@@ -122,7 +124,7 @@ void L::CubePartitioner::operator() (
    {
       throw InternalError (__FILE__, __LINE__);
    }
- 
+
    // # of direct splits in a certain dimension
 
    Array<int> numSplits (dim, 0);
@@ -135,13 +137,13 @@ void L::CubePartitioner::operator() (
               h.getLowerBound (0));
 
    // Active split for each dimension
- 
+
    Array<int> curSplit (dim, -1);
- 
+
    // Total number of siblings
    //   curNumLeaves [0] = n
    //   curNumSubsectsion [dim] = 1
- 
+
    Array<int> curNumLeaves (dim+1);
    curNumLeaves [0] = numSections;
    curNumLeaves [dim] = 1;
@@ -151,46 +153,46 @@ void L::CubePartitioner::operator() (
 
    Array<int> curNumProcessedLeaves (dim);
    curNumProcessedLeaves [0] = 0;
- 
- 
+
+
    // Main loop
- 
+
    for (;;)
    {
       // k stores the level in the tree we are working right now
       // k=0 means root
       // k=dim-1 means leave nodes
- 
+
       // Search for the level where we have to switch branch
 
       int k = dim - 1;
- 
+
       while (k >= 0 && ++curSplit [k] == numSplits [k])  k--;
- 
+
       // Terminate when the whole tree is processed
- 
+
       if (k < 0)  break;
 
       // Do initialization at all sub-levels k+1...
- 
+
       for (int i = k + 1; i < dim; ++i)
       {
          // Calculate total number of subsections at this branch
- 
+
          curNumLeaves [i] = curNumLeaves [i-1] / numSplits [i-1];
- 
+
          // Adjust, if parent numSections is not divisible by numSplits
- 
+
          if (curNumLeaves [i-1] % numSplits [i-1] > curSplit [i-1])
             curNumLeaves [i] ++;
- 
+
          // Determine number of splits
- 
+
          numSplits [i] = getNumSplits (i, curNumLeaves [i],
                                  avgNumSplits, splitThresholds);
- 
+
          // Start with first branch
- 
+
          curSplit [i] = curNumProcessedLeaves [i] = 0;
       }
 
@@ -216,7 +218,7 @@ void L::CubePartitioner::operator() (
               *  curNumProcessedLeaves[k]
                          / curNumLeaves[k],
            h.getLowerBound (k) + h.getDiameter (k)
-              * (curNumProcessedLeaves[k] + curNumLeaves[k+1]) 
+              * (curNumProcessedLeaves[k] + curNumLeaves[k+1])
                          / curNumLeaves[k]);
 
          curNumProcessedLeaves [k] += curNumLeaves [k+1];

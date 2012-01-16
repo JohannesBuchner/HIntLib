@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/tparameter.h>
 
@@ -89,7 +91,7 @@ template<typename T>
 bool L::TCalc2<T>::check (int thickness, bool dimOpt)
 {
    // choose these _thickness_ vectors from c
-      
+
    initial_partition (&partition[0], &partition[dim], thickness);
 
    // if we have checkt a low-dimensional submatrix already, at least one
@@ -128,7 +130,7 @@ template<typename T>
 bool L::TCalc2<T>::checkTO (int thickness, bool dimOpt)
 {
    // choose these _thickness_ vectors from c
-      
+
    initial_partition (&partition[0], &partition[dim], thickness);
 
    // if we have checkt a low-dimensional submatrix already, at least one
@@ -180,7 +182,7 @@ bool L::TCalc2<T>::checkRestricted (int thickness, int maxRows)
    if (thickness > maxRows * dim)  return true;;
 
    // choose these _numVectors_ vectors from c
-   
+
    initial_partition (&partition[0], &partition[dim], maxRows, thickness);
 
    do
@@ -201,7 +203,7 @@ bool L::TCalc2<T>::checkRestricted (int thickness, int maxRows)
  *  at most _maxRows_ per matrix considered.
  *
  *  The check is performed under the assumption that the thickness is present
- *  considerung at most _maxRows_-1 per matrix. 
+ *  considerung at most _maxRows_-1 per matrix.
  */
 
 template<typename T>
@@ -210,7 +212,7 @@ bool L::TCalc2<T>::checkRestrictedRO (int thickness, int maxRows)
    if (thickness > maxRows * dim)  return true;;
 
    // choose these _numVectors_ vectors from c
-   
+
    initial_partition (&partition[0], &partition[dim], maxRows, thickness);
 
    do
@@ -244,7 +246,7 @@ bool L::TCalc2<T>::checkRestrictedTO (int thickness, int maxRows)
    if (thickness > maxRows * dim)  return true;
 
    // choose these _numVectors_ vectors from c
-   
+
    initial_partition (&partition[0], &partition[dim], maxRows, thickness);
 
    do
@@ -282,7 +284,7 @@ bool L::TCalc2<T>::checkRestrictedTO (int thickness, int maxRows)
  *  _thickness_-1 is present.
  *
  *  The check is performed under the assumption that the thickness is present
- *  considerung at most _maxRows_-1 per matrix. 
+ *  considerung at most _maxRows_-1 per matrix.
  */
 
 template<typename T>
@@ -291,7 +293,7 @@ bool L::TCalc2<T>::checkRestrictedTORO (int thickness, int maxRows)
    if (thickness > maxRows * dim)  return true;
 
    // choose these _numVectors_ vectors from c
-   
+
    initial_partition (&partition[0], &partition[dim], maxRows, thickness);
 
    do
@@ -410,7 +412,7 @@ bool L::TCalcGen::checkRestricted (int thickness, int maxRows)
  *  at most _maxRows_ per matrix considered.
  *
  *  The check is performed under the assumption that the thickness is present
- *  considerung at most _maxRows_-1 per matrix. 
+ *  considerung at most _maxRows_-1 per matrix.
  */
 
 bool L::TCalcGen::checkRestrictedRO (int thickness, int maxRows)
@@ -555,7 +557,7 @@ int L::tParameter (const GMGen &gm, int lb, int ub, TOption opts)
       GMCopy copy; copy.totalPrec (M - lb);
       GeneratorMatrix2Row<u32> gm2 (gm, copy);
       TCalc2<u32> calc (gm2);
-   
+
       for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
       {
          if (! calc.checkTO (numVectors, opts & LOWER_DIM_OK))
@@ -567,7 +569,7 @@ int L::tParameter (const GMGen &gm, int lb, int ub, TOption opts)
    else
    {
       TCalcGen calc (gm);
-   
+
       while (lb != ub)
       {
          int middle = (ub + lb) / 2;
@@ -608,7 +610,7 @@ int L::tParameterRestricted (
       GMCopy copy; copy.totalPrec (M - lb);
       GeneratorMatrix2Row<u32> gm2 (gm, copy);
       TCalc2<u32> calc (gm2);
-   
+
       for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
       {
          if (! calc.checkRestrictedTO (numVectors, maxRows))
@@ -620,7 +622,7 @@ int L::tParameterRestricted (
    else
    {
       TCalcGen calc (gm);
-   
+
       while (lb != ub)
       {
          int middle = (ub + lb) / 2;

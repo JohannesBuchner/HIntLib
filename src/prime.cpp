@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -28,6 +28,8 @@
 #pragma implementation
 #endif
 
+#define HINTLIB_LIBRARY_OBJECT
+
 #include <HIntLib/prime.h>
 
 #include <HIntLib/hlmath.h>
@@ -44,7 +46,7 @@ namespace L = HIntLib;
  *     isPrime(16) = false
  *     isPrime(17) = true
  */
- 
+
 template<class T>
 bool L::Prime::doPrimeTest (T n)
 {
@@ -109,7 +111,7 @@ T L::Prime::eulerPhi (T n)
    unsigned phi = 1;
 
    // test all primes
- 
+
    for (unsigned prime = 2; ; prime = next (prime+1))
    {
       if (n == 1)  return phi;   // done?
@@ -117,9 +119,9 @@ T L::Prime::eulerPhi (T n)
       if (n % prime == 0)
       {
          n /= prime;
- 
+
          phi *= (prime - 1);
- 
+
          while (n % prime == 0)
          {
             n /= prime;

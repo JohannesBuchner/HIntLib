@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <algorithm>
 
@@ -437,7 +439,7 @@ template<typename T>
 void L::GeneratorMatrixVec<T>::makeEquidistributedCoordinate (unsigned d)
 {
    makeZeroMatrix (d);
-   
+
    for (unsigned r = 0; r < m; ++r)
    {
       if (m-(r+1) < totalPrec)  setd (d, r, m-(r+1), 1);
@@ -453,7 +455,7 @@ template<typename T>
 void L::GeneratorMatrixVec<T>::makeIdentityMatrix  (unsigned d)
 {
    makeZeroMatrix (d);
-   
+
    const unsigned ub = std::min (m, totalPrec);
    for (unsigned r = 0; r < ub; ++r)  setd (d, r, r, 1);
 }

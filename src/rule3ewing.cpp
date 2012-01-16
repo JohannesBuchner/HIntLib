@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -32,6 +32,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/rule3ewing.h>
 
@@ -72,7 +74,7 @@ L::real L::Rule3Ewing::eval (Integrand &f, const Hypercube &h)
    const real* center = h.getCenter();
 
    setCenter (center);
-   
+
    return h.getVolume() *
    (   b0 * eval0_0   (f)
      + b1 * evalR_Rfs (f, center, h.getWidth())

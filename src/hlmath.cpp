@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -17,6 +17,10 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+
+#define HINTLIB_LIBRARY_OBJECT
+
+#include <HIntLib/defaults.h>
 
 #ifdef __GNUG__
 #pragma implementation
@@ -152,7 +156,7 @@ template<class T> int L::logInt (T x, T base)
    if (base < 2)  throw InvalidLogBase (base);
    if (x == 0)  return -1;
    x /= base;
-   
+
    int result = 0;
    T test = 1;
 
@@ -228,7 +232,7 @@ namespace HIntLib
    template void unthreadn (X, X*, unsigned); \
    template X threadinf (X*, unsigned); \
    template unsigned unthreadinf (X, X*);
-   
+
    HINTLIB_INSTANTIATE (unsigned)
    HINTLIB_INSTANTIATE (unsigned long)
 #ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT

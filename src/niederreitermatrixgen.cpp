@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/niederreitermatrixgen.h>
 
@@ -45,7 +47,7 @@ void L::initNiederreiter (GeneratorMatrixGen<typename A::type> &gm, A a)
    typedef typename A::type T;
    typedef PolynomialRing<A> PolyRing;
    typedef typename PolyRing::type Poly;
-                     
+
    // Find _dim_ monic, irreducible polynomials
 
    PolyRing poly (a);
@@ -59,8 +61,8 @@ void L::initNiederreiter (GeneratorMatrixGen<typename A::type> &gm, A a)
 
 
 /**
- *  init Niederreiter () 
- *   
+ *  init Niederreiter ()
+ *
  *  Initialized a single coordiante with a certain irreducible polynomial
  *  over a given arithmetic.
  */
@@ -79,7 +81,7 @@ void L::initNiederreiter
    const unsigned vSize
       = std::max (gm.getM() + degree - 1,   // these elements are copied to gm
                   (gm.getTotalPrec() + degree + 1));  // used in the loop
-                  
+
    Array<T> v (vSize);
    PolyRing poly (a);
 
@@ -109,8 +111,8 @@ void L::initNiederreiter
 
          const unsigned kj = oldDegree   // proposed by BFN
                              // newDegree - 1    // standard, bad???
-                             // 0 
-                             // (newDegree > 3) ? 3 : oldDegree 
+                             // 0
+                             // (newDegree > 3) ? 3 : oldDegree
          ;
 
          std::fill (&v[0], &v[kj], T());  // Set leading v's to 0
@@ -151,7 +153,7 @@ void L::initNiederreiter
                a.addTo (term, a.mul (newPoly [i], v [r+i]));
             }
             v [newDegree + r] = a.neg (term);
-         } 
+         }
       }
 
       // Set data in ci
@@ -159,7 +161,7 @@ void L::initNiederreiter
       for (unsigned r = 0; r < gm.getM(); ++r)  gm.setd (d,r,j, v[r+u]);
 
       if (++u == degree) u = 0;
-   } 
+   }
 }
 
 
@@ -217,7 +219,7 @@ void createIrredPolys (Poly* irredPolys)
 
       eratosthenes (map, mapSize, Poly (0));
 
-      // Count irreducible polynomials in this map 
+      // Count irreducible polynomials in this map
 
       count = 0;
 

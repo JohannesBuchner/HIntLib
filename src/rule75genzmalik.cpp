@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -29,6 +29,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/rule75genzmalik.h>
 
@@ -108,7 +110,7 @@ real L::Rule75GenzMalik::getSumAbsWeight () const
 Index L::Rule75GenzMalik::getNumPoints () const
 {
    return num0_0 () + 2 * numR0_0fs () + numRR0_0fs () + numR_Rfs ();
-}                       
+}
 
 /**
  *  Do the actual function evaluation
@@ -126,7 +128,7 @@ unsigned L::Rule75GenzMalik::evalError
 
    Scaler scalerLamda2 (width, lamda2);
 
-   for (unsigned i = 0; i != dim; ++i)  widthLamda [i] = width [i] * lamda4; 
+   for (unsigned i = 0; i != dim; ++i)  widthLamda [i] = width [i] * lamda4;
 
    // Evaluate function in the center, in f (lamda2,0,...,0) and
    // f (lamda3=lamda4, 0,...,0)

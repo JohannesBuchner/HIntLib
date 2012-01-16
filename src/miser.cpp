@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -32,6 +32,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <algorithm>
 
@@ -197,7 +199,7 @@ void MiserImp::recur (
        leftVariance = 1.0;
       rightVariance = 1.0;
    }
-   
+
    // Calculate point budgets
 
    numPoints -= numPointsPre + 2 * miser.FREE_POINTS;

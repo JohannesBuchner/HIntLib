@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -23,6 +23,8 @@
 #pragma implementation "gf2.h"
 #pragma implementation "gf2vectorspace.h"
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/polynomial2.h>
 #include <HIntLib/gf2vectorspace.h>
@@ -116,9 +118,9 @@ void L::Polynomial2<T>::printShort (
       o << "0";
       return;
    }
-   
+
    // count non-zero terms
-   
+
    int nonZeroTerms = 0;
    T dd = d;
 
@@ -545,7 +547,7 @@ L::Polynomial2Ring<T>::squarefreeFactor (Factorization& f, type p) const
          {
             if (td & 1)  t0d |= mask;
             mask <<= 1;
-            td >>= 2; 
+            td >>= 2;
          }
          type t0 (t0d);
 

@@ -27,6 +27,16 @@
 
 #include <iosfwd>
 
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_CSTDDEF
+  #include <cstddef>
+  #define HINTLIB_SN std::
+#else
+  #include <stddef.h>
+  #define HINTLIB_SN
+#endif
+
 #include <HIntLib/algebra.h>
 
 
@@ -58,15 +68,15 @@ class RefCountingAlgebra
 {
 private:
    unsigned* refCount;
-   size_t size;
+   HINTLIB_SN size_t size;
 
    void copy()  { if (*refCount)  ++*refCount; }
    void destroy();
    char* charPtr() const  { return reinterpret_cast<char*> (refCount + 1); }
 
 protected:
-   explicit RefCountingAlgebra (size_t memory);
-            RefCountingAlgebra (size_t memory, unsigned* data);
+   explicit RefCountingAlgebra (HINTLIB_SN size_t memory);
+            RefCountingAlgebra (HINTLIB_SN size_t memory, unsigned* data);
    RefCountingAlgebra (const RefCountingAlgebra &f)
       : refCount (f.refCount), size (f.size)  { copy(); }
 
@@ -117,15 +127,15 @@ public:
    void printSuffix (std::ostream &o) const  { Private::printSuffix (o, s); }
 
 protected:
-   LookupFieldBB (unsigned _s, size_t memory)
+   LookupFieldBB (unsigned _s, HINTLIB_SN size_t memory)
       : RefCountingAlgebra (memory), s (_s)  { setCharacteristic (s, 1); }
-   LookupFieldBB (unsigned _s, size_t memory, unsigned* data)
+   LookupFieldBB (unsigned _s, HINTLIB_SN size_t memory, unsigned* data)
       : RefCountingAlgebra (memory, data), s (_s)  {}
    LookupFieldBB (const LookupFieldBB &f)
       : RefCountingAlgebra (f), s (f.s)  {}
 
    LookupFieldBB& operator=(const LookupFieldBB&);
-   
+
    bool operator== (const LookupFieldBB &)  const;
 
    unsigned getCharacteristic() const
@@ -200,13 +210,13 @@ public:
 
    void print (std::ostream &o, const type& x) const
       { Private::printNumberSuffix (o, x, size()); }
-   void printShort (std::ostream &o, const type& x) const 
+   void printShort (std::ostream &o, const type& x) const
       { Private::printNumber (o, x); }
-   void printShort (std::ostream &o, const type& x, PrintShortFlag) const 
+   void printShort (std::ostream &o, const type& x, PrintShortFlag) const
       { Private::printNumber (o, x); }
 
    void dump (std::ostream &) const;
-   
+
    // Change tables
 
    void setMul (T, T, T);
@@ -262,7 +272,7 @@ public:
    unsigned extensionDegree() const  { return getExtensionDegree(); }
 
    void dump (std::ostream &) const;
-   
+
    // Change tables
 
    void setAdd (T, T, T);
@@ -448,7 +458,7 @@ protected:
       : LookupVectorSpaceBB (r) {}
 
    void dump (std::ostream &, unsigned) const;
-   
+
 public:
 
    typedef T type;

@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation "qrnsequence.h"
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 /**
  *  makeQRNSequence()
@@ -198,10 +200,11 @@ GMGen* L::Make::generatorMatrixGen (int n, unsigned dim)
     *
     *  xx
     *  |
-    *  \____ 00 Faure (base >= dim)
+    *  \____ 00 Faure (prime base >= dim)
     *        01 Sobol (base = 2)
     *        06 Niederreiter / Xing
     *        10 ShiftNet
+    *        12 Faure (prime power base >= dim)
     *        xx base of Niederreiter Matrix
     */
 
@@ -230,6 +233,14 @@ GMGen* L::Make::generatorMatrixGen (int n, unsigned dim)
    {
       std::auto_ptr<GM2> p (generatorMatrix2 (4, dim));
       return new GMGen (*p, copy);
+   }
+   if (n == 12)
+   {
+      unsigned pp = dim;
+      while (! Prime::isPrimePower (pp))  ++pp;
+      GMGen* p = new GMGen (pp, dim);
+      initFaure (*p);
+      return p;
    }
    else if (n >= 1 && n < 100)
    {
@@ -260,36 +271,30 @@ const char* L::Make::getGeneratorMatrixGenName (int n)
     *        xx base of Niederreiter Matrix
     */
 
-   static char s[100];
-
    switch (n)
    {
    case  0:  return "Faure";
    case  1:  return "Sobol";
    case  6:  return "NiederreiterXing";
    case 10:  return "ShiftNet";
+   case 12:  return "Faure (prime power base)";
    }
 
    if (n >= 1 && n < 100)
    {
-      int base = n % 100;
+      unsigned prime, power;
 
-      try
+      if (Prime::isPrimePower (n, prime, power))
       {
-         unsigned prime, power;
-         Prime::factorPrimePower (base, prime, power);
-      }
-      catch (NotAPrimePower &)
-      {
-         throw GeneratorMatrixDoesNotExist (n);
-      }
+         static char s[100];
 
-      std::ostringstream ss;
-      ss << generatorNames [1] << "_base" << base;
+         std::ostringstream ss;
+         ss << generatorNames [1] << "_base" << n;
 
-      std::string str = ss.str();
-      strcpy (s, str.c_str());
-      return s;
+         std::string str = ss.str();
+         strcpy (s, str.c_str());
+         return s;
+      }
    }
 
    throw GeneratorMatrixDoesNotExist (n);
@@ -317,7 +322,7 @@ L::QRNSequence* L::Make::qrnSequence (int n, const Hypercube &h)
     *   | |
     *   | \__ Generator Matrix 2
     *   |
-    *   \____ 
+    *   \____
     *         1 - Normal
     *         2 - Gray-Code
     */
@@ -516,7 +521,7 @@ L::QRNSequence* L::Make::qrnSequence (int n, const Hypercube &h)
    switch (n)
    {
    case 9000: return new QRNSequenceT<Halton> (h);
-            
+
    default: throw QRNSequenceDoesNotExist (n);
    }
 }
@@ -618,7 +623,7 @@ const char* L::Make::getQrnSequenceName (int n)
    switch (n)
    {
    case 9000: return "Halton";
-            
+
    default: throw QRNSequenceDoesNotExist (n);
    }
 }
@@ -658,7 +663,7 @@ L::QRNSequence* L::Make::qrnNet (int n, const Hypercube &h, Index size)
     *   |\___ 0 - Truncate
     *   |     1 - Center
     *   |     2 - Full
-    *   |     
+    *   |
     *   |     5 - Add equidistributed coordinate
     *   |
     *   \____ 0 - Index 0
@@ -773,7 +778,7 @@ L::QRNSequence* L::Make::qrnNet (int n, const Hypercube &h, Index size)
    switch (n)
    {
    case 9000: return new QRNSequenceT<Halton> (h);
-            
+
    default: throw QRNSequenceDoesNotExist (n);
    }
 }
@@ -802,7 +807,7 @@ const char* L::Make::getQrnNetName (int n)
     *   |\___ 0 - Truncate
     *   |     1 - Center
     *   |     2 - Full
-    *   |     
+    *   |
     *   |     5 - Add equidistributed coordinate
     *   |
     *   \____ 0 - Index 0
@@ -857,7 +862,7 @@ const char* L::Make::getQrnNetName (int n)
    switch (n)
    {
    case 9000: return "Halton";
-            
+
    default: throw QRNSequenceDoesNotExist (n);
    }
 }

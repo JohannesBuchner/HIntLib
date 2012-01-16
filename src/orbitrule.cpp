@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -28,6 +28,8 @@
 #pragma implementation
 #endif
 
+#define HINTLIB_LIBRARY_OBJECT
+
 #include <HIntLib/orbitrule.h>
 #include <HIntLib/counter.h>
 
@@ -37,7 +39,7 @@ using L::real;
 real L::OrbitRule::evalRRR0_0fs (Integrand &f, const real*c, const real* r)
 {
    real sum = 0;
- 
+
    for (unsigned i = 0; i != dim - 2; ++i)
    {
       p[i] = c[i] - r[i];
@@ -52,7 +54,7 @@ real L::OrbitRule::evalRRR0_0fs (Integrand &f, const real*c, const real* r)
             // position i, j, and k.
             // This is done is a Gray Code ordering, so only one coordinate
             // has to be recalculated for every point
- 
+
                                                 p[k] = c[k]-r[k]; sum += f(p);
             p[i] = c[i]+r[i];                                     sum += f(p);
                               p[j] = c[j]+r[j];                   sum += f(p);
@@ -61,21 +63,21 @@ real L::OrbitRule::evalRRR0_0fs (Integrand &f, const real*c, const real* r)
             p[i] = c[i]+r[i];                                     sum += f(p);
                               p[j] = c[j]-r[j];                   sum += f(p);
             p[i] = c[i]-r[i];                                     sum += f(p);
- 
+
             p[k] = c[k];    // Done with k  ->  Restore p [k]
          }
          p[j] = c[j];     // Done with j  ->  Restore p [j]
       }
       p[i] = c[i];        // Done with i  ->  Restore p [i]
    }
- 
+
    return sum;
 }
 
 real L::OrbitRule::evalRRRR0_0fs (Integrand &f, const real*c, const real* r)
 {
    real sum = 0;
- 
+
    for (unsigned i = 0; i != dim - 3; ++i)
    {
       p[i] = c[i] - r[i];
@@ -96,7 +98,7 @@ real L::OrbitRule::evalRRRR0_0fs (Integrand &f, const real*c, const real* r)
                // has to be recalculated for each point
 
                p[l] = c[l] - r[l]; sum += f(p);
-               p[i] = c[i] + r[i]; sum += f(p); 
+               p[i] = c[i] + r[i]; sum += f(p);
                p[j] = c[j] + r[j]; sum += f(p);
                p[i] = c[i] - r[i]; sum += f(p);
                p[k] = c[k] + r[k]; sum += f(p);
@@ -110,7 +112,7 @@ real L::OrbitRule::evalRRRR0_0fs (Integrand &f, const real*c, const real* r)
                p[k] = c[k] - r[k]; sum += f(p);
                p[i] = c[i] + r[i]; sum += f(p);
                p[j] = c[j] - r[j]; sum += f(p);
-               p[i] = c[i] - r[i]; sum += f(p); 
+               p[i] = c[i] - r[i]; sum += f(p);
 
                p[l] = c[l]; // Done with l  ->  Restore p [l]
             }
@@ -120,7 +122,7 @@ real L::OrbitRule::evalRRRR0_0fs (Integrand &f, const real*c, const real* r)
       }
       p[i] = c[i];          // Done with i  ->  Restore p [i]
    }
- 
+
    return sum;
 }
 
@@ -131,49 +133,49 @@ real L::OrbitRule::evalRRRR0_0fs (Integrand &f, const real*c, const real* r)
  *  A gray-code ordering is used to minimize the number of coordinate updates
  *  in p.
  */
- 
+
 real L::OrbitRule::evalR_Rfs (Integrand &f, const real* c, const real* r)
 {
    real sum = 0;
- 
+
    // This bitmap is used to store the signes of the current point
    // 0 bit = +
    // 1 bit = -
- 
+
    Index signs = 0;
- 
+
    // We start with the point where r is ADDed in every coordinate
    //   (This implies signs=0)
- 
+
    for (unsigned i = 0; i != dim; ++i)   p [i] = c [i] + r [i];
- 
+
    // Loop through the points in gray-code ordering
- 
+
    for (Index i = 0; ; ++i)
    {
       // evaluate function at the current point
- 
+
       sum += f (p);
- 
+
       // determine, which sign has to be flipped
- 
+
       unsigned d = ls0(i);
- 
+
       // Do we have this coordinate? If not, we are done.
- 
+
       if (d >= dim)  break;
- 
+
       // Swith the sign for this coordinate and remember it
- 
+
       Index mask = Index(1) << d;
- 
+
       signs ^= mask;
- 
+
       // Use the new sign to determine if we do an addition or an subtraction
- 
+
       p [d] = (signs & mask) ? c [d] - r [d] : c [d] + r [d];
    }
- 
+
    return sum;
 }
 

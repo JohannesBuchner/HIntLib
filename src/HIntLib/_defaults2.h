@@ -20,7 +20,7 @@
   typedef float real;
 #elif HINTLIB_REAL == 2
   typedef double real;
-#elif HINTLIB_REAL == 3
+#elif HINTLIB_REAL == 3 && defined HINTLIB_HAVE_LONG_DOUBLE
   typedef long double real;
 #else
   #error "Value of HINTLIB_REAL is invalid.\nIt must be either 1 (float), 2 (double), or 3 (long double)!"
@@ -111,6 +111,17 @@
 
 #ifndef HINTLIB_PRECALCULATED_FIELD_MAX_SIZE
    #define HINTLIB_PRECALCULATED_FIELD_MAX_SIZE 32
+#endif
+
+/**
+ *  Arrays in Cygwin DLLs
+ */
+
+#if (defined(_WIN32) || defined(__CYGWIN__)) && \
+    !(defined(HINTLIB_LIBRARY_OBJECT) || defined(HINTLIB_STATIC_LIB_ONLY))
+#define HINTLIB_IMPORT __declspec(dllimport)
+#else
+#define HINTLIB_IMPORT
 #endif
 
 }  // namespace HIntLib

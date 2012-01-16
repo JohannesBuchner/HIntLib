@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -31,11 +31,13 @@
  *  It is also presented in
  *     A. H. Stoud.  Approximate Calculation of Multiple Integrals (1971)
  *  as formula Cn: 5-3
- */                                                                             
+ */
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/rule5stroud.h>
 
@@ -105,13 +107,13 @@ real L::Rule5Stroud::getSumAbsWeight() const
    // Multiply each weight with the number of sampling points it is used for.
    // Don't forget to take the absolute value for weights that meight be
    // negative
- 
+
    return   num0_0    () * abs (b0)
       + 2 * numRR0_0s () * b1
       +     numR0_0fs () * (abs (b2) + 2 * abs (b4))
       + 2 * numRS0_0s () * b3;
 }
- 
+
 
 /**
  *  Do the actual function evaluation

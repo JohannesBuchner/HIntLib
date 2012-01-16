@@ -62,7 +62,7 @@ namespace Private
       static unsigned characteristic()  { return 0; }
 
       // Additive arithmetic
-   
+
       static T add (const T& a, const T& b)  { return T (a.x +  b.x); }
       static void addTo (T& a,    const T& b)  { a.x += b.x; }
 
@@ -76,7 +76,7 @@ namespace Private
       static void times2 (T& a)     { a.x += a.x; }
 
       // Multiplicative arithmetic
-   
+
       static T mul (const T& a, const T& b)  { return T (a.x * b.x); }
       static void mulBy (T& a,    const T& b)  { a.x *= b.x; }
 
@@ -85,7 +85,7 @@ namespace Private
 
       static T  sqr (const T& a)  { return T (a.x * a.x); }
       static void square (T& a)     { a.x *= a.x; }
-   
+
       // I/O
 
       static void printSuffix (std::ostream&)  {}
@@ -188,7 +188,7 @@ class RealField : public Private::NumberField<Real<T> >, public Private::RRing
 {
 public:
    typedef typename Private::NumberField<Real<T> >::type type;
-   typedef real_tag algebra_category; 
+   typedef real_tag algebra_category;
 
    static type one()  { return T(1); }
    static type element(unsigned);
@@ -232,29 +232,28 @@ public:
 
 private:
    typedef std::complex<T> TT;
-   static const type o;
 
 public:
    typedef RealField<T> real_field;
    typedef typename real_field::type real_type;
 
-   typedef complex_tag algebra_category; 
+   typedef complex_tag algebra_category;
 
    static real_field getRealField()  { return real_field(); }
 
-   static const type& one()  { return o; }
+   static type one()  { return TT(T(1)); }
    static type element(unsigned);
    static unsigned index (const type& r);
 
    static bool is0 (const type& a)
       { return abs(a.x) < std::numeric_limits<T>::epsilon() * 100; }
-   static bool is1 (const type& a)  { return approxc (a.x, o.x); }
+   static bool is1 (const type& a)  { return approxc (a.x, TT(T(1))); }
 
    static type times (const type& a, unsigned k)
       { return type (a.x * TT(T(k))); }
 
-   static type recip (const type& a)  { return type (o.x / a.x); }
-   static void reciprocal (type& a)  { a.x = o.x / a.x; }
+   static type recip (const type& a)  { return type (TT(T(1)) / a.x); }
+   static void reciprocal (type& a)  { a.x = TT(T(1)) / a.x; }
 
    static type power (const type&, unsigned);
 
@@ -278,8 +277,8 @@ ComplexField<T>::power (const type& a, unsigned k)
    return std::pow (a.x, int(k));
 }
 
+#ifdef HINTLIB_HAVE_LONG_DOUBLE
 #ifdef HINTLIB_COMPLEX_POW_BUG
-
 namespace Private
 {
    std::complex<long double>
@@ -293,6 +292,7 @@ ComplexField<long double>::power (const type& a, unsigned k)
 {
    return Private::complexPower (a.x, k);
 }
+#endif
 #endif
 
 }  // namespace HIntLib

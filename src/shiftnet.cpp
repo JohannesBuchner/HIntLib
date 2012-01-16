@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/shiftnet.h>
 
@@ -59,7 +61,7 @@ namespace
     *     Statistics. Springer, 1997.
     *
     * We use the numbers appearing in this paper with the following exceptions:
-    * 
+    *
     * - For m=21, the second-to-last number is 6 instead of 62. This results in
     *   the same t value (t=11), but is the lexicographically first solution
     *   with this t value (as are all other entries).
@@ -405,7 +407,7 @@ namespace
    };
 
    // The "list of lists"
-   
+
    struct SNLists
    {
       unsigned num;

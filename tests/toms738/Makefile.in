@@ -425,10 +425,12 @@ uninstall-am: uninstall-info-am
 
 gftabs.dat: gfarit@EXEEXT@
 	@echo "Creating \"gftabs.dat\""
+	test -x ./gfarit@EXEEXT@ || sleep 1
 	./gfarit@EXEEXT@
 
 irrtabs.dat: gfplys@EXEEXT@
 	@echo "Creating \"irrtabs.dat\""
+	test -x ./gfplys@EXEEXT@ || sleep 1
 	./gfplys@EXEEXT@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

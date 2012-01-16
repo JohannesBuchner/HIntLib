@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -22,13 +22,20 @@
 #pragma implementation
 #endif
 
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/generatormatrix.h>
 #include <HIntLib/hlmath.h>
 #include <HIntLib/exception.h>
+
+#ifdef HINTLIB_HAVE_OSTREAM
+#include <ostream>
+#else
+#include <iostream>
+#endif
+
+#include <iomanip>
+#include <algorithm>
 
 namespace L = HIntLib;
 
@@ -80,13 +87,13 @@ unsigned L::GMCopy::getTotalPrec (const GeneratorMatrix& m, unsigned max) const
       return m.getTotalPrec();
 }
 
-unsigned L::GMCopy::getVectorization 
+unsigned L::GMCopy::getVectorization
    (const GeneratorMatrix& m, unsigned /* bits */) const
 {
    switch (vecValue)
    {
    case -1: return 1;
-   case -2: return m.getVectorization(); 
+   case -2: return m.getVectorization();
    default: return vecValue;
    };
 }
@@ -207,7 +214,7 @@ void L::GeneratorMatrix::dumpRowVector (
       std::ostream &o, unsigned d, unsigned b) const
 {
    unsigned size = (base < 10) ? 1 : logInt (base, 10u) + 2;
-   
+
    for (unsigned r = 0; r < getM(); ++r)
    {
       o << std::setw (size) << getDigit (d,r,b);
@@ -223,7 +230,7 @@ void L::GeneratorMatrix::dumpColumnVector (
       std::ostream &o, unsigned d, unsigned r) const
 {
    unsigned size = (base < 10) ? 1 : logInt (base, 10u) + 2;
-   
+
    for (unsigned b = 0; b < getTotalPrec(); ++b)
    {
       o << std::setw (size) << getDigit (d,r,b);

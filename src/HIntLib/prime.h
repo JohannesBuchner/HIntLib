@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -84,8 +84,8 @@ private:
    template<class T> static bool doPrimeTest        (T n)  HINTLIB_GNU_CONST;
    template<class T> static T    searchForNextPrime (T n)  HINTLIB_GNU_CONST;
 
-   static const unsigned short nextPrimeArray [MAX_N + 1];
-   static const unsigned short nthPrimeArray [NUM_PRIMES];
+   HINTLIB_IMPORT static const unsigned short nextPrimeArray [MAX_N + 1];
+   HINTLIB_IMPORT static const unsigned short nthPrimeArray [NUM_PRIMES];
 
    static void throwPrimeNumberNth (unsigned)  HINTLIB_GNU_NORETURN;
 };
@@ -108,7 +108,7 @@ bool isPrimitiveRoot (unsigned a, unsigned p);
  *     isPrime(16) = false
  *     isPrime(17) = true
  */
- 
+
 template<class T>
 inline
 bool HIntLib::Prime::test (T n)
@@ -124,7 +124,7 @@ template<> inline bool HIntLib::Prime::test (unsigned short n)
 {
    return test (unsigned (n));
 }
-  
+
 
 /**
  *  next()

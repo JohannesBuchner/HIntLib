@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -31,7 +31,9 @@
 
 #ifdef __GNUG__
 #pragma implementation
-#endif                                                                          
+#endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/rule2ionescu.h>
 
@@ -76,13 +78,13 @@ real L::Rule2Ionescu::eval (Integrand &f, const Hypercube &h)
    p[0] = h.getUpperBound (0);
    p[1] = h.getLowerBound (1);
    sum += w1_12 * f(p);
-   
+
    p[0] = h.getLowerBound (0);
    sum += 0.25 * f(p);
-   
+
    p[1] = h.getUpperBound (1);
    sum += w1_12 * f(p);
-   
+
    p[0] = h.getUpperBound (0);
    sum = sum + w7_12 * f(p)
 

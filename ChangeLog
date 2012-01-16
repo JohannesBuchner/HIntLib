@@ -2,10 +2,26 @@
 Change Log
 ==========
 
-0.0.7	March 8, 2004		One Year Anniversary Edition
+0.0.8	March 16, 2004
 
    wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
-     41625  139891 1028243 insgesamt
+     41834  139623 1028261 total
+
+- With GCC 2.95.x "#include<HIntLib/hlmath.h>" and "using namespace HIntLib;"
+  does not cause ambiguities for standard math functions.
+  This problem was introduced with HIntLib 0.0.7.
+- HIntLib compiles on platforms which do not provide math functions for long
+  double (for instance for GCC 2.95.x on Cygwin).
+  This problem was introduced with HIntLib 0.0.7.
+- More sensitive handling of Cygwin ld --enable-auto-import feature
+- Fixed executable-not-ready-for-execution problem on Cygwin
++ Faure sequence can be created for prime power base (not only primes)
+
+
+0.0.7	March 9, 2004		One Year Anniversary Edition
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     41625  139891 1028243 total
 
 Algebraic Structures:
 
@@ -50,6 +66,9 @@ Miscellaneous:
   consistently on all systems we have access to.
 - Workaround for bug in equal() in the SGI STL
 - Workaround for bug in std::pow(std::complex<long double>) in GCC 3.x library
+/ mymath.h -> hlmath.h
+/ myalgorithm.h -> hlalgorithm.h
+/ mympi.h -> hlmpi.h
 
 
 0.0.6   December 30, 2003

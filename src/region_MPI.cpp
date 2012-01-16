@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -23,6 +23,8 @@
 #pragma implementation "esterr.h"
 #endif
 
+#define HINTLIB_LIBRARY_OBJECT
+
 #include <HIntLib/hlmpi.h>
 
 #include "region.cpp"
@@ -34,15 +36,15 @@ MPI_Datatype L::EstErr::getMPIDatatype () const
    MPI_Datatype type   = MPIType<real>::type;
    int          length = 2;
    MPI_Aint     disp;
- 
+
    EstErr *p = const_cast<EstErr*> (this);
- 
+
    MPI_Address (p, &disp);
- 
+
    MPI_Datatype newType;
- 
+
    MPI_Type_struct (1, &length, &disp, &type, &newType);
- 
+
    return newType;
 }
 
@@ -54,31 +56,31 @@ void L::Region::initAfterReceive ()
    ee.initAfterReceive ();
    h.initAfterReceive ();
 }
- 
+
 MPI_Datatype L::Region::getMPIDatatype () const
 {
    MPI_Datatype types  [4];
    int          length [4] = { 1, 1, 1, 1 };
    MPI_Aint     disp   [4];
- 
+
    Region *p = const_cast<Region*> (this);
- 
+
    types [0] = MPI_UNSIGNED; MPI_Address (&p->splitDim,    disp + 0);
    types [1] = MPI_UNSIGNED; MPI_Address (&p->numOfSplits, disp + 1);
- 
+
    types [2] = h.getMPIDatatype ();
    MPI_Address (MPI_BOTTOM, disp + 2);
- 
+
    types [3] = ee.getMPIDatatype ();
    MPI_Address (MPI_BOTTOM, disp + 3);
- 
+
    MPI_Datatype newType;
- 
+
    MPI_Type_struct (4, length, disp, types, &newType);
- 
+
    MPI_Type_free (&types [2]);
    MPI_Type_free (&types [3]);
- 
+
    return newType;
 }
 
@@ -86,28 +88,28 @@ L::Region::Region (unsigned dim, RecvBuffer &b)
    : h (dim)
 {
    MPI_Datatype t = getMPIDatatype ();
- 
+
    MPI_Type_commit (&t);
- 
+
    b.unpack (MPI_BOTTOM, 1, t);
- 
+
    initAfterReceive ();
- 
+
    MPI_Type_free (&t);
 }
- 
+
 int L::Region::recv (int source, int tag, MPI_Comm comm, MPI_Status *status)
 {
    MPI_Datatype t = getMPIDatatype ();
- 
+
    MPI_Type_commit (&t);
- 
+
    int res = MPI_Recv (MPI_BOTTOM, 1, t, source, tag, comm, status);
- 
+
    initAfterReceive ();
- 
+
    MPI_Type_free (&t);
- 
+
    return res;
 }
 
@@ -124,28 +126,28 @@ L::RecvBuffer& L::operator>> (RecvBuffer &b, Region &r)
 int L::Region::send (int dest, int tag, MPI_Comm comm) const
 {
    MPI_Datatype t = getMPIDatatype ();
- 
+
    MPI_Type_commit (&t);
- 
+
    int res = MPI_Send (MPI_BOTTOM, 1, t, dest, tag, comm);
- 
+
    MPI_Type_free (&t);
- 
+
    return res;
 }
- 
+
 int L::Region::isend (int dest, int tag, MPI_Comm comm) const
 {
    MPI_Request request;
    MPI_Datatype t = getMPIDatatype ();
- 
+
    MPI_Type_commit (&t);
- 
+
    int res = MPI_Isend (MPI_BOTTOM, 1, t, dest, tag, comm, &request);
- 
+
    MPI_Type_free (&t);
    MPI_Request_free (&request);
- 
+
    return res;
 }
 

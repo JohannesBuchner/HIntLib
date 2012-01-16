@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -30,6 +30,8 @@
 
 #include <memory>
 
+#define HINTLIB_LIBRARY_OBJECT
+
 #include <HIntLib/hlmpi.h>
 
 #include <HIntLib/adaptintegratorlocallist.h>
@@ -58,14 +60,14 @@ L::AdaptIntegratorLocalList::AdaptIntegratorLocalList (
    MPI_Comm_size (comm, &nodes);
 
    // Determine topology
- 
+
    if (maxDimension == 1)
    {
       size [0] = nodes;
       dimension = 1;
    }
    else
-   { 
+   {
       for (int i = 1; i * i <= nodes; ++i)
       {
          if (nodes % i == 0)
@@ -134,7 +136,7 @@ L::AdaptIntegratorLocalList::AdaptIntegratorLocalList (
             size [0] = size [1] = 3;
             size [2] = 2;
             dimension = 3;
-            break; 
+            break;
          }
          if (nodes == 27)
          {
@@ -183,7 +185,7 @@ void L::AdaptIntegratorLocalList::doExchange2 (
    MPI_Status status;
 
    // Exchange total error and error of worst region
- 
+
    struct
    {
       real errorTotal;
@@ -192,7 +194,7 @@ void L::AdaptIntegratorLocalList::doExchange2 (
 
    sendBuffer.errorTotal       = rc.getError ();
    sendBuffer.errorWorstRegion = rc.getTopError ();
- 
+
    MPI_Sendrecv (
       &sendBuffer,    2, MPIType<real>::type, succ [dir], ERROR_CMP,
       &receiveBuffer, 2, MPIType<real>::type, pred [dir], ERROR_CMP,
@@ -208,11 +210,11 @@ void L::AdaptIntegratorLocalList::doExchange2 (
           <= receiveBuffer.errorTotal)  return;
 
       // Create output buffer
- 
+
       SendBuffer buffer (comm);
- 
+
       // Pack regions into Buffer
- 
+
       while (   rc.size () >= 2
              && receiveBuffer.errorTotal + 2 * rc.getTopError ()
               < rc.getError ())
@@ -222,7 +224,7 @@ void L::AdaptIntegratorLocalList::doExchange2 (
          if (! (buffer << *r)) break;
 
          receiveBuffer.errorTotal += r->getError ();
- 
+
          rc.pop ();
          delete r;
       }
@@ -230,7 +232,7 @@ void L::AdaptIntegratorLocalList::doExchange2 (
       // Send it
 
       buffer.send (pred [dir], REGIONS);
-   } 
+   }
    else
    {
       if (receiveBuffer.errorTotal - 2 * receiveBuffer.errorWorstRegion
@@ -239,7 +241,7 @@ void L::AdaptIntegratorLocalList::doExchange2 (
       // Receive data regions and store them in Region Collection
 
       RecvBuffer buffer (comm, succ [dir], REGIONS);
- 
+
       while (! buffer.empty ())  rc.push (new Region (dim, buffer));
    }
 }
@@ -264,26 +266,26 @@ void L::AdaptIntegratorLocalList::doExchange (
    }
 
    // Create output buffer and pack regions into it
- 
+
    SendBuffer outBuffer (comm);
 
    while (   rc.size () >= 2
           && otherError + 2 * rc.getTopError () < rc.getError ())
    {
       Region *r = rc.top ();
- 
+
       if (! (outBuffer << *r))  break;
 
       otherError += r->getError ();
- 
+
       rc.pop ();
       delete r;
    }
 
    // Exchange Regions
- 
+
    RecvBuffer inBuffer (comm);
- 
+
    bufferSendRecv (outBuffer, pred [dir], REGIONS,
                    inBuffer,  succ [dir], REGIONS);
 
@@ -299,32 +301,32 @@ void L::AdaptIntegratorLocalList::doExchangeOld (
    MPI_Status status;
 
    Region *p = rc.top ();
- 
+
    Region old (*p);
- 
+
    MPI_Datatype oldType = old.getMPIDatatype ();
    MPI_Datatype newType = p-> getMPIDatatype ();
 
    MPI_Type_commit (&oldType);
    MPI_Type_commit (&newType);
- 
+
    MPI_Sendrecv (
       MPI_BOTTOM, 1, oldType, succ [dir], REGIONS,
       MPI_BOTTOM, 1, newType, pred [dir], REGIONS,
       comm, &status);
- 
+
    p->initAfterReceive ();
- 
+
    MPI_Type_free (&oldType);
    MPI_Type_free (&newType);
- 
-   rc.push (p);                                                         
+
+   rc.push (p);
 }
 
 
 L::Integrator::Status L::AdaptIntegratorLocalList::integrate (
    Integrand &f, const Hypercube &h, Index maxEvaluations,
-   real reqAbsError, real reqRelError, EstErr &finalEE) 
+   real reqAbsError, real reqRelError, EstErr &finalEE)
 {
    checkDimension(h, f);
 

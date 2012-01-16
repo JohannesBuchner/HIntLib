@@ -84,6 +84,9 @@
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
+/* Define to 1 if the system has the type `long double'. */
+#undef HAVE_LONG_DOUBLE
+
 /* Define to 1 if the system has the type `long long int'. */
 #undef HAVE_LONG_LONG_INT
 
@@ -218,6 +221,9 @@
 
 /* The directory which holds the uninstalled data files */
 #undef SRCDATADIR
+
+/* Define if only a static library is built on Cygwin */
+#undef STATIC_LIB_ONLY
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

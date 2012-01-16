@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -31,7 +31,9 @@
 
 #ifdef __GNUG__
 #pragma implementation
-#endif                                                                          
+#endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/rule2thacher.h>
 
@@ -91,7 +93,7 @@ real L::Rule2Thacher::eval (Integrand &f, const Hypercube &h)
       for (unsigned i = 0; i < j; ++i)      p [i] = center[i] + r * width[i];
       p[j] = center[j] + width [j];
       for (unsigned i = j+1; i < dim; ++i)  p [i] = center[i] + r * width[i];
-      
+
       sum -= r * f(p);
 
       p[j] = center[j] - width [j];

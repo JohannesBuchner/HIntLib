@@ -18,6 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#define HINTLIB_LIBRARY_OBJECT
+
 #include <HIntLib/make.h>
 
 #include <HIntLib/pseudoembeddedrule.h>
@@ -93,7 +95,7 @@ const RuleRecord* lookup (int n)
    {
       throw L::Make::CubatureRuleDoesNotExist (n);
    }
-   
+
    return p;
 }
 
@@ -218,13 +220,13 @@ EmbeddedRuleFactory* L::Make::embeddedRuleFactory (int rule)
    {
       return makePERF (rulePairs [rule][0], rulePairs [rule][1]);
    }
-   
+
    switch (rule)
    {
    case 11: return makePDERF (9, 6, 7);    // Phillips / Hammer / Stroud
 
    case 21: return Rule75GenzMalik::getFactory();
-        
+
    default: throw CubatureRuleDoesNotExist (rule);
    }
 }
@@ -241,7 +243,7 @@ const char* L::Make::getEmbeddedRuleFactoryName (int rule)
    case 11: return namePDERF (9, 6, 7);    // Phillips / Hammer / Stroud
 
    case 21: return "7/5-GenzMalik";
-        
+
    default: throw CubatureRuleDoesNotExist (rule);
    }
 }

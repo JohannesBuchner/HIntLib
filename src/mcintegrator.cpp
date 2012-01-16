@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -30,6 +30,8 @@
 #if defined __GNUG__ && ! defined HINTLIB_PARALLEL
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/mcintegrator.h>
 
@@ -75,7 +77,7 @@ L::Integrator::Status L::HINTLIB_NAME(MCIntegrator)::integrate (
    ps->select (slb.getRank(), slb.getSize());
    #endif
    ps->integrate (point, f, slb.getRange(), stat);
-   
+
    // In parallel mode, collect results from all nodes
 
    #ifdef HINTLIB_PARALLEL
@@ -90,7 +92,7 @@ L::Integrator::Status L::HINTLIB_NAME(MCIntegrator)::integrate (
    Status status = checkRequestedError (ee, reqAbsError, reqRelError);
 
    return (status == ERROR) ? MAX_EVAL_REACHED : status;
-} 
+}
 
 #undef HINTLIB_NAME
 

@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -22,13 +22,19 @@
 #pragma implementation
 #endif
 
-#include <iostream>
+#define HINTLIB_LIBRARY_OBJECT
+
 #include <iomanip>
 #include <algorithm>
 
 #include <HIntLib/generatormatrix2.h>
 #include <HIntLib/exception.h>
 
+#ifdef HINTLIB_HAVE_OSTREAM
+#include <ostream>
+#else
+#include <iostream>
+#endif
 
 namespace L = HIntLib;
 
@@ -126,7 +132,7 @@ void L::GeneratorMatrix2Base::CArrayDump (std::ostream &o) const
    if (vec > 32)       suffix = "ull";
    else if (vec > 16)  suffix = "ul";
    else                suffix = "u";
-   
+
    o << "{\n";
 
    for (unsigned r = 0; r < m; ++r)

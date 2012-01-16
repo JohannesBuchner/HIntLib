@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/realfield.h>
 
@@ -173,13 +175,6 @@ P::operator<< (std::ostream &o, const CRing&)
 
 
 /**
- *  o
- */
-
-template<typename T>
-const typename L::ComplexField<T>::type L::ComplexField<T>::o (T(1));
-
-/**
  *  element()
  */
 
@@ -227,6 +222,7 @@ L::approxc (const std::complex<T>& a, const std::complex<T>& b, T factor)
 }
 
 
+#ifdef HINTLIB_HAVE_LONG_DOUBLE
 #ifdef HINTLIB_COMPLEX_POW_BUG
 /**
  *  power()
@@ -247,6 +243,7 @@ HIntLib::Private::complexPower (const std::complex<long double>& a, unsigned k)
 
    return y;
 }
+#endif
 #endif
 
 
@@ -374,7 +371,6 @@ namespace HIntLib
 #undef HINTLIB_INSTANTIATE
 
 #define HINTLIB_INSTANTIATE(X) \
-   template const ComplexField<X>::type ComplexField<X>::o; \
    template ComplexField<X>::type ComplexField<X>::element(unsigned); \
    template unsigned ComplexField<X>::index(const type&); \
    template unsigned ComplexField<X>::order(const type&); \

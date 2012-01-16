@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -22,13 +22,15 @@
 #pragma implementation
 #endif
 
+#define HINTLIB_LIBRARY_OBJECT
+
+#include <HIntLib/integerring.h>
+
 #ifdef HINTLIB_HAVE_OSTREAM
   #include <ostream>
 #else
   #include <iostream>
 #endif
-
-#include <HIntLib/integerring.h>
 
 namespace L = HIntLib;
 namespace P = HIntLib::Private;

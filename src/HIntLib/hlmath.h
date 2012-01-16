@@ -68,10 +68,12 @@ namespace HIntLib
       return HINTLIB_ABS_FOR_DOUBLE (x);
    }
 
+ #ifdef HINTLIB_HAVE_LONG_DOUBLE
    inline long double abs (const long double& x)
    {
       return HINTLIB_ABS_FOR_LONG_DOUBLE (x);
    }
+ #endif
 
    inline int abs (const int& x)
    {
@@ -114,27 +116,12 @@ namespace HIntLib
  // float
 
  #if HINTLIB_SIN_FOR_FLOAT_NUM == 1
-   inline float sin  (const float& x) { return ::std::sin  (x); }
-   inline float cos  (const float& x) { return ::std::cos  (x); }
-   inline float sqrt (const float& x) { return ::std::sqrt (x); }
-   inline float log  (const float& x) { return ::std::log  (x); }
-   inline float floor(const float& x) { return ::std::floor(x); }
-   inline float ceil (const float& x) { return ::std::ceil (x); }
-   inline float modf (const float& x, float* y) { return ::std::modf (x, y); }
-   inline float pow  (const float& x, const float& y)
-      { return ::std::pow (x, y); }
-   inline float pow  (const float& x, int k) { return ::std::pow (x, k); }
+   #undef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+   #define HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
  #else
  #if HINTLIB_SIN_FOR_FLOAT_NUM == 2
-   inline float sin  (const float& x) { return ::sin  (x); }
-   inline float cos  (const float& x) { return ::cos  (x); }
-   inline float sqrt (const float& x) { return ::sqrt (x); }
-   inline float log  (const float& x) { return ::log  (x); }
-   inline float floor(const float& x) { return ::floor(x); }
-   inline float ceil (const float& x) { return ::ceil (x); }
-   inline float modf (const float& x, float* y) { return ::modf (x, y); }
-   inline float pow  (const float& x, const float& y) { return ::pow (x, y); }
-   inline float pow  (const float& x, int k) { return ::pow (x, k); }
+   #undef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+   #define HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
  #else
  #if HINTLIB_SIN_FOR_FLOAT_NUM == 3
    inline float sin  (const float& x) { return ::std::sinf  (x); }
@@ -146,9 +133,8 @@ namespace HIntLib
    inline float modf (const float& x, float* y) { return ::std::modff (x, y); }
    inline float pow  (const float& x, const float& y)
       { return ::std::powf (x, y); }
-   inline float pow  (const float& x, int k)
-      { return ::std::powf (x, k); }
  #else
+ #if HINTLIB_SIN_FOR_FLOAT_NUM == 4
    inline float sin  (const float& x) { return ::std::sinf  (x); }
    inline float cos  (const float& x) { return ::std::cosf  (x); }
    inline float sqrt (const float& x) { return ::std::sqrtf (x); }
@@ -158,68 +144,23 @@ namespace HIntLib
    inline float modf (const float& x, float* y) { return ::std::modff (x, y); }
    inline float pow  (const float& x, const float& y)
       { return ::std::powf (x, y); }
-   inline float pow  (const float& x, int k)
-      { return ::std::powf (x, k); }
- #endif
- #endif
- #endif
-
- // double
-
- #if HINTLIB_SIN_FOR_DOUBLE_NUM == 1 || HINTLIB_SIN_FOR_DOUBLE_NUM == 3
-   inline double sin  (const double& x) { return ::std::sin  (x); }
-   inline double cos  (const double& x) { return ::std::cos  (x); }
-   inline double sqrt (const double& x) { return ::std::sqrt (x); }
-   inline double log  (const double& x) { return ::std::log  (x); }
-   inline double floor(const double& x) { return ::std::floor(x); }
-   inline double ceil (const double& x) { return ::std::ceil (x); }
-   inline double modf (const double& x, double* y) { return ::std::modf (x,y); }
-   inline double pow  (const double& x, const double& y)
-      { return ::std::pow (x, y); }
-   inline double pow  (const double& x, int k)
-      { return ::std::pow (x, k); }
  #else
-   inline double sin  (const double& x) { return ::sin  (x); }
-   inline double cos  (const double& x) { return ::cos  (x); }
-   inline double sqrt (const double& x) { return ::sqrt (x); }
-   inline double log  (const double& x) { return ::log  (x); }
-   inline double floor(const double& x) { return ::floor(x); }
-   inline double ceil (const double& x) { return ::ceil (x); }
-   inline double modf (const double& x, double* y) { return ::modf (x, y); }
-   inline double pow  (const double& x, const double& y)
-      { return ::pow (x, y); }
-   inline double pow  (const double& x, int k) { return ::pow (x, k); }
+   // for HINTLIB_SIN_FOR_FLOAT_NUM == 0, we do nothing
+ #endif
+ #endif
+ #endif
  #endif
 
  // long double
 
+ #ifdef HINTLIB_HAVE_LONG_DOUBLE
  #if HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 1
-   inline long double sin  (const long double& x) { return ::std::sin  (x); }
-   inline long double cos  (const long double& x) { return ::std::cos  (x); }
-   inline long double sqrt (const long double& x) { return ::std::sqrt (x); }
-   inline long double log  (const long double& x) { return ::std::log  (x); }
-   inline long double floor(const long double& x) { return ::std::floor(x); }
-   inline long double ceil (const long double& x) { return ::std::ceil (x); }
-   inline long double modf (const long double& x, long double* y)
-      { return ::std::modf (x, y); }
-   inline long double pow  (const long double& x, const long double& y)
-      { return ::std::pow (x, y); }
-   inline long double pow  (const long double& x, int k)
-      { return ::std::pow (x, k); }
+   #undef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+   #define HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
  #else
  #if HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 2
-   inline long double sin  (const long double& x) { return ::sin  (x); }
-   inline long double cos  (const long double& x) { return ::cos  (x); }
-   inline long double sqrt (const long double& x) { return ::sqrt (x); }
-   inline long double log  (const long double& x) { return ::log  (x); }
-   inline long double floor(const long double& x) { return ::floor(x); }
-   inline long double ceil (const long double& x) { return ::ceil (x); }
-   inline long double modf (const long double& x, long double* y)
-      { return ::modf (x, y); }
-   inline long double pow  (const long double& x, const long double& y)
-      { return ::pow (x, y); }
-   inline long double pow  (const long double& x, int k)
-      { return ::pow (x, k); }
+   #undef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+   #define HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
  #else
  #if HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 3
    inline long double sin  (const long double& x) { return ::std::sinl  (x); }
@@ -232,9 +173,8 @@ namespace HIntLib
       { return ::std::modfl (x, y); }
    inline long double pow  (const long double& x, const long double& y)
       { return ::std::powl (x, y); }
-   inline long double pow  (const long double& x, int k)
-      { return ::std::powl (x, k); }
  #else
+ #if HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 4
    inline long double sin  (const long double& x) { return ::std::sinl  (x); }
    inline long double cos  (const long double& x) { return ::std::cosl  (x); }
    inline long double sqrt (const long double& x) { return ::std::sqrtl (x); }
@@ -245,10 +185,48 @@ namespace HIntLib
       { return ::std::modfl (x, y); }
    inline long double pow  (const long double& x, const long double& y)
       { return ::std::powl (x, y); }
-   inline long double pow  (const long double& x, int k)
-      { return ::std::powl (x, k); }
+ #else
+   // for HINTLIB_SIN_FOR_LONG_DOUBLE_NUM == 0, we do nothing
  #endif
  #endif
+ #endif
+ #endif
+ #endif
+
+ // double
+
+ #if HINTLIB_SIN_FOR_DOUBLE_NUM == 1 || HINTLIB_SIN_FOR_DOUBLE_NUM == 3
+   #undef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+   #define HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+ #else
+   #undef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+   #define HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+ #endif
+
+ // Import functions using "using"
+
+ #ifdef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+   using ::std::sin;
+   using ::std::cos;
+   using ::std::sqrt;
+   using ::std::log;
+   using ::std::floor;
+   using ::std::ceil;
+   using ::std::modf;
+   using ::std::pow;
+   #undef HINTLIB_INCLUDE_STD_MATH_FUNCTIONS
+ #endif
+
+ #ifdef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
+   using ::sin;
+   using ::cos;
+   using ::sqrt;
+   using ::log;
+   using ::floor;
+   using ::ceil;
+   using ::modf;
+   using ::pow;
+   #undef HINTLIB_INCLUDE_GLOBAL_MATH_FUNCTIONS
  #endif
 
  #define HINTLIB_MN ::HIntLib::
@@ -399,7 +377,7 @@ template<class T> inline
 bool approx (T a, T b, T factor = 10.0)
 {
    return abs(a - b)
-        <= factor * std::numeric_limits<T>::epsilon() * (abs(a) + abs(b));
+       <= factor * std::numeric_limits<T>::epsilon() * (abs(a) + abs(b));
 }
 
 

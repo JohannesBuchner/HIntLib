@@ -22,6 +22,8 @@
 #pragma implementation
 #endif
 
+#define HINTLIB_LIBRARY_OBJECT
+
 #include <algorithm>
 #include <iomanip>
 
@@ -269,7 +271,7 @@ L::LookupFieldBase<T>::LookupFieldBase (unsigned _s, unsigned numData)
    }
 
    privSetPointers();
-} 
+}
 
 
 /**
@@ -298,7 +300,7 @@ void L::LookupFieldBase<T>::dump (std::ostream &o) const
    }
    o << '\n';
 }
-   
+
 
 /**
  *  power()
@@ -458,7 +460,7 @@ void L::LookupField<T>::dump (std::ostream &o) const
       o << '\n';
    }
 }
-   
+
 
 /**
  *  setAdd ()
@@ -537,7 +539,7 @@ L::LookupVectorSpaceBase<T,C>::LookupVectorSpaceBase
    {
       throw FIXME(__FILE__, __LINE__);
    }
-} 
+}
 
 
 /**
@@ -563,7 +565,7 @@ void L::LookupVectorSpaceBase<T,C>::dump (std::ostream &o, unsigned as) const
    }
    o << '\n';
 }
-   
+
 
 /******************  Lookup Vector Space /Pow2  ******************************/
 
@@ -617,7 +619,7 @@ L::LookupVectorSpace<T,C>::LookupVectorSpace
       for (unsigned j = 0; j < algebra.size(); ++j)
       {
          C s = algebra.element (j);
-        
+
          for (unsigned k = 0; k < dimension(); ++k)
          {
             cs[k] = algebra.mul (as[k], s);
@@ -665,7 +667,7 @@ L::LookupVectorSpacePow2<T,C>::LookupVectorSpacePow2
       for (unsigned j = 0; j < algebra.size(); ++j)
       {
          C s = element (j);
-        
+
          for (unsigned k = 0; k < dimension(); ++k)
          {
             cs[k] = algebra.mul (as[k], s);

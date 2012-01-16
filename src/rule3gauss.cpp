@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -32,6 +32,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <HIntLib/rule3gauss.h>
 
@@ -78,7 +80,7 @@ L::Rule3Gauss::Rule3Gauss (unsigned dim)
 real L::Rule3Gauss::eval (Integrand &f, const Hypercube &h)
 {
    const real* width = h.getWidth();
-   
+
    for (unsigned i = 0; i < dim; ++i)  a [i] = width [i] * r;
 
    return h.getVolume() * evalR_Rfs (f, h.getCenter(), a) * oneDivTwoPowDim;

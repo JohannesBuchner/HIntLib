@@ -478,6 +478,7 @@ $(filesbin): convert_matrix@EXEEXT@
 
 .cmx.bin:
 	@echo Converting $< to $@ ...
+	test -x ./convert_matrix@EXEEXT@ || sleep 1
 	./convert_matrix@EXEEXT@ $< $@  ||  { rm -f $@ ; exit 1 ; }
 
 ../src/libhintlib.la:

@@ -1,5 +1,5 @@
 /*
- *  HIntLib  -  Library for High-dimensional Numerical Integration 
+ *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
  *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
@@ -21,6 +21,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#define HINTLIB_LIBRARY_OBJECT
 
 #include <algorithm>
 
@@ -60,7 +62,7 @@ void L::initFaure (GeneratorMatrixGen<unsigned char> &gm)
    if (gm.getDimension() < 1)  return;
    gm.makeIdentityMatrix (0);
 
-   LookupGaloisFieldPrime<unsigned char> a (gm.getBase());
+   LookupGaloisField<unsigned char> a (gm.getBase());
 
    if (gm.getDimension() < 2)  return;
 
@@ -78,9 +80,9 @@ void L::initFaure (GeneratorMatrixGen<unsigned char> &gm)
          gm.setd (1,r,b, x);
       }
    }
-   
+
    // initialize Faure-matrices for d =  2,...,dim-1
- 
+
    for (unsigned d = 2; d < gm.getDimension(); ++d)
    {
       for (unsigned r = 0; r < gm.getM(); ++r)

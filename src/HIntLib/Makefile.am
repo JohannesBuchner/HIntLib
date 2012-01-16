@@ -141,6 +141,7 @@ $(top_builddir)/libtest/result.h:
 
 prime_generated.h: create_prime@EXEEXT@
 	@echo Creating header file \"prime_generated.h\"
+	test -x ./create_prime@EXEEXT@ || sleep 1
 	./create_prime@EXEEXT@ h > prime_generated.h \
            || { rm -f prime_generated.h ; exit 1; }
 

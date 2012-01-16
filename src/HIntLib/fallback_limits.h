@@ -227,6 +227,7 @@ public:
    static const int max_exponent10 = DBL_MAX_10_EXP;
 };
 
+#ifdef HINTLIB_HAVE_LONG_DOUBLE
 template<>
 class numeric_limits<long double> : public Private::realT<long double>
 {
@@ -248,6 +249,7 @@ public:
    static const int max_exponent = LDBL_MAX_EXP;
    static const int max_exponent10 = LDBL_MAX_10_EXP;
 };
+#endif
 
 
 /*****************************************************************************
