@@ -29,8 +29,8 @@
  *  as formula Cn: 2-1
  */
 
-#ifndef RULE2SIMPLEX_H
-#define RULE2SIMPLEX_H 1
+#ifndef HINTLIB_RULE2SIMPLEX_H
+#define HINTLIB_RULE2SIMPLEX_H 1
 
 #ifdef __GNUG__
 #pragma interface

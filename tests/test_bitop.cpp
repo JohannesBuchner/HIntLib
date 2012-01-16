@@ -24,10 +24,10 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_LIMITS
+#ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
 #else
-  #include <HIntLib/hintlib_limits.h>
+  #include <HIntLib/fallback_limits.h>
 #endif
 
 #include <HIntLib/bitop.h>
@@ -285,7 +285,7 @@ void test(int argc, char**)
 
    test (static_cast<unsigned long> (0));
 
-#ifdef HAVE_UNSIGNED_LONG_LONG_INT
+#ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
    NORMAL  cout << "Testing type unsigned long long" << endl;
 
    test (static_cast<unsigned long long> (0));

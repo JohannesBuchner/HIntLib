@@ -25,8 +25,8 @@
  *  of an integral.
  */
 
-#ifndef RULEINTEGRATOR_H
-#define RULEINTEGRATOR_H 1
+#ifndef HINTLIB_RULEINTEGRATOR_H
+#define HINTLIB_RULEINTEGRATOR_H 1
 
 #ifdef __GNUG__
 #pragma interface

@@ -22,7 +22,7 @@
  *  Region
  */
 
-#if defined __GNUG__ && ! defined PARALLEL
+#if defined __GNUG__ && ! defined HINTLIB_PARALLEL
 #pragma implementation
 #pragma implementation "esterr.h"
 #endif

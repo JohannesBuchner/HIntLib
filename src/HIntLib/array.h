@@ -28,8 +28,8 @@
  *  case of exceptions.
  */
 
-#ifndef ARRAY_H
-#define ARRAY_H 1
+#ifndef HINTLIB_ARRAY_H
+#define HINTLIB_ARRAY_H 1
 
 #ifdef __GNUG__
 #pragma interface

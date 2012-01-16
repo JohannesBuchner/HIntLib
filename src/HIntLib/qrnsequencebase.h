@@ -45,8 +45,8 @@
  *     Copies the next quasi random vector into the specified array.
  */
   
-#ifndef QRNSEQUENCEBASE_H
-#define QRNSEQUENCEBASE_H 1
+#ifndef HINTLIB_QRNSEQUENCEBASE_H
+#define HINTLIB_QRNSEQUENCEBASE_H 1
 
 #ifdef __GNUG__
 #pragma interface

@@ -29,7 +29,7 @@
 
 // Check different flags, depending on parallel mode
 
-#if defined(PARALLEL) && !defined(MCINTEGRATOR_MPI_H) || !defined(PARALLEL) && !defined(MCINTEGRATOR_H)
+#if defined(HINTLIB_PARALLEL) && !defined(HINTLIB_MCINTEGRATOR_MPI_H) || !defined(HINTLIB_PARALLEL) && !defined(HINTLIB_MCINTEGRATOR_H)
 
 
 #include <HIntLib/integrator.h>
@@ -37,12 +37,12 @@
 
 // Define Name macro and set flag according to parallel mode
 
-#ifdef PARALLEL
-   #define MCINTEGRATOR_MPI_H 1
-   #define NAME(x) x##StaticLB
+#ifdef HINTLIB_PARALLEL
+   #define HINTLIB_MCINTEGRATOR_MPI_H 1
+   #define HINTLIB_NAME(x) x##StaticLB
 #else
-   #define MCINTEGRATOR_H 1
-   #define NAME(x) x
+   #define HINTLIB_MCINTEGRATOR_H 1
+   #define HINTLIB_NAME(x) x
 #endif
 
 /**
@@ -59,17 +59,17 @@ namespace HIntLib
    class MultiPointSet;
    class PointSet;
 
-   class NAME(MCIntegrator) : public Integrator
+   class HINTLIB_NAME(MCIntegrator) : public Integrator
    {
    private:
-#if PARALLEL
+#if HINTLIB_PARALLEL
       typedef MultiPointSet PS;
 #else
       typedef PointSet PS;
 #endif
 
    public:
-      NAME(MCIntegrator) (PS* _ps) : ps(_ps) {}
+      HINTLIB_NAME(MCIntegrator) (PS* _ps) : ps(_ps) {}
 
       virtual
       Status integrate (
@@ -81,7 +81,7 @@ namespace HIntLib
    };
 }  // namespace HIntLib
 
-#undef NAME
+#undef HINTLIB_NAME
 
 #endif
 

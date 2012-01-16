@@ -329,7 +329,7 @@ L::Integrator::Status L::AdaptIntegratorLocalList::integrate (
 
    if (! maxEvaluations)
    {
-      #ifdef CRAY
+      #ifdef HINTLIB_NO_EXCEPTIONS
          finalEE.set (0.0, 0.0);
          return ERROR;
       #else
@@ -349,7 +349,7 @@ L::Integrator::Status L::AdaptIntegratorLocalList::integrate (
 
    if (initialPoints > maxEvaluations)
    {
-      #ifdef CRAY
+      #ifdef HINTLIB_NO_EXCEPTIONS
          finalEE.set (0.0, 0.0);
          return ERROR;
       #else

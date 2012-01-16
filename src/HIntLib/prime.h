@@ -24,8 +24,8 @@
  *  Basic functions for finding and checking for prime numbers
  */
 
-#ifndef PRIME_H
-#define PRIME_H 1
+#ifndef HINTLIB_PRIME_H
+#define HINTLIB_PRIME_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -45,21 +45,21 @@ public:
 
    #include <HIntLib/prime_generated.h>
 
-   template<class T> static bool  test (T n)  GNU_CONST;
-   template<class T> static T     next (T n)  GNU_CONST;
-   template<class T> static T eulerPhi (T n)  GNU_CONST;
+   template<class T> static bool  test (T n)  HINTLIB_GNU_CONST;
+   template<class T> static T     next (T n)  HINTLIB_GNU_CONST;
+   template<class T> static T eulerPhi (T n)  HINTLIB_GNU_CONST;
    static void factorPrimePower (unsigned x, unsigned &_p, unsigned &_exp);
-   static unsigned nth (unsigned n)  GNU_CONST;
+   static unsigned nth (unsigned n)  HINTLIB_GNU_CONST;
 
 private:
 
-   template<class T> static bool doPrimeTest        (T n)  GNU_CONST;
-   template<class T> static T    searchForNextPrime (T n)  GNU_CONST;
+   template<class T> static bool doPrimeTest        (T n)  HINTLIB_GNU_CONST;
+   template<class T> static T    searchForNextPrime (T n)  HINTLIB_GNU_CONST;
 
    static const unsigned short nextPrimeArray [MAX_N + 1];
    static const unsigned short nthPrimeArray [NUM_PRIMES];
 
-   static void throwPrimeNumberNth (unsigned)  GNU_NORETURN;
+   static void throwPrimeNumberNth (unsigned)  HINTLIB_GNU_NORETURN;
 };
 
 

@@ -35,7 +35,7 @@
 
 #include <algorithm>
 
-#include <HIntLib/miserintegrator.h>
+#include <HIntLib/miser.h>
 
 #include <HIntLib/mymath.h>
 #include <HIntLib/statistic.h>
@@ -68,27 +68,29 @@ namespace {
  *  the recursion.
  */
 
-class MiserImp
+class MiserImp : public Job
 {
 public:
 
-   MiserImp (MiserIntegrator &, PRNG*, PointSet*, unsigned dim, Function &f);
+   MiserImp (Miser &, PointSet*, PointSet*, unsigned dim, Function &f);
 
    void recur (Hypercube &h, Index numPoints, EstErr &ee);
+   void operator() (const real*);
 
 private:
 
-   MiserIntegrator &miser;
-   PRNG* mc;
-   PointSet* ps;
+   Miser &miser;
+   PointSet* presamplePointSet;
+   PointSet* samplePointSet;
 
    const unsigned dim;
 
    Function &f;
-
    Array<real> point;
+   Array<StatisticMinMax<real> > leftStatistic, rightStatistic;
 
-   Array<MinMaxFinder<real> > lowerMinMax, upperMinMax;
+   const real* center;
+   unsigned nextDefaultSplitDim;
 };
 
 
@@ -96,14 +98,15 @@ private:
  *  Initialization
  */
 
-MiserImp::MiserImp (MiserIntegrator &i, PRNG* _mc, PointSet* _ps,
+MiserImp::MiserImp (Miser &i, PointSet* presample, PointSet* sample,
                     unsigned dim, Function &f)
    : miser(i),
-     mc(_mc), ps(_ps),
+     presamplePointSet (presample), samplePointSet (sample),
      dim(dim), f(f),
      point(dim),
-     lowerMinMax (dim),
-     upperMinMax (dim)
+     leftStatistic (dim),
+     rightStatistic (dim),
+     nextDefaultSplitDim (0)
 {}
 
 
@@ -122,20 +125,12 @@ void MiserImp::recur (
    {
       StatisticVar<real> stat;
 
-      ps->setCube (&h);
-      ps->integrate (point, f, numPoints, stat);
+      samplePointSet->setCube (&h);
+      samplePointSet->integrate (point, f, numPoints, stat);
 
       ee.set (stat.getMean(), stat.getVariance() / stat.getCount());
 
       return;
-   }
-
-   // Reset MinMaxFinders
-
-   for (unsigned d = 0; d != dim; ++d)
-   {
-      lowerMinMax[d].reset();
-      upperMinMax[d].reset();
    }
 
    // Determine number of presampling points
@@ -147,77 +142,95 @@ void MiserImp::recur (
 
    // Make sure, an even number of points remains
 
-   if ((numPoints - numPointsPre) % 2)  ++numPointsPre;
+   if (odd (numPoints - numPointsPre))  ++numPointsPre;
 
-   // Do presampling
-
-   UniformCube<PRNG> cubeSampler (*mc, h);
-
-   for (Index i = 0; i != numPointsPre; ++i)
-   {
-      cubeSampler (*mc, point);
-
-      const real value = f(point);
-
-      for (unsigned d = 0; d != dim; ++d)
-      {
-         if (point[d] <= h.getCenter(d)) lowerMinMax[d] << value;
-         else                            upperMinMax[d] << value;
-      }
-   }
-
-   // Choose dimension for bisection
-
-   int splitDim = -1;
-   MinFinder<real> m;
-   real upperVariance = 1.0;
-   real lowerVariance = 1.0;
+   // Reset MinMaxFinders
 
    for (unsigned d = 0; d != dim; ++d)
    {
-      if (lowerMinMax[d].getRange() > 0.0 && upperMinMax[d].getRange() > 0.0)
+      leftStatistic [d].reset();
+      rightStatistic[d].reset();
+   }
+
+   // Do presampling
+
+   center = h.getCenter();
+   presamplePointSet->setCube (&h);
+   presamplePointSet->doJob (point, *this, numPointsPre);
+
+   // Choose dimension for bisection
+
+   int splitDim = ++nextDefaultSplitDim % dim;
+   MinFinder<real> m;
+   real  leftVariance = 1.0;
+   real rightVariance = 1.0;
+
+   for (unsigned d = 0; d != dim; ++d)
+   {
+      if (   leftStatistic [d].getCount() >= 10
+          && rightStatistic[d].getCount() >= 10
+          && (   leftStatistic [d].getRange() > 0
+              || rightStatistic [d].getRange() > 0))
       {
-         real lower = pow (lowerMinMax[d].getRange(), 2.0 / 3.0);
-         real upper = pow (upperMinMax[d].getRange(), 2.0 / 3.0);
-         real sum = lower + upper;
+         real left  = pow ( leftStatistic [d].getRange(), 2.0 / 3.0);
+         real right = pow (rightStatistic [d].getRange(), 2.0 / 3.0);
+         real sum = left + right;
 
          if (m << sum)
          {
             splitDim = d;
-            lowerVariance = lower;
-            upperVariance = upper;
+             leftVariance = left;
+            rightVariance = right;
          }
       }
    }
 
-   // Did we find a valid dimension?  If not, take a random one
+   // Don't allow too large a variance difference
 
-   if (splitDim < 0)  splitDim = mc->equidist (dim);
+   if ( leftVariance > 50 * rightVariance) rightVariance =  leftVariance / 50;
+   if (rightVariance > 50 *  leftVariance)  leftVariance = rightVariance / 50;
 
+   if (leftVariance <= 0.0 || rightVariance <= 0.0)
+   {
+       leftVariance = 1.0;
+      rightVariance = 1.0;
+   }
+   
    // Calculate point budgets
 
    numPoints -= numPointsPre + 2 * miser.FREE_POINTS;
 
-   Index numPointsLower = miser.FREE_POINTS
-      + Index(numPoints * lowerVariance / (lowerVariance+upperVariance));
+   Index numPointsLeft = miser.FREE_POINTS
+      + Index(numPoints * leftVariance / (leftVariance + rightVariance));
 
-   if (odd (numPointsLower))  ++numPointsLower;
+   if (odd (numPointsLeft))  ++numPointsLeft;
 
-   const Index numPointsUpper =
-      2 * miser.FREE_POINTS + numPoints - numPointsLower;
+   const Index numPointsRight =
+      2 * miser.FREE_POINTS + numPoints - numPointsLeft;
 
    // do recursion
 
-   Hypercube hUpper (h, splitDim);
+   Hypercube hRight (h, splitDim);
 
-   recur (h, numPointsLower, ee);
+   EstErr eeLeft;
+   recur (h, numPointsLeft, eeLeft);
 
-   EstErr eeUpper;
+   EstErr eeRight;
+   recur (hRight, numPointsRight, eeRight);
 
-   recur (hUpper, numPointsUpper, eeUpper);
+   ee.set ((eeLeft.getEstimate() + eeRight.getEstimate()) / 2.0,
+           (eeLeft.getError()    + eeRight.getError()) / 4.0);
+}
 
-   ee.set ((ee.getEstimate() + eeUpper.getEstimate()) / 2.0,
-           (ee.getError() + eeUpper.getError()) / 4.0);
+void MiserImp::operator() (const real* p)
+{
+   const real value = f (p);
+
+   for (unsigned d = 0; d != dim; ++d)
+   {
+      if (point[d] <= center[d])  leftStatistic [d] << value;
+      else                       rightStatistic [d] << value;
+   }
 }
 
 }  // end namespace
@@ -229,15 +242,27 @@ void MiserImp::recur (
  *  Initialize all parameters to defaults
  */
 
-L::MiserIntegrator::MiserIntegrator (PRNG* _mc, PointSet* _ps)
-   : mc (_mc), ps (_ps),
-     MIN_POINTS(200),
-     FREE_POINTS(25),
-     MIN_PRESAMPLING_POINTS(40),
-  // MAX_PRESAMPLING_POINTS(numeric_limits<Index>::max()),
-     MAX_PRESAMPLING_POINTS(10000),    // original
-     PRESAMPLING_RATE(0.1)
-{}
+L::Miser::Miser (PointSet* presample, PointSet* sample)
+   : presamplePointSet (presample), samplePointSet (sample)
+{
+   defaults();
+}
+
+L::Miser::Miser (PointSet* ps)
+   : presamplePointSet (ps), samplePointSet (ps)
+{
+   defaults();
+}
+
+void L::Miser::defaults()
+{
+   MIN_POINTS = 200;
+   FREE_POINTS = 25;
+   MIN_PRESAMPLING_POINTS = MIN_POINTS / 4;
+   MAX_PRESAMPLING_POINTS = std::numeric_limits<Index>::max();
+   // MAX_PRESAMPLING_POINTS = 10000;
+   PRESAMPLING_RATE = 0.10;
+}
 
 
 /**
@@ -246,7 +271,7 @@ L::MiserIntegrator::MiserIntegrator (PRNG* _mc, PointSet* _ps)
  *  Creates an object of type MiserImp and uses it for the actual calculations
  */
 
-L::MiserIntegrator::Status L::MiserIntegrator::integrate (
+L::Miser::Status L::Miser::integrate (
    Function &f,
    const Hypercube &h,
    Index maxEval,
@@ -259,7 +284,7 @@ L::MiserIntegrator::Status L::MiserIntegrator::integrate (
 
    if (maxEval == 0)
    {
-      #ifdef CRAY
+      #ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
       #else
@@ -267,7 +292,7 @@ L::MiserIntegrator::Status L::MiserIntegrator::integrate (
       #endif
    }
 
-   MiserImp imp (*this, mc, ps, h.getDimension(), f);
+   MiserImp imp (*this, presamplePointSet, samplePointSet, h.getDimension(), f);
 
    Hypercube hh (h);
 

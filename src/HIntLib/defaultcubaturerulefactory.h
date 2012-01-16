@@ -27,8 +27,8 @@
  *  This file should only be included in the *.cpp-file of cubature rules
  */
  
-#ifndef DEFAULT_CUBATURERULE_FACTORY_H
-#define DEFAULT_CUBATURERULE_FACTORY_H 1
+#ifndef HINTLIB_DEFAULT_CUBATURERULE_FACTORY_H
+#define HINTLIB_DEFAULT_CUBATURERULE_FACTORY_H 1
  
 #ifdef __GNUG__
 #pragma interface

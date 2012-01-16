@@ -25,8 +25,8 @@
  *   prime numbers.
  */
 
-#ifndef HALTON_H
-#define HALTON_H 1
+#ifndef HINTLIB_HALTON_H
+#define HINTLIB_HALTON_H 1
 
 #ifdef __GNUG__
 #pragma interface

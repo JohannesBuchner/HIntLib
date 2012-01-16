@@ -24,8 +24,8 @@
  *  A n-dimensional hypercube.
  */
 
-#ifndef HYPERCUBE_H
-#define HYPERCUBE_H 1
+#ifndef HINTLIB_HYPERCUBE_H
+#define HINTLIB_HYPERCUBE_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -35,7 +35,7 @@
 
 #include <HIntLib/mymath.h>
 #include <HIntLib/array.h>
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
    #include <HIntLib/buffer.h>
 #endif
 
@@ -94,7 +94,7 @@ public:
    bool operator== (const Hypercube &) const;
    bool operator!= (const Hypercube &h) const  { return ! (*this == h); }
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
    Hypercube (unsigned dim,
               int source, int tag, MPI_Comm comm, MPI_Status *status);
    Hypercube (unsigned dim, RecvBuffer &b);
@@ -238,74 +238,6 @@ void Hypercube::move (unsigned i, real distance)
 {
    center() [i] += distance;
 }
-
-#ifdef PARALLEL
- 
-inline
-int Hypercube::send (int dest, int tag, MPI_Comm comm) const
-{
-   const real* p = data;
-
-   return MPI_Send (const_cast<real*> (p),
-                    2 * dim, MPIType<real>::type, dest, tag, comm);
-}
-
-inline
-void Hypercube::isend (int dest, int tag, MPI_Comm comm) const
-{
-   const real* p = data;
-
-   MPI_Request request;
- 
-   MPI_Isend (const_cast<real*> (p), 2 * dim, MPIType<real>::type,
-              dest, tag, comm, &request);
-
-   MPI_Request_free (&request);
-}
- 
-inline
-int Hypercube::recv (int source, int tag, MPI_Comm comm, MPI_Status *status)
-{
-    const real* p = data;
-
-    int res = MPI_Recv (const_cast<real*> (p),
-                    2 * dim, MPIType<real>::type, source, tag, comm, status);
- 
-    calcVolume();
-
-    return res;
-}
- 
-inline
-Hypercube::Hypercube (unsigned dim,
-                      int source, int tag, MPI_Comm comm, MPI_Status *status)
-   : dim (dim), data (2 * dim)
-{
-   recv (source, tag, comm, status);
-}
-
-inline
-void Hypercube::initAfterReceive ()
-{
-   calcVolume();
-}
-
-inline SendBuffer& operator<< (SendBuffer &b, const Hypercube &h)
-{
-   const real* p = h.data;
-   b.pack (p, 2 * h.dim, MPIType<real>::type);
-   return b;
-}
-
-inline RecvBuffer& operator>> (RecvBuffer &b, Hypercube &h)
-{
-   real* p = h.data;
-   b.unpack (p, 2 * h.dim, MPIType<real>::type);
-   h.initAfterReceive();
-   return b;
-}
-
-#endif   // PARALLEL
 
 }  // namespace HIntLib
 

@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef PRECALCULATED_RING_H
-#define PRECALCULATED_RING_H 1
+#ifndef HINTLIB_PRECALCULATED_RING_H
+#define HINTLIB_PRECALCULATED_RING_H 1
 
 #ifdef __GNUG__
 #pragma interface

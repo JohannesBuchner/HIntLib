@@ -25,8 +25,8 @@
  *  Constracts digital nets (and sequences) in base 2 based on GeneratorMatrix2
  */
 
-#ifndef DIGITAL_NET_2_H
-#define DIGITAL_NET_2_H 1
+#ifndef HINTLIB_DIGITAL_NET_2_H
+#define HINTLIB_DIGITAL_NET_2_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -40,6 +40,11 @@
 
 namespace HIntLib
 {
+
+/*****************************************************************************/
+/*****        Digital Net 2                                                ***/
+/*****************************************************************************/
+
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
    template<class X> struct FloatType {};
    template<> struct FloatType<u32> {  typedef float  floatType; };
@@ -152,185 +157,7 @@ public:
    void nextDontScale (real*);
 };
 
-
-
-/**
- *  Digital Net 2 Point Set
- */
-
-// Non-template base
-
-class DigitalNet2PointSetBase : public PartitionablePointSet
-{
-public:
-#ifdef HINTLIB_IEEE_MAGIC_WORKS
-   typedef u64 BaseType;
-#else
-   typedef Index BaseType;
-#endif
-   typedef DigitalNet::Truncation Truncation;
-
-protected:
-   const GeneratorMatrix2Copy<BaseType> gm;
-   bool copy;
-   bool equi;
-   Truncation trunc;
-   Index index;
-   const Hypercube *h;
-
-   int calculateM (Index) const;
-
-   DigitalNet2PointSetBase (
-      const GeneratorMatrix2<u32>& _gm, bool _equi, Truncation t, Index i)
-      : gm(_gm), equi(_equi), trunc(t), index (i), h (0)  {}
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   DigitalNet2PointSetBase (
-      const GeneratorMatrix2<u64>& _gm, bool _equi, Truncation t, Index i)
-      : gm(_gm), equi(_equi), trunc(t), index (i), h (0)  {}
-#endif
-
-public:
-   void setCube (const Hypercube*);
-
-   bool doJobRep (real *, ReportingJob &, Index);
-   void doJobPartition (real *, Job &, Index, Index, Index);
-
-   Index getOptimalNumber (Index max, const Hypercube &);
-
-private:
-   DigitalNet2PointSetBase (const DigitalNet2PointSetBase &);
-   const DigitalNet2PointSetBase & operator= (const DigitalNet2PointSetBase &);
-};
-
-// Template
-
-template<class Sum>
-class DigitalNet2PointSet: public DigitalNet2PointSetBase
-{
-public:
-   DigitalNet2PointSet (
-      const GeneratorMatrix2<u32>& _gm,
-      bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
-      Index i = 0)
-   : DigitalNet2PointSetBase(_gm, e, t, i) {}
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   DigitalNet2PointSet (
-      const GeneratorMatrix2<u64>& _gm,
-      bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
-      Index i = 0)
-   : DigitalNet2PointSetBase(_gm, e, t, i) {}
-#endif
-
-   void integratePartition (real *, Function &, Index, Index, Index, Stat&);
-   void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
-};
-
-// Specializatioin for Sum=real
-
-template<>
-class DigitalNet2PointSet<real>: public DigitalNet2PointSetBase
-{
-public:
-   DigitalNet2PointSet<real> (
-      const GeneratorMatrix2<u32>& gm,
-      bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
-      Index i = 0)
-   : DigitalNet2PointSetBase(gm, e, t, i) {}
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   DigitalNet2PointSet<real> (
-      const GeneratorMatrix2<u64>& gm,
-      bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
-      Index i = 0)
-   : DigitalNet2PointSetBase(gm, e, t, i) {}
-#endif
-
-   void integratePartition (real *, Function &, Index, Index, Index, Stat&);
-   void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
-};
-
-
-/**
- *  Digital Sequence 2 Point Set
- */
-
-// Non-template base
-
-class DigitalSeq2PointSetBase : public PartitionablePointSet
-{
-public:
-#ifdef HINTLIB_IEEE_MAGIC_WORKS
-   typedef u64 BaseType;
-#else
-   typedef Index BaseType;
-#endif
-   void init()  { delete net; net = 0; offset = 0; }
-
-protected:
-   GeneratorMatrix2Copy<BaseType> gm;
-   DigitalNet2Gray<BaseType>* net;
-   Index offset;
-   const bool reset;
-
-   void checkSize (const DigitalNet2<BaseType> &, Index) const;
-
-   DigitalSeq2PointSetBase (const GeneratorMatrix2<u32> &_gm, bool _reset)
-      : gm (_gm), net (0), offset (0), reset (_reset) {}
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   DigitalSeq2PointSetBase (const GeneratorMatrix2<u64> &_gm, bool _reset)
-      : gm (_gm), net (0), offset (0), reset (_reset) {}
-   ~DigitalSeq2PointSetBase ();
-#endif
-
-public:
-   Index getOptimalNumber (Index max, const Hypercube &);
-   void setCube (const Hypercube *);
-
-   bool doJobRep       (real *, ReportingJob &, Index);
-   void doJobPartition (real *, Job &, Index, Index, Index);
-
-private:
-   DigitalSeq2PointSetBase (const DigitalNet2PointSetBase &);
-   const DigitalSeq2PointSetBase & operator= (const DigitalNet2PointSetBase &);
-};
-
-// Template
-
-template<class Sum>
-class DigitalSeq2PointSet: public DigitalSeq2PointSetBase
-{
-public:
-   DigitalSeq2PointSet (const GeneratorMatrix2<u32>& gm, bool reset)
-      : DigitalSeq2PointSetBase(gm, reset) {}
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   DigitalSeq2PointSet (const GeneratorMatrix2<u64>& gm, bool reset)
-      : DigitalSeq2PointSetBase(gm, reset) {}
-#endif
-
-   void integratePartition (real *, Function &, Index, Index, Index, Stat&);
-   void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
-};
-
-// Specializatioin for Sum=real
-
-template<>
-class DigitalSeq2PointSet<real>: public DigitalSeq2PointSetBase
-{
-public:
-   DigitalSeq2PointSet<real> (const GeneratorMatrix2<u32>& gm, bool reset)
-      : DigitalSeq2PointSetBase(gm, reset) {}
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   DigitalSeq2PointSet<real> (const GeneratorMatrix2<u64>& gm, bool reset)
-      : DigitalSeq2PointSetBase(gm, reset) {}
-#endif
-
-   void integratePartition (real *, Function &, Index, Index, Index, Stat&);
-   void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
-};
-
-} // namespace HIntLib
-
-
-/*****  Implementation  **************/
+}  // namespace HIntLib
 
 
 /**
@@ -413,6 +240,132 @@ void HIntLib::DigitalNet2Gray<T>::nextDontScale (real* point)
 } 
 
 
+/*****************************************************************************/
+/*****        Digital Net  Point Set                                       ***/
+/*****************************************************************************/
+
+namespace HIntLib
+{
+
+/**
+ *  Digital 2 Point Set
+ */
+
+class Digital2PointSet : public PartitionablePointSet
+{
+private:
+   bool isRandomized;
+   unsigned seed;
+
+public:
+#ifdef HINTLIB_IEEE_MAGIC_WORKS
+   typedef u64 BaseType;
+#else
+   typedef Index BaseType;
+#endif
+
+   Digital2PointSet & enableRandomize () { isRandomized = true; return *this;}
+   virtual void randomize (unsigned _seed) { seed = _seed; }
+
+protected:
+   Digital2PointSet () : isRandomized (false), seed (0) {}
+
+   void performRandomization (DigitalNet2Gray<BaseType> &);
+
+private:
+   Digital2PointSet (const Digital2PointSet &);
+   const Digital2PointSet & operator= (const Digital2PointSet &);
+};
+
+
+/**
+ *  Digital Net 2 Point Set
+ */
+
+// Non-template base
+
+class DigitalNet2PointSetBase : public Digital2PointSet
+{
+public:
+   typedef DigitalNet::Truncation Truncation;
+
+protected:
+   const GeneratorMatrix2Copy<BaseType> gm;
+   bool copy;
+   bool equi;
+   Truncation trunc;
+   Index index;
+   const Hypercube *h;
+
+   int calculateM (Index) const;
+
+   DigitalNet2PointSetBase (
+      const GeneratorMatrix2<u32>& _gm, bool _equi, Truncation t, Index i)
+      : gm(_gm), equi(_equi), trunc(t), index (i), h (0) {}
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
+   DigitalNet2PointSetBase (
+      const GeneratorMatrix2<u64>& _gm, bool _equi, Truncation t, Index i)
+      : gm(_gm), equi(_equi), trunc(t), index (i), h (0) {}
+#endif
+
+public:
+   virtual void setCube (const Hypercube*);
+
+   virtual bool doJobRep (real *, ReportingJob &, Index);
+   virtual void doJobPartition (real *, Job &, Index, Index, Index);
+
+   virtual Index getOptimalNumber (Index max, const Hypercube &);
+};
+
+// Template
+
+template<class Sum>
+class DigitalNet2PointSet: public DigitalNet2PointSetBase
+{
+public:
+   DigitalNet2PointSet (
+      const GeneratorMatrix2<u32>& _gm,
+      bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
+      Index i = 0)
+   : DigitalNet2PointSetBase(_gm, e, t, i) {}
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
+   DigitalNet2PointSet (
+      const GeneratorMatrix2<u64>& _gm,
+      bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
+      Index i = 0)
+   : DigitalNet2PointSetBase(_gm, e, t, i) {}
+#endif
+
+   void integratePartition (real *, Function &, Index, Index, Index, Stat&);
+   void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
+};
+
+// Specializatioin for Sum=real
+
+template<>
+class DigitalNet2PointSet<real>: public DigitalNet2PointSetBase
+{
+public:
+   DigitalNet2PointSet<real> (
+      const GeneratorMatrix2<u32>& gm,
+      bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
+      Index i = 0)
+   : DigitalNet2PointSetBase(gm, e, t, i) {}
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
+   DigitalNet2PointSet<real> (
+      const GeneratorMatrix2<u64>& gm,
+      bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
+      Index i = 0)
+   : DigitalNet2PointSetBase(gm, e, t, i) {}
+#endif
+
+   void integratePartition (real *, Function &, Index, Index, Index, Stat&);
+   void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
+};
+
+} // namespcae HIntLib
+
+
 /**
  *  DigitalNet2PointSet :: integrate()
  */
@@ -423,6 +376,7 @@ void HIntLib::DigitalNet2PointSet<Sum>::integratePartition
 {
    DigitalNet2Gray<BaseType> net
       (gm, *h, calculateM (num), index, equi, trunc);
+   performRandomization (net);
 
    Statistic<real, Sum> s;
    qmcIntegration (point, net, f, begin, end, s);
@@ -435,11 +389,93 @@ void HIntLib::DigitalNet2PointSet<Sum>::integratePartition
 {
    DigitalNet2Gray<BaseType> net
       (gm, *h, calculateM (num), index, equi, trunc);
+   performRandomization (net);
 
    StatisticVar<real, Sum> s;
    qmcIntegration (point, net, f, begin, end, s);
    stat = s;
 }
+
+
+/*****************************************************************************/
+/*****        Digital Seq  Point Set                                       ***/
+/*****************************************************************************/
+
+namespace HIntLib
+{
+
+/**
+ *  Digital Sequence 2 Point Set
+ */
+
+// Non-template base
+
+class DigitalSeq2PointSetBase : public Digital2PointSet
+{
+public:
+   void init()  { delete net; net = 0; offset = 0; }
+
+protected:
+   GeneratorMatrix2Copy<BaseType> gm;
+   DigitalNet2Gray<BaseType>* net;
+   Index offset;
+   const bool reset;
+
+   void checkSize (const DigitalNet2<BaseType> &, Index) const;
+
+   DigitalSeq2PointSetBase (const GeneratorMatrix2<u32> &_gm, bool _reset)
+      : gm (_gm), net (0), offset (0), reset (_reset) {}
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
+   DigitalSeq2PointSetBase (const GeneratorMatrix2<u64> &_gm, bool _reset)
+      : gm (_gm), net (0), offset (0), reset (_reset) {}
+   ~DigitalSeq2PointSetBase ();
+#endif
+
+public:
+   virtual Index getOptimalNumber (Index max, const Hypercube &);
+   virtual void setCube (const Hypercube *);
+
+   virtual bool doJobRep       (real *, ReportingJob &, Index);
+   virtual void doJobPartition (real *, Job &, Index, Index, Index);
+
+   virtual void randomize (unsigned _seed);
+};
+
+// Template
+
+template<class Sum>
+class DigitalSeq2PointSet: public DigitalSeq2PointSetBase
+{
+public:
+   DigitalSeq2PointSet (const GeneratorMatrix2<u32>& gm, bool reset)
+      : DigitalSeq2PointSetBase(gm, reset) {}
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
+   DigitalSeq2PointSet (const GeneratorMatrix2<u64>& gm, bool reset)
+      : DigitalSeq2PointSetBase(gm, reset) {}
+#endif
+
+   void integratePartition (real *, Function &, Index, Index, Index, Stat&);
+   void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
+};
+
+// Specializatioin for Sum=real
+
+template<>
+class DigitalSeq2PointSet<real>: public DigitalSeq2PointSetBase
+{
+public:
+   DigitalSeq2PointSet<real> (const GeneratorMatrix2<u32>& gm, bool reset)
+      : DigitalSeq2PointSetBase(gm, reset) {}
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
+   DigitalSeq2PointSet<real> (const GeneratorMatrix2<u64>& gm, bool reset)
+      : DigitalSeq2PointSetBase(gm, reset) {}
+#endif
+
+   void integratePartition (real *, Function &, Index, Index, Index, Stat&);
+   void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
+};
+
+} // namespace HIntLib
 
 
 /**
@@ -479,6 +515,7 @@ void HIntLib::DigitalSeq2PointSet<Sum>::integratePartition
    qmcIntegration (point, *net, f, begin, end, s);
    stat = s;
 }
+
 
 #endif
 

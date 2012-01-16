@@ -28,10 +28,10 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_SSTREAM
+#ifdef HINTLIB_HAVE_SSTREAM
   #include <sstream>
 #else
-  #include <HIntLib/hintlib_sstream.h>
+  #include <HIntLib/fallback_sstream.h>
 #endif
 
 #include <HIntLib/make.h>

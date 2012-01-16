@@ -33,8 +33,8 @@
  *  as formula Cn: 5-3
  */
 
-#ifndef RULE5STROUD_H
-#define RULE5STROUD_H 1
+#ifndef HINTLIB_RULE5STROUD_H
+#define HINTLIB_RULE5STROUD_H 1
 
 #ifdef __GNUG__
 #pragma interface

@@ -64,8 +64,8 @@
  *  In addition to that, a should pass the spectral test.
  */
 
-#ifndef LCG_POW2_H
-#define LCG_POW2_H 1
+#ifndef HINTLIB_LCG_POW2_H
+#define HINTLIB_LCG_POW2_H 1
  
 #ifdef __GNUG__
 #pragma interface

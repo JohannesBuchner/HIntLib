@@ -18,18 +18,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-
-#ifdef __GNUG__
-#pragma implementation "hypercube.h"
-#endif
- 
 #include <HIntLib/mympi.h>
- 
-#include "hypercube.cpp"
+#include <HIntLib/hypercube.h>
 
 namespace L = HIntLib;
 
-MPI_Datatype L::Hypercube::getMPIDatatype () const
+MPI_Datatype
+L::Hypercube::getMPIDatatype () const
 {
    MPI_Datatype type   = MPIType<real>::type;
    int          length = 2 * dim;
@@ -50,5 +45,71 @@ L::Hypercube::Hypercube (unsigned _dim, RecvBuffer &b)
    : dim (_dim), data (2 * _dim)
 {
    b >> *this;
+}
+
+ 
+int
+L::Hypercube::send (int dest, int tag, MPI_Comm comm) const
+{
+   const real* p = data;
+
+   return MPI_Send (const_cast<real*> (p),
+                    2 * dim, MPIType<real>::type, dest, tag, comm);
+}
+
+void
+L::Hypercube::isend (int dest, int tag, MPI_Comm comm) const
+{
+   const real* p = data;
+
+   MPI_Request request;
+ 
+   MPI_Isend (const_cast<real*> (p), 2 * dim, MPIType<real>::type,
+              dest, tag, comm, &request);
+
+   MPI_Request_free (&request);
+}
+ 
+int
+L::Hypercube::recv (int source, int tag, MPI_Comm comm, MPI_Status *status)
+{
+    const real* p = data;
+
+    int res = MPI_Recv (const_cast<real*> (p),
+                    2 * dim, MPIType<real>::type, source, tag, comm, status);
+ 
+    calcVolume();
+
+    return res;
+}
+ 
+L::Hypercube::Hypercube (unsigned dim,
+                      int source, int tag, MPI_Comm comm, MPI_Status *status)
+   : dim (dim), data (2 * dim)
+{
+   recv (source, tag, comm, status);
+}
+
+void
+L::Hypercube::initAfterReceive ()
+{
+   calcVolume();
+}
+
+L::SendBuffer &
+L::operator<< (SendBuffer &b, const Hypercube &h)
+{
+   const real* p = h.data;
+   b.pack (p, 2 * h.dim, MPIType<real>::type);
+   return b;
+}
+
+L::RecvBuffer &
+L::operator>> (RecvBuffer &b, Hypercube &h)
+{
+   real* p = h.data;
+   b.unpack (p, 2 * h.dim, MPIType<real>::type);
+   h.initAfterReceive();
+   return b;
 }
 

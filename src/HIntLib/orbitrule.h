@@ -24,8 +24,8 @@
  *  Baseclass for all Cubature Rules using some kind of orbits as abscissa sets
  */
 
-#ifndef ORBITRULE_H
-#define ORBITRULE_H 1
+#ifndef HINTLIB_ORBITRULE_H
+#define HINTLIB_ORBITRULE_H 1
 
 #ifdef __GNUG__
 #pragma interface

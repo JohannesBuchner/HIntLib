@@ -38,8 +38,8 @@
  *           -) a^((p-1)/q) != 1 (mod p)  for any prime divisor q of p-1
  */
 
-#ifndef LCG_PRIME_H
-#define LCG_PRIME_H 1
+#ifndef HINTLIB_LCG_PRIME_H
+#define HINTLIB_LCG_PRIME_H 1
  
 #ifdef __GNUG__
 #pragma interface
@@ -47,10 +47,10 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_LIMITS
+#ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
 #else
-  #include <HIntLib/hintlib_limits.h>
+  #include <HIntLib/fallback_limits.h>
 #endif
 
 

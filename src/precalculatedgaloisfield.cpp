@@ -24,7 +24,7 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_OSTREM
+#ifdef HINTLIB_HAVE_OSTREM
   #include <ostream>
 #else
   #include <iostream>
@@ -121,18 +121,14 @@ void L::copy (L::PrecalculatedField<T> & dest, const A src)
 
 namespace HIntLib
 {
+#define HINTLIB_INSTANTIATE(X) \
+   template void copy (PrecalculatedField<X> &, const GaloisField<X>); \
+   template void copy (PrecalculatedField<X> &, const ModularIntegerField<X>);\
+   template void makeGaloisField (PrecalculatedField<X> &,unsigned,unsigned); \
+   template class PrecalculatedGaloisField<X>;
 
-   template void copy (PrecalculatedField<unsigned char> &,
-                       const GaloisField<unsigned char>);
-   template void copy (PrecalculatedField<unsigned short> &,
-                       const GaloisField<unsigned short>);
-
-   template void makeGaloisField
-      (PrecalculatedField<unsigned char> &,  unsigned, unsigned);
-   template void makeGaloisField
-      (PrecalculatedField<unsigned short> &, unsigned, unsigned);
-
-   template class PrecalculatedGaloisField<unsigned char>;
-   template class PrecalculatedGaloisField<unsigned short>;
+   HINTLIB_INSTANTIATE (unsigned char)
+   HINTLIB_INSTANTIATE (unsigned short)
+#undef HINTLIB_INSTANTIATE
 }
 

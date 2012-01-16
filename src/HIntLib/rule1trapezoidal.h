@@ -31,8 +31,8 @@
  *  as formula Cn: 1-2
  */
 
-#ifndef RULE1TRAPEZOIDAL_H
-#define RULE1TRAPEZOIDAL_H 1
+#ifndef HINTLIB_RULE1TRAPEZOIDAL_H
+#define HINTLIB_RULE1TRAPEZOIDAL_H 1
 
 #ifdef __GNUG__
 #pragma interface

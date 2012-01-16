@@ -19,8 +19,8 @@
  */
 
 
-#ifndef PRNG_H
-#define PRNG_H 1
+#ifndef HINTLIB_PRNG_H
+#define HINTLIB_PRNG_H 1
  
 #ifdef __GNUG__
 #pragma interface

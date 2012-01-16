@@ -29,8 +29,8 @@
  *  as formula Cn: 3-5
  */
 
-#ifndef RULE_3_EWING_H
-#define RULE_3_EWING_H 1
+#ifndef HINTLIB_RULE_3_EWING_H
+#define HINTLIB_RULE_3_EWING_H 1
 
 #ifdef __GNUG__
 #pragma interface

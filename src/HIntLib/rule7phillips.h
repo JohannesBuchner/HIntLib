@@ -34,8 +34,8 @@
  *  as formula Cn: 7-1
  */
 
-#ifndef RULE7PHILLIPS_H
-#define RULE7PHILLIPS_H 1
+#ifndef HINTLIB_RULE7PHILLIPS_H
+#define HINTLIB_RULE7PHILLIPS_H 1
 
 #ifdef __GNUG__
 #pragma interface

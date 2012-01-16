@@ -19,8 +19,8 @@
  */
 
 
-#ifndef QMCROUTINESIMP_H
-#define QMCROUTINESIMP_H 1
+#ifndef HINTLIB_QMCROUTINESIMP_H
+#define HINTLIB_QMCROUTINESIMP_H 1
  
 #ifdef __GNUG__
 #pragma interface
@@ -29,6 +29,7 @@
 #include <HIntLib/pointset.h>
 #include <HIntLib/qmcintegration.h>
 
+// implementing *.cpp file: halton.cpp
 
 namespace HIntLib
 {
@@ -44,7 +45,8 @@ public:
 
    QMCPointSetBase (Index s) : skip (s), h (0) {}
 
-   void setCube (const Hypercube *_h)  { h = _h; }
+   virtual void setCube (const Hypercube *_h)  { h = _h; }
+   virtual void randomize (unsigned)  {}
 
    Index getOptimalNumber (Index max, const Hypercube &h)
    {

@@ -24,10 +24,10 @@
  *  Parallel Adaptive Integration with local region collections
  */
 
-#ifndef ADAPTINTEGRATORLOCALLIST_H
-#define ADAPTINTEGRATORLOCALLIST_H 1
+#ifndef HINTLIB_ADAPTINTEGRATORLOCALLIST_H
+#define HINTLIB_ADAPTINTEGRATORLOCALLIST_H 1
 
-#ifndef PARALLEL
+#ifndef HINTLIB_PARALLEL
 #error AdaptIntegratorLocalList can only be used in PARALLEL mode
 #endif
 

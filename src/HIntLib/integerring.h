@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef INTEGER_RING_H
-#define INTEGER_RING_H 1
+#ifndef HINTLIB_INTEGER_RING_H
+#define HINTLIB_INTEGER_RING_H 1
 
 #ifdef __GNUG__
 #pragma interface

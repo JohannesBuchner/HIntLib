@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef EMBEDRULE_H
-#define EMBEDRULE_H 1
+#ifndef HINTLIB_EMBEDRULE_H
+#define HINTLIB_EMBEDRULE_H 1
 
 #ifdef __GNUG__
 #pragma interface

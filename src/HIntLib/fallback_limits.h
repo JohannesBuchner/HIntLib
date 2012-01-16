@@ -19,7 +19,7 @@
  */
 
 /**
- *  HIntLib_limits.h
+ *  fallback/limits.h
  *
  *  This is a crude replacement for the <limits> standard library header.
  *  It is used only on systems that do not provide <limits> (most noteworthy
@@ -31,8 +31,16 @@
  *  default values.
  */
 
-#ifndef HINTLIB_LIMITS_H
-#define HINTLIB_LIMITS_H 1
+#ifndef HINTLIB_FALLBACK_LIMITS_H
+#define HINTLIB_FALLBACK_LIMITS_H 1
+
+#ifndef HINTLIB_DEFAULTS_H
+#error "HIntlib/defaults.h has to be included before HIntLib/fallback_limits.h"
+#endif
+
+#ifdef HINTLIB_HAVE_LIMITS
+#error "HIntLib/fallback_limits.h should not be included if limits is available"
+#endif
 
 #ifdef __GNUG__
 #pragma interface
@@ -132,7 +140,7 @@ struct real
 #endif
       
 
-   #ifdef CRAY
+   #ifdef HINTLIB_HAVE_REAL_INFINITY
       static const bool has_infinity = false;
    #else
       static const bool has_infinity = true;
@@ -154,7 +162,7 @@ struct real
 template<class T>
 struct realT : public real
 {
-   #ifdef CRAY
+   #ifdef HINTLIB_HAVE_REAL_INFINITY
       inline static T infinity() throw()  { return 0.0; }
    #endif
 
@@ -179,7 +187,7 @@ public:
    inline static float min() throw()  { return FLT_MIN; }
    inline static float max() throw()  { return FLT_MAX; }
 
-   #ifndef CRAY
+   #ifndef HINTLIB_HAVE_REAL_INFINITY
       inline static float infinity() throw()  { return FLT_MAX / FLT_MIN; }
    #endif
 
@@ -201,7 +209,7 @@ public:
    inline static double min() throw()  { return DBL_MIN; }
    inline static double max() throw()  { return DBL_MAX; }
 
-   #ifndef CRAY
+   #ifndef HINTLIB_HAVE_REAL_INFINITY
       inline static float infinity() throw()  { return DBL_MAX / DBL_MIN; }
    #endif
    inline static double epsilon() throw()  { return DBL_EPSILON; }
@@ -222,7 +230,7 @@ public:
    inline static long double min() throw()  { return LDBL_MIN; }
    inline static long double max() throw()  { return LDBL_MAX; }
 
-   #ifndef CRAY
+   #ifndef HINTLIB_HAVE_REAL_INFINITY
       inline static float infinity() throw()  { return LDBL_MAX / LDBL_MIN; }
    #endif
 
@@ -320,7 +328,7 @@ template<> class numeric_limits<unsigned long>
 public:
    inline static unsigned long max() throw()  { return ULONG_MAX; }
 };
-#ifdef HAVE_UNSIGNED_LONG_LONG_INT
+#ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
 template<> class numeric_limits<unsigned long long>
    : public Priv::u_integerT<unsigned long long>
 {
@@ -393,7 +401,7 @@ public:
    inline static long max() throw()  { return LONG_MAX; }
 };
 
-#ifdef HAVE_LONG_LONG_INT
+#ifdef HINTLIB_HAVE_LONG_LONG_INT
 template<> class numeric_limits<long long> : public Priv::s_integerT<long long>
 {
 public:

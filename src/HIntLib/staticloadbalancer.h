@@ -24,8 +24,8 @@
  *  Distributes a task statically among all available processing nodes
  */
 
-#ifndef STATICLOADBALANCER_H
-#define STATICLOADBALANCER_H 1
+#ifndef HINTLIB_STATICLOADBALANCER_H
+#define HINTLIB_STATICLOADBALANCER_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -67,16 +67,17 @@ public:
       : StaticLoadBalancerBase (0, 1, 0, n) {}
 };
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
 
    class MPIStaticLoadBalancer : public StaticLoadBalancerBase
    {
    public:
       MPIStaticLoadBalancer(Index n, MPI_Comm comm = MPI_COMM_WORLD);
    };
-   #define StaticLoadBalancer MPIStaticLoadBalancer
+
+   typedef MPIStaticLoadBalancer StaticLoadBalancer;
 #else
-   #define StaticLoadBalancer DummyStaticLoadBalancer
+   typedef DummyStaticLoadBalancer StaticLoadBalancer;
 #endif
 
 }  // namespace HIntLib

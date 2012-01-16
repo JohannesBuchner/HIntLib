@@ -25,8 +25,8 @@
  *  a certain Hypercube
  */
 
-#ifndef INTEGRATOR_H
-#define INTEGRATOR_H 1
+#ifndef HINTLIB_INTEGRATOR_H
+#define HINTLIB_INTEGRATOR_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -58,14 +58,14 @@ public:
       REL_ERROR_REACHED,  // Estimated error <= reqRelError
       MAX_EVAL_REACHED,   // #integ evaluations reached
       ERROR,              // Non of these, but some result was returned
-   #ifdef PARALLEL
+   #ifdef HINTLIB_PARALLEL
       WRONG_NODE,         // In parallel mode, only node 0 returns a result
    #endif
    };
 
    // Normal constructor.  No copy constructor
 
-   Integrator () {}
+   Integrator () : seed (0) {}
    virtual ~Integrator () {}
 
    // calcualte integral
@@ -88,6 +88,8 @@ public:
       Function &, const Hypercube &, Index maxEval,
       real reqAbsError, real reqRelError, EstErr &ee) = 0;
 
+   void randomize (unsigned _seed)  { seed = _seed; }
+
 protected:
 
    static
@@ -95,10 +97,14 @@ protected:
 
    static void checkDimension (const Hypercube &, const Function &);
 
+   unsigned getSeed ()  { return seed; }
+
 private:
 
    Integrator (const Integrator&);             // Do not copy!
    Integrator& operator= (const Integrator&);  // Do not assign!
+
+   unsigned seed;
 };
 
 

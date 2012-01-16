@@ -18,61 +18,74 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <vector>
-#include <queue>
-#include <algorithm>
-
 #include <HIntLib/defaults.h>
-
-#ifdef HINTLIB_SGI
-#include <iostream>
-#endif
-
-#include <HIntLib/region.h>
 
 namespace L = HIntLib;
 
-template class std::vector<L::Region*>;
-template class std::priority_queue<L::Region*, std::vector<L::Region*>,
-                                 L::RegionErrorLess>;
-template L::Region** std::fill_n<>(L::Region**,unsigned,L::Region *const&);
+#ifdef HINTLIB_INSTANTIATE_STL
 
-template void std::fill<>(bool*,          bool*,          const bool&);
-template void std::fill<>(double*,        double*,        const double&);
-template void std::fill<>(int*,           int*,           const int&);
-template void std::fill<>(unsigned char*, unsigned char*, const unsigned char&);
-template void std::fill<>(unsigned char*, unsigned char*, const int&);
-template void std::fill<>(unsigned short*,unsigned short*,const int&);
-template void std::fill<>(L::u32*,        L::u32*,        const L::u32&);
-template void std::fill<>(L::u32*,        L::u32*,        const int&);
+#include <vector>
+#include <queue>
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <stddef.h>
+#include <HIntLib/region.h>
+
+namespace std
+{
+template void fill<>(bool*,          bool*,          const bool&);
+template void fill<>(char*,          char*,          const char&);
+template void fill<>(L::real*,       L::real*,       const L::real&);
+template void fill<>(int*,           int*,           const int&);
+template void fill<>(unsigned char*, unsigned char*, const unsigned char&);
+template void fill<>(unsigned char*, unsigned char*, const int&);
+template void fill<>(unsigned short*,unsigned short*,const unsigned short&);
+template void fill<>(unsigned short*,unsigned short*,const int&);
+template void fill<>(L::u32*,        L::u32*,        const L::u32&);
+template void fill<>(L::u32*,        L::u32*,        const int&);
 #ifdef HINTLIB_U32_NOT_EQUAL_U64
-template void std::fill<>(L::u64*,        L::u64*,        const L::u64&);
+template void fill<>(L::u64*,        L::u64*,        const L::u64&);
+template void fill<>(L::u64*,        L::u64*,        const int&);
 #endif
-template void std::fill<>(L::EstErr*,     L::EstErr*,     const L::EstErr&);
-template void std::fill<>(L::Region**,    L::Region**,    L::Region *const&);
+template void fill<>(L::EstErr*,     L::EstErr*,     const L::EstErr&);
+template void fill<>(L::Region**,    L::Region**,    L::Region *const&);
 
+
+template class vector<unsigned char>;
+template class vector<unsigned short>;
+template class vector<int>;
+template class vector<char>;
+template class vector<L::Region*>;
+template class priority_queue<L::Region*, vector<L::Region*>,
+                                 L::RegionErrorLess>;
+
+template L::Region** fill_n<>(L::Region**,size_t,L::Region *const&);
+template unsigned char* fill_n<>(unsigned char*,size_t,const unsigned char&);
+template unsigned short* fill_n<>(unsigned short*,size_t,const unsigned short&);
+template int* fill_n<>(int*,size_t,const int&);
 
 #ifdef HINTLIB_SGI
-template class std::vector<unsigned char>;
-template class std::vector<unsigned short>;
-template class std::vector<int>;
-template class std::vector<char>;
+template void __push_heap<>(L::Region**,int,int,L::Region*,L::RegionErrorLess);
 
-template void
-   std::__push_heap<>(L::Region**,int,int,L::Region*,L::RegionErrorLess);
-
-template void
-   std::__adjust_heap<>(L::Region**,int,int,L::Region*,L::RegionErrorLess);
-
-template std::istream& std::getline<>(std::istream&, std::string&, char);
-template std::istream& std::istream::_M_get_num<>(unsigned int&);
-#ifdef HINTLIB_UNSIGNED_NOT_EQUAL_U32
-template std::ostream& std::ostream::_M_put_num<>(L::u32);
+template void __adjust_heap<>(L::Region**,int,int,L::Region*,L::RegionErrorLess);
 #endif
-template std::ostream& std::ostream::_M_put_num<>(long);
-template std::ostream& std::ostream::_M_put_num<>(const void*);
-template std::ostream& std::ostream::_M_put_num<>(double);
 
+template istream& getline<>(istream&, string&, char);
+template istream& istream::_M_get_num<>(unsigned int&);
+
+template ostream& operator<<(ostream&,const string&);
+
+template ostream& ostream::_M_put_num<>(long);
+template ostream& ostream::_M_put_num<>(unsigned long);
+#ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
+template ostream& ostream::_M_put_num<>(unsigned long long);
 #endif
+template ostream& ostream::_M_put_num<>(const void*);
+template ostream& ostream::_M_put_num<>(L::real);
+
+}  // namespace std
+
+#endif // defined HINTLIB_INSTANTIATE_STL
 
 

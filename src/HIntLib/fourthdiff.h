@@ -22,8 +22,8 @@
  *  FourthDiff
  */
 
-#ifndef FOURTHDIFF_H
-#define FOURTHDIFF_H 1
+#ifndef HINTLIB_FOURTHDIFF_H
+#define HINTLIB_FOURTHDIFF_H 1
 
 #ifdef __GNUG__
 #pragma interface

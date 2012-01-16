@@ -3,19 +3,6 @@
 SUBDIRS = HIntLib
 
 ALLSRC= \
-   bitop.cpp \
-   old_bitop.cpp \
-   prime.cpp \
-   prime_generated.cpp \
-   modulararithmetic.cpp \
-   polynomial.cpp \
-   polynomial2.cpp \
-   integerring.cpp \
-   galoisfield.cpp \
-   precalculatedgaloisfield.cpp \
-   precalculatedfield.cpp \
-   gcd.cpp \
-   mymath.cpp \
    cubepartitioner.cpp \
    kahanadd.cpp \
    testfunction.cpp \
@@ -25,7 +12,6 @@ ALLSRC= \
    digitalnetgen.cpp \
    sobolmatrix.cpp \
    faure.cpp \
-   niederreitermatrixgen.cpp \
    niederreitermatrix.cpp \
    halton.cpp \
    orbitrule.cpp \
@@ -53,23 +39,19 @@ ALLSRC= \
    regioncollection.cpp \
    qmcintegrator.cpp \
    mcintegrator.cpp \
-   vegasintegrator.cpp \
-   miserintegrator.cpp \
+   vegas.cpp \
+   miser.cpp \
    mersennetwister.cpp \
    builtinprng.cpp \
    virtualprng.cpp \
    pointset.cpp \
    mcpointset.cpp \
-   generatormatrix.cpp \
    loadlibseq.cpp \
    tparameter.cpp \
-   stl.cpp \
-   exception.cpp \
-   make.cpp makecubaturerulefactory.cpp makeqrnsequence.cpp \
-   output.cpp
+   make.cpp makecubaturerulefactory.cpp makeqrnsequence.cpp
 
 ALLSRCSEQ=$(ALLSRC) \
-   hypercube.cpp region.cpp
+   region.cpp
 
 ALLSRCMPI=$(ALLSRC) \
    mympi.cpp \
@@ -81,21 +63,48 @@ ALLSRCMPI=$(ALLSRC) \
    adaptintegratorms.cpp adaptintegratorlocallist.cpp \
    mcintegrator_MPI.cpp qmcintegrator_MPI.cpp
 
+noinst_LTLIBRARIES = libcreatematrix.la
 lib_LTLIBRARIES = libhintlib.la @LIB_HINTLIB_MPI@
 EXTRA_LTLIBRARIES = libhintlibmpi.la
+
+libcreatematrix_la_SOURCES = \
+   bitop.cpp \
+   exception.cpp \
+   hypercube.cpp \
+   generatormatrix.cpp \
+   prime.cpp \
+   prime_generated.cpp \
+   mymath.cpp \
+   integerring.cpp \
+   niederreitermatrixgen.cpp \
+   modulararithmetic.cpp \
+   polynomial.cpp \
+   polynomial2.cpp \
+   precalculatedfield.cpp \
+   precalculatedgaloisfield.cpp \
+   galoisfield.cpp \
+   gcd.cpp \
+   output.cpp \
+   stl.cpp
+
+libcreatematrix_la_LIBADD = -lm
+
 libhintlib_la_SOURCES = $(ALLSRCSEQ)
+libhintlib_la_LDFLAGS = -no-undefined
+libhintlib_la_LIBADD = libcreatematrix.la
+
 libhintlibmpi_la_SOURCES = $(ALLSRCMPI)
-libhintlibmpi_la_LDFLAGS = -rpath $(libdir)
+libhintlibmpi_la_LDFLAGS = -no-undefined -rpath $(libdir)
+libhintlibmpi_la_LIBADD = libcreatematrix.la
 
 noinst_PROGRAMS = create_sobol create_niederreiter create_bitop
-GNS= bitop.cpp exception.cpp hypercube.cpp generatormatrix.cpp prime.cpp prime_generated.cpp mymath.cpp polynomial2.cpp
-create_sobol_SOURCES = create_sobol.cpp $(GNS)
-create_niederreiter_SOURCES = create_niederreiter.cpp $(GNS) integerring.cpp niederreitermatrixgen.cpp modulararithmetic.cpp polynomial.cpp precalculatedfield.cpp precalculatedgaloisfield.cpp galoisfield.cpp gcd.cpp output.cpp
-create_bitop_SOURCES = create_bitop.cpp old_bitop.cpp
+create_sobol_SOURCES = create_sobol.cpp
+create_sobol_LDADD = libcreatematrix.la
+create_niederreiter_SOURCES = create_niederreiter.cpp
+create_niederreiter_LDADD = libcreatematrix.la
+create_bitop_SOURCES = create_bitop.cpp
 
 INCLUDES = @GNUFLAGS@
-# LDFLAGS=
-LDADD = -lm
 
 CLEANFILES = prime_generated.cpp sobolmatrix.cpp niederreitermatrix.cpp bitop.cpp
 
@@ -125,5 +134,5 @@ prime_generated.cpp: HIntLib/create_prime@EXEEXT@
 	HIntLib/create_prime@EXEEXT@ cpp > prime_generated.cpp
 
 HIntLib/create_prime@EXEEXT@:
-	cd HIntLib && $(MAKE) create_prime
+	cd HIntLib && $(MAKE) create_prime@EXEEXT@
 

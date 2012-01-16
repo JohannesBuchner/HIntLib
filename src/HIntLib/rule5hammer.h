@@ -33,8 +33,8 @@
  *  as formula Cn: 5-2
  */
 
-#ifndef RULE5HAMMER_H
-#define RULE5HAMMER_H 1
+#ifndef HINTLIB_RULE5HAMMER_H
+#define HINTLIB_RULE5HAMMER_H 1
 
 #ifdef __GNUG__
 #pragma interface

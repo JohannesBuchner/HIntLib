@@ -29,8 +29,8 @@
  *  as formula Cn: 2-2
  */
 
-#ifndef RULE_2_THACHER_H
-#define RULE_2_THACHER_H 1
+#ifndef HINTLIB_RULE_2_THACHER_H
+#define HINTLIB_RULE_2_THACHER_H 1
 
 #ifdef __GNUG__
 #pragma interface

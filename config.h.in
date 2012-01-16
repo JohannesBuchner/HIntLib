@@ -3,6 +3,12 @@
 /* The directory which holds our data files */
 #undef DATADIR
 
+/* define if FLT_ROUNDS is constant */
+#undef FLT_ROUNDS_CONST
+
+/* define if ::abs(double) is available */
+#undef GLOBAL_ABS_AVAILABLE
+
 /* Define to 1 if you have the <algorithm> header file. */
 #undef HAVE_ALGORITHM
 
@@ -117,23 +123,11 @@
 /* Define to 1 if you have the <vector> header file. */
 #undef HAVE_VECTOR
 
-/* define if FLT_ROUNDS is constant */
-#undef HINTLIB_FLT_ROUNDS_CONST
-
-/* define if ::abs(double) is available */
-#undef HINTLIB_GLOBAL_ABS_AVAILABLE
-
 /* define if IEEE magic works */
-#undef HINTLIB_IEEE_MAGIC_WORKS
+#undef IEEE_MAGIC_WORKS
 
-/* Define if we are compiling with the SGI C++ compiler CC. */
-#undef HINTLIB_SGI
-
-/* define if std::abs(double) is available */
-#undef HINTLIB_STD_ABS_AVAILABLE
-
-/* define if streams support local */
-#undef HINTLIB_STREAMS_SUPPORT_LOCAL
+/* Define if templates from the STL have to be instantiated manually. */
+#undef INSTANTIATE_STL
 
 /* Name of package */
 #undef PACKAGE
@@ -153,6 +147,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* Define if we are compiling with the SGI C++ compiler CC. */
+#undef SGI
+
 /* The size of a `unsigned int', as computed by sizeof. */
 #undef SIZEOF_UNSIGNED_INT
 
@@ -164,6 +161,12 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+/* define if std::abs(double) is available */
+#undef STD_ABS_AVAILABLE
+
+/* define if streams support local */
+#undef STREAMS_SUPPORT_LOCAL
 
 /* Version number of package */
 #undef VERSION

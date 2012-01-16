@@ -28,8 +28,8 @@
  *  as formula Cn: 1-1
  */
 
-#ifndef RULE1MIDPOINT_H
-#define RULE1MIDPOINT_H 1
+#ifndef HINTLIB_RULE1MIDPOINT_H
+#define HINTLIB_RULE1MIDPOINT_H 1
 
 #ifdef __GNUG__
 #pragma interface

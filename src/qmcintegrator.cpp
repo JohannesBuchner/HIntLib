@@ -27,7 +27,7 @@
  *  Number Generator
  */
 
-#if defined __GNUG__ && ! defined PARALLEL
+#if defined __GNUG__ && ! defined HINTLIB_PARALLEL
 #pragma implementation
 #endif
 
@@ -41,7 +41,7 @@
 #include <HIntLib/hypercube.h>
 
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
    #define NAME(x) x##StaticLB
 #else
    #define NAME(x) x
@@ -60,7 +60,7 @@ L::Integrator::Status L::NAME(QMCIntegrator)::integrate (
 
    if (n == 0)
    {
-      #if defined PARALLEL && defined HINTLIB_XX_DONT_THROW_IN_PARALLEL
+      #ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
       #else
@@ -71,11 +71,12 @@ L::Integrator::Status L::NAME(QMCIntegrator)::integrate (
    // Decrease the number of points, to get a "good" number
 
    ps->setCube (&h);
+   ps->randomize (getSeed());
    n = ps->getOptimalNumber (n, h);
    Statistic<> stat;
    Array<real> point (h.getDimension());
 
-   #ifdef PARALLEL
+   #ifdef HINTLIB_PARALLEL
       StaticLoadBalancer slb (n);
  
       ps->integratePartition (

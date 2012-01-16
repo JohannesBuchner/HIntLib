@@ -24,7 +24,7 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_OSTREM
+#ifdef HINTLIB_HAVE_OSTREM
   #include <ostream>
 #else
   #include <iostream>

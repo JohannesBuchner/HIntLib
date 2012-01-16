@@ -19,8 +19,8 @@
  */
 
 
-#ifndef POINT_SET_H
-#define POINT_SET_H 1
+#ifndef HINTLIB_POINT_SET_H
+#define HINTLIB_POINT_SET_H 1
  
 #ifdef __GNUG__
 #pragma interface
@@ -34,6 +34,44 @@ namespace HIntLib
 {
    class Hypercube;
    class Function;
+
+   /**
+    *  PRNG
+    *
+    *  Abstract base class for Pseudo Random Number Generators
+    */
+
+   class PRNG
+   {
+   public:
+      virtual ~PRNG () {}
+      
+      // Initialize Generator
+ 
+      virtual void init (unsigned start) = 0;
+
+      // Return a random number
+
+      virtual real uniform() = 0;        // (0,1)
+      virtual real uniform(real) = 0;
+      virtual real uniform(real, real) = 0;
+ 
+      virtual int  equidist (int ub) = 0;           // 0,1,2,...,ub-1
+      virtual int  equidist (int min, int ub) = 0;  // min,...,ub-1
+
+      virtual void uniform (Hypercube &h, real* p) = 0;
+
+      // Save and restore state
+ 
+      virtual size_t getStateSize() const = 0;
+      virtual void saveState (void *) const = 0;
+      virtual void restoreState (const void *) = 0;
+
+      // low level
+
+      virtual real getRange() const = 0;
+      virtual real operator()() = 0;
+   };
 
    /**
     *  Job
@@ -90,6 +128,8 @@ namespace HIntLib
 
       virtual void doJob    (real *,          Job &, Index) = 0;
       virtual bool doJobRep (real *, ReportingJob &, Index) = 0;
+
+      virtual void randomize (unsigned i) = 0;
    };
 
 
@@ -129,44 +169,6 @@ namespace HIntLib
       virtual void select (unsigned i, unsigned num) = 0;
    };
 
-
-   /**
-    *  PRNG
-    *
-    *  Abstract base class for Pseudo Random Number Generators
-    */
-
-   class PRNG
-   {
-   public:
-      virtual ~PRNG () {}
-      
-      // Initialize Generator
- 
-      virtual void init (unsigned start) = 0;
-
-      // Return a random number
-
-      virtual real uniform() = 0;        // (0,1)
-      virtual real uniform(real) = 0;
-      virtual real uniform(real, real) = 0;
- 
-      virtual int  equidist (int ub) = 0;           // 0,1,2,...,ub-1
-      virtual int  equidist (int min, int ub) = 0;  // min,...,ub-1
-
-      virtual void uniform (Hypercube &h, real* p) = 0;
-
-      // Save and restore state
- 
-      virtual size_t getStateSize() const = 0;
-      virtual void saveState (void *) const = 0;
-      virtual void restoreState (const void *) = 0;
-
-      // low level
-
-      virtual real getRange() const = 0;
-      virtual real operator()() = 0;
-   };
 
 }  // namespace HIntLib
 

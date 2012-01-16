@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GCD_H
-#define GCD_H 1
+#ifndef HINTLIB_GCD_H
+#define HINTLIB_GCD_H 1
 
 #include <HIntLib/integerring.h>
 
@@ -62,7 +62,7 @@ typename A::type genGcd (
  *     - GenPolynomial2
  */
  
-template<class T> T gcd(T u, T v)  GNU_CONST;
+template<class T> T gcd(T u, T v)  HINTLIB_GNU_CONST;
 template<class T> T gcd(T u, T v)
 {
    while (v)

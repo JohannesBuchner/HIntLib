@@ -279,7 +279,7 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 convert_matrix.o: convert_matrix.cpp ../src/HIntLib/generatormatrix.h \
-	../src/HIntLib/defaults.h ../src/HIntLib/hintlib_limits.h \
+	../src/HIntLib/defaults.h ../src/HIntLib/fallback_limits.h \
 	../src/HIntLib/bitop.h
 
 info-am:

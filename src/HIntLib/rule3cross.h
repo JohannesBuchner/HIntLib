@@ -33,8 +33,8 @@
  *  as formula Cn: 3-2
  */
 
-#ifndef RULE_3_CROSS_H
-#define RULE_3_CROSS_H 1
+#ifndef HINTLIB_RULE_3_CROSS_H
+#define HINTLIB_RULE_3_CROSS_H 1
 
 #ifdef __GNUG__
 #pragma interface

@@ -24,8 +24,8 @@
  *  Makes the built-in PRNG available
  */
 
-#ifndef BUILTINPRNG_H
-#define BUILTINPRNG_H 1
+#ifndef HINTLIB_BUILTINPRNG_H
+#define HINTLIB_BUILTINPRNG_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -35,10 +35,10 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_LIMITS
+#ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
 #else
-  #include <HIntLib/hintlib_limits.h>
+  #include <HIntLib/fallback_limits.h>
 #endif
 
 

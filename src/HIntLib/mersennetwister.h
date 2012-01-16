@@ -32,8 +32,8 @@
  *         and Richard J. Wagner.
  */
 
-#ifndef MERSENNETWISTER_H
-#define MERSENNETWISTER_H 1
+#ifndef HINTLIB_MERSENNETWISTER_H
+#define HINTLIB_MERSENNETWISTER_H 1
 
 #ifdef __GNUG__
 #pragma interface

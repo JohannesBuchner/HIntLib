@@ -22,8 +22,8 @@
  *  Digital Net for a prime base  and its corresponding QMCRoutines
  */
 
-#ifndef DIGITAL_NET_GEN_H
-#define DIGITAL_NET_GEN_H 1
+#ifndef HINTLIB_DIGITAL_NET_GEN_H
+#define HINTLIB_DIGITAL_NET_GEN_H 1
 
 #ifdef __GNUG__
 #pragma interface

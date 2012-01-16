@@ -19,8 +19,8 @@
  */
 
 
-#ifndef PSEUDOEMBEDRULE_H
-#define PSEUDOEMBEDRULE_H 1
+#ifndef HINTLIB_PSEUDOEMBEDRULE_H
+#define HINTLIB_PSEUDOEMBEDRULE_H 1
 
 #ifdef __GNUG__
 #pragma interface

@@ -25,6 +25,7 @@ noinst_HEADERS = test.h
 INCLUDES = -I$(top_srcdir)/src -I$(top_builddir)/src @GNUFLAGS@
 # LDFLAGS= @SGIFLAGS@
 LDADD = ../src/libhintlib.la -lm
+LDFLAGS = -no-install
 
 clean-local:
 	rm -rf ii_files

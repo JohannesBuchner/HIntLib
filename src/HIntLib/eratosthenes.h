@@ -48,8 +48,8 @@
  *       T = Polynomial2:   > compares degree of Polynomials
  */
 
-#ifndef ERATOSTHENES_H
-#define ERATOSTHENES_H 1
+#ifndef HINTLIB_ERATOSTHENES_H
+#define HINTLIB_ERATOSTHENES_H 1
 
 #ifdef __GNUG__
 #pragma interface

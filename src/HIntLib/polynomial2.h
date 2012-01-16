@@ -27,8 +27,8 @@
  *
  */
 
-#ifndef POLYNOMIAL2_H
-#define POLYNOMIAL2_H 1
+#ifndef HINTLIB_POLYNOMIAL2_H
+#define HINTLIB_POLYNOMIAL2_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -38,10 +38,10 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_LIMITS
+#ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
 #else
-  #include <HIntLib/hintlib_limits.h>
+  #include <HIntLib/fallback_limits.h>
 #endif
 
 #include <HIntLib/bitop.h>
@@ -70,8 +70,12 @@ public:
    // Constructors
 
    Polynomial2 ()             : d (T()) {}   // Default is f(x) = 0
-   Polynomial2 (const P &p)   : d (p.d) {}   // Copy constructor
+   Polynomial2 (const P& p)   : d (p.d) {}   // Copy constructor
    explicit Polynomial2 (T d) : d (d)   {}   // Conversion from int
+
+   // Assignment
+
+   P& operator= (const P& p)  { d = p.d; return *this; }
 
    // You can convert a polynomial to an int to get the coefficient bitmap
 
@@ -87,23 +91,23 @@ public:
 
    // Addition and Substraction
 
-   P operator+ (const P p) const  { return P (d ^ p.d); }
-   P operator- (const P p) const  { return P (d ^ p.d); }
+   P operator+ (const P& p) const  { return P (d ^ p.d); }
+   P operator- (const P& p) const  { return P (d ^ p.d); }
    P operator+ () const   { return *this; }   // Unary plus
    P operator- () const   { return *this; }   // Unary minus
-   P& operator+= (const P p)  { d ^= p.d; return *this; }
-   P& operator-= (const P p)  { d ^= p.d; return *this; }
+   P& operator+= (const P& p)  { d ^= p.d; return *this; }
+   P& operator-= (const P& p)  { d ^= p.d; return *this; }
 
    // Multiplikation and Division
 
    static void div (const P u, const P v, P &q, P &r);
 
-   P  operator* (const P p) const;
-   P  operator/ (const P p) const { P q, r; div (*this, p, q, r); return q; }
-   P  operator% (const P p) const { P q, r; div (*this, p, q, r); return r; }
-   P& operator*= (const P p) { return *this = *this * p; }
-   P& operator/= (const P p) { P r; div (*this, p, *this, r); return *this; }
-   P& operator%= (const P p) { P q; div (*this, p, q, *this); return *this; }
+   P  operator*  (const P  p) const;
+   P  operator/  (const P& p) const { P q, r; div (*this, p, q, r); return q; }
+   P  operator%  (const P& p) const { P q, r; div (*this, p, q, r); return r; }
+   P& operator*= (const P& p) { return *this = *this * p; }
+   P& operator/= (const P& p) { P r; div (*this, p, *this, r); return *this; }
+   P& operator%= (const P& p) { P q; div (*this, p, q, *this); return *this; }
 
    P& divByX () { d >>= 1; return *this; }
    P& mulByX () { if (msb()) throw Overflow(); d <<= 1; return *this; }

@@ -272,6 +272,7 @@ void L::PrecalculatedField<T>::setRecip (T a, T r)
 namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) \
+   template void PrecalculatedField<X>::setPointers (); \
    template void PrecalculatedField<X>::copy (); \
    template void PrecalculatedField<X>::destroy (); \
    template PrecalculatedField<X>::PrecalculatedField (unsigned); \

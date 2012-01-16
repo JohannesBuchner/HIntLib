@@ -24,10 +24,10 @@
  *  Parallel Adaptive Integration using a Master-Slave approach
  */
 
-#ifndef ADAPT_INTEGRATOR_MS_H
-#define ADAPT_INTEGRATOR_MS_H
+#ifndef HINTLIB_ADAPT_INTEGRATOR_MS_H
+#define HINTLIB_ADAPT_INTEGRATOR_MS_H
 
-#ifndef PARALLEL
+#ifndef HINTLIB_PARALLEL
 #error AdaptIntegratorMS can only be used in PARALLEL mode
 #endif
 

@@ -108,6 +108,7 @@ noinst_HEADERS = test.h
 INCLUDES = -I$(top_srcdir)/src -I$(top_builddir)/src @GNUFLAGS@
 # LDFLAGS= @SGIFLAGS@
 LDADD = ../src/libhintlib.la -lm
+LDFLAGS = -no-install
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -118,7 +119,6 @@ numericdiff$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
-LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 test_bitop_OBJECTS =  test_bitop.$(OBJEXT) test.$(OBJEXT)
 test_bitop_LDADD = $(LDADD)
@@ -393,52 +393,6 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
-numericdiff.o: numericdiff.cpp
-test.o: test.cpp ../src/HIntLib/exception.h ../src/HIntLib/defaults.h \
-	test.h
-test_arithmetic.o: test_arithmetic.cpp ../src/HIntLib/polynomial2.h \
-	../src/HIntLib/defaults.h ../src/HIntLib/hintlib_limits.h \
-	../src/HIntLib/bitop.h ../src/HIntLib/prime.h \
-	../src/HIntLib/exception.h ../src/HIntLib/prime_generated.h \
-	../src/HIntLib/integerring.h ../src/HIntLib/mymath.h \
-	../src/HIntLib/galoisfield.h ../src/HIntLib/polynomial.h \
-	../src/HIntLib/modulararithmetic.h test.h
-test_bitop.o: test_bitop.cpp ../src/HIntLib/defaults.h \
-	../src/HIntLib/hintlib_limits.h ../src/HIntLib/bitop.h \
-	../src/HIntLib/old_bitop.h test.h
-test_eratosthenes.o: test_eratosthenes.cpp ../src/HIntLib/polynomial2.h \
-	../src/HIntLib/defaults.h ../src/HIntLib/hintlib_limits.h \
-	../src/HIntLib/bitop.h ../src/HIntLib/prime.h \
-	../src/HIntLib/exception.h ../src/HIntLib/prime_generated.h \
-	../src/HIntLib/eratosthenes.h ../src/HIntLib/array.h test.h
-test_genmatrix.o: test_genmatrix.cpp ../src/HIntLib/sobolmatrix.h \
-	../src/HIntLib/defaults.h ../src/HIntLib/hintlib_limits.h \
-	../src/HIntLib/generatormatrix.h ../src/HIntLib/bitop.h \
-	../src/HIntLib/niederreitermatrix.h test.h
-test_polynomial.o: test_polynomial.cpp ../src/HIntLib/polynomial2.h \
-	../src/HIntLib/defaults.h ../src/HIntLib/hintlib_limits.h \
-	../src/HIntLib/bitop.h ../src/HIntLib/prime.h \
-	../src/HIntLib/exception.h ../src/HIntLib/prime_generated.h \
-	../src/HIntLib/mymath.h test.h
-test_prime.o: test_prime.cpp ../src/HIntLib/prime.h \
-	../src/HIntLib/exception.h ../src/HIntLib/defaults.h \
-	../src/HIntLib/prime_generated.h ../src/HIntLib/gcd.h \
-	../src/HIntLib/integerring.h ../src/HIntLib/mymath.h \
-	../src/HIntLib/hintlib_limits.h test.h
-test_qrnsequence.o: test_qrnsequence.cpp ../src/HIntLib/qrnsequence.h \
-	../src/HIntLib/defaults.h ../src/HIntLib/exception.h \
-	../src/HIntLib/hypercube.h ../src/HIntLib/mymath.h \
-	../src/HIntLib/hintlib_limits.h ../src/HIntLib/array.h \
-	../src/HIntLib/statistic.h ../src/HIntLib/minmaxfinder.h \
-	../src/HIntLib/make.h test.h
-test_rule.o: test_rule.cpp ../src/HIntLib/cubaturerule.h \
-	../src/HIntLib/defaults.h ../src/HIntLib/hypercube.h \
-	../src/HIntLib/mymath.h ../src/HIntLib/hintlib_limits.h \
-	../src/HIntLib/array.h ../src/HIntLib/make.h \
-	../src/HIntLib/exception.h ../src/HIntLib/testfunction.h \
-	../src/HIntLib/function.h ../src/HIntLib/mersennetwister.h \
-	../src/HIntLib/distribution.h ../src/HIntLib/shiftscale.h \
-	test.h
 
 check-TESTS: $(TESTS)
 	@failed=0; all=0; \

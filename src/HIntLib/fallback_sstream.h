@@ -25,13 +25,21 @@ the executable file might be covered by the GNU General Public License. */
 /* Written by Magnus Fromreide (magfr@lysator.liu.se). */
 /* seekoff and ideas for overflow is largely borrowed from libstdc++-v3 */
 
-#ifndef __SSTREAM__
-#define __SSTREAM__
+#ifndef HINTLIB_FALLBACK_SSTREAM_H
+#define HINTLIB_FALLBACK_SSTREAM_H 1
+
+#ifndef HINTLIB_DEFAULTS_H
+#error "HIntlib/defaults.h has to be included before HIntLib/fallback_sstream.h"
+#endif
+
+#ifdef HINTLIB_HAVE_SSTREAM
+#error "HIntLib/fallback_sstream.h should not be included if sstream is available"
+#endif
 
 #include <iostream>
 #include <string>
 
-#ifdef HAVE_STREAMBUF
+#ifdef HINTLIB_HAVE_STREAMBUF
 #include <streambuf>
 #else
 #include <streambuf.h>

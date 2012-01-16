@@ -22,8 +22,8 @@
  *  RegionCollection
  */
 
-#ifndef REGIONCOLLECTION_H
-#define REGIONCOLLECTION_H 1
+#ifndef HINTLIB_REGIONCOLLECTION_H
+#define HINTLIB_REGIONCOLLECTION_H 1
 
 #ifdef __GNUG__
 #pragma interface

@@ -24,8 +24,8 @@
  *  Shifts and scales a point in space
  */
 
-#ifndef SHIFTSCALE_H
-#define SHIFTSCALE_H 1
+#ifndef HINTLIB_SHIFTSCALE_H
+#define HINTLIB_SHIFTSCALE_H 1
 
 #ifdef __GNUG__
 #pragma interface

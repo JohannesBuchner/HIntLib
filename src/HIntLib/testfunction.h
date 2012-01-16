@@ -52,8 +52,8 @@
  *     Writes all points passed in operator() into a stream
  */ 
 
-#ifndef TESTFUNCTION_H
-#define TESTFUNCTION_H 1
+#ifndef HINTLIB_TESTFUNCTION_H
+#define HINTLIB_TESTFUNCTION_H 1
 
 #ifdef __GNUG__
 #pragma interface

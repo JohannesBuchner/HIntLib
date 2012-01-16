@@ -19,8 +19,8 @@
  */
 
 
-#ifndef ESTERR_H
-#define ESTERR_H 1
+#ifndef HINTLIB_ESTERR_H
+#define HINTLIB_ESTERR_H 1
  
 #ifdef __GNUG__
 #pragma interface
@@ -31,7 +31,7 @@
 #include <iosfwd>
 
 #include <HIntLib/mymath.h>
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
    #include <HIntLib/buffer.h>
 #endif
 
@@ -49,7 +49,7 @@ public:
   EstErr () : est (0), err (0) {}
   EstErr (real newEst, real newErr)
      : est (newEst), err (std::max (newErr, real())) {}
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
   EstErr (RecvBuffer &b)  {  b >> *this; }
 #endif
  
@@ -65,7 +65,7 @@ public:
 
   void scale (real a)  { est *= a; err *= a; }
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
    friend SendBuffer& operator<< (SendBuffer &, const EstErr &);
    friend RecvBuffer& operator>> (RecvBuffer &, EstErr &); 
    MPI_Datatype getMPIDatatype () const;
@@ -83,11 +83,8 @@ real EstErr::getRelError() const
 {
    // Don't divide by 0 on the cray
 
-   #ifdef CRAY
-      return (est == 0.0) ? REAL_MAX : abs (err / est);
-   #else
-      return abs (err / est);
-   #endif
+      return std::numeric_limits<real>::has_infinity ?  abs (err / est)
+         : ((est == 0.0) ? std::numeric_limits<real>::max() : abs (err / est));
 }
 
 inline
@@ -126,7 +123,7 @@ EstErr& EstErr::operator-= (const EstErr &ee)
    return *this;
 }
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
 
 inline SendBuffer& operator<< (SendBuffer &b, const EstErr &ee)
 {

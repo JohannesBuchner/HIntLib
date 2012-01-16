@@ -31,19 +31,24 @@
 
 #include <HIntLib/pointset.h>
 
-void HIntLib::PartitionablePointSet::integrate (
+#include <HIntLib/mersennetwister.h>
+#include <HIntLib/mcpointset.h>
+
+namespace L = HIntLib;
+
+void L::PartitionablePointSet::integrate (
    real *point, Function &f, Index num, Stat &stat)
 {
    integratePartition (point, f, num, 0, num, stat);
 }
 
-void HIntLib::PartitionablePointSet::integrate (
+void L::PartitionablePointSet::integrate (
    real *point, Function &f, Index num, StatVar &stat)
 {
    integratePartition (point, f, num, 0, num, stat);
 }
 
-void HIntLib::PartitionablePointSet::doJob (real *point, Job &job, Index num)
+void L::PartitionablePointSet::doJob (real *point, Job &job, Index num)
 {
    doJobPartition (point, job, num, 0, num);
 }

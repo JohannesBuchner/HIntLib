@@ -25,8 +25,8 @@
  *   of the STL.
  */
 
-#ifndef MYALGORITHM_H
-#define MYALGORITHM_H 1
+#ifndef HINTLIB_MYALGORITHM_H
+#define HINTLIB_MYALGORITHM_H 1
 
 #include <algorithm>
 
@@ -112,23 +112,23 @@ bool next_partition (Bi first, Bi last)
  *  Returns the difference between two unsigned integers of arbitrary size
  */
 
-#define MYALGO_H_XXX(type) \
+#define HINTLIB_MYALGO_H_XXX(type) \
 inline \
 type diff (unsigned type a, unsigned type b) \
 { \
    return static_cast<type>(a) - static_cast<type>(b); \
 }
 
-MYALGO_H_XXX(char)
-MYALGO_H_XXX(int)
-MYALGO_H_XXX(long)
-#ifdef HAVE_LONG_LONG_INT
-#ifdef HAVE_UNSIGNED_LONG_LONG_INT
-MYALGO_H_XXX(long long)
+HINTLIB_MYALGO_H_XXX(char)
+HINTLIB_MYALGO_H_XXX(int)
+HINTLIB_MYALGO_H_XXX(long)
+#ifdef HINTLIB_HAVE_LONG_LONG_INT
+#ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
+HINTLIB_MYALGO_H_XXX(long long)
 #endif
 #endif
 
-#undef MYALGO_H_XXX
+#undef HINTLIB_MYALGO_H_XXX
 
 }  // namespace HIntLib
 

@@ -19,8 +19,8 @@
  */
 
 
-#ifndef MC_POINTSET_H
-#define MC_POINTSET_H 1
+#ifndef HINTLIB_MC_POINTSET_H
+#define HINTLIB_MC_POINTSET_H 1
  
 #ifdef __GNUG__
 #pragma interface
@@ -106,7 +106,8 @@ protected:
    MCPointSetBase(Index alignment) : MCPointSetBase_(alignment) {}
 
 public:
-   void select (unsigned start, unsigned num) { mc.init (start); }
+   virtual void select (unsigned start, unsigned num) { mc.init (start); }
+   virtual void randomize (unsigned seed) { mc.init (seed); }
 };
 
 
@@ -257,7 +258,8 @@ protected:
    unsigned start;
 
 public:
-   void select (unsigned s, unsigned num) { start = s; }
+   virtual void select (unsigned s, unsigned num) { start = s; }
+   virtual void randomize (unsigned seed) { start = seed; }
 
    void doJob (real *point, Job &job, Index n)
    {
@@ -313,6 +315,7 @@ protected:
 
 public:
    virtual void select (unsigned s, unsigned num) { start = s; }
+   virtual void randomize (unsigned seed) { start = seed; }
 
    void doJob (real *point, Job &job, Index n)
    {
@@ -363,6 +366,7 @@ protected:
 
 public:
    virtual void select (unsigned s, unsigned num) { start = s; }
+   virtual void randomize (unsigned seed) { start = seed; }
 
    void doJob (real *point, Job &job, Index n)
    {

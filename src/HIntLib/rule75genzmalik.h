@@ -25,8 +25,8 @@
  *  A.Genz and Malik
  */
 
-#ifndef RULE_7_5_GENZ_MALIK_H
-#define RULE_7_5_GENZ_MALIK_H 1
+#ifndef HINTLIB_RULE_7_5_GENZ_MALIK_H
+#define HINTLIB_RULE_7_5_GENZ_MALIK_H 1
 
 #ifdef __GNUG__
 #pragma interface

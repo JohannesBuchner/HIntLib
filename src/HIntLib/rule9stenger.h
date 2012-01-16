@@ -31,8 +31,8 @@
  *  Listet as 9-1 in Stroud71
  */
 
-#ifndef RULE9STENGER_H
-#define RULE9STENGER_H 1
+#ifndef HINTLIB_RULE9STENGER_H
+#define HINTLIB_RULE9STENGER_H 1
 
 #ifdef __GNUG__
 #pragma interface

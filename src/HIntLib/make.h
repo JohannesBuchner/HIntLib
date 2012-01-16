@@ -22,8 +22,8 @@
  *  make.h
  */
 
-#ifndef MAKE_H
-#define MAKE_H 1
+#ifndef HINTLIB_MAKE_H
+#define HINTLIB_MAKE_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -35,8 +35,8 @@ namespace HIntLib
 {
    class CubatureRuleFactory;
    class EmbeddedRuleFactory;
-   template<class T> class HeapAllocatedGeneratorMatrix2;
-   template<class T> class HeapAllocatedGeneratorMatrixGen;
+   template<class T> class MutableGeneratorMatrix2;
+   template<class T> class MutableGeneratorMatrixGen;
    class QRNSequence;
    class Hypercube;
 
@@ -99,9 +99,8 @@ namespace HIntLib
        *  get Generator Matrix Gen Name ()
        */
 
-      static HeapAllocatedGeneratorMatrix2<u64>*
-         generatorMatrix2 (int, unsigned dim);
-      static HeapAllocatedGeneratorMatrixGen<unsigned char>*
+      static MutableGeneratorMatrix2<u64>* generatorMatrix2 (int, unsigned dim);
+      static MutableGeneratorMatrixGen<unsigned char>*
          generatorMatrixGen (int, unsigned dim);
 
       static const char* getGeneratorMatrix2Name (int);

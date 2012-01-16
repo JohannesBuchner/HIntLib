@@ -39,8 +39,8 @@
  *      volume.
  */
 
-#ifndef CUBEPARTITIONER_H
-#define CUBEPARTITIONER_H 1
+#ifndef HINTLIB_CUBEPARTITIONER_H
+#define HINTLIB_CUBEPARTITIONER_H 1
 
 #ifdef __GNUG__
 #pragma interface

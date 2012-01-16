@@ -24,17 +24,18 @@
  *  An adaptive Monte Carlo integration routine
  *
  *  This implementation is based on
- *    [1] Lepage, L.P. 1978, Journal of Computational Physics, vol. 27,
- *        pp. 192 - 203.
- *    [2] Lepage, L.P. 1980, "VEGAS: An Adaptive Multidimensional Integration
- *        Program", Publication CLNS-80/447, Cornell Univeristy.
- *    [3] William H. Press, Saul A. Teukolsky, William T. Vetterling, Brian P.
- *        Flannery. Numerical Recipes in C - The Art of Scientific Computing.
+ *    [1] L.P. Lepage. A New Algorithm for Adaptive Multidimensional
+ *        Integration. Journal of Computational Physics, vol. 27,
+ *        pp. 192 - 203, 1978.
+ *    [2] L.P. Lepage. VEGAS: An Adaptive Multidimensional Integration
+ *        Program. Publication CLNS-80/447, Cornell Univeristy, 1980.
+ *    [3] W.H. Press, S.A. Teukolsky, W.T. Vetterling, B.P. Flannery.
+ *        Numerical Recipes in C - The Art of Scientific Computing.
  *        second edition. Cambrdige University Press. Chapter 7.8.
  */
 
-#ifndef VEGASINTEGRATOR_H
-#define VEGASINTEGRATOR_H 1
+#ifndef HINTLIB_VEGAS_H
+#define HINTLIB_VEGAS_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -44,18 +45,25 @@
 
 namespace HIntLib
 {
-   class PRNG;
+   class PointSet;
 
-   class VegasIntegrator : public Integrator
+   class Vegas : public Integrator
    {
    public:
-      VegasIntegrator (PRNG* _mc) : mc(_mc) {}
+      Vegas (PointSet* _ps) : ps(_ps), combineResults (false), ALPHA (1.5) {}
       
       Status integrate (
          Function &f, const Hypercube &h, Index maxEval,
          real, real, EstErr &ee);
+
+      Vegas& setAlpha (real a)  { ALPHA = a; return *this; }
+      Vegas& setCombineResults (bool b = true)
+         { combineResults = b; return *this; }
+
    private:
-      PRNG* mc;
+      PointSet* const ps;
+      bool combineResults;
+      real ALPHA;
    };
 }  // namespace HIntLib
 

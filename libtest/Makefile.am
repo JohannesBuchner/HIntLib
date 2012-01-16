@@ -6,6 +6,7 @@ noinst_HEADERS = include.h
 
 lib_LTLIBRARIES = libhintlibtest.la
 libhintlibtest_la_SOURCES = func.cpp lib.cpp
+libhintlibtest_la_LDFLAGS = -no-undefined
 
 noinst_PROGRAMS = main
 main_SOURCES = main.cpp
@@ -14,7 +15,7 @@ INCLUDES =  @GNUFLAGS@
 # LDFLAGS= @SGIFLAGS@
 LDADD = libhintlibtest.la
 
-result.h: main create
+result.h: main@EXEEXT@ create
 	$(srcdir)/create
 
 clean-local:

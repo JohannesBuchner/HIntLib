@@ -32,8 +32,8 @@
  *  as formula Cn: 3-3
  */
 
-#ifndef RULE_3_TYLER_H
-#define RULE_3_TYLER_H 1
+#ifndef HINTLIB_RULE_3_TYLER_H
+#define HINTLIB_RULE_3_TYLER_H 1
 
 #ifdef __GNUG__
 #pragma interface

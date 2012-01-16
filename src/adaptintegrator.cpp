@@ -31,10 +31,10 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_LIMITS
+#ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
 #else
-  #include <HIntLib/hintlib_limits.h>
+  #include <HIntLib/fallback_limits.h>
 #endif
 
 #include <HIntLib/adaptintegrator.h>
@@ -64,7 +64,7 @@ L::Integrator::Status L::AdaptIntegrator::integrate (
 
       if (maxEvaluations < 1)
       {
-         #ifdef CRAY
+         #ifdef HINTLIB_NO_EXCEPTIONS
             ee.set (0.0, 0.0);
             return ERROR;
          #else

@@ -29,10 +29,10 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_SSTREAM
+#ifdef HINTLIB_HAVE_SSTREAM
   #include <sstream>
 #else
-  #include <HIntLib/hintlib_sstream.h>
+  #include <HIntLib/fallback_sstream.h>
 #endif
 
 #include <HIntLib/generatormatrix.h>
@@ -556,7 +556,7 @@ L::MutableGeneratorMatrixGen<unsigned char>*
 L::loadNiederreiterXing (unsigned dim)
 {
    std::ostringstream ss;
-   ss << DATADIR << "/fkmat"
+   ss << HINTLIB_DATADIR << "/fkmat"
       << std::setw(2) << std::setfill ('0') << dim << ".bin";
    try
    {

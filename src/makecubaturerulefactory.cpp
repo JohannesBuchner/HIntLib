@@ -93,9 +93,11 @@ const RuleRecord* lookup (int n)
 
 }  // anonymous namespace
 
+#ifdef HINTLIB_INSTANTIATE_STL
 #ifdef HINTLIB_SGI
    template const RuleRecord* std::__lower_bound<> (
       const RuleRecord*, const RuleRecord*, const RuleRecord&, ptrdiff_t*);
+#endif
 #endif
 
 CubatureRuleFactory* L::Make::cubatureRuleFactory (int rule)

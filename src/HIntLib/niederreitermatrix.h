@@ -22,8 +22,8 @@
  *  The matrices defining the Niederreiter Digital Net
  */
 
-#ifndef NIEDERREITER_MATRIX_H
-#define NIEDERREITER_MATRIX_H 1
+#ifndef HINTLIB_NIEDERREITER_MATRIX_H
+#define HINTLIB_NIEDERREITER_MATRIX_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -31,10 +31,10 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_LIMITS
+#ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
 #else
-  #include <HIntLib/hintlib_limits.h>
+  #include <HIntLib/fallback_limits.h>
 #endif
 
 #include <HIntLib/generatormatrix.h>

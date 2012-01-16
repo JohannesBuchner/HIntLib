@@ -24,8 +24,8 @@
  *  Some functions that perform bit operations on integer-like types
  */
 
-#ifndef OLD_BITOP_H
-#define OLD_BITOP_H 1
+#ifndef HINTLIB_OLD_BITOP_H
+#define HINTLIB_OLD_BITOP_H 1
 
 #ifdef __GNUG__
 #pragma interface

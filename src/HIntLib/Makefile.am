@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 pkginclude_HEADERS = \
-   adapt.h                       miserintegrator.h \
+   adapt.h                       miser.h \
    adaptintegrator.h             modulararithmetic.h bitvectorring.h \
    adaptintegratorlocallist.h    myalgorithm.h \
    adaptintegratorms.h           mymath.h gcd.h \
@@ -30,8 +30,8 @@ pkginclude_HEADERS = \
    function.h                    rule5hammer.h \
    generatormatrix.h             rule5stroud.h \
    halton.h                      rule75genzmalik.h \
-   hintlib_limits.h              rule7phillips.h \
-   hintlib_sstream.h             rule9stenger.h \
+         rule7phillips.h \
+                rule9stenger.h \
    hypercube.h                   rulebasedintegrator.h \
    integrator.h                  ruleintegrator.h \
    kahanadd.h                    shiftscale.h \
@@ -41,11 +41,12 @@ pkginclude_HEADERS = \
    mcintegration.h               \
    mcintegrator.h                \
    testfunction.h \
-   mcpointset.h               vegasintegrator.h \
+   mcpointset.h               vegas.h \
    mersennetwister.h             virtualprng.h \
    minmaxfinder.h \
    prime_generated.h \
-   defaults.h  pointset.h
+   defaults.h  pointset.h \
+   fallback_limits.h fallback_sstream.h
 
 CLEANFILES = defaults.h prime_generated.h
 
@@ -66,10 +67,12 @@ dist-hook:
 defaults.h: $(srcdir)/_defaults1.h $(srcdir)/_defaults2.h \
             $(top_builddir)/libtest/result.h $(top_builddir)/config.h
 	@echo Creating header file \"defaults.h\"
-	cat $(srcdir)/_defaults1.h \
-            $(top_builddir)/config.h \
-            $(top_builddir)/libtest/result.h \
-            $(srcdir)/_defaults2.h > defaults.h
+	cp $(srcdir)/_defaults1.h defaults.h
+	sed -e 's/#define [ ]*\([A-Z_]\)/#define HINTLIB_\1/' \
+            -e 's/#undef [ ]*\([A-Z_]\)/#undef HINTLIB_\1/' \
+            $(top_builddir)/config.h >> defaults.h
+	cat $(top_builddir)/libtest/result.h \
+            $(srcdir)/_defaults2.h >> defaults.h
 
 $(top_builddir)/libtest/result.h:
 	cd $(top_builddir)/libtest && $(MAKE) result.h

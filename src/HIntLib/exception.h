@@ -24,8 +24,8 @@
  *  Defines the exceptions used by HIntLib
  */
 
-#ifndef EXCEPTION_H
-#define EXCEPTION_H 1
+#ifndef HINTLIB_EXCEPTION_H
+#define HINTLIB_EXCEPTION_H 1
  
 #ifdef __GNUG__
 #pragma interface
@@ -126,7 +126,7 @@ namespace HIntLib
       const unsigned dim2;
    };
 
-   void throwDimensionMismatch(unsigned dim1, unsigned dim2);
+   void throwDimensionMismatch(unsigned dim1, unsigned dim2) HINTLIB_GNU_NORETURN;
 
    inline
    void checkDimensionEqual (unsigned dim1, unsigned dim2)
@@ -375,7 +375,7 @@ namespace HIntLib
       BuiltInPRNGUsedTwice () {}
    };
 
-   void throwInvalidLCGParameters ();
+   void throwInvalidLCGParameters () HINTLIB_GNU_NORETURN;
 
    class InvalidLCGParameters : public Exception
    {

@@ -22,8 +22,8 @@
  *  Statistic
  */
 
-#ifndef STATISTIC_H
-#define STATISTIC_H 1
+#ifndef HINTLIB_STATISTIC_H
+#define HINTLIB_STATISTIC_H 1
  
 #ifdef __GNUG__
 #pragma interface
@@ -80,7 +80,7 @@ public:
 
    void reset()  { sum = 0; n = 0; }
 
-   #ifdef PARALLEL
+   #ifdef HINTLIB_PARALLEL
       void reduce (MPI_Comm = MPI_COMM_WORLD);
    #endif
 
@@ -89,7 +89,7 @@ private:
    CT n;
 };
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
 
 template<class Data, class Sum, class CT>
 inline
@@ -191,7 +191,7 @@ public:
 
    void reset()  { Statistic<Data,Sum,CT>::reset(); squares = 0; }
 
-   #ifdef PARALLEL
+   #ifdef HINTLIB_PARALLEL
       void reduce (MPI_Comm = MPI_COMM_WORLD);
    #endif
 
@@ -199,7 +199,7 @@ private:
    Sum squares;
 };
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
 
 template<class Data, class Sum, class CT>
 inline

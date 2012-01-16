@@ -97,7 +97,7 @@ void test (int argc, char** argv)
    enum Type {SEQUENCE, NET} type = NET;
 
    if (argc < 2)  usage();
-        if (strcmp (argv [0], "seq") == 0)  type = SEQUENCE;
+   else if (strcmp (argv [0], "seq") == 0)  type = SEQUENCE;
    else if (strcmp (argv [0], "net") == 0)  type = NET;
    else usage();
 
@@ -138,13 +138,16 @@ void test (int argc, char** argv)
 
       if (argc - next == 2)
       {
-         START = atoi (argv[2]);
-         END   = atoi (argv[3]);
+         START = atoi (argv[next]);
+         END   = atoi (argv[next+1]);
       }
       else if (argc - next == 1)
       {
-         END   = atoi (argv[2]);
+         END   = atoi (argv[next]);
       }
+
+      if (type == NET && END > SIZE)  usage();
+      if (START >= END)  usage();
 
       // Print Introduction
 

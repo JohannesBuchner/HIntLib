@@ -24,8 +24,8 @@
  *  Provides a number of probability distributions to be used with PRNGs
  */
 
-#ifndef DISTRIBUTION_H
-#define DISTRIBUTION_H 1
+#ifndef HINTLIB_DISTRIBUTION_H
+#define HINTLIB_DISTRIBUTION_H 1
  
 #ifdef __GNUG__
 #pragma interface

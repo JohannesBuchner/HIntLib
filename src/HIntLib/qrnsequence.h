@@ -24,8 +24,8 @@
  *  This is the abstract base class for Quasi Random Number sequences.
  */
   
-#ifndef QRNSEQUENCE_H
-#define QRNSEQUENCE_H 1
+#ifndef HINTLIB_QRNSEQUENCE_H
+#define HINTLIB_QRNSEQUENCE_H 1
 
 #ifdef __GNUG__
 #pragma interface

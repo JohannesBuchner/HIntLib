@@ -24,8 +24,8 @@
  *  Templates for executing the inner loop of Monte Carlo integration routines
  */
 
-#ifndef MCINTEGRATION_H
-#define MCINTEGRATION_H 1
+#ifndef HINTLIB_MCINTEGRATION_H
+#define HINTLIB_MCINTEGRATION_H 1
 
 #include <HIntLib/hypercube.h>
 #include <HIntLib/distribution.h>

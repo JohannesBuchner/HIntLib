@@ -26,7 +26,7 @@
  *  (C) 2001 by Rudolf Schürer
  */
 
-#if defined __GNUG__ && ! defined PARALLEL
+#ifdef __GNUG__
 #pragma implementation
 #endif
 

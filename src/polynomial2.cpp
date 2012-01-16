@@ -24,16 +24,16 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_OSTREM
+#ifdef HINTLIB_HAVE_OSTREM
   #include <ostream>
 #else
   #include <iostream>
 #endif
 
-#ifdef HAVE_SSTREAM
+#ifdef HINTLIB_HAVE_SSTREAM
   #include <sstream>
 #else
-  #include <HIntLib/hintlib_sstream.h>
+  #include <HIntLib/fallback_sstream.h>
 #endif
 
 #include <HIntLib/polynomial2.h>
@@ -160,10 +160,9 @@ void L::Polynomial2<T>::div (P u, const P v, P &q, P &r)
 
    // Cray assumes that u is const.  So we have to make another copy
 
-   // #if defined CRAY || defined SGI   FIXME
+   // SGI and CRAY seem to require a copy...   FIXME
    P uu (u);
    #define u uu
-   // #endif
 
    for ( ; loops >= 0; --loops)
    {
@@ -184,9 +183,7 @@ void L::Polynomial2<T>::div (P u, const P v, P &q, P &r)
 
    r.d = u.d & ~mask;
 
-   // #if defined CRAY || defined SGI
    #undef u
-   // #endif
 }
 
 

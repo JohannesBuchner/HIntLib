@@ -27,7 +27,7 @@
  *  Number Generator
  */
 
-#if defined __GNUG__ && ! defined PARALLEL
+#if defined __GNUG__ && ! defined HINTLIB_PARALLEL
 #pragma implementation
 #endif
 
@@ -39,16 +39,16 @@
 #include <HIntLib/function.h>
 #include <HIntLib/hypercube.h>
 
-#ifdef PARALLEL
-   #define NAME(x) x##StaticLB
+#ifdef HINTLIB_PARALLEL
+   #define HINTLIB_NAME(x) x##StaticLB
 #else
-   #define NAME(x) x
+   #define HINTLIB_NAME(x) x
 #endif
 
 
 namespace L = HIntLib;
 
-L::Integrator::Status L::NAME(MCIntegrator)::integrate (
+L::Integrator::Status L::HINTLIB_NAME(MCIntegrator)::integrate (
    Function &f, const Hypercube &h, Index n,
    real reqAbsError, real reqRelError, EstErr &ee)
 {
@@ -56,7 +56,7 @@ L::Integrator::Status L::NAME(MCIntegrator)::integrate (
 
    if (n == 0)
    {
-      #if defined PARALLEL && defined HINTLIB_XX_DONT_THROW_IN_PARALLEL
+      #ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
       #else
@@ -71,14 +71,14 @@ L::Integrator::Status L::NAME(MCIntegrator)::integrate (
    Array<real> point (h.getDimension());
 
    ps->setCube (&h);
-   #ifdef PARALLEL 
+   #ifdef HINTLIB_PARALLEL
    ps->select (slb.getRank(), slb.getSize());
    #endif
    ps->integrate (point, f, slb.getRange(), stat);
    
    // In parallel mode, collect results from all nodes
 
-   #ifdef PARALLEL
+   #ifdef HINTLIB_PARALLEL
       stat.reduce();
 
       if (slb.getRank() > 0) return WRONG_NODE;
@@ -92,5 +92,5 @@ L::Integrator::Status L::NAME(MCIntegrator)::integrate (
    return (status == ERROR) ? MAX_EVAL_REACHED : status;
 } 
 
-#undef NAME
+#undef HINTLIB_NAME
 

@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef ADAPTINTEGRATOR_H
-#define ADAPTINTEGRATOR_H 1
+#ifndef HINTLIB_ADAPTINTEGRATOR_H
+#define HINTLIB_ADAPTINTEGRATOR_H 1
 
 #ifdef __GNUG__
 #pragma interface

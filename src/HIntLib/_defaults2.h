@@ -1,10 +1,10 @@
 
 #ifdef __GNUG__
-  #define GNU_NORETURN __attribute((__noreturn__))
-  #define GNU_CONST __attribute((__const))
+  #define HINTLIB_GNU_NORETURN __attribute((__noreturn__))
+  #define HINTLIB_GNU_CONST __attribute((__const))
 #else
-  #define GNU_NORETURN
-  #define GNU_CONST
+  #define HINTLIB_GNU_NORETURN
+  #define HINTLIB_GNU_CONST
 #endif
 
 
@@ -44,23 +44,23 @@
  *     HINTLIB_UNSIGNED_NOT_EQUAL_U32 or HINTLIB_U32_NOT_EQUAL_U64 ist set.
  */
 
-#if SIZEOF_UNSIGNED_INT >= 4
+#if HINTLIB_SIZEOF_UNSIGNED_INT >= 4
    #undef HINTLIB_UNSIGNED_NOT_EQUAL_U32
    typedef unsigned u32;
 #else
-#if SIZEOF_UNSIGNED_LONG_INT >= 4
+#if HINTLIB_SIZEOF_UNSIGNED_LONG_INT >= 4
    #define HINTLIB_UNSIGNED_NOT_EQUAL_U32 1
    typedef unsigned long u32;
 #else
-   error "unsigned long int does not have 32 bits!"
+   error "unsigned long int does not have at least 32 bits!"
 #endif
 #endif
 
-#if SIZEOF_UNSIGNED_INT >= 8
+#if HINTLIB_SIZEOF_UNSIGNED_INT >= 8
    #undef HINTLIB_U32_NOT_EQUAL_U64
    typedef unsigned u64;
 #else
-#if SIZEOF_UNSIGNED_LONG_INT >= 8
+#if HINTLIB_SIZEOF_UNSIGNED_LONG_INT >= 8
    #ifdef HINTLIB_UNSIGNED_NOT_EQUAL_U32
       #undef HINTLIB_U32_NOT_EQUAL_U64
    #else
@@ -68,8 +68,8 @@
    #endif
    typedef unsigned long u64;
 #else
-#ifdef HAVE_UNSIGNED_LONG_LONG_INT
-   #if SIZEOF_UNSIGNED_LONG_LONG_INT >= 8
+#ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
+   #if HINTLIB_SIZEOF_UNSIGNED_LONG_LONG_INT >= 8
       #define HINTLIB_U32_NOT_EQUAL_U64 1
       typedef unsigned long long u64;
    #else

@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef BIT_VECTOR_RING_H
-#define BIT_VECTOR_RING_H 1
+#ifndef HINTLIB_BIT_VECTOR_RING_H
+#define HINTLIB_BIT_VECTOR_RING_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -27,10 +27,10 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_LIMITS
+#ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
 #else
-  #include <HIntLib/hintlib_limits.h>
+  #include <HIntLib/fallback_limits.h>
 #endif
 
 namespace HIntLib

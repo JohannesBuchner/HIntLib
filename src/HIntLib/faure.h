@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef FAURE_H
-#define FAURE_H 1
+#ifndef HINTLIB_FAURE_H
+#define HINTLIB_FAURE_H 1
 
 #ifdef __GNUG__
 #pragma interface

@@ -32,8 +32,8 @@
  *     Evaluates the function at a certain point in R^dim
  */
 
-#ifndef FUNCTION_H
-#define FUNCTION_H 1
+#ifndef HINTLIB_FUNCTION_H
+#define HINTLIB_FUNCTION_H 1
 
 #ifdef __GNUG__
 #pragma interface

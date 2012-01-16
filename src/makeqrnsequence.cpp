@@ -33,10 +33,10 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_SSTREAM
+#ifdef HINTLIB_HAVE_SSTREAM
   #include <sstream>
 #else
-  #include <HIntLib/hintlib_sstream.h>
+  #include <HIntLib/fallback_sstream.h>
 #endif
 
 #include <memory>
@@ -67,8 +67,8 @@ namespace
 {
    using namespace L;
 
-   typedef HeapAllocatedGeneratorMatrix2<u64> GM64;
-   typedef HeapAllocatedGeneratorMatrixGen<unsigned char> GMGen8;
+   typedef MutableGeneratorMatrix2<u64> GM64;
+   typedef MutableGeneratorMatrixGen<unsigned char> GMGen8;
 
    const GeneratorMatrix2<u64>* gm64 [2];
    PRNG *mt;
@@ -180,6 +180,7 @@ GMGen8* L::Make::generatorMatrixGen (int n, unsigned dim)
     *  |
     *  \____ 00 Faure (base >= dim)
     *        01 Sobol (base = 2)
+    *        06 Niederreiter / Xing
     *        xx base of Niederreiter Matrix
     */
 
@@ -191,6 +192,13 @@ GMGen8* L::Make::generatorMatrixGen (int n, unsigned dim)
    {
       if (dim > gm64[0]->getDimension())  throw InvalidDimension(dim);
       return new GeneratorMatrixGenCopy<unsigned char> (*gm64 [0], dim, 0, 0);
+   }
+   if (n == 6)
+   {
+      if (dim == 0)
+         return new HeapAllocatedGeneratorMatrixGen<unsigned char> (2, 0);
+
+      return loadNiederreiterXing (dim < 4 ? 4 : dim);
    }
    else if (n >= 1 && n < 100)
    {
@@ -225,15 +233,11 @@ const char* L::Make::getGeneratorMatrixGenName (int n)
 
    static char s[100];
 
-   if (n == 0)
-   {
-      return "Faure";
-   }
-   if (n == 1)
-   {
-      return "Sobol";
-   }
-   else if (n >= 1 && n < 100)
+   if (n == 0)  return "Faure";
+   if (n == 1)  return "Sobol";
+   if (n == 6)  return "NiederreiterXing";
+
+   if (n >= 1 && n < 100)
    {
       int base = n % 100;
 
@@ -242,7 +246,7 @@ const char* L::Make::getGeneratorMatrixGenName (int n)
          unsigned prime, power;
          Prime::factorPrimePower (base, prime, power);
       }
-      catch (NotAPrimePower &e)
+      catch (NotAPrimePower &)
       {
          throw GeneratorMatrixDoesNotExist (n);
       }

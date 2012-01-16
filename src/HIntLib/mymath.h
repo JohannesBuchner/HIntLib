@@ -25,23 +25,23 @@
  *  library.
  */
 
-#ifndef MYMATH_H
-#define MYMATH_H 1
+#ifndef HINTLIB_MYMATH_H
+#define HINTLIB_MYMATH_H 1
 
 #include <stdlib.h>
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_CMATH
+#ifdef HINTLIB_HAVE_CMATH
   #include <cmath>
 #else
   #include <math.h>
 #endif
 
-#ifdef HAVE_LIMITS
+#ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
 #else
-  #include <HIntLib/hintlib_limits.h>
+  #include <HIntLib/fallback_limits.h>
 #endif
 
 
@@ -201,13 +201,13 @@ template<class T> inline unsigned digitsRepresentable(T base)
  *  Determine if a number is even or odd
  */
 
-template<class T> inline bool odd (T x)  GNU_CONST;
+template<class T> inline bool odd (T x)  HINTLIB_GNU_CONST;
 template<class T> inline bool odd (T x)
 {
    return x % 2;
 }
 
-template<class T> inline bool even (T x)  GNU_CONST;
+template<class T> inline bool even (T x)  HINTLIB_GNU_CONST;
 template<class T> inline bool even (T x)
 {
    return ! odd(x);
@@ -220,13 +220,13 @@ template<class T> inline bool even (T x)
  *  Determine if two (floating-point) numbers are approximately equal
  */
 
-template <class T> inline bool approx (T a, double b)  GNU_CONST;
+template <class T> inline bool approx (T a, double b)  HINTLIB_GNU_CONST;
 template <class T> inline bool approx (T a, double b)
 {
    return abs(a - b) < std::numeric_limits<T>::epsilon() * (abs(a) + abs(b));
 }
 
-template <class T> inline bool approx (T a, double b, double )  GNU_CONST;
+template <class T> inline bool approx (T a, double b, double )HINTLIB_GNU_CONST;
 template <class T> inline bool approx (T a, double b, double factor)
 {
    return abs(a - b)

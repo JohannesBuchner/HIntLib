@@ -24,16 +24,16 @@
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_OSTREM
+#ifdef HINTLIB_HAVE_OSTREM
   #include <ostream>
 #else
   #include <iostream>
 #endif
 
-#ifdef HAVE_SSTREAM
+#ifdef HINTLIB_HAVE_SSTREAM
   #include <sstream>
 #else
-  #include <HIntLib/hintlib_sstream.h>
+  #include <HIntLib/fallback_sstream.h>
 #endif
 
 #include <HIntLib/polynomial.h>

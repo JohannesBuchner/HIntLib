@@ -27,6 +27,8 @@
 
 #include <HIntLib/digitalnet2.h>
 
+#include <HIntLib/mersennetwister.h>
+#include <HIntLib/mcpointset.h>
 #include <HIntLib/exception.h>
 
 namespace L = HIntLib;
@@ -242,6 +244,18 @@ L::DigitalNet2Gray<T>::DigitalNet2Gray
 /***         Digital Net 2 Point Set Base                                  ***/
 /*****************************************************************************/
 
+// performRandomization
+
+void
+L::Digital2PointSet::performRandomization (DigitalNet2Gray<BaseType> &net)
+{
+   if (isRandomized)
+   {
+      PRNGImp<MersenneTwister> mt (seed);
+      net.randomize (mt);
+   }
+}
+
 // setCube()
 
 void L::DigitalNet2PointSetBase::setCube (const Hypercube *_h)
@@ -284,6 +298,7 @@ void L::DigitalNet2PointSetBase::doJobPartition
    (real *point, Job &job, Index num, Index begin, Index end)
 {
    DigitalNet2Gray<BaseType> net (gm, *h, calculateM (num), index, equi, trunc);
+   performRandomization (net);
    qmcDoJob (point, net, job, begin, end);
 }
 
@@ -293,6 +308,7 @@ bool L::DigitalNet2PointSetBase::doJobRep
    (real *point, ReportingJob &job, Index num)
 {
    DigitalNet2Gray<BaseType> net (gm, *h, calculateM (num), index, equi, trunc);
+   performRandomization (net);
    return qmcDoJob (point, net, job, 0, num);
 }
 
@@ -306,6 +322,7 @@ void L::DigitalNet2PointSet<L::real>::integratePartition
    (real* point, Function &f, Index num, Index begin, Index end, Stat& stat)
 {
    DigitalNet2Gray<BaseType> net (gm, *h, calculateM (num), index, equi, trunc);
+   performRandomization (net);
    qmcIntegration (point, net, f, begin, end, stat);
 }
 
@@ -313,6 +330,7 @@ void L::DigitalNet2PointSet<L::real>::integratePartition
    (real* point, Function &f, Index num, Index begin, Index end, StatVar& stat)
 {
    DigitalNet2Gray<BaseType> net (gm, *h, calculateM (num), index, equi, trunc);
+   performRandomization (net);
    qmcIntegration (point, net, f, begin, end, stat);
 }
 
@@ -349,7 +367,20 @@ void L::DigitalSeq2PointSetBase::checkSize (
 void L::DigitalSeq2PointSetBase::setCube (const Hypercube *h)
 {
    if (net)  net->setCube (*h);
-   else      net = new DigitalNet2Gray<BaseType> (gm, *h);
+   else
+   {
+      net = new DigitalNet2Gray<BaseType> (gm, *h);
+      performRandomization (*net);
+   }
+}
+
+// randomzie()
+
+void
+L::DigitalSeq2PointSetBase::randomize (unsigned _seed)
+{
+   Digital2PointSet::randomize (_seed);
+   if (net)  performRandomization (*net);
 }
 
 // doJobPartition()

@@ -18,22 +18,22 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#if defined __GNUG__ && ! defined PARALLEL
+#if defined __GNUG__ && ! defined HINTLIB_PARALLEL
 #pragma implementation
 #endif
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_OSTREAM
+#ifdef HINTLIB_HAVE_OSTREAM
   #include <ostream>
 #else
   #include <iostream>
 #endif
 
-#ifdef HAVE_SSTREAM
+#ifdef HINTLIB_HAVE_SSTREAM
   #include <sstream>
 #else
-  #include <HIntLib/hintlib_sstream.h>
+  #include <HIntLib/fallback_sstream.h>
 #endif
 
 #include <HIntLib/region.h>

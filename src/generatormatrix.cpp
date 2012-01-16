@@ -635,21 +635,20 @@ L::GeneratorMatrix2Copy<T>::GeneratorMatrix2Copy (
 
 namespace HIntLib
 {
-   template class GeneratorMatrix2<u32>;
-   template class MutableGeneratorMatrix2<u32>;
-   template class HeapAllocatedGeneratorMatrix2<u32>;
-   template class GeneratorMatrix2Copy<u32>;
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   template class GeneratorMatrix2<u64>;
-   template class MutableGeneratorMatrix2<u64>;
-   template class HeapAllocatedGeneratorMatrix2<u64>;
-   template class GeneratorMatrix2Copy<u64>;
-#endif
+#define HINTLIB_INSTANTIATE(X) \
+   template class GeneratorMatrix2<X>; \
+   template class MutableGeneratorMatrix2<X>; \
+   template class HeapAllocatedGeneratorMatrix2<X>; \
+   template class GeneratorMatrix2Copy<X>; \
+   template void assign ( \
+      const GeneratorMatrix &, unsigned, \
+      MutableGeneratorMatrix2<X> &, unsigned dstDim);
 
-// template instanciation of member-template breaks GCC 2.95.4   XXX
-
-// template class GeneratorMatrix2Copy<Index>::
-//    GeneratorMatrix2Copy<u64>(GeneratorMatrix2<u64> const &);
+   HINTLIB_INSTANTIATE (u32)
+   #ifdef HINTLIB_U32_NOT_EQUAL_U64
+   HINTLIB_INSTANTIATE (u64)
+   #endif
+#undef HINTLIB_INSTANTIATE
 }
 
 
@@ -925,20 +924,19 @@ L::GeneratorMatrixGenVectorize<T>::GeneratorMatrixGenVectorize
 
 namespace HIntLib
 {
-   template class GeneratorMatrixGen<unsigned char>;
-   template class GeneratorMatrixGen<unsigned short>;
-   template class GeneratorMatrixGen<u32>;
-   template class MutableGeneratorMatrixGen<unsigned char>;
-   template class MutableGeneratorMatrixGen<unsigned short>;
-   template class MutableGeneratorMatrixGen<u32>;
-   template class HeapAllocatedGeneratorMatrixGen<unsigned char>;
-   template class HeapAllocatedGeneratorMatrixGen<unsigned short>;
-   template class HeapAllocatedGeneratorMatrixGen<u32>;
-   template class GeneratorMatrixGenCopy<unsigned char>;
-   template class GeneratorMatrixGenCopy<unsigned short>;
-   template class GeneratorMatrixGenCopy<u32>;
-   template class GeneratorMatrixGenVectorize<unsigned char>;
-   template class GeneratorMatrixGenVectorize<unsigned short>;
-   template class GeneratorMatrixGenVectorize<u32>;
+#define HINTLIB_INSTANTIATE(X) \
+   template class GeneratorMatrixGen<X>; \
+   template class MutableGeneratorMatrixGen<X>; \
+   template class HeapAllocatedGeneratorMatrixGen<X>; \
+   template class GeneratorMatrixGenCopy<X>; \
+   template class GeneratorMatrixGenVectorize<X>; \
+   template void assign ( \
+      const GeneratorMatrix &, unsigned, \
+      MutableGeneratorMatrixGen<X> &, unsigned);
+
+   HINTLIB_INSTANTIATE (unsigned char)
+   HINTLIB_INSTANTIATE (unsigned short)
+   HINTLIB_INSTANTIATE (u32)
+#undef HINTLIB_INSTANTIATE
 }
 

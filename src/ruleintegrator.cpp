@@ -48,7 +48,7 @@ L::Integrator::Status L::RuleIntegrator::integrate (
 
    if (maxEval < rule->getNumPoints ())
    {
-      #ifdef CRAY
+      #ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
       #else
@@ -71,7 +71,7 @@ L::Integrator::Status L::RuleIntegratorErr::integrate (
 
    if (maxEval < rule->getNumPoints ())
    {
-      #ifdef CRAY
+      #ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
       #else

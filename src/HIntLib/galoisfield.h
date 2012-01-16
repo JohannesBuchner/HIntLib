@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GALOIS_FIELD_H
-#define GALOIS_FIELD_H 1
+#ifndef HINTLIB_GALOIS_FIELD_H
+#define HINTLIB_GALOIS_FIELD_H 1
 
 #ifdef __GNUG__
 #pragma interface

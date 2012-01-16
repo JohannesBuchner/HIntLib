@@ -22,8 +22,8 @@
  *  A Polynomial over an arbitrary ring or field.
  */
 
-#ifndef POLYNOMIAL_H
-#define POLYNOMIAL_H 1
+#ifndef HINTLIB_POLYNOMIAL_H
+#define HINTLIB_POLYNOMIAL_H 1
 
 #ifdef __GNUG__
 #pragma interface

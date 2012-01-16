@@ -26,8 +26,8 @@
  *  for long-running loops like integrand evaluations, sequence-numbers,...
  */
 
-#ifndef DEFAULTS_H
-#define DEFAULTS_H 1
+#ifndef HINTLIB_DEFAULTS_H
+#define HINTLIB_DEFAULTS_H 1
 
 #ifdef __GNUG__
 #pragma interface

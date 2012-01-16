@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef NIEDERREITER_MATRIX_GEN_H
-#define NIEDERREITER_MATRIX_GEN_H 1
+#ifndef HINTLIB_NIEDERREITER_MATRIX_GEN_H
+#define HINTLIB_NIEDERREITER_MATRIX_GEN_H 1
 
 #ifdef __GNUG__
 #pragma interface

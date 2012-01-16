@@ -24,10 +24,10 @@
  *  Defines the exceptions used by HIntLib
  */
 
-#ifndef EXCEPTION_MPI_H
-#define EXCEPTION_MPI_H 1
+#ifndef HINTLIB_EXCEPTION_MPI_H
+#define HINTLIB_EXCEPTION_MPI_H 1
 
-#ifndef PARALLEL
+#ifndef HINTLIB_PARALLEL
 #error exception_MPI.h can only be used in PARALLEL mode
 #endif
  

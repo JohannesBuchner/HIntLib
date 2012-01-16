@@ -29,8 +29,8 @@
  *  See Krommer, Ueberhuber. Computational Integration. p 333 vor details
  */
 
-#ifndef KAHANADD_H
-#define KAHANADD_H 1
+#ifndef HINTLIB_KAHANADD_H
+#define HINTLIB_KAHANADD_H 1
 
 #ifdef __GNUG__
 #pragma interface

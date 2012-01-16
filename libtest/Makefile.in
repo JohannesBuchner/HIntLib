@@ -89,6 +89,7 @@ noinst_HEADERS = include.h
 
 lib_LTLIBRARIES = libhintlibtest.la
 libhintlibtest_la_SOURCES = func.cpp lib.cpp
+libhintlibtest_la_LDFLAGS = -no-undefined
 
 noinst_PROGRAMS = main
 main_SOURCES = main.cpp
@@ -106,7 +107,6 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libhintlibtest_la_LDFLAGS = 
 libhintlibtest_la_LIBADD = 
 libhintlibtest_la_OBJECTS =  func.lo lib.lo
 noinst_PROGRAMS =  main$(EXEEXT)
@@ -363,7 +363,7 @@ distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
 
-result.h: main create
+result.h: main@EXEEXT@ create
 	$(srcdir)/create
 
 clean-local:

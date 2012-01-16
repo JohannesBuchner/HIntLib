@@ -477,7 +477,7 @@ Integrator::Status L::AdaptIntegratorMS::integrate (
  
    if (numWorkers() == 0)
    {
-      #ifdef CRAY
+      #ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
       #else
@@ -511,7 +511,7 @@ Integrator::Status L::AdaptIntegratorMS::integrate (
       if (maxEvaluations <
           Index (2 * interval * rule->getNumPoints() * w) + initialPoints)
       {
-         #ifdef CRAY
+         #ifdef HINTLIB_NO_EXCEPTIONS
             ee.set (0.0, 0.0);
             return ERROR;
          #else

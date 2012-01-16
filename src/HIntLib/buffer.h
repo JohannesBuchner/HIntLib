@@ -24,10 +24,10 @@
  *  Send- and Receive buffer for MPI
  */
 
-#ifndef BUFFER_H
-#define BUFFER_H 1
+#ifndef HINTLIB_BUFFER_H
+#define HINTLIB_BUFFER_H 1
 
-#ifndef PARALLEL
+#ifndef HINTLIB_PARALLEL
 #error "buffer.h can only be used in PARALLEL mode"
 #endif
 

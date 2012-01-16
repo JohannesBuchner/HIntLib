@@ -22,15 +22,17 @@
  *  MISER Integrator
  *
  *  This implementation is based on:
- *    [1] W.H. Press, G.R. Farrar. 1990, Computers in Physics, vol. 4,
- *        pp. 190 - 195.
- *    [2] William H. Press, Saul A. Teukolsky, William T. Vetterling, Brian P.
- *        Flannery. Numerical Recipes in C - The Art of Scientific Computing.
+ *
+ *    [1] W.H. Press, G.R. Farrar. Recursive Stratified Sampling for
+ *        Multidimensional Monte Carlo Integration. Computers in Physics,
+ *        vol. 4(2), pp. 190 - 195, 1990.
+ *    [2] W.H. Press, S.A. Teukolsky, W.T. Vetterling, B.P. Flannery.
+ *        Numerical Recipes in C - The Art of Scientific Computing.
  *        second edition. Cambrdige University Press. Chapter 7.8.
  */
 
-#ifndef MISERINTEGRATOR_H
-#define MISERINTEGRATOR_H 1
+#ifndef HINTLIB_MISER_H
+#define HINTLIB_MISER_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -43,11 +45,12 @@ namespace HIntLib
    class PRNG;
    class PointSet;
 
-   class MiserIntegrator : public Integrator
+   class Miser : public Integrator
    {
    public:
-
-      MiserIntegrator(PRNG*, PointSet*);
+      Miser (PointSet* presample, PointSet* sample);
+      Miser (PointSet*);
+      void defaults();
 
       Status integrate (
          Function &f, const Hypercube &h, Index maxEval,
@@ -55,8 +58,8 @@ namespace HIntLib
          EstErr &ee);
 
    private:
-      PRNG* mc;
-      PointSet* ps;
+      PointSet* presamplePointSet;
+      PointSet* samplePointSet;
 
    public:
       Index MIN_POINTS;

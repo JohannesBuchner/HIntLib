@@ -29,8 +29,8 @@
  *  as formula Cn: 3-4
  */
 
-#ifndef RULE3GAUSS_H
-#define RULE3GAUSS_H 1
+#ifndef HINTLIB_RULE3GAUSS_H
+#define HINTLIB_RULE3GAUSS_H 1
 
 #ifdef __GNUG__
 #pragma interface

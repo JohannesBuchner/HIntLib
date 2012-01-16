@@ -19,20 +19,20 @@
  */
 
 
-#ifndef MYMPI_H
-#define MYMPI_H 1
+#ifndef HINTLIB_MYMPI_H
+#define HINTLIB_MYMPI_H 1
 
 #include <mpi.h>
 
 #include <HIntLib/defaults.h>
 
-#ifdef HAVE_LIMITS
+#ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
 #else
-  #include <HIntLib/hintlib_limits.h>
+  #include <HIntLib/fallback_limits.h>
 #endif
 
-#define PARALLEL 1
+#define HINTLIB_PARALLEL 1
 
 namespace HIntLib
 {
@@ -69,7 +69,7 @@ template<> class MPIType<int>
    { public: static const MPI_Datatype type = MPI_INT; };
 template<> class MPIType<long>
    { public: static const MPI_Datatype type = MPI_LONG; };
-#ifdef HAVE_LONG_LONG_INT
+#ifdef HINTLIB_HAVE_LONG_LONG_INT
 template<> class MPIType<long long>
    { public: static const MPI_Datatype type = MPI_LONG_LONG_INT; };
 #endif
@@ -81,7 +81,7 @@ template<> class MPIType<unsigned>
    { public: static const MPI_Datatype type = MPI_UNSIGNED; };
 template<> class MPIType<unsigned long>
    { public: static const MPI_Datatype type = MPI_UNSIGNED_LONG; };
-#ifdef HAVE_UNSIGNED_LONG_LONG_INT
+#ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
 template<> class MPIType<unsigned long long>
    { public: static const MPI_Datatype type = MPI_LONG_LONG_INT; }; // XXX
 #endif

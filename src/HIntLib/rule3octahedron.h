@@ -33,8 +33,8 @@
  *  as formula Cn: 3-1
  */
 
-#ifndef RULE3OCTAHEDRON_H
-#define RULE3OCTAHEDRON_H 1
+#ifndef HINTLIB_RULE3OCTAHEDRON_H
+#define HINTLIB_RULE3OCTAHEDRON_H 1
 
 #ifdef __GNUG__
 #pragma interface

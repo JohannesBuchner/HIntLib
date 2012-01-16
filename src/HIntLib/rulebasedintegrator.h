@@ -22,8 +22,8 @@
  *  RuleBasedIntegrator
  */
 
-#ifndef RULEBASEDINTEGRATOR_H
-#define RULEBASEDINTEGRATOR_H 1
+#ifndef HINTLIB_RULEBASEDINTEGRATOR_H
+#define HINTLIB_RULEBASEDINTEGRATOR_H 1
 
 #ifdef __GNUG__
 #pragma interface

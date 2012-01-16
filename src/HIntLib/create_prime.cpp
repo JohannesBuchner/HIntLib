@@ -117,7 +117,7 @@ int main (int argc, const char** argv)
    if (mode == H)
    { 
       cout 
-      << "#ifndef PRIME_H\n"
+      << "#ifndef HINTLIB_PRIME_H\n"
          "#error \"prime_generated.h must not be included directly!\"\n"
          "#endif\n"
          "\n"

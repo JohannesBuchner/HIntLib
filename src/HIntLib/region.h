@@ -19,8 +19,8 @@
  */
 
 
-#ifndef REGION_H
-#define REGION_H 1
+#ifndef HINTLIB_REGION_H
+#define HINTLIB_REGION_H 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -32,7 +32,7 @@
 #include <HIntLib/esterr.h>
 #include <HIntLib/embeddedrule.h>
 #include <HIntLib/hypercube.h>
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
    #include <HIntLib/buffer.h>
 #endif
 
@@ -48,7 +48,7 @@ private:
 
 public:
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
    // Create an empty (invalid) Region that can be filled with MPI_Receive
 
    Region (unsigned dim) : h (dim) {}
@@ -73,7 +73,7 @@ public:
    const EstErr& getEstErr () const       { return ee; }
    const Hypercube& getHypercube () const { return h; }
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
 
    MPI_Datatype getMPIDatatype () const;
    int send (int dest, int tag, MPI_Comm comm) const;
@@ -83,7 +83,7 @@ public:
 
 private:
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
    int recv (int source, int tag, MPI_Comm comm, MPI_Status *status);
 #endif
 
@@ -93,7 +93,7 @@ private:
    unsigned splitDim;
    unsigned numOfSplits;
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
    friend SendBuffer& operator<< (SendBuffer &, const Region &);
    friend RecvBuffer& operator>> (RecvBuffer &, Region &);
 #endif
@@ -101,7 +101,7 @@ private:
 
 std::ostream & operator<< (std::ostream &, const Region &);
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
 SendBuffer& operator<< (SendBuffer &, const Region &);
 RecvBuffer& operator>> (RecvBuffer &, Region &);
 #endif
@@ -118,7 +118,7 @@ struct RegionErrorLess : public std::binary_function<Region*,Region*,bool>
 /********** Implementation ****************/
 
 
-#ifdef PARALLEL
+#ifdef HINTLIB_PARALLEL
 
 inline
 Region::Region (unsigned dim,
@@ -128,7 +128,7 @@ Region::Region (unsigned dim,
    recv (source, tag, comm, status);
 }
 
-#endif  // defined PARALLEL
+#endif  // defined HINTLIB_PARALLEL
 
 }  // namespace HIntLib
 

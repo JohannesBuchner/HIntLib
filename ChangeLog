@@ -2,13 +2,39 @@
 Change Log
 ==========
 
+
+0.0.3    Apr 15, 2003
+
+   wc src/*.cpp src/HIntLib/*.h | tail -1
+     26416   90463  655736 total
+
++ Vegas and Miser use arbitrary PointSets (as presented at MCQMC 2002).
+  Some of the default parameters may not be optimal, so use at your own risk!
++ randomize() for PointSet and Integrator.
+  Performs digital shift for DigitalNet.
+- Code that is likely to produce infinity uses
+  numeric_limits<real>::has_infinity to determine if it is save to do so.
+- MIPSPro C++ 7.4 on SGI warns because of a missing copy assignment for
+  Polynomial2<T>. Added it.
+/ Make::generatorMatrix*() returns Mutable... instead of HeapAllocated...
+/ All macro names (including #include-guards and macros defined in config.h)
+  are prefixed with 'HINTLIB_'
+- Use libtool convenience libraries to fix some dependency-tracking problems.
+  Nothing is (superfluously) recompiled during a seconde make.
+- @EXEEXT@ was missing in some dependencies in Makefile.am
++ Complicated m4 macro definitions moved from configure.ac to acinclude.m4
++ Upgrade to recent version of config.sub and config.guess (2003-02-22)
+- test_qrnsequence: Wrong offsets for argv-array when in `net` mode
+
+
 0.0.2    Mar 16, 2003
 
    wc src/*.cpp src/HIntLib/*.h | tail -1
      26343   90283  650607 total
 
 + Precalculated Niederreiter/Xing matrices are included.
-  They are installed in $(prefix)/shared in a binary format  (Gottlieb Pirsic)
+  They are installed in $(prefix)/shared in a binary format
+  Thanks to Gottlieb Pirsic for providing the data files!
 - Some test scripts assumed '.' in $PATH  (Reinhold Kainhofer)
 - Many improvements for systems with sizeof int, long, and long long not equal
   to 4/4/8. HIntLib compiles and links successfully on 64 bit platforms.
@@ -20,4 +46,11 @@ Change Log
 
    wc src/*.cpp src/HIntLib/*.h | tail -1
      26284   90162  649380 total
+
+
+Key:
+
+- Bug fix
++ New feature
+/ Inteface cleanup
 

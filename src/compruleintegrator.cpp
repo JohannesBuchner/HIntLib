@@ -81,7 +81,7 @@ Integrator::Status L::CompRuleIntegrator::integrate (
 
    if (! maxEval)
    {
-      #ifdef CRAY
+      #ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
       #else
@@ -99,7 +99,7 @@ Integrator::Status L::CompRuleIntegrator::integrate (
 
    if (numSections == 0)
    {
-      #ifdef CRAY
+      #ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
       #else
@@ -163,7 +163,7 @@ Integrator::Status L::CompRuleIntegratorErr::integrate (
 
    if (!maxEval)
    {
-      #ifdef CRAY
+      #ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
       #else
@@ -181,7 +181,7 @@ Integrator::Status L::CompRuleIntegratorErr::integrate (
  
    if (numSections == 0)
    {
-      #ifdef CRAY
+      #ifdef HINTLIB_NO_EXCEPTIONS
          ee.set (0.0, 0.0);
          return ERROR;
       #else
