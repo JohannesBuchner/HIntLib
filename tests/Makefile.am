@@ -9,6 +9,7 @@ COMMON_TESTS = \
    arithmetic.test \
    linearalgebra.test \
    genmatrix.test \
+   nx.test \
    shiftnet.test \
    tparameter.test \
    prng.test \

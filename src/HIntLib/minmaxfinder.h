@@ -162,7 +162,7 @@ public:
    void operator<< (T x)
       { MinFinder<T>::operator<<(x); MaxFinder<T>::operator<<(x); }
 
-   T getRange() const  { return getMaximum() - getMinimum(); }
+   T getRange() const  { return this->getMaximum() - this->getMinimum(); }
 
    void reset()     { MinFinder<T>::reset();  MaxFinder<T>::reset(); }
    void reset(T x)  { MinFinder<T>::reset(x); MaxFinder<T>::reset(x); }

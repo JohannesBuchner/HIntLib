@@ -1,0 +1,351 @@
+
+NEWS
+====
+
+
+0.0.9   July 11, 2004
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     45551  152404 1121685 total
+
+Manual:
+
++ New chapter about "Linear Algebra"
++ Updates in the "Algebraic Structures" chapter
+
+Build System and Ports:
+
++ HIntLib ported to GCC 3.x on Cygwin
++ HIntLib ported to GCC 3.4
++ Libtool library versioning
+
+Algebraic Structures:
+
++ factor() for PolynomialRing<> over real and complex fields
++ factor() for PolynomialRing<> over finite fields (using Berlekamp's algo)
++ factor() for Polynomial2Ring<> (using Berlekamp's algo)
++ numUnits() for FactorRing<> and ModularArithmeticRing<>
++ isAssociate() for all domains
+
+Linear Algebra:
+
+/ linearalgebra.* split into linearalgebra.*, linearalgebragen.* and
+  linearalgebra2.*
++ isZeroMatrix(), isIdentityMatrix(), matrixTranspose(), matrixMul()
+  (for non-square matrices), matrixVectorMul(), vectorMatrixMul(),
+  numLinearlyIndependentVectors(), nullSpace(), basisSupplement()
++ isZeroMatrix(), isIdentityMatrix(), matrixVectorMul(), vectorMatrixMul(),
+  matrixRank(), nullSpace(), nullSpaceT(), packMatrix(), unpackMatrix()
+  for packed matrices over GF(2)
+
+Generator Matrices:
+
++ fixOneDimensionalProjections() for making all one-dimensional projections
+  (0,m,1)-nets.
++ fixTwoDimensionalProjections() for improving 2-dimensional projections (as
+  presented at MCQMC 2004)
+
+Miscellaneous:
+
++ test_tparameter can read matrix in LibSeq format
+- Bug in powerModReduce()
++ factor() for class Prime factors integers
++ PrimeDivisors and Prime::eulerPhi() improved
++ Prime::test() improved
+
+
+
+0.0.8	March 16, 2004		Bugfix for Cygwin
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     41834  139623 1028261 total
+
+- With GCC 2.95.x "#include<HIntLib/hlmath.h>" and "using namespace HIntLib;"
+  does not cause ambiguities for standard math functions.
+  This problem was introduced with HIntLib 0.0.7.
+- HIntLib compiles on platforms which do not provide math functions for long
+  double (for instance for GCC 2.95.x on Cygwin).
+  This problem was introduced with HIntLib 0.0.7.
+- More sensitive handling of Cygwin ld --enable-auto-import feature
+- Fixed executable-not-ready-for-execution problem on Cygwin
++ Faure sequence can be created for prime power base (not only primes)
+
+
+
+0.0.7	March 9, 2004		One Year Anniversary Edition
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     41625  139891 1028243 total
+
+Algebraic Structures:
+
++ class Private::Printer takes care of common I/O tasks
++ printShort() recognizes showpos and FIT_FOR_MUL flag
++ New methods: sqr(), square(), dlb(), times2(), reciprocal(), isDivisor(),
+  reduce(), quotient()
++ New algebra categories: ringfield_tag, ringdomain_tag, funfield_tag,
+  ratfunfield_tag, realcomplex_tag
++ char_category, zerodivisor_category
++ isUnit(), toUnit(), fromUnit() for all ringdomain_tag-structures
++ isNilpotent(), numNilpotents() for rings
++ div(), divBy() for domains
++ ct(), isConstant() for polynomials
++ isEven() for integer rings
++ factor() for IntegerRing<>
++ Faster algorithm for QuotientField::add(), sub(), mul(), and div() according
+  to TACP, vol II, Section 4.5.1.
++ PolynomialRing<> returns stub objects instead of type
++ FactorRing<> can handle polynomials over infinite fields
++ threadinf(), unthreadinf() used in index()/element() for PolynomialRing<>
+  (with infinite coefficient algebras) and QuotientField<>
++ RealField<> and ComplexField<> rewritten
++ Performance improvements in PolynomialRing<>::isPrime()
++ PolynomiaRing<>::power() uses the Left-to-Right binary algorithm
+- RealField<>::order() and ComplexField<>::order() fixed
++ Many optimizations in PolynomialRing<> for coeff algebras with special
+  char_category
++ Polynomial2Ring<>::isPrime() uses Berlekamp's algorithm
+- Bugfix in PolynomialRing<>::isSquareFree()
++ PolynomialRing<>::squarefreeFactor()
+- Methods in PolynomialRing<> are more aliasing aware
++ Tests from test_polynomial moved to test_arithmetic
+
+Miscellaneous:
+
+- Constants in some cubature rules (Rule7Philips, Rule9Stenger) were only
+  calculated with double instead of real precision
++ HIntLib header files include only cXXX instead of XXX.h versions of standard
+  C header files
+- calling abs() and other mathematical functions is handled correctly and
+  consistently on all systems we have access to.
+- Workaround for bug in equal() in the SGI STL
+- Workaround for bug in std::pow(std::complex<long double>) in GCC 3.x library
+/ mymath.h -> hlmath.h
+/ myalgorithm.h -> hlalgorithm.h
+/ mympi.h -> hlmpi.h
+
+
+
+0.0.6   December 30, 2003	New Year Edition
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     35887  121744  891775 total
+
+Generator Matrices:
+
+/ HeapAllocatedGeneratorMatrix*, MutableGeneratorMatrix*, and
+  GeneratorMatrix*Copy are gone. Everything is included in GeneratorMatrix*
++ Many new memberfunctions in GeneratorMatrix*:
+  setPackedRowVector(), getPackedRowVector(), makeShiftNet(),
+  makeZeroRowVector(), makeZeroColumnVector(),...
+  dumpDimension(), dumpRowVector(), dumpColumnVector().
+/ initNiederreiter() instead of class NiederreiterMatrixGen
+/ initFaure() instead of class Faure
++ initShifNet() creats ShiftNets with optimal t-parameter for a wide range of
+  bases b and sizes m.
++ test_shiftnet
++ New type of GeneratorMatrix introduced: GeneratorMatrix2Row stores row
+  vectors of base-2 generator matrices in bits of a computer word.
++ Unified methods for determining default values for m and totalPrec
+
+Cubature Rules:
+
++ Rule3Simpson and Rule5Gauss (C_n:3-6 and C_n:5-9 in Stroud) implemented.
+/ embeddedrule.h included in cubaturerule.h
+
+Algebraic structures:
+
++ New algebra_category gf_tag for finite fields, real_tag for fields of real
+  numbers, complex_tag for fields of complex numbers, rational_tag for fields
+  of rationals and integer_tag for rings of integers.
++ additiveOrder() for all groups, characteristic() and order() for all
+  integrity domains, isPrimitiveElement() and extensionDegree() for finite
+  fields.
++ unit_type, mulUnit(), mulByUnit(), fromUnit(), toUnit(), makeCanonical(),
+  isCanonical(), numUnits(), unitElement(), unitIndex() for UFDs.
+/ isIrreducible() for Euclidean rings is not available anymore.  Use isPrime()!
+/ zero() is not available anymore. Use type()!
++ LookupField*<>::order() and ...::isPrimitiveElement() use precalculated values
+  for determining the order of an element. Extension degree is also stored in
+  the precalculated tables.
++ GaloisField can be forced to use a primitive instead of an irreducible
+  polynomial, making  x  a primitive element.
+/ ModularArithmetic* renamed to FactorRing/FactorField.
++ Revised RealField<> to model the field of real numbers: comparision takes
+  rounding errors into account
++ QuotientField<>.
+
+PolynomialRing<> and Polynomial2Ring<>:
+
++ Completely revised. All public methods documented in the manual and exercised
+  in test_arithmetic.
++ PolynomialRing<> has a new optimized multiplication if coefficients are from
+  an integrity domain.
++ In addition to identifying irreducible polynomials over finite fields,
+  PolynomialRing<> knows how to do this over real_tag-, complex_tag-, and 
+  rational_tag-fields.
++ isPrime() for polynomials over finite fields uses Berlekamp's algorithm.
++ isPrimitive() for polynomials over arbitrary finite fields
++ PolynomailRing<> and Polynomial2Ring<> allow specification of the name of the
+  variable (not necessarily "x").
++ New method derivative() for polynomials.
+
+Misc:
+
++ radicalInverseFunction(), radicalInverseFunction2()
++ matrixRank(), matrixMul(), matrixInverse()
+
+
+
+0.0.5    November 1, 2003	Helloween Edition
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     31213  105251  776193 total
+
++ Upgrade to GNU autoconf 1.57, GNU automake 1.7.8 and GNU LibTool 1.5
++ LibTool patches to work with ABI 64 an IRIX and Solaris
++ --with-index=X allows to set the data type of Index. The default uses the
+  size of unsigned long int.
++ --with-real=X allows to chose between float, double, and long double for real
+- HIntLib compiles and links on platforms without optimization and inlining
+- Fixed some minor problems with the Intel C++ compiler "icpc"
+
++ New test-suite programs: test_abs, test_partition, test_prng
++ -t switch and clean-up in test_tparameter
++ Many new tests in test_genmatrix
++ Heuristic replaced by proper error analysis in test_rule
+
+/ Name change: Function -> Integrand
+
++ Complete rewrite and extension of tparamter.cpp/tparameter.h
+/ generatormatrix.h split up in ...matrix.h, ...matrix2.h, ...matrixgen.h
+/ GeneratorMatrixGenX -> GeneratorMatrixVecX.
+  GeneratorMatrixGen has a fixed vectorization of 1
++ Many clean-ups and some new functions in GeneratorMatrix*
++ Faure::init() optimized
+
++ Integrator::derivative() gives derivatives
++ Rule2Ionescu
+
+- RefCountingAlgebra: setPointers() was not called in write()
+- RefCountingAlgebra: Allocated memory was not aligned properly
++ Precalculated LookupField (calculated at compile time)
++ characteristic is part of shared data in LookupField
+
+
+
+0.0.4    June 16, 2003
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     29352   99405  729424 total
+
+Algebraic structures:
+
++ algebra.h defines algebra_ and polynomial_tag's, TrivialFieldMembers and
+  BitOpBasedAddition
++ algebra_tag and polynomial_tag used in all algebraic structures
++ test_arithmetic completely rewritten. Examines all features of all algebraic
+  structures based on their algebra_category.
++ Many missing members included in various algebraic structures
++ print(), printShort() and printSuffix() for algebraic structures
++ PolynomialRing<A> can determine its algebra_category based on A
++ New algorithm for printing polynomials
++ PolynomialRing::quot() and ::rem() do not use ::div()
++ evaluate() for polynomial rings
+/ Name change: ModularArithmetic* -> ModularArith*
+/ ModularInteger* replaced by a specialization of ModularArith*
++ ModularArith detects polynomials and avoids unnecessary reductions
++ Additional eratosthenes() for arbitrary Euclidean rings
++ OneDimVectorSpace, GF2, GF2VectorSpace
+/ Name change: PrecalculatedField* -> LookupField*
++ LookupField uses RefCountingAlgebra
++ LookupFieldPow2 and LookupFieldPrime (based on LookupFieldMulOnly)
++ LookupVectorSpace, LookupVectorSpacePow2, VectorSpacePow2
+
+GeneratorMatrix:
+
+- Output of GeneratorMatrix::dump() was transposed
++ Completely revised interface, allowing vectorization
+  GeneratorMatrix2 becomes a special case of vectorization
++ New members: getVectorization(), getPrec(), getTotalPrec(), setVector(),
+  getVector(), getDigit(), setDigit(), set(), setv()
+/ Name change: dump* -> *Dump
++ operator== and operator= for arbitrary combinations of GeneratorMatrix'es
++ GMCopy object to specify copy operation
+
+DigitalNetGen:
+
++ Vectorization
++ Accepts arbitrary GeneratorMatrix'es
+
+
+DigitalNet2:
+
++ Adding -1.0 for IEEE-Magic is done as part of the ShiftScale
++ GF2VectorSpace and GF2 is used internally
++ Accepts arbitrary GeneratorMatrix'es with base=2
+/ DigitalNet2Naive removed
+
+Other changes:
+
++ t_parameter2 calculates a "restricted" t-parameter
++ operator<<(ostream&, X) treats falgs, precision and locale correctly
++ Prime::isPrimePower()
+- tests/qrnsequence: exit1 instead of exit 1
++ tests/tparameter:  Checks t_parameter() and t_parameter2()
+
+
+
+0.0.3    Apr 15, 2003
+
+   wc src/*.cpp src/HIntLib/*.h | tail -1
+     26416   90463  655736 total
+
++ Vegas and Miser use arbitrary PointSets (as presented at MCQMC 2002).
+  Some of the default parameters may not be optimal, so use at your own risk!
++ randomize() for PointSet and Integrator.
+  Performs digital shift for DigitalNet.
+- Code that is likely to produce infinity uses
+  numeric_limits<real>::has_infinity to determine if it is save to do so.
+- MIPSPro C++ 7.4 on SGI warns because of a missing copy assignment for
+  Polynomial2<T>. Added it.
+/ Make::generatorMatrix*() returns Mutable... instead of HeapAllocated...
+/ All macro names (including #include-guards and macros defined in config.h)
+  are prefixed with 'HINTLIB_'
+- Use libtool convenience libraries to fix some dependency-tracking problems.
+  Nothing is (superfluously) recompiled during a seconde make.
+- @EXEEXT@ was missing in some dependencies in Makefile.am
++ Complicated m4 macro definitions moved from configure.ac to acinclude.m4
++ Upgrade to recent version of config.sub and config.guess (2003-02-22)
+- test_qrnsequence: Wrong offsets for argv-array when in `net` mode
+
+
+
+0.0.2    Mar 16, 2003
+
+   wc src/*.cpp src/HIntLib/*.h | tail -1
+     26343   90283  650607 total
+
++ Precalculated Niederreiter/Xing matrices are included.
+  They are installed in $(prefix)/shared in a binary format
+  Thanks to Gottlieb Pirsic for providing the data files!
+- Some test scripts assumed '.' in $PATH  (Reinhold Kainhofer)
+- Many improvements for systems with sizeof int, long, and long long not equal
+  to 4/4/8. HIntLib compiles and links successfully on 64 bit platforms.
+- HIntLib can be built outside the source directory
+/ Name GenPolynomial2 changed to Polynomial2
+
+
+
+0.0.1    Mar 8, 2003    First public beta release
+
+   wc src/*.cpp src/HIntLib/*.h | tail -1
+     26284   90162  649380 total
+
+
+Key:
+
+- Bug fix
++ New feature
+/ Inteface change/cleanup
+

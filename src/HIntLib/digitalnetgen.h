@@ -106,12 +106,16 @@ public:
 
    DigitalNetGenNaive
       (const A &_arith, const GeneratorMatrix &gm, const Hypercube &_h)
-      : DigitalNetGen<A,S> (_arith, gm, _h, gm.getM(), 0, false, FULL) {}
+      : DigitalNetGen<A,S> (_arith, gm, _h, gm.getM(), 0, false, this->FULL) {}
 
-   void first          (real *p, Index new_n){ resetX          (n = new_n, p); }
-   void firstDontScale (real *p, Index new_n){ resetXDontScale (n = new_n, p); }
-   void next           (real *p)             { resetX          (++n, p); }
-   void nextDontScale  (real *p)             { resetXDontScale (++n, p); }
+   void first          (real *p, Index new_n)
+      { resetX          (this->n = new_n, p); }
+   void firstDontScale (real *p, Index new_n)
+      { resetXDontScale (this->n = new_n, p); }
+   void next           (real *p)
+      { resetX          (++(this->n), p); }
+   void nextDontScale  (real *p)
+      { resetXDontScale (++(this->n), p); }
 };
 
 
@@ -132,13 +136,15 @@ public:
 
    DigitalNetGenNormal
       (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h)
-      : DigitalNetGen<A,S> (_arith, gm, _h, gm.getM(), 0, false, FULL) {}
+      : DigitalNetGen<A,S> (_arith, gm, _h, gm.getM(), 0, false, this->FULL) {}
 
-   void first          (real *p, Index new_n){ resetX (n = new_n, p); }
-   void firstDontScale (real *p, Index new_n){ resetXDontScale (n = new_n, p); }
+   void first          (real *p, Index new_n)
+      { resetX (this->n = new_n, p); }
+   void firstDontScale (real *p, Index new_n)
+      { resetXDontScale (this->n = new_n, p); }
 
-   void next           (real *p)  { updateX(); copyXtoP (p); }
-   void nextDontScale  (real *p)  { updateX(); copyXtoPDontScale (p); }
+   void next           (real *p)  { updateX(); this->copyXtoP (p); }
+   void nextDontScale  (real *p)  { updateX(); this->copyXtoPDontScale (p); }
 
 private:
    void updateX ();
@@ -162,13 +168,15 @@ public:
 
    DigitalNetGenGray
       (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h)
-      : DigitalNetGen<A,S> (_arith, gm, _h, gm.getM(), 0, false, FULL) {}
+      : DigitalNetGen<A,S> (_arith, gm, _h, gm.getM(), 0, false, this->FULL) {}
 
-   void first          (real *p, Index new_n){ resetX (n = new_n, p); }
-   void firstDontScale (real *p, Index new_n){ resetXDontScale (n = new_n, p); }
+   void first          (real *p, Index new_n)
+      { resetX (this->n = new_n, p); }
+   void firstDontScale (real *p, Index new_n)
+      { resetXDontScale (this->n = new_n, p); }
 
-   void next           (real *p)  { updateX(); copyXtoP (p); }
-   void nextDontScale  (real *p)  { updateX(); copyXtoPDontScale (p); }
+   void next           (real *p)  { updateX(); this->copyXtoP (p); }
+   void nextDontScale  (real *p)  { updateX(); this->copyXtoPDontScale (p); }
 
 private:
    void updateX ();
@@ -195,13 +203,15 @@ public:
 
    DigitalNetGenCyclicGray
       (const A& _arith, const GeneratorMatrix &gm, const Hypercube &_h)
-      : DigitalNetGen<A,S> (_arith, gm, _h, gm.getM(), 0, false, FULL) {}
+      : DigitalNetGen<A,S> (_arith, gm, _h, gm.getM(), 0, false, this->FULL) {}
 
-   void first          (real *p, Index new_n){ resetX (n = new_n, p); }
-   void firstDontScale (real *p, Index new_n){ resetXDontScale (n = new_n, p); }
+   void first          (real *p, Index new_n)
+      { resetX (this->n = new_n, p); }
+   void firstDontScale (real *p, Index new_n)
+      { resetXDontScale (this->n = new_n, p); }
 
-   void next           (real *p)  { updateX(); copyXtoP (p); }
-   void nextDontScale  (real *p)  { updateX(); copyXtoPDontScale (p); }
+   void next           (real *p)  { updateX(); this->copyXtoP (p); }
+   void nextDontScale  (real *p)  { updateX(); this->copyXtoPDontScale (p); }
 
 private:
    void updateX ();

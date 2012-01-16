@@ -78,6 +78,8 @@ int main()
            "#pragma implementation\n"
            "#endif\n"
            "\n"
+           "#define HINTLIB_LIBRARY_OBJECT\n"
+           "\n"
            "#include <HIntLib/niederreitermatrix.h>\n"
            "\n"
            "namespace L = HIntLib;\n"

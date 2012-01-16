@@ -42,6 +42,7 @@ namespace HIntLib
    struct ufd_tag : public domain_tag      { typedef ufd_tag P; };
    struct euclidean_tag : public ufd_tag {};
    struct integer_tag : public euclidean_tag {};
+   struct polyoverfield_tag : public euclidean_tag {};
 
    struct field_tag       : public ringfield_tag
                         { typedef field_tag P; typedef P F; };
@@ -83,8 +84,9 @@ namespace HIntLib
 
    // Tags for primedetection_category
 
-   struct primedetection_tag {};
    struct noprimedetection_tag {};
+   struct primedetection_tag : public noprimedetection_tag {};
+   struct factor_tag         : public   primedetection_tag {};
 
    // flags for printShort()
 
@@ -116,7 +118,7 @@ namespace HIntLib
 
       static T dbl (const T&)  { return 0; }
       static void times2 (T& a)  { a = 0; }
-      static T times (const T& a, unsigned k)  { return odd (k) ? a : 0; }
+      static T times (const T& a, unsigned k)  { return (k & 1) ? a : 0; }
 
       static unsigned additiveOrder (const T& a)  { return a ? 2 : 1; }
       static unsigned characteristic()  { return 2; }
@@ -143,7 +145,7 @@ namespace HIntLib
 
 #define HINTLIB_TRIVIAL_DOMAIN_MEMBERS \
    unsigned additiveOrder (const type& a) const \
-      { return is0(a) ? 1 : characteristic(); }
+      { return is0(a) ? 1 : this->characteristic(); }
 
 #define HINTLIB_TRIVIAL_CYCLIC_MEMBERS \
    HINTLIB_TRIVIAL_DOMAIN_MEMBERS \

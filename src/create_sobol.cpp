@@ -187,6 +187,8 @@ int main (void)
               "#pragma implementation\n"
               "#endif\n"
               "\n"
+              "#define HINTLIB_LIBRARY_OBJECT\n"
+              "\n"
               "#include <HIntLib/sobolmatrix.h>\n"
               "\n"
               "namespace L = HIntLib;\n"

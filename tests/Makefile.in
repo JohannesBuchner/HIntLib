@@ -95,6 +95,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
+SHARED_VERSION_NUMBER = @SHARED_VERSION_NUMBER@
 SHELL = @SHELL@
 STL_OBJECT = @STL_OBJECT@
 STRIP = @STRIP@
@@ -149,6 +150,7 @@ COMMON_TESTS = \
    arithmetic.test \
    linearalgebra.test \
    genmatrix.test \
+   nx.test \
    shiftnet.test \
    tparameter.test \
    prng.test \

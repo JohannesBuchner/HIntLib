@@ -69,7 +69,7 @@ public:
    // Algebra traits
 
    typedef integer_tag algebra_category; 
-   typedef primedetection_tag primedetection_category;
+   typedef factor_tag primedetection_category;
    typedef infinite_tag size_category;
    typedef nopolynomial_tag polynomial_category;
    typedef char_zero char_category;
@@ -137,6 +137,13 @@ public:
    static void reduce   (T& a, const T& b)  { a %= b; }
    static void quotient (T& a, const T& b)  { a /= b; }
    static void divBy    (T& a, const T& b)  { a /= b; }
+
+   static bool isAssociate (T a, T b)  { return a == b || a == -b; }
+   static bool isAssociate (T a, T b, unit_type& u)
+      {      if (a ==  b)  { u = 1;  return true; }
+        else if (a == -b)  { u = -1; return true; }
+        else return false;
+      }
    static bool isDivisor (const T& a, const T& b)  { return a % b == 0; }
    static bool isDivisor (const T& a, const T& b, T& c)
       { if (a % b == 0) { c = a / b; return true; } else { return false; } }
@@ -181,7 +188,7 @@ public:
       unsigned prime;
    };
 
-   unit_type factor (Factorization &, type);
+   static unit_type factor (Factorization &, type);
    
    HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };

@@ -32,6 +32,37 @@ namespace P = HIntLib::Private;
 
 
 /**
+ *  Constructor
+ */
+
+P::ModularArithmeticBase::ModularArithmeticBase
+      (unsigned modulus, unsigned max, bool field)
+   : m (modulus)
+{
+   if (m > max + 1 || m < 2)  throw InvalidModularFieldSize (m);
+
+   if (field)
+   {
+      if (! Prime::test (m))  throw InvalidModularFieldSize (m);
+
+      // calculate factorization of m-1 and set nilradical
+
+      Prime::factor (fac, m - 1);
+      nilradical = m;
+   }
+   else // ring
+   {
+      // calculate nilradical
+
+      PrimeDivisors pd (m);
+
+      nilradical = 1;
+      while (unsigned p = pd.next())  nilradical *= p;
+   }
+}
+
+
+/**
  *  I/O
  */
 
@@ -65,20 +96,6 @@ P::ModularArithmeticBase::prn (std::ostream &o, unsigned a) const
 
 
 /**
- *  calcNilradical()
- */
-
-unsigned
-P::ModularArithmeticBase::calcNilradical (unsigned m)
-{
-   PrimeDivisors pd (m);
-   unsigned nr = 1;
-   while (unsigned p = pd.next())  nr *= p;
-   return nr;
-}
-
-
-/**
  *  invalidType()
  */
 
@@ -86,25 +103,6 @@ void
 P::ModularArithmeticBase::invalidType ()
 {
    throw InvalidType ("ModularArithmeticRing/Field");
-}
-
-/**
- *  checkField()  (for fields)
- *  checkRing()   (for rings)
- *
- *  Throw an exception if m is not a prime number
- */
-
-void
-P::ModularArithmeticBase::checkField (unsigned max) const
-{
-   if (m - 1 > max || ! Prime::test (m))  throw InvalidModularFieldSize (m);
-}
-
-void
-P::ModularArithmeticBase::checkRing (unsigned max) const
-{
-   if (m - 1 > max || m < 2)  throw InvalidModularFieldSize (m);
 }
 
 
@@ -192,12 +190,12 @@ P::ModularArithmeticBase::orderImp (unsigned a) const
    throwDivisionByZero (a);
 
    unsigned e = m - 1;
-   PrimeDivisors pd (e);
-   unsigned exponent;
 
-   while (unsigned prime = pd.next (exponent))
+   for (FacI i = fac.begin(); i != fac.end(); ++i)
    {
-      e /= powInt (prime, exponent);
+      const unsigned& prime = i-> first;
+
+      e /= powInt (prime, i->second);
       unsigned g1 = powerMod (a, e, m);
 
       while (g1 != 1)
@@ -208,6 +206,29 @@ P::ModularArithmeticBase::orderImp (unsigned a) const
    }
 
    return e;
+}
+
+
+/**
+ *  isPrimitiveElement()  (for fields)
+ *
+ *  Order of an element in a finite group.
+ *  See Algorithm 1.4.3 in H.Kohen, CANT
+ */
+
+bool
+P::ModularArithmeticBase::isPrimitiveImp (unsigned a) const
+{
+   if (a == 0) return false;
+
+   const unsigned q = m - 1;
+
+   for (FacI i = fac.begin(); i != fac.end(); ++i)
+   {
+      if (powerMod(a, q / i->first, m) == 1)  return false;
+   }
+
+   return true;
 }
 
 

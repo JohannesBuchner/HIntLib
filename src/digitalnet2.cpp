@@ -54,12 +54,12 @@ L::DigitalNet2<T>::DigitalNet2 (
    unsigned _m, Index index, bool equi, Truncation _trunc)
 : QRNSequenceBase(_h),
   DigitalNet (_c.getBase(), _m),
-  alg(),
-  scalAlg (alg.getScalarAlgebra()),
   totalPrec (std::min(
      (_trunc == FULL) ? _c.getTotalPrec() : m,   // what we want
      unsigned (std::numeric_limits<real>::digits - 1)
   )), // what makes sense
+  alg (totalPrec),
+  scalAlg (alg.getScalarAlgebra()),
 
   c (_c, GMCopy().dim(getDimension()).m(m).totalPrec(totalPrec).equi(equi)),
   x      (getDimension()),

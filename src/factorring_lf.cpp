@@ -26,8 +26,8 @@
 
 #include <HIntLib/factorring.tcc>
 
-#include <HIntLib/modulararithmetic.h>
 #include <HIntLib/polynomial.h>
+#include <HIntLib/modulararithmetic.h>
 
 namespace HIntLib
 {

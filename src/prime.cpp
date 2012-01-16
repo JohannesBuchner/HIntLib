@@ -18,12 +18,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-/**
- *  prime1.cpp
- *
- *  The non-machine generated part from  Prime
- */
-
 #ifdef __GNUG__
 #pragma implementation
 #endif
@@ -106,29 +100,28 @@ template L::u64   L::Prime::searchForNextPrime (u64);
 template<class T>
 T L::Prime::eulerPhi (T n)
 {
-   if (n == 0)  return 0;    // phi(0) = 0
+   if (n == 0)  return 0;
 
    unsigned phi = 1;
+   unsigned prime = 1;
 
    // test all primes
 
-   for (unsigned prime = 2; ; prime = next (prime+1))
+   while (n > 1)
    {
-      if (n == 1)  return phi;   // done?
+      prime = nextPrimeDivisor (n, prime);
+      n /= prime;
 
-      if (n % prime == 0)
+      phi *= (prime - 1);
+
+      while (n % prime == 0)
       {
          n /= prime;
-
-         phi *= (prime - 1);
-
-         while (n % prime == 0)
-         {
-            n /= prime;
-            phi *= prime;
-         }
+         phi *= prime;
       }
    }
+
+   return phi;
 }
 
 template unsigned L::Prime::eulerPhi (unsigned);
@@ -162,6 +155,7 @@ bool L::isPrimitiveRoot (unsigned a, unsigned p)
 
 
 /**
+ *  isPrimePower()
  *  factorPrimePower ()
  *
  *  Given a number  x = p^n , with  p  prime, factorPrimePower() determines
@@ -221,11 +215,86 @@ void L::Prime::throwPrimeNumberNth (unsigned n)
 
 
 /**
+ *  nextPrimeDivisor()
+ *
+ *  Finds the next prime divisor of n, assuming that n does not have any
+ *  divisor <= prime.
+ */
+
+unsigned L::Prime::nextPrimeDivisor (unsigned n, unsigned prime)
+{
+   // check all primes from the table
+
+   while (prime < Prime::MAX_N)
+   {
+      prime = Prime::nextPrimeArray[prime + 1];
+      if (n % prime == 0)  return prime;
+      if (prime * prime > n)  return n;
+   }
+
+   // increment prime, but make sure that prime = 6 k + 1
+
+   if (prime % 6 == 5)  prime += 2;
+
+   // Check further divisors of the form  6 k + 1  and  6 k + 5
+
+   for (;;)
+   {
+      if (n % prime == 0)     return prime;
+      if (prime * prime > n)  return n;
+      prime += 4;
+      if (n % prime == 0)     return prime;
+      if (prime * prime > n)  return n;
+      prime += 2;
+   }
+}
+
+
+/**
+ *  PrimeDivisors
+ */
+
+unsigned L::PrimeDivisors::next()
+{
+   if (n < 2)  return 0;
+   prime = Prime::nextPrimeDivisor (n, prime);
+   do { n /= prime; } while (n % prime == 0);
+   return prime;
+}
+
+unsigned L::PrimeDivisors::next (unsigned& e)
+{
+   if (n < 2)  return 0;
+   prime = Prime::nextPrimeDivisor (n, prime);
+   e = 0;
+   do { n /= prime; ++e; } while (n % prime == 0);
+
+   return prime;
+}
+
+
+/**
+ *  factor()
+ */
+
+void
+L::Prime::factor (Factorization& f, unsigned n)
+{
+   PrimeDivisors pd (n);
+   unsigned e;
+   while (unsigned prime = pd.next(e))
+   {
+      f.push_back (std::make_pair (prime, e));
+   }
+}
+
+
+/**
  *  gcd()  --  two multipliers
  */
 
 template<typename T>
-T HIntLib::gcd (T v3, T u3, T& mv, T& mu)
+T L::gcd (T v3, T u3, T& mv, T& mu)
 {
    T u1 = 1;
    T u2 = 0;
@@ -263,7 +332,7 @@ T HIntLib::gcd (T v3, T u3, T& mv, T& mu)
  */
 
 template<typename T>
-T HIntLib::gcd (T v3, T u3, T& mv)
+T L::gcd (T v3, T u3, T& mv)
 {
    T u2 = 0;
    T v2 = 1;

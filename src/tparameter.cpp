@@ -342,7 +342,7 @@ unsigned char L::TCalcGen::staticSelection [];
 
 L::TCalcGen::TCalcGen (const GMGen &_gm)
    : TCalc(_gm.getDimension()), gm (_gm), M (_gm.getM()),
-     la (makeLinearAlgebra (_gm.getBase()))
+     la (LinearAlgebra::make (_gm.getBase()))
 {
    selection = (sqr(_gm.getM()) > MAX_SELECTION_SIZE)
       ? new unsigned char [sqr(M)] : staticSelection;

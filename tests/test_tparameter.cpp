@@ -75,7 +75,7 @@ void usage()
    cerr <<
       "Usage: test_tparameter [OPTION] net...\n\n"
       "Tests if determining the t-parameter works correctly.\n\n"
-      "  net    # of the GeneratorMatrix\n"
+      "  net    # of the GeneratorMatrix or filename of libseq-format matrix\n"
       << option_msg <<
       "  -e     Add equidistributed coordinate\n"
       "  -r     Test restricted t_parameter\n"
@@ -188,30 +188,63 @@ void test (int argc, char** argv)
 {
    if (argc != 1)  usage();
 
-   int matrix = HINTLIB_SLN atoi (argv[0]);
+   char* endptr; 
+   int matrix = HINTLIB_SLN strtol (argv[0], &endptr, 10);
 
    Array<Matrix*> matrices (MAX_S, 0);    // The fullsized matrix for each s
    Array<int> t_matrix (MAX_S * MAX_M, -1);
 
-   NORMAL cout << Make::getGeneratorMatrixGenName (matrix) << "\n\n";
-   NORMAL if (! RESTRICTED)  cout << "   s=";
+   if (endptr != argv[0] && *endptr == '\0')
+   { 
+      NORMAL cout << Make::getGeneratorMatrixGenName (matrix) << "\n\n";
+      NORMAL if (! RESTRICTED)  cout << "   s=";
 
-   for (unsigned s = MIN_S; s < MAX_S; ++s)
-   {
-      try
+      for (unsigned s = MIN_S; s < MAX_S; ++s)
       {
-         matrices [s] = Make::generatorMatrixGen (matrix, s - ADD_EQUI);
-         NORMAL if (! RESTRICTED)  cout << setw(3) << s << flush;
+         try
+         {
+            matrices [s] = Make::generatorMatrixGen (matrix, s - ADD_EQUI);
+            NORMAL if (! RESTRICTED)  cout << setw(3) << s << flush;
+         }
+         catch (InvalidDimension &)
+         {
+            NORMAL if (! RESTRICTED)  cout << setw(3) << "";
+         }
       }
-      catch (InvalidDimension &)
+      NORMAL
       {
-         NORMAL if (! RESTRICTED)  cout << setw(3) << "";
+         if (! RESTRICTED)  cout << "\n";
+         else cout << setw(3) << "s" << setw(3) << "m" << setw(4) << "t"
+                   << endl;
       }
    }
-   NORMAL
-   {
-      if (! RESTRICTED)  cout << "\n";
-      else cout << setw(3) << "s" << setw(3) << "m" << setw(4) << "t" << endl;
+   else   // reading matrix from file
+   { 
+      std::auto_ptr<Matrix> gm (loadLibSeq (argv[0]));
+      NORMAL cout << "Matrix from file '" << argv[0] << "'\n\n";
+      NORMAL if (! RESTRICTED)  cout << "   s=";
+
+      for (unsigned s = MIN_S; s < MAX_S; ++s)
+      {
+         unsigned ss = s - ADD_EQUI;
+
+         if (ss <= gm->getDimension())
+         {
+            GMCopy copy; copy.dim(ss);
+            matrices [s] = new Matrix (*gm, copy);
+            NORMAL if (! RESTRICTED)  cout << setw(3) << s << flush;
+         }
+         else
+         {
+            NORMAL if (! RESTRICTED)  cout << setw(3) << "";
+         }
+      }
+      NORMAL
+      {
+         if (! RESTRICTED)  cout << "\n";
+         else cout << setw(3) << "s" << setw(3) << "m" << setw(4) << "t"
+                   << endl;
+      }
    }
 
    for (unsigned m = MIN_M; m < MAX_M; ++m)

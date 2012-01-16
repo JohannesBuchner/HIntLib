@@ -6,7 +6,9 @@
 
 # autoconf setup
 
-AC_INIT([HIntLib], 0.0.8, [rudolf.schuerer@sbg.ac.at], [HIntLib])
+AC_INIT([HIntLib], 0.0.9, [rudolf.schuerer@sbg.ac.at], [HIntLib])
+SHARED_VERSION_NUMBER=1
+AC_SUBST(SHARED_VERSION_NUMBER)
 AC_CONFIG_SRCDIR([src/HIntLib/integrator.h])
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile src/Makefile src/HIntLib/Makefile share/Makefile tests/Makefile tests/toms659/Makefile tests/toms738/Makefile libtest/Makefile])
@@ -198,7 +200,8 @@ AC_CHECK_HEADERS(
 
 # Mandatory C header files
 
-dnl  cmath:   sin(), cos(), sqrt(), floor(), ceil(), log(), modf()
+dnl  cmath:   sin(), cos(), sqrt(), floor(), ceil(), exp(), log(), pow(), modf()
+dnl  math.h:  lgamma()
 dnl  cstring: strcpy()
 dnl  cstddef: size_t, ptrdiff_t
 dnl  cstdlib: rand(), srand(), RAND_MAX
@@ -397,9 +400,11 @@ AC_DEFINE_UNQUOTED(ABS_STRATEGY,$hl_cv_abs_strategy,
    [strategy to get abs() right])
 
 # Which sin() do we use for floats?
+# This result is also used for all other math functions covered by the C++
+# standard.
 
 HL_WHICH_MATH_FUN(sin,::std::sin ::sin ::std::sinf ::sinf,float)
-HL_WHICH_MATH_FUN(sin,::std::sin ::sin ::std::sin  ::sin, double)
+HL_WHICH_MATH_FUN(sin,::std::sin ::sin, double)
 if test "x$ac_cv_type_long_double" = xyes; then
 HL_WHICH_MATH_FUN(sin,::std::sin ::sin ::std::sinl ::sinl,long double)
 else
@@ -427,7 +432,17 @@ else
 fi
 
 AC_DEFINE_UNQUOTED(MATH_FUN_STRATEGY,$hl_cv_math_fun_strategy,
-   [strategy to get math functions right])
+   [strategy to get standard math functions right])
+
+# Which lgamma() shall we use?
+
+HL_WHICH_MATH_FUN(lgamma,::std::lgamma ::lgamma ::std::lgammaf ::lgammaf,float)
+HL_WHICH_MATH_FUN(lgamma,::std::lgamma ::lgamma,double)
+if test "x$ac_cv_type_long_double" = xyes; then
+HL_WHICH_MATH_FUN(lgamma,::std::lgamma ::lgamma ::std::lgammal ::lgammal,long double)
+else
+hl_cv_lgamma_for_long_double_num=$hl_cv_lgamma_for_double_num
+fi
 
 # Directories
 

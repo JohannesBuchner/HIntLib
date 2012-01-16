@@ -26,14 +26,14 @@
 
 #include <HIntLib/output.h>
 
-namespace L = HIntLib;
+namespace P = HIntLib::Private;
 
 
 /**
  *  Printer
  */
 
-L::Private::Printer::Printer (std::ostream &_o)
+P::Printer::Printer (std::ostream &_o)
    : o (_o)
 {
    flags (o.flags());
@@ -43,9 +43,9 @@ L::Private::Printer::Printer (std::ostream &_o)
 #endif
 }
 
-L::Private::Printer::~Printer ()
+P::Printer::~Printer ()
 {
-   // o << str();     // Does not handle width properly on GNU C++ 2.95.x
+   // o << str(); // string<> does not handle width properly on GNU C++ 2.95.x
    o << str().c_str();
 }
 

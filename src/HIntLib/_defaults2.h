@@ -98,6 +98,11 @@
 
 /**
  *  PRIME_TABLE_SIZE
+ *
+ *  HIntLib contains a table of all prime numbers from 2 up to PRIME_TABLE_SIZE.
+ *
+ *  These tables are contained in prime_generated.cpp which is built by
+ *  create_prime.
  */
 
 #ifndef HINTLIB_PRIME_TABLE_SIZE
@@ -107,21 +112,32 @@
 
 /**
  *  PRECALCULATED_FIELD_SIZE
+ *
+ *  All finite fields up to the given size are precalculated.
+ *
+ *  Tables are contained in lookupfield_generated.cpp which is built by
+ *  create_lookupfield.
  */
 
 #ifndef HINTLIB_PRECALCULATED_FIELD_MAX_SIZE
    #define HINTLIB_PRECALCULATED_FIELD_MAX_SIZE 32
 #endif
 
+
 /**
  *  Arrays in Cygwin DLLs
+ *
+ *  When an array contained in a DLL (Windows Dynamic Link Library) has to be
+ *  accessed from outside the DLL, special precautions have to be taken.
+ *  This is ensured by prefixing the array declaration appropriately whenever
+ *  the header file is used to create the main-program object file.
  */
 
 #if (defined(_WIN32) || defined(__CYGWIN__)) && \
     !(defined(HINTLIB_LIBRARY_OBJECT) || defined(HINTLIB_STATIC_LIB_ONLY))
-#define HINTLIB_IMPORT __declspec(dllimport)
+#define HINTLIB_DLL_IMPORT __declspec(dllimport)
 #else
-#define HINTLIB_IMPORT
+#define HINTLIB_DLL_IMPORT
 #endif
 
 }  // namespace HIntLib

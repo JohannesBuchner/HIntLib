@@ -27,6 +27,10 @@
 #ifndef HINTLIB_QMCINTEGRATION_H
 #define HINTLIB_QMCINTEGRATION_H 1
 
+#ifdef __GNUG__
+#pragma interface
+#endif
+
 #include <HIntLib/hypercube.h>
 #include <HIntLib/statistic.h>
 #include <HIntLib/integrand.h>

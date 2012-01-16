@@ -56,14 +56,14 @@ class BuiltInPRNG
 private:
 
    #if HINTLIB_STATIC_WORKS == 1
-      HINTLIB_IMPORT static const real RANGE;
-      HINTLIB_IMPORT static const real RESOLUTION;
+      static HINTLIB_DLL_IMPORT const real RANGE;
+      static HINTLIB_DLL_IMPORT const real RESOLUTION;
    #else
       static real RANGE;
       static real RESOLUTION;
    #endif
 
-   HINTLIB_IMPORT static bool inUse;
+   static HINTLIB_DLL_IMPORT bool inUse;
 
    // Don't copy, dont assign!!!
 

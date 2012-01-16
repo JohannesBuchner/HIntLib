@@ -24,6 +24,12 @@
 
 #define HINTLIB_LIBRARY_OBJECT
 
+/**
+ *  polynomialbase.cpp
+ *
+ *  Defines all non-template members of PolynomialRing<> base classes.
+ */
+
 #include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_OSTREAM
@@ -32,7 +38,7 @@
   #include <iostream>
 #endif
 
-#include <HIntLib/polynomial.h>
+#include <HIntLib/polynomialbase.h>
 
 namespace P = HIntLib::Private;
 
@@ -45,7 +51,8 @@ namespace P = HIntLib::Private;
  *      1 + base + base^2 + base^3 + ...
  */
 
-unsigned P::funnySum (int n, unsigned base)
+unsigned
+P::funnySum (int n, unsigned base)
 {
    if (n <= 0)  return 0;
 
@@ -65,7 +72,8 @@ unsigned P::funnySum (int n, unsigned base)
  *  printVariable ()
  */
 
-void P::PRB::printVariable (std::ostream& o) const
+void
+P::PRB::printVariable (std::ostream& o) const
 {
    o << var;
 }
@@ -74,10 +82,11 @@ void P::PRB::printVariable (std::ostream& o) const
 /**
  *  printVariableWithBrackets ()
  *
- *  This method ist NON width()-save!
+ *  This method ist NOT width()-save!
  */
 
-void P::PRB::printVariableWithBrackets (std::ostream& o) const
+void
+P::PRB::printVariableWithBrackets (std::ostream& o) const
 {
    o << '[' << var << ']';
 }
@@ -87,7 +96,8 @@ void P::PRB::printVariableWithBrackets (std::ostream& o) const
  *  printVariablePow ()
  */
 
-void P::PRB::printVariablePow (std::ostream& o, unsigned i) const
+void
+P::PRB::printVariablePow (std::ostream& o, unsigned i) const
 {
    o << var;
 

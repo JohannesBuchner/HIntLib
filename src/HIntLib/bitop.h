@@ -50,8 +50,8 @@ namespace HIntLib
 
 namespace Private
 {
-   extern HINTLIB_IMPORT const int ms1_data [];
-   extern HINTLIB_IMPORT const int ls0_data [];
+   extern HINTLIB_DLL_IMPORT const int ms1_data [];
+   extern HINTLIB_DLL_IMPORT const int ls0_data [];
 }
 
 

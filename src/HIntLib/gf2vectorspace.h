@@ -23,7 +23,7 @@
 
 #ifdef __GNUG__
 #pragma interface
-// Implementation in polynomial2.cpp
+// Implementation in polynomial2base.cpp
 #endif
 
 #include <HIntLib/gf2.h>
@@ -32,6 +32,9 @@
 
 
 namespace HIntLib
+{
+
+namespace Private
 {
 
 /**
@@ -56,13 +59,15 @@ protected:
 
 std::ostream& operator<< (std::ostream&, const GF2VectorSpaceBase&);
 
+}  // namespace Private
+
 
 /**
  *  GF2VectorSpace
  */
 
 template<typename T>
-class GF2VectorSpace : public GF2VectorSpaceBase,
+class GF2VectorSpace : public Private::GF2VectorSpaceBase,
                        public BitOpBasedAddition<T>
 {
 public:
@@ -75,16 +80,13 @@ public:
    typedef T type;
    typedef BitRef<T> scalar_reference;
 
-   GF2VectorSpace (unsigned _dim) : GF2VectorSpaceBase (_dim)
+   GF2VectorSpace (unsigned _dim) : Private::GF2VectorSpaceBase (_dim)
    {
       if (dim < 1 || dim > unsigned (std::numeric_limits<T>::digits))
       {
          throw FIXME (__FILE__, __LINE__);
       }
    } 
-
-   GF2VectorSpace ()
-      : GF2VectorSpaceBase (std::numeric_limits<T>::digits) {}
 
    template<typename I> void toCoord (type a, I p) const
    {

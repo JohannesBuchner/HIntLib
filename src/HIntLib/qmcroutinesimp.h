@@ -77,9 +77,9 @@ public:
       (real* point, Integrand &f, Index num, Index begin, Index end,
        PointSet::Stat& stat)
    {
-      Gen gen (*h);
+      Gen gen (*(this->h));
       Statistic<real, Sum, Index> s;
-      qmcIntegration (point, gen, f, begin + skip, end + skip, s);
+      qmcIntegration (point, gen, f, begin + this->skip, end + this->skip, s);
       stat = s;
    }
 
@@ -87,9 +87,9 @@ public:
       (real* point, Integrand &f, Index num, Index begin, Index end,
        PointSet::StatVar& stat)
    {
-      Gen gen (*h);
+      Gen gen (*(this->h));
       StatisticVar<real, Sum, Index> s;
-      qmcIntegration (point, gen, f, begin + skip, end + skip, s);
+      qmcIntegration (point, gen, f, begin + this->skip, end + this->skip, s);
       stat = s;
    }
 };
@@ -106,16 +106,16 @@ public:
       (real *point, Integrand &f, Index num, Index begin, Index end,
        PointSet::Stat& stat)
    {
-      Gen gen (*h);
-      qmcIntegration (point, gen, f, begin + skip, end + skip, stat);
+      Gen gen (*(this->h));
+      qmcIntegration (point, gen, f, begin + this->skip, end + this->skip, stat);
    }
 
    void integratePartition
       (real *point, Integrand &f, Index num, Index begin, Index end,
        PointSet::StatVar& stat)
    {
-      Gen gen (*h);
-      qmcIntegration (point, gen, f, begin + skip, end + skip, stat);
+      Gen gen (*(this->h));
+      qmcIntegration (point, gen, f, begin + this->skip, end + this->skip, stat);
    }
 };
 

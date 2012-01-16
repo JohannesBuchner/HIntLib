@@ -22,10 +22,13 @@
 #define HINTLIB_PRIME_H 1
 
 #ifdef __GNUG__
-#pragma interface
+// #pragma interface
 #endif
 
 #include <HIntLib/defaults.h>
+
+#include <vector>
+#include <utility>
 
 #ifdef HINTLIB_HAVE_LIMITS
   #include <limits>
@@ -37,6 +40,8 @@
 
 namespace HIntLib
 {
+
+class PrimeDivisors;
 
 /**
  *  Prime
@@ -79,13 +84,20 @@ public:
       return isPrimePower (n, prime, power);
    }
 
+   static unsigned nextPrimeDivisor (unsigned n, unsigned p);
+
+   // factor()
+
+   typedef std::vector<std::pair<unsigned, unsigned> > Factorization;
+   static void factor (Factorization&, unsigned);
+
 private:
 
    template<class T> static bool doPrimeTest        (T n)  HINTLIB_GNU_CONST;
    template<class T> static T    searchForNextPrime (T n)  HINTLIB_GNU_CONST;
 
-   HINTLIB_IMPORT static const unsigned short nextPrimeArray [MAX_N + 1];
-   HINTLIB_IMPORT static const unsigned short nthPrimeArray [NUM_PRIMES];
+   static HINTLIB_DLL_IMPORT const unsigned short nextPrimeArray [MAX_N + 1];
+   static HINTLIB_DLL_IMPORT const unsigned short nthPrimeArray [NUM_PRIMES];
 
    static void throwPrimeNumberNth (unsigned)  HINTLIB_GNU_NORETURN;
 };
@@ -177,43 +189,8 @@ class PrimeDivisors
 public:
    PrimeDivisors (unsigned _n) : n (_n), prime (1) {}
 
-   unsigned next()
-   {
-      if (n <= prime)  return 0;  // done?
-
-      if (n < prime * prime)  // n is prime?
-      {
-         prime = n;
-         n = 1;
-         return prime;
-      }
-
-      do { prime = Prime::next(prime + 1); } while (n % prime != 0);
-
-      do { n /= prime; } while (n % prime == 0);
-
-      return prime;
-   }
-
-   unsigned next (unsigned& e)
-   {
-      if (n <= prime)  return 0;  // done?
-
-      if (n < prime * prime)  // n is prime?
-      {
-         e = 1;
-         prime = n;
-         n = 1;
-         return prime;
-      }
-
-      do { prime = Prime::next(prime + 1); } while (n % prime != 0);
-
-      e = 0;
-      do { n /= prime; ++e; } while (n % prime == 0);
-
-      return prime;
-   }
+   unsigned next();
+   unsigned next (unsigned&);
 
 private:
    unsigned n;
@@ -272,8 +249,8 @@ template<typename T> inline bool isCoprime(T u, T v)
  *  lcm ()
  */
 
-template<typename T> T lcm(T u, T v)  HINTLIB_GNU_CONST;
-template<typename T> inline T lcm (T u, T v)
+template<typename T>        T lcm (const T& u, const T& v)  HINTLIB_GNU_CONST;
+template<typename T> inline T lcm (const T& u, const T& v)
 {
    return u / gcd(u,v) * v;
 }

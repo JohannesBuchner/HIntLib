@@ -20,7 +20,7 @@
 
 #define HINTLIB_LIBRARY_OBJECT
 
-#include <HIntLib/polynomial_field.tcc>
+#include <HIntLib/polynomial_gf.tcc>
 
 #include <HIntLib/lookupfield.h>
 

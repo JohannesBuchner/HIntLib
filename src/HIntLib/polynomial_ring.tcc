@@ -42,7 +42,7 @@ HIntLib::Private::PRBA_Ring<A>::additiveOrder (const type& u) const
    const typename type::CDownI end = u.toA0();
          typename type::CDownI i   = u.fromLc();
 
-   while (i != end)  n = lcm (n, a.additiveOrder (*i++));
+   while (i != end)  n = lcm (n, this->a.additiveOrder (*i++));
    return n;
 }
 
@@ -55,12 +55,12 @@ template<class A>
 bool
 HIntLib::Private::PRBA_Ring<A>::isUnit (const type& p) const
 {
-   if (p.numCoeff() == 0 || ! a.isUnit (p.ct()))  return false;
+   if (p.numCoeff() == 0 || ! this->a.isUnit (p.ct()))  return false;
 
    const typename type::CDownI end = p.toA0() - 1;
          typename type::CDownI i   = p.fromLc();
 
-   while (i != end)  if (! a.isNilpotent (*i++))  return false;
+   while (i != end)  if (! this->a.isNilpotent (*i++))  return false;
    return true;
 }
 
@@ -78,7 +78,7 @@ HIntLib::Private::PRBA_Ring<A>::isNilpotent (const type& p) const
    const typename type::CDownI end = p.toA0();
          typename type::CDownI i   = p.fromLc();
 
-   while (i != end)  if (! a.isNilpotent (*i++))  return false;
+   while (i != end)  if (! this->a.isNilpotent (*i++))  return false;
    return true;
 }
 
@@ -149,8 +149,8 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::MulUnitD,A,T> x)
    
    reserve (p->numCoeff());
 
-   const P::CDownI end = p->toA0();
-   for (P::CDownI i = p->fromLc(); i != end; ++i)
+   const CDownI end = p->toA0();
+   for (CDownI i = p->fromLc(); i != end; ++i)
    {
       mulAndAdd (a->mulUnit (*i, *u));
    }
@@ -168,8 +168,46 @@ HIntLib::Private::PRBA_Domain<A>:: mulByUnit (type &p, const unit_type& u) const
    const typename type::DownI end = p.toA0();
    for (typename type::DownI i = p.fromLc(); i != end; ++i)
    {
-      a.mulByUnit (*i, u);
+      this->a.mulByUnit (*i, u);
    }
+}
+
+
+/**
+ *  is Associate ()
+ *
+ *  Determines if  p1  is associate to  p2, i.e. if there exists a unit  m
+ *  such that p2 * m = p1
+ */
+
+template<typename A>
+bool
+HIntLib::Private::PRBA_Domain<A>::
+isAssociate (const type &p1, const type &p2, unit_type& u) const
+{
+   const A& aa (this->a);
+
+   if (p1.degree() != p2.degree())  return false;
+   if (p1.is0())
+   {
+      u = aa.toUnit (aa.one());
+      return true;
+   }
+
+   // Try to find unit fit for leading coefficient
+
+   if (! aa.isAssociate(p1.lc(), p2.lc(), u))  return false;
+
+   // Make sure, this unit fits for all other coefficients
+
+   const typename type::CDownI end1 = p1.toA0();
+   for (typename type::CDownI i1 = p1.fromLc() + 1,
+                              i2 = p2.fromLc() + 1; i1 != end1; ++i1, ++i2)
+   {
+      if (! (aa.mul (*i2, u) == *i1))  return false;
+   }
+
+   return true;
 }
 
 
@@ -197,16 +235,18 @@ HIntLib::Private::PRBA_Domain<A>::isDivisor (const type& u, const type& v) const
    const  I uend   = uu.toA0();
    const CI vend   = v.toA0();
 
+   const A& aa (this->a);
+
    for (;;)
    {
       coeff_type factor;
-      if (! a.isDivisor (*ubegin, v.lc(), factor))  return false;
+      if (! aa.isDivisor (*ubegin, v.lc(), factor))  return false;
 
       I ui = ++ubegin;
 
       for (CI vi = v.fromLc() + 1; vi != vend; )
       {
-         a.subFrom (*ui++, a.mul (factor, *vi++));
+         aa.subFrom (*ui++, aa.mul (factor, *vi++));
       }
 
       if (ui == uend)  break;
@@ -216,7 +256,7 @@ HIntLib::Private::PRBA_Domain<A>::isDivisor (const type& u, const type& v) const
       
    for ( ; ubegin != rend; ++ubegin)
    {
-      if (! a.is0(*ubegin))  return false;
+      if (! aa.is0(*ubegin))  return false;
    }
 
    return true;
@@ -235,22 +275,24 @@ isDivisor (const type& u, const type& v, type& result) const
    }
    if (u.numCoeff() < v.numCoeff())  return false;
 
+   const A& aa (this->a);
+
 #if 0
    if (&result == &u)
    {
-      typename type::DownI qend = polyReduceS (a, result, v);
+      typename type::DownI qend = polyReduceS (aa, result, v);
       typename type::DownI rend = result.toA0();
       
       for (typename type::DownI i = qend; i != rend; ++i)
       {
-         if (! a.is0(*i))  return false;
+         if (! aa.is0(*i))  return false;
       }
 
       result.getC().erase (qend, rend);
       return true;
    } 
-#endif
    else
+#endif
    {
       type uu (u);
 
@@ -259,7 +301,7 @@ isDivisor (const type& u, const type& v, type& result) const
       {
          type temp;
          temp.reserve (u.numCoeff() - v.numCoeff() + 1);
-         bool ok = findLc (a, uu, polyReduce (a, uu, v, temp)) == uu.toA0();
+         bool ok = findLc (aa, uu, polyReduce (aa, uu, v, temp)) == uu.toA0();
          if (ok)  destructiveAssign (result, temp);
          return ok;
       }
@@ -269,7 +311,7 @@ isDivisor (const type& u, const type& v, type& result) const
          result.makeZero();
          result.reserve (u.numCoeff() - v.numCoeff() + 1);
 
-         // return findLc (a, uu, polyReduce (a, uu, v, result)) == uu.toA0();
+         // return findLc (aa, uu, polyReduce (aa, uu, v, result)) == uu.toA0();
    typedef typename A::type coeff_type;
    typedef typename type:: DownI  I;
    typedef typename type::CDownI CI;
@@ -281,14 +323,14 @@ isDivisor (const type& u, const type& v, type& result) const
    for (;;)
    {
       coeff_type factor;
-      if (! a.isDivisor (*ubegin, v.lc(), factor))  return false;
+      if (! aa.isDivisor (*ubegin, v.lc(), factor))  return false;
       result.mulAndAdd (factor);
 
       I ui = ++ubegin;
 
       for (CI vi = v.fromLc() + 1; vi != vend; )
       {
-         a.subFrom (*ui++, a.mul (factor, *vi++));
+         aa.subFrom (*ui++, aa.mul (factor, *vi++));
       }
 
       if (ui == uend)  break;
@@ -298,7 +340,7 @@ isDivisor (const type& u, const type& v, type& result) const
       
    for ( ; ubegin != rend; ++ubegin)
    {
-      if (! a.is0(*ubegin))  return false;
+      if (! aa.is0(*ubegin))  return false;
    }
 
    return true;
@@ -369,15 +411,17 @@ HIntLib::Private::PRBA_Domain<A>::divBy (type& u, const type& v) const
    const  I uend   = u.toA0();
    const CI vend   = v.toA0();
 
+   const A& aa (this->a);
+
    for (;;)
    {
-      a.divBy (*ubegin, v.lc());
+      aa.divBy (*ubegin, v.lc());
 
       I ui = ubegin + 1;
 
       for (CI vi = v.fromLc() + 1; vi != vend; )
       {
-         a.subFrom (*ui++, a.mul (*ubegin, *vi++));
+         aa.subFrom (*ui++, aa.mul (*ubegin, *vi++));
       }
 
       ++ubegin;
@@ -407,7 +451,7 @@ HIntLib::Private::PRBA_Domain<A>::order (const type& p) const
    // if there is an x, it will never go away because A is a domain
    if (num > 1)  return 0;
 
-   return a.order (p.lc());   // no x, no polynomial
+   return this->a.order (p.lc());   // no x, no polynomial
 }
 
 
@@ -422,7 +466,7 @@ template<class A>
 bool
 HIntLib::Private::PRBA_UFD<A>::isCanonical (const type &p) const
 {
-   return p.degree() < 0 || a.isCanonical(p.lc());
+   return p.degree() < 0 || this->a.isCanonical(p.lc());
 }
 
 
@@ -434,19 +478,62 @@ template<typename A>
 typename HIntLib::Private::PRBA_UFD<A>::unit_type
 HIntLib::Private::PRBA_UFD<A>::makeCanonical (type& p) const
 {
-   if (is0 (p)) return a.toUnit (a.one());
+   const A& aa (this->a);
 
-   unit_type l = a.makeCanonical (p.lc());
-   unit_type il = a.unitRecip (l);
+   if (is0 (p)) return aa.toUnit (aa.one());
+
+   unit_type l = aa.makeCanonical (p.lc());
+   unit_type il = aa.unitRecip (l);
 
    const typename type::DownI end = p.toA0();
    for (typename type::DownI i = p.fromLc() + 1; i != end; ++i)
    {
-      a.mulByUnit (*i, il);
+      aa.mulByUnit (*i, il);
    }
 
    return l;
 }
+
+
+#if 0
+/**
+ *  content ()
+ *
+ *  Returns cont(p)  and sets  p = pp(p).
+ */
+
+template<typename A>
+typename HIntLib::Private::PRBA_UFD<A>::coeff_type
+HIntLib::Private::PRBA_UFD<A>::content (type& p) const
+{
+   const A& aa (this->a);
+
+   if (is0 (p)) return coeff_type();
+
+   if (p.isConstant())
+   {
+      coeff_type con = p.lc();
+      p.lc() = aa.one();
+      return con;
+   }
+   else
+   {
+      coeff_type con = p.lc();
+
+      const typename type::DownI end = p.toA0();
+      for (typename type::DownI i = p.fromLc() + 1; i != end; ++i)
+      {
+         con = genGcd (aa, con, *i);
+      }
+      for (typename type::DownI i = p.fromLc(); i != end; ++i)
+      {
+         aa.divBy (*i, con);
+      }
+
+      return con;
+   }
+}
+#endif
 
 
 /*********************  Instantiations  **************************************/
@@ -475,8 +562,9 @@ HIntLib::Private::PRBA_UFD<A>::makeCanonical (type& p) const
    template void PRBA_Domain<X >::mulByUnit (type&, const unit_type&) const; \
    template unsigned PRBA_Domain<X >::order (const type&) const; \
    template void PRBA_Domain<X >::divBy (type&, const type&) const; \
-   template bool PRBA_Domain<X >::isDivisor \
-      (const type&, const type&) const; \
+   template bool PRBA_Domain<X >::isAssociate \
+      (const type&, const type&, unit_type&) const; \
+   template bool PRBA_Domain<X >::isDivisor (const type&, const type&) const; \
    template bool PRBA_Domain<X >::isDivisor \
       (const type&, const type&, type&) const; \
    }
@@ -490,6 +578,8 @@ HIntLib::Private::PRBA_UFD<A>::makeCanonical (type& p) const
    template PRBA_UFD<X >::unit_type \
             PRBA_UFD<X >::makeCanonical (type&) const; \
    }
+   // template PRBA_UFD<X >::coeff_type
+   //          PRBA_UFD<X >::content (type&) const;
 
 #endif
 

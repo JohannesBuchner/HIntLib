@@ -26,13 +26,13 @@
 #define HINTLIB_POLYNOMIAL_H 1
 
 #ifdef __GNUG__
-#pragma interface
+// #pragma interface
 #endif
 
 #include <vector>
 #include <utility>
-#include <iosfwd>
 
+#include <HIntLib/polynomialbase.h>
 #include <HIntLib/algebra.h>
 #include <HIntLib/hlmath.h>
 
@@ -46,7 +46,6 @@ namespace HIntLib
 template<typename T> class Polynomial;
 namespace Private
 {
-   class PRB;
    template<class A> class PRBA;
    template<class A> class PRBA_Ring;
    template<class A> class PRBA_Domain;
@@ -320,9 +319,9 @@ namespace Private
    {
       HINTLIB_NEQ
       const PRBA_GF<A>* a;
-      unsigned* n;
-      PG (const PRBA_GF<A>& _a, unsigned& _n)
-         : a(&_a), n(&_n) {}
+      unsigned* np;
+      PG (const PRBA_GF<A>& _a, unsigned* _np)
+         : a(&_a), np(_np) {}
    };
 
    struct NextRational {};
@@ -330,9 +329,9 @@ namespace Private
    {
       HINTLIB_NEQ
       const PRBA_Rational<A>* a;
-      unsigned* n;
-      PG (const PRBA_Rational<A>& _a, unsigned& _n)
-         : a(&_a), n(&_n) {}
+      unsigned* np;
+      PG (const PRBA_Rational<A>& _a, unsigned* _np)
+         : a(&_a), np(_np) {}
    };
 
    struct NextReal {};
@@ -340,8 +339,8 @@ namespace Private
    {
       HINTLIB_NEQ
       const A* a;
-      unsigned* n;
-      PG (const A& _a, unsigned& _n) : a(&_a), n(&_n) {}
+      unsigned* np;
+      PG (const A& _a, unsigned* _np) : a(&_a), np(_np) {}
    };
 
    struct NextComplex {};
@@ -349,8 +348,8 @@ namespace Private
    {
       HINTLIB_NEQ
       const A* a;
-      unsigned* n;
-      PG (const A& _a, unsigned& _n) : a(&_a), n(&_n) {}
+      unsigned* np;
+      PG (const A& _a, unsigned* _np) : a(&_a), np(_np) {}
    };
 
 #undef HINTLIB_PG_A
@@ -698,34 +697,9 @@ namespace Private
 {
 
 /**
- *  Polynomial Ring Base  --  no template
- *
- *  Non-template base class of polynomial rings
- */
-
-class PRB
-{
-public:
-   static unsigned size()  { return 0; }
-
-   void printVariable (std::ostream &) const;
-   void printVariableWithBrackets (std::ostream &) const;
-   void printVariablePow (std::ostream&, unsigned) const;
-
-protected:
-   explicit PRB (char _var) : var (_var) {}
-
-   static const int squareBeatsLinear [];
-
-private:
-   const char var;
-};
-
-
-/**
  *  Polynomial Ring Base  --  A
  *
- *  All members which use only ring_base-properties of A
+ *  All members which use only ring_field-properties of A
  */
 
 template <class A>
@@ -825,6 +799,8 @@ public:
       { return PG<MulCoeff,A> (a, p, c); }
    void mulBy (type&, const coeff_type&) const;
 
+   void divByLinearFactor (type&, const coeff_type&) const;
+
    // other stuff
 
    PG<Derivative,A> derivative (const type& p) const
@@ -849,6 +825,8 @@ std::ostream& operator<< (std::ostream &, const PRBA<A> &);
 
 /**
  *  Polynomial Ring Base
+ *
+ *  Tempalte definitions depending on A::algebra_category.
  */
 
 // ring_tag
@@ -865,9 +843,9 @@ public:
    typedef ring_tag algebra_category;
    
    unsigned numNilpotents() const
-      { return a.numNilpotents() == 1 ? 1 : 0; }
+      { return this->a.numNilpotents() == 1 ? 1 : 0; }
    unsigned numUnits() const
-      { return a.numNilpotents() == 1 ? a.numUnits() : 0; }
+      { return this->a.numNilpotents() == 1 ? this->a.numUnits() : 0; }
 
    const type&    fromUnit (const unit_type& p) const  { return p; }
    const unit_type& toUnit (const      type& p) const  { return p; }
@@ -880,7 +858,7 @@ public:
       { return PG<UnitRecipR,A> (this, u); }
 
    PG<Mul<zerodivisor_tag>,A> mulUnit (const type& p1, const type& p2) const
-      { return PG<Mul<zerodivisor_tag>,A> (a, p1, p2); }
+      { return PG<Mul<zerodivisor_tag>,A> (this->a, p1, p2); }
    void mulByUnit (type& p1, const type& p2) const  { mulBy (p1, p2); }
 
    unsigned additiveOrder (const type&) const;
@@ -903,36 +881,41 @@ public:
    typedef noprimedetection_tag primedetection_category;
 
    bool isUnit (const type& p) const
-      { return p.numCoeff() == 1 && a.isUnit (p.lc()); }
+      { return p.numCoeff() == 1 && this->a.isUnit (p.lc()); }
 
-   unsigned numUnits() const  { return a.numUnits(); }
-   unsigned unitIndex (const unit_type& u) const  { return a.unitIndex (u); }
-   unit_type unitElement (unsigned i) const  { return a.unitElement (i); }
+   unsigned numUnits() const  { return this->a.numUnits(); }
+   unsigned unitIndex (const unit_type& u) const
+      { return this->a.unitIndex (u); }
+   unit_type unitElement (unsigned i) const  { return this->a.unitElement (i); }
 
    PG<FromUnitD,A> fromUnit (const unit_type& u) const
-      { return PG<FromUnitD,A> (a, u); }
-   unit_type toUnit (const type& p) const  { return a.toUnit (p.lc()); }
+      { return PG<FromUnitD,A> (this->a, u); }
+   unit_type toUnit (const type& p) const  { return this->a.toUnit (p.lc()); }
 
-   unit_type unitRecip (const unit_type& u) const  { return a.unitRecip (u); }
+   unit_type unitRecip (const unit_type& u) const
+      { return this->a.unitRecip (u); }
 
    PG<MulUnitD,A> mulUnit (const type& p, const unit_type& u) const
-      { return PG<MulUnitD,A> (a, p, u); }
+      { return PG<MulUnitD,A> (this->a, p, u); }
    void mulByUnit (type&, const unit_type&) const;
 
    unit_type mulUnit (const unit_type& u1, const unit_type& u2) const
-      { return a.mulUnit (u1, u2); }
+      { return this->a.mulUnit (u1, u2); }
    void mulByUnit    (      unit_type& u1, const unit_type& u2) const
-      { a.mulByUnit (u1, u2); }
+      { this->a.mulByUnit (u1, u2); }
 
    unsigned order(const type&) const;
-   unsigned characteristic() const  { return a.characteristic(); }
+   unsigned characteristic() const  { return this->a.characteristic(); }
 
    void divBy (type& u, const type& v) const;
    PG<DivDomain,A> div (const type& p1, const type& p2) const
-      { return PG<DivDomain,A> (a, p1, p2); }
+      { return PG<DivDomain,A> (this->a, p1, p2); }
 
-   bool isDivisor (const type&, const type&) const;
-   bool isDivisor (const type&, const type&, type&) const;
+   bool isAssociate (const type&, const type&, unit_type&) const;
+   bool isAssociate (const type& p1, const type& p2) const
+      { unit_type u; return isAssociate (p1, p2, u); }
+   bool isDivisor   (const type&, const type&) const;
+   bool isDivisor   (const type&, const type&, type&) const;
 
    HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };
@@ -947,13 +930,15 @@ protected:
    PRBA_UFD (const A& _a, char _var) : PRBA_Domain<A> (_a, _var) {}
 
 public:
-   typedef typename PRBA<A>::type type;
+   typedef typename PRBA_Domain<A>::type type;
    typedef typename PRBA_Domain<A>::unit_type unit_type;
+   typedef typename PRBA_Domain<A>::coeff_type coeff_type;
 
    typedef ufd_tag algebra_category;
 
    bool isCanonical (const type&) const;
    unit_type makeCanonical (type&) const;
+   coeff_type content (type&) const;
 };
 
 
@@ -973,26 +958,29 @@ public:
    typedef typename PRBA<A>::coeff_type unit_type;
    typedef std::vector<std::pair<type,unsigned> > Factorization;
 
-   typedef euclidean_tag algebra_category;
+   typedef polyoverfield_tag algebra_category;
    typedef noprimedetection_tag primedetection_category;
 
-   unit_type unitRecip (const unit_type& u) const  { return a.recip (u); }
+   unit_type unitRecip (const unit_type& u) const  { return this->a.recip (u); }
    void div (const type&, const type&, type&, type&) const;
    void reduce   (type&, const type&) const;
    void quotient (type&, const type&) const;
    void divBy    (type& u, const type& v) const  { quotient (u, v); }
    PG<Rem,A> rem (const type& p1, const type& p2) const
-      { return PG<Rem,A> (a, p1, p2); }
+      { return PG<Rem,A> (this->a, p1, p2); }
    PG<Quot,A> quot (const type& p1, const type& p2) const
-      { return PG<Quot,A> (a, p1, p2); }
+      { return PG<Quot,A> (this->a, p1, p2); }
    PG<Quot,A> div (const type& p1, const type& p2) const
-      { return PG<Quot,A> (a, p1, p2); }
+      { return PG<Quot,A> (this->a, p1, p2); }
 
-   bool isDivisor (const type&, const type&) const;
-   bool isDivisor (const type&, const type&, type&) const;
+   bool isAssociate (const type&, const type&, unit_type&) const;
+   bool isAssociate (const type& p1, const type& p2) const
+      { unit_type u; return isAssociate (p1, p2, u); }
+   bool isDivisor   (const type&, const type&) const;
+   bool isDivisor   (const type&, const type&, type&) const;
 
    unsigned numOfRemainders (const type& p) const
-      { return SC::finite ? powInt (a.size(), p.degree()) : 0; }
+      { return SC::finite ? powInt (this->a.size(), p.degree()) : 0; }
 
    unsigned norm (const type& p) const  { return p.degree() + 1; }
 
@@ -1003,10 +991,11 @@ public:
    // units
 
    bool isUnit  (const type&p) const  { return p.numCoeff() == 1;}
-   unsigned numUnits() const  { return SC::finite ? a.size() - 1 : 0; }
+   unsigned numUnits() const  { return SC::finite ? this->a.size() - 1 : 0; }
 
-   unit_type unitElement (unsigned i) const  { return a.element(i + 1); }
-   unsigned unitIndex (const unit_type& u) const  { return a.index (u) - 1; }
+   unit_type unitElement (unsigned i) const  { return this->a.element(i + 1); }
+   unsigned unitIndex (const unit_type& u) const
+      { return this->a.index (u) - 1; }
    unit_type makeCanonical (type &) const;
 
    PG<FromCoeff,A> fromUnit (const unit_type& u) const
@@ -1014,16 +1003,16 @@ public:
    unit_type toUnit (const type& p) const  { return p.lc(); }
 
    PG<MulCoeff,A> mulUnit (const type& p, const unit_type& u) const
-      { return PG<MulCoeff,A> (a, p, u); }
+      { return PG<MulCoeff,A> (this->a, p, u); }
    void mulByUnit (type& p, const unit_type& u) const  { mulBy (p, u); }
 
    unit_type mulUnit (const unit_type& u1, const unit_type& u2) const
-      { return a.mul (u1, u2); }
+      { return this->a.mul (u1, u2); }
    void mulByUnit    (      unit_type& u1, const unit_type& u2) const
-      { a.mulBy (u1, u2); }
+      { this->a.mulBy (u1, u2); }
 
    unsigned order(const type&) const;
-   unsigned characteristic() const  { return a.characteristic(); }
+   unsigned characteristic() const  { return this->a.characteristic(); }
 
    HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };
@@ -1039,6 +1028,7 @@ protected:
 
 public:
    typedef typename PRBA<A>::type type;
+
    typedef primedetection_tag primedetection_category;
 
    bool isPrime    (const type& p) const;
@@ -1053,12 +1043,12 @@ class PRBA_Rational<A>::PrimeGenerator
 {
 public:
    PrimeGenerator(const PRBA_Rational<A> &_alg)
-      : alg (_alg), n(2) {}
+      : alg (_alg), n(1) {}
 
-   PG<NextRational,A> next()  { return PG<NextRational,A> (alg, n); }
+   PG<NextRational,A> next()  { return PG<NextRational,A> (alg, &n); }
 
 private:
-   PrimeGenerator ();
+   PrimeGenerator (const PrimeGenerator&);
    PrimeGenerator& operator= (const PrimeGenerator&);
    const PRBA_Rational<A> alg;
    unsigned n;
@@ -1074,12 +1064,15 @@ protected:
    PRBA_Real (const A& _a, char _var) : PRBA_Field<A> (_a, _var) {}
 
 public:
-   typedef typename PRBA<A>::type type;
-   typedef primedetection_tag primedetection_category;
+   typedef typename PRBA_Field<A>::type          type;
+
+   typedef factor_tag primedetection_category;
 
    bool isPrime    (const type& p) const;
    bool isComposit (const type& p) const
       { return p.degree() > 1 && ! isPrime (p); }
+   typename PRBA_Field<A>::unit_type
+      factor (typename PRBA_Field<A>::Factorization&, const type&) const;
 
    class PrimeGenerator;
 };
@@ -1091,10 +1084,10 @@ public:
    PrimeGenerator(const PRBA_Real<A> &_alg)
       : alg (_alg.getCoeffAlgebra()), n(0) {}
 
-   PG<NextReal,A> next()  { return PG<NextReal,A> (alg, n); }
+   PG<NextReal,A> next()  { return PG<NextReal,A> (alg, &n); }
 
 private:
-   PrimeGenerator ();
+   PrimeGenerator (const PrimeGenerator&);
    PrimeGenerator& operator= (const PrimeGenerator&);
    const A alg;
    unsigned n;
@@ -1110,11 +1103,16 @@ protected:
    PRBA_Complex (const A& _a, char _var) : PRBA_Field<A> (_a, _var) {}
 
 public:
-   typedef typename PRBA<A>::type type;
-   typedef primedetection_tag primedetection_category;
+   typedef typename PRBA_Field<A>::type type;
+
+   typedef factor_tag primedetection_category;
 
    bool isPrime    (const type& p) const  { return p.degree() == 1; };
    bool isComposit (const type& p) const  { return p.degree() >  1; };
+   void roots (typename PRBA_Field<A>::Factorization&,
+               const type&, unsigned, bool cplx) const;
+   typename PRBA_Field<A>::unit_type
+      factor (typename PRBA_Field<A>::Factorization&, const type&) const;
 
    class PrimeGenerator;
 };
@@ -1126,10 +1124,10 @@ public:
    PrimeGenerator(const PRBA_Complex<A> &_alg)
       : alg (_alg.getCoeffAlgebra()), n(0) {}
 
-   PG<NextComplex,A> next()  { return PG<NextComplex,A> (alg, n); }
+   PG<NextComplex,A> next()  { return PG<NextComplex,A> (alg, &n); }
 
 private:
-   PrimeGenerator ();
+   PrimeGenerator (const PrimeGenerator&);
    PrimeGenerator& operator= (const PrimeGenerator&);
    const A alg;
    unsigned n;
@@ -1138,8 +1136,6 @@ private:
 
 // gf_tag
 
-unsigned funnySum (int, unsigned);
-
 template<class A>
 class PRBA_GF : public PRBA_Field<A>
 {
@@ -1147,13 +1143,17 @@ protected:
    PRBA_GF (const A& _a, char _var) : PRBA_Field<A> (_a, _var) {}
 
 public:
-   typedef typename PRBA<A>::type type;
-   typedef primedetection_tag primedetection_category;
+   typedef typename PRBA_Field<A>::type type;
+
+   typedef factor_tag primedetection_category;
 
    bool isPrimitive (const type&) const;
    bool isPrime (const type&) const;
    bool isComposit (const type& p) const
       { return p.degree() > 1 && ! isPrime (p); }
+
+   typename PRBA_Field<A>::unit_type
+      factor (typename PRBA_Field<A>::Factorization&, const type&) const;
 
    class PrimeGenerator;
 };
@@ -1168,12 +1168,12 @@ public:
       : alg (_alg), n(funnySum (deg, alg.getCoeffAlgebra().size()))
       {}
 
-   PG<NextGF,A> next()  { return PG<NextGF,A> (alg, n); }
+   PG<NextGF,A> next()  { return PG<NextGF,A> (alg, &n); }
 
 private:
    const PRBA_GF<A> alg;
    unsigned n;
-   PrimeGenerator ();
+   PrimeGenerator (const PrimeGenerator&);
    PrimeGenerator& operator= (const PrimeGenerator&);
 };
 
@@ -1222,6 +1222,8 @@ public:
    explicit PolynomialRing (const A& _a, char _var = 'x')
       : Private::RingId<A,typename A::algebra_category::P>::base (_a, _var)
    {}
+
+   // Use default copy constructor
 };
 
 } // namespace HIntLib

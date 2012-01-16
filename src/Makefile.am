@@ -17,7 +17,7 @@ libcreatelookupfield_la_SOURCES = \
    modulararithmetic.cpp \
    hlmath.cpp \
    output.cpp \
-   polynomial.cpp \
+   polynomialbase.cpp \
    polynomial_lf.cpp \
    prime.cpp \
    prime_generated.cpp
@@ -30,12 +30,14 @@ libcreatematrix_la_SOURCES = \
    generatormatrix2.cpp \
    generatormatrixgen.cpp \
    linearalgebra.cpp \
+   linearalgebra2.cpp \
    lookupfield.cpp \
    lookupfield_generated.cpp \
    lookupgaloisfield.cpp \
    niederreitermatrixgen.cpp \
    polynomial_gm.cpp \
-   polynomial2.cpp
+   polynomial2.cpp \
+   polynomial2base.cpp
 
 ALLSRC= \
    adaptintegrator.cpp \
@@ -47,6 +49,7 @@ ALLSRC= \
    digitalnetgen.cpp \
    factorring_x.cpp \
    faure.cpp \
+   fixprojections.cpp \
    generatormatrix2row.cpp \
    generatormatrixvec.cpp \
    halton.cpp \
@@ -65,7 +68,9 @@ ALLSRC= \
    niederreitermatrix.cpp \
    orbitrule.cpp \
    pointset.cpp \
-   polynomial_field.cpp \
+   polynomial_gf.cpp \
+   polynomial_rational.cpp \
+   polynomial_real.cpp \
    polynomial_ring.cpp \
    pseudoembeddedrule.cpp \
    qmcintegrator.cpp \
@@ -117,11 +122,11 @@ ALLSRCMPI=$(ALLSRC) \
    staticloadbalancer_MPI.cpp
 
 libhintlib_la_SOURCES = $(ALLSRCSEQ)
-libhintlib_la_LDFLAGS = @NOUNDEFINED@
+libhintlib_la_LDFLAGS = $(NOUNDEFINED) -version-info $(SHARED_VERSION_NUMBER)
 libhintlib_la_LIBADD = libcreatematrix.la
 
 libhintlibmpi_la_SOURCES = $(ALLSRCMPI)
-libhintlibmpi_la_LDFLAGS = @NOUNDEFINED@ -rpath $(libdir)
+libhintlibmpi_la_LDFLAGS = $(NOUNDEFINED) -rpath $(libdir)
 libhintlibmpi_la_LIBADD = libcreatematrix.la
 
 noinst_PROGRAMS = create_sobol create_niederreiter create_bitop create_lookupfield

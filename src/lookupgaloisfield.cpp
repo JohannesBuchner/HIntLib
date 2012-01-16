@@ -67,14 +67,14 @@ template<class T>
 L::LookupGaloisField<T>::LookupGaloisField (unsigned prime, unsigned power)
    : LookupField<T> (powInt (prime, power))
 {
-   if (getRefCount())  makeGaloisField (*this, prime, power);
+   if (this->getRefCount())  makeGaloisField (*this, prime, power);
 }
 
 template<class T>
 L::LookupGaloisField<T>::LookupGaloisField (unsigned size)
    : LookupField<T> (size)
 {
-   if (getRefCount())
+   if (this->getRefCount())
    {
       unsigned prime, power;
       Prime::factorPrimePower (size, prime, power);
@@ -93,7 +93,7 @@ L::LookupGaloisFieldPow2<T>::LookupGaloisFieldPow2
    : LookupFieldPow2<T> (1 << power)
 {
    if (prime != 2)  throw FIXME (__FILE__, __LINE__);
-   if (getRefCount())  makeGaloisField (*this, prime, power);
+   if (this->getRefCount())  makeGaloisField (*this, prime, power);
 }
 
 template<class T>
@@ -102,14 +102,14 @@ L::LookupGaloisFieldPow2<T>::LookupGaloisFieldPow2 (unsigned size)
 {
    unsigned prime, power;
 
-   if (getRefCount())
+   if (this->getRefCount())
    {
       Prime::factorPrimePower (size, prime, power);
       makeGaloisField (*this, prime, power);
    }
    else
    {
-      prime = characteristic();
+      prime = this->characteristic();
    }
 
    if (prime != 2)  throw FIXME (__FILE__, __LINE__);
@@ -126,7 +126,7 @@ L::LookupGaloisFieldPrime<T>::LookupGaloisFieldPrime
    : LookupFieldPrime<T> (prime)
 {
    if (power != 1)  throw FIXME (__FILE__, __LINE__);
-   if (getRefCount())  makeGaloisField (*this, prime, power);
+   if (this->getRefCount())  makeGaloisField (*this, prime, power);
 }
 
 template<class T>
@@ -134,7 +134,7 @@ L::LookupGaloisFieldPrime<T>::LookupGaloisFieldPrime (unsigned size)
    : LookupFieldPrime<T> (size)
 {
    if (! Prime::test(size))  throw FIXME (__FILE__, __LINE__);
-   if (getRefCount())  makeGaloisField (*this, size, 1);
+   if (this->getRefCount())  makeGaloisField (*this, size, 1);
 }
 
 

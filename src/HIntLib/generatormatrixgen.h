@@ -95,17 +95,17 @@ public:
 
    ~GeneratorMatrixGen()  { delete[] c; }
 
-   // get (parts of ) the matrix
+   // get (parts of) the matrix
 
    const T* getMatrix() const  { return c; }
-   const T* operator() (unsigned r) const  { return &c[r*dimPrec]; }
+   const T* operator() (unsigned r) const  { return c + r*dimPrec; }
 
    // get/set column vectors
 
    const T* operator() (unsigned d, unsigned r) const
-      { return &c[r*dimPrec + d*prec]; }
+      { return c + r*dimPrec + d*prec; }
          T* operator() (unsigned d, unsigned r)
-      { return &c[r*dimPrec + d*prec]; }
+      { return c + r*dimPrec + d*prec; }
    void makeZeroColumnVector (unsigned d, unsigned r);
 
    // get/set row vectors

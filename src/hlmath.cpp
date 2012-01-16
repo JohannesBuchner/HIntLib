@@ -91,7 +91,9 @@ T L::powerMod (T x, unsigned exponent, T p)
          result *= x;
          if (result & mask)  result %= p;
       }
+
       if ((exponent >>= 1) == 0)  return result >= p ? result % p : result;
+
       x *= x;
       if (x & mask)  x %= p;
    }
@@ -125,9 +127,11 @@ T L::powerModReduce (T x, unsigned exponent, T p)
       if (exponent & 1)
       {
          result *= x;
-         if (result & mask)  x %= p;
+         if (result & mask)  result %= p;
       }
+
       if ((exponent >>= 1) == 0)  return result >= p ? result % p : result;
+
       x *= x;
       if (x & mask)  x %= p;
    }
@@ -220,6 +224,24 @@ L::real L::radicalInverseFunction2 (Index n)
 
    return x;
 }
+
+
+/**
+ *  lfact()
+ *
+ *  Returns the natural logarithm of n!
+ */
+
+double
+L::lfact (unsigned n)
+{
+   static double a[101];
+   
+   if (n <= 1)  return 0.0;
+   if (n <= 300)  return a[n] ? a[n] : (a[n] = lgamma(n + 1.0));
+   else return lgamma (n + 1.0);
+}
+
 
 #include <HIntLib/bitop.tcc>
 

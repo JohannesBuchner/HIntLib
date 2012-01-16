@@ -144,7 +144,7 @@ void MiserImp::recur (
 
    // Make sure, an even number of points remains
 
-   if (odd (numPoints - numPointsPre))  ++numPointsPre;
+   if ((numPoints - numPointsPre) & 1)  ++numPointsPre;
 
    // Reset MinMaxFinders
 
@@ -207,7 +207,7 @@ void MiserImp::recur (
    Index numPointsLeft = miser.FREE_POINTS
       + Index(numPoints * leftVariance / (leftVariance + rightVariance));
 
-   if (odd (numPointsLeft))  ++numPointsLeft;
+   if (numPointsLeft & 1)  ++numPointsLeft;
 
    const Index numPointsRight =
       2 * miser.FREE_POINTS + numPoints - numPointsLeft;

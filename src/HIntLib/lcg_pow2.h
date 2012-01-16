@@ -134,7 +134,7 @@ public:
  
    // Initialize Generator
 
-   void init (unsigned start)  { state = odd(c)  ?   start  :  2 * start + 1; }
+   void init (unsigned start)  { state = (c & 1)  ?   start  :  2 * start + 1; }
 
    // Constructors
  
@@ -174,13 +174,13 @@ LCG_Pow2<T,a,e,c>::LCG_Pow2 (unsigned start, bool force)
          switch (e)
          {
          case 0:  invalid(); break;
-         case 1:  if (even(a)) invalid(); break;
+         case 1:  if ((a & 1) == 0) invalid(); break;
          case 2:  if (a % 4 != 3) invalid(); break;
          case 3:  if (a%8 != 3 && a%8 != 5 && a%8 != 7) invalid(); break;
          default: if (a % 8 != 3 && a % 8 != 5) invalid();
          }
       }
-      else if (odd (c))
+      else if (c & 1)
       {
          if (a % 4 != 1) invalid();
       }
@@ -230,7 +230,7 @@ template<typename T, T a, unsigned e, T c>
 inline
 real LCG_Pow2<T,a,e,c>::getReal()
 {
-   if (odd (c))
+   if (c & 1)
       return (real(operator()()) + real(0.5)) * RESOLUTION;
    else
    {

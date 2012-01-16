@@ -21,6 +21,10 @@
 #ifndef HINTLIB_COUNTER_H
 #define HINTLIB_COUNTER_H 1
 
+#ifdef __GNUG__
+#pragma interface
+#endif
+
 #include <HIntLib/array.h>
 
 namespace HIntLib

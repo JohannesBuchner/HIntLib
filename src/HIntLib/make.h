@@ -99,9 +99,10 @@ namespace HIntLib
        *  get Generator Matrix Gen Name ()
        */
 
-      static GeneratorMatrix2<u64>* generatorMatrix2 (int, unsigned dim);
+      static GeneratorMatrix2<u64>*
+         generatorMatrix2 (int, unsigned dim);
       static GeneratorMatrixGen<unsigned char>*
-         generatorMatrixGen (int, unsigned dim);
+         generatorMatrixGen (int, unsigned dim, int m = -1);
 
       static const char* getGeneratorMatrix2Name (int);
       static const char* getGeneratorMatrixGenName (int);

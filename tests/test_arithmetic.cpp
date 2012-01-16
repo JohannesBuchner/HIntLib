@@ -24,7 +24,14 @@
 
 #include "test.h"
 
+#ifdef HINTLIB_HAVE_SSTREAM
+  #include <sstream>
+#else
+  #include <HIntLib/fallback_sstream.h>
+#endif
+
 using std::string;
+using std::cout;
 
 /*
  *  Global variables
@@ -92,13 +99,95 @@ void usage()
 
 bool performTest (const string& cat, const string& name, const string& type)
 {
-   return ((   selectedCategory == ""
-            || cat .find (selectedCategory) != string::npos) &&
-           (   selectedName == ""
-            || name.find (selectedName)     != string::npos) &&
-           (   selectedType == ""
-            || type.find (selectedType)     != string::npos));
+   if (((   selectedCategory == ""
+         || cat .find (selectedCategory) != string::npos) &&
+        (   selectedName == ""
+         || name.find (selectedName)     != string::npos) &&
+        (   selectedType == ""
+         || type.find (selectedType)     != string::npos)))
+   {
+      NORMAL
+      {
+         cout << "Testing " << cat
+              << " \"" << name << "\" (" << type << ")..." << std::endl;
+      }
+      else if (verbose == 0)
+      {
+         cout << '.' << std::flush;
+      }
+
+      return true;
+   }
+
+   return false;
 }
+
+
+/**
+ * printNumberOrInf ()
+ */
+
+void printNumberOrInf (unsigned n)
+{
+   if (n)  cout << n;
+   else    cout << "inf";
+}
+
+
+/**
+ *  checkCounter()
+ */
+
+void checkCounter (unsigned expected, unsigned actual, bool all, const char* s)
+{
+   if (   (  all && actual != expected)
+       || (! all && expected && actual > expected))
+   {
+      std::ostringstream ss;
+      ss << s << " wrong (expected: " << expected << ", got: " << actual << ")";
+      error (ss.str().c_str());
+   }
+}
+
+
+/**
+ *  checkIndex()
+ */
+
+void checkIndex (unsigned size, unsigned index, const char* s)
+{
+   if (size && index >= size)
+   {
+      std::ostringstream ss;
+      ss << "index() of " << s << "()-result invalid";
+      error (ss.str().c_str());
+   }
+}
+
+
+/**
+ *  checkInfiniteInFinite()
+ */
+
+void checkInfiniteInFinite (unsigned size, unsigned n, const char* s)
+{
+   if (size)
+   {
+      if (n == 0)
+      {
+         std::ostringstream ss;
+         ss << "Infinite number of " << s << " in set of size " << size;
+         error (ss.str().c_str());
+      }
+      else if (n > size)
+      {
+         std::ostringstream ss;
+         ss << n << " " << s << " in set of size " << size;
+         error (ss.str().c_str());
+      }
+   }
+}
+
 
 
 /**
@@ -159,5 +248,7 @@ void test (int argc, char**)
    }
 
    HIntLib::testModularArithmeticShort (1999);
+
+   if (verbose == 0)  cout << std::endl;
 }
 

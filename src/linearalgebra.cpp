@@ -24,143 +24,14 @@
 
 #define HINTLIB_LIBRARY_OBJECT
 
-#include <HIntLib/linearalgebra.tcc>
+#include <HIntLib/linearalgebra.h>
+#include <HIntLib/linearalgebragen.tcc>
 
 #include <HIntLib/lookupfield.h>
 #include <HIntLib/gf2.h>
 #include <HIntLib/prime.h>
-#include <HIntLib/bitop.h>
 
 namespace L = HIntLib;
-
-
-#if 0
-/**
- *  rank()
- *
- *  Determines the rank of a packed matrix over GF(2).
- *
- *  Determines the rank of the matrix composed of the vectors
- *  *first,..,*(last-1).
- *  Each vector hold _columns_ elements from {0,1}, which have to be stored in
- *  the lower order bits.
- */
-
-template<class Bi>
-unsigned rank (Bi first, Bi last, unsigned columns)
-{
-   typedef typename std::iterator_traits<Bi>::value_type T;
-
-   T mask (1);          // mask for current column
-   unsigned rank = 0;   // number of l.i. vectors we have found so far
-
-   while (columns != 0 && first != last)  // Any rows and columns left?
-   {
-      // cout <<  "   A, mask=" << mask << "  column=" << columns << endl;
-
-      // find pivot row
-
-      Bi i = first;
-
-      while ((*i & mask) == 0)  // if the coefficient == 0, we have to go on
-      {
-         if (++i == last)    // if we run out of rows, try a differnt column
-         {
-            // try next column
-
-            if (--columns == 0)  return rank;
-            mask <<= 1;
-            i = first;
-            // cout << "   B, mask=" << mask << endl;
-         }
-      }
-
-      ++ rank;  // we have found a new l.i. vector!
-
-      // exchange it with first row
-
-      T pivot = *i;
-      *i = *first;
-      // *first = pivot; // we are not using *first again, so no need to update
-
-      // subtract pivot from all remaining rows
-
-      while (++i != last)
-      {
-         if (*i & mask)  *i ^= pivot;
-      }
-
-      // continue with smaller matrix
-
-      mask <<= 1;
-      --columns;
-      ++first;
-   }
-
-   return rank;
-}
-#endif
-
-
-
-
-/**
- *  linearlyIndependent()
- *
- *  Checks if the given set of vectors over GF2 (packed into the bits of a
- *  word) are linearly independent.
- *
- *  The empty set is independent.
- */
-
-template<class Bi>
-bool L::isLinearlyIndependent (Bi first, Bi last)
-{
-   typedef typename std::iterator_traits<Bi>::value_type T;
-
-   switch (last - first)
-   {
-   case 0: return true;
-   case 1: return first[0];
-   case 2: return first[0] && first[1] && (first[0] ^ first[1]);
-   case 3: return first[0] && first[1] && first[2] &&
-                  (first[0] ^ first[1]) &&
-                  (first[1] ^ first[2]) &&
-                  (first[0] ^ first[2]) &&
-                  (first[0] ^ first[1] ^ first[2]);
-   }
-
-   while (last - first > 4)  // More than 4 rows left?
-   {
-      // Get the current row
-
-      T pivot = *first;
-
-      // find a non-zero column in the current row
-
-      if (!pivot)  return false;
-      T mask = T(1) << ls1 (pivot);
-
-      // subtract pivot from all remaining rows to clear a column
-
-      for (Bi i = ++first; i < last; ++i)  if (*i & mask)  *i ^= pivot;
-   }
-
-   // exactly four rows are left
-
-   return first[0] && first[1] && first[2] && first[3] &&
-         (first[0] ^ first[1]) &&
-         (first[0] ^ first[2]) &&
-         (first[0] ^ first[3]) &&
-         (first[1] ^ first[2]) &&
-         (first[1] ^ first[3]) &&
-         (first[2] ^ first[3]) &&
-         (first[1] ^ first[2] ^ first[3]) &&
-         (first[0] ^ first[2] ^ first[3]) &&
-         (first[0] ^ first[1] ^ first[3]) &&
-         (first[0] ^ first[1] ^ first[2]) &&
-         (first[0] ^ first[1] ^ first[2] ^ first[3]);
-}
 
 
 /***********  Linear Algebra  ************************************************/
@@ -169,18 +40,78 @@ bool L::isLinearlyIndependent (Bi first, Bi last)
 namespace HIntLib
 {
 
+/**
+ *  LinearAlgebra
+ *
+ *  The non-virtual members of LinearAlgebra
+ */
+
+bool
+L::LinearAlgebra::isZeroMatrix (
+      const unsigned char* m, unsigned numCols, unsigned numRows)
+{
+   const unsigned char* end = m + numCols * numRows;
+   while (m != end)  if (*m++)  return false;
+   return true;
+}
+
+bool
+L::LinearAlgebra::isIdentityMatrix (const unsigned char* m, unsigned size)
+{
+   const unsigned char* end = m + size * size;
+   unsigned pos = 0;
+
+   while (m != end)
+   {
+      if (pos == 0)
+      {
+         if (*m != 1)  return false;
+         pos = size;
+      }
+      else
+      {
+         if (*m != 0)  return false;
+         --pos;
+      }
+      ++m;
+   }
+
+   return true;
+}
+
+/**
+ *  LinearAlgebraImp
+ *
+ *  Template implementations of all the virtual members of LinearAlgebra
+ */
+
 template<class A>
 class LinearAlgebraImp : public LinearAlgebra
 {
 public:
-   LinearAlgebraImp () {}
    LinearAlgebraImp (unsigned base) : field (base) {}
    bool isLinearlyIndependent (
-      unsigned char *m, unsigned numCols, unsigned numRows);
-   unsigned matrixRank (unsigned char*, unsigned numCols, unsigned numRows);
+      unsigned char *m, unsigned numRows, unsigned numCols);
+   unsigned matrixRank (unsigned char*, unsigned numRows, unsigned numCols);
+   unsigned numLinearlyIndependentVectors (
+      unsigned char*, unsigned numRows, unsigned numCols);
+   unsigned nullSpace (
+      unsigned char*, unsigned numRows, unsigned numCols, unsigned char*);
+   unsigned basisSupplement (
+      unsigned char*, unsigned numRows, unsigned numCols, unsigned*);
+   unsigned basisSupplement (
+      unsigned char*, unsigned numRows, unsigned numCols);
    bool matrixInverse  (unsigned char*, unsigned num);
    void matrixMul (
-      unsigned char*, const unsigned char*, const unsigned char*, unsigned num);
+      const unsigned char*, const unsigned char*,
+      unsigned numRows1, unsigned numRowsCols, unsigned numCols2,
+      unsigned char*);
+   void matrixVectorMul (
+      const unsigned char*, const unsigned char*,
+      unsigned numRows, unsigned numCols, unsigned char*);
+   void vectorMatrixMul (
+      const unsigned char*, const unsigned char*,
+      unsigned numRows, unsigned numCols, unsigned char*);
 
 private:
    A field;
@@ -190,16 +121,44 @@ private:
 
 template<class A>
 bool L::LinearAlgebraImp<A>::isLinearlyIndependent (
-   unsigned char* m, unsigned numCols, unsigned numRows)
+   unsigned char* m, unsigned numRows, unsigned numCols)
 {
-   return L::isLinearlyIndependent (field, m, numCols, numRows);
+   return L::isLinearlyIndependent (field, m, numRows, numCols);
 }
 
 template<class A>
 unsigned L::LinearAlgebraImp<A>::matrixRank (
-      unsigned char* m, unsigned numCols, unsigned numRows)
+      unsigned char* m, unsigned numRows, unsigned numCols)
 {
-   return L::matrixRank (field, m, numCols, numRows);
+   return L::matrixRank (field, m, numRows, numCols);
+}
+
+template<class A>
+unsigned L::LinearAlgebraImp<A>::numLinearlyIndependentVectors (
+      unsigned char* m, unsigned numRows, unsigned numCols)
+{
+   return L::numLinearlyIndependentVectors (field, m, numRows, numCols);
+}
+
+template<class A>
+unsigned L::LinearAlgebraImp<A>::nullSpace (
+      unsigned char* m, unsigned numRows, unsigned numCols, unsigned char* res)
+{
+   return L::nullSpace (field, m, numRows, numCols, res);
+}
+
+template<class A>
+unsigned L::LinearAlgebraImp<A>::basisSupplement (
+      unsigned char* m, unsigned numRows, unsigned numCols, unsigned* res)
+{
+   return L::basisSupplement (field, m, numRows, numCols, res);
+}
+
+template<class A>
+unsigned L::LinearAlgebraImp<A>::basisSupplement (
+      unsigned char* m, unsigned numRows, unsigned numCols)
+{
+   return L::basisSupplement (field, m, numRows, numCols);
 }
 
 template<class A>
@@ -210,14 +169,31 @@ bool L::LinearAlgebraImp<A>::matrixInverse (unsigned char* m, unsigned num)
 
 template<class A>
 void L::LinearAlgebraImp<A>::matrixMul (
-      unsigned char* m, const unsigned char* m1, const unsigned char* m2,
-      unsigned num)
+      const unsigned char* m1, const unsigned char* m2,
+      unsigned numRows1, unsigned numRowsCols, unsigned numCols2,
+      unsigned char* res)
 {
-   return L::matrixMul (field, m, m1, m2, num);
+   return L::matrixMul (field, m1, m2, numRows1, numRowsCols, numCols2, res);
+}
+
+template<class A>
+void L::LinearAlgebraImp<A>::matrixVectorMul (
+      const unsigned char* m, const unsigned char* v,
+      unsigned numRows, unsigned numCols, unsigned char* res)
+{
+   return L::matrixVectorMul (field, m, v, numRows, numCols, res);
+}
+
+template<class A>
+void L::LinearAlgebraImp<A>::vectorMatrixMul (
+      const unsigned char* v, const unsigned char* m,
+      unsigned numRows, unsigned numCols, unsigned char* res)
+{
+   return L::vectorMatrixMul (field, v, m, numRows, numCols, res);
 }
 
 
-L::LinearAlgebra* L::makeLinearAlgebra (unsigned base)
+L::LinearAlgebra* L::LinearAlgebra::make (unsigned base)
 {
    unsigned prime;
    unsigned power;
@@ -225,7 +201,7 @@ L::LinearAlgebra* L::makeLinearAlgebra (unsigned base)
 
    if (power == 1)
    {
-      if (prime == 2) return new LinearAlgebraImp<GF2> ();
+      if (prime == 2) return new LinearAlgebraImp<GF2> (2);
       return new LinearAlgebraImp<LookupGaloisFieldPrime<unsigned char> >(base);
    }
    else
@@ -239,35 +215,11 @@ L::LinearAlgebra* L::makeLinearAlgebra (unsigned base)
 
 namespace HIntLib
 {
-#define HINTLIB_INSTANTIATE(X) \
-   template bool LinearAlgebraImp<X >::isLinearlyIndependent ( \
-      unsigned char*, unsigned, unsigned); \
-   template unsigned LinearAlgebraImp<X >::matrixRank ( \
-      unsigned char*, unsigned, unsigned); \
-   template bool LinearAlgebraImp<X >::matrixInverse  ( \
-      unsigned char*, unsigned); \
-   template void LinearAlgebraImp<X >::matrixMul ( \
-      unsigned char*, const unsigned char*, const unsigned char*, unsigned);
+   HINTLIB_INSTANTIATE_LINEARALGEBRAGEN (GF2)
+   HINTLIB_INSTANTIATE_LINEARALGEBRAGEN (LookupField<unsigned char>)
+   HINTLIB_INSTANTIATE_LINEARALGEBRAGEN (LookupFieldPow2<unsigned char>)
+   HINTLIB_INSTANTIATE_LINEARALGEBRAGEN (LookupFieldPrime<unsigned char>)
 
-   HINTLIB_INSTANTIATE (LookupField<unsigned char>)
-   HINTLIB_INSTANTIATE (LookupFieldPow2<unsigned char>)
-   HINTLIB_INSTANTIATE (LookupFieldPrime<unsigned char>)
-#undef HINTLIB_INSTANTIATE
-
-   HINTLIB_INSTANTIATE_LINEARALGEBRA (LookupField<unsigned char>)
-   HINTLIB_INSTANTIATE_LINEARALGEBRA (LookupFieldPow2<unsigned char>)
-   HINTLIB_INSTANTIATE_LINEARALGEBRA (LookupFieldPrime<unsigned char>)
-
-   // base 2
-
-#define HINTLIB_INSTANTIATE(X) \
-   template bool isLinearlyIndependent(X, X);
-
-   HINTLIB_INSTANTIATE (u32*)
-#ifdef HINTLIB_U32_NOT_EQUAL_U64
-   HINTLIB_INSTANTIATE (u64*)
-#endif
-
-#undef HINTLIB_INSTANTIATE
+   HINTLIB_INSTANTIATE_LINEARALGEBRAGEN_T (unsigned char)
 }
 

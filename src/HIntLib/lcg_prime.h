@@ -42,7 +42,7 @@
 #define HINTLIB_LCG_PRIME_H 1
  
 #ifdef __GNUG__
-#pragma interface
+// #pragma interface
 #endif
 
 #include <HIntLib/defaults.h>

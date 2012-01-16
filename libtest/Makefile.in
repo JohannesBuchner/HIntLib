@@ -95,6 +95,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
+SHARED_VERSION_NUMBER = @SHARED_VERSION_NUMBER@
 SHELL = @SHELL@
 STL_OBJECT = @STL_OBJECT@
 STRIP = @STRIP@
@@ -140,7 +141,7 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
-EXTRA_DIST = create
+EXTRA_DIST = create.sh
 
 noinst_HEADERS = include.h
 
@@ -472,8 +473,8 @@ uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
 	uninstall-libLTLIBRARIES
 
 
-result.h: main@EXEEXT@ create
-	$(srcdir)/create
+result.h: main@EXEEXT@ create.sh
+	$(srcdir)/create.sh
 
 clean-local:
 	rm -rf ii_files result.h

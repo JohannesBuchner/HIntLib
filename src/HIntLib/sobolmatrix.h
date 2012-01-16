@@ -61,8 +61,8 @@ private:
 
    // Vectors used to calculate the sequence
 
-   static const u64 v_mem [DEFAULT_M_BASE2][MAX_DIM];
-   static const unsigned t_s [MAX_DIM];
+   static HINTLIB_DLL_IMPORT const u64 v_mem [DEFAULT_M_BASE2][MAX_DIM];
+   static HINTLIB_DLL_IMPORT const unsigned t_s [MAX_DIM];
 };
 
 }  // namespace HIntLib

@@ -26,9 +26,6 @@
 #endif
 
 #include <HIntLib/gcd.tcc>
-#include <HIntLib/counter.h>
-#include <HIntLib/linearalgebra.h>
-#include <HIntLib/prime.h>
 
 
 /********************  Polynomial Ring <field_tag> and subclasses  ***********/
@@ -52,7 +49,7 @@ HIntLib::Private::PRBA_Field<A>::order (const type& p) const
    // if there is an x, it will never go away because A is a domain
    if (num > 1)  return 0;
 
-   return a.order (p.lc());   // no x, no polynomial
+   return this->a.order (p.lc());   // no x, no polynomial
 }
 
 
@@ -210,7 +207,8 @@ div (const type& u, const type& v, type& q, type& r) const
       if (num <= 0)  return;
 
       q.reserve (num);
-      r.getC().erase (r.fromLc(), findLc (a, r, polyReduce (a, r, v, q)));
+      r.getC().erase (r.fromLc(),
+                      findLc (this->a, r, polyReduce (this->a, r, v, q)));
    }
    else if (&u == &q)
    {
@@ -220,8 +218,8 @@ div (const type& u, const type& v, type& q, type& r) const
           q.makeZero();
       }
 
-      const typename type::DownI qend   = polyReduceS (a, q, v);
-      const typename type::DownI rbegin = findLc(a, q, qend);
+      const typename type::DownI qend   = polyReduceS (this->a, q, v);
+      const typename type::DownI rbegin = findLc(this->a, q, qend);
       const typename type::DownI rend   = q.toA0();
 
       r.makeZero();
@@ -244,7 +242,7 @@ div (const type& u, const type& v, type& q, type& r) const
 
       q.reserve (num);
       const typename type::CDownI start
-            = findLc (a, uu, polyReduce (a, uu, v, q));
+            = findLc (this->a, uu, polyReduce (this->a, uu, v, q));
       const typename type::CDownI end   = uu.toA0();
 
       r.makeZero();
@@ -314,7 +312,7 @@ HIntLib::Private::PRBA_Field<A>::quotient (type& u, const type& v) const
       return;
    }
 
-   u.getC().erase (polyReduceS (a, u, v), u.toA0());
+   u.getC().erase (polyReduceS (this->a, u, v), u.toA0());
 }
 
 
@@ -332,7 +330,7 @@ HIntLib::Private::PRBA_Field<A>::divBy (type& u, const type& v) const
 
    if (u.numCoeff() < v.numCoeff())  throwDivisionByZero();
 
-   u.getC().erase (polyReduceS (a, u, v), u.toA0());
+   u.getC().erase (polyReduceS (this->a, u, v), u.toA0());
 }
 #endif
 
@@ -356,9 +354,9 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Rem,A,T> x)
 
    P uu (*u);
 
-   const P::DownI begin
+   const DownI begin
       = Private::findLc (*x.a, uu, Private::polyReduce (*x.a, uu, *v));
-   const P::DownI end   = uu.toA0();
+   const DownI end   = uu.toA0();
    
    reserve (end - begin);
    c.assign (begin, end);
@@ -376,7 +374,7 @@ HIntLib::Private::PRBA_Field<A>::reduce (type& u, const type& v) const
    if (v.is0())  throwDivisionByZero();
    if (u.numCoeff() < v.numCoeff())  return;
 
-   u.getC().erase (u.fromLc(), findLc (a, u, polyReduce (a, u, v)));
+   u.getC().erase (u.fromLc(), findLc (this->a, u, polyReduce (this->a, u, v)));
 }
 
 
@@ -398,9 +396,9 @@ HIntLib::Private::PRBA_Field<A>::isDivisor (const type& u, const type& v) const
 
    typename type::DownI rend = uu.toA0();
       
-   for (typename type::DownI i = polyReduce (a, uu, v); i != rend; ++i)
+   for (typename type::DownI i = polyReduce (this->a, uu, v); i != rend; ++i)
    {
-      if (! a.is0(*i))  return false;
+      if (! this->a.is0(*i))  return false;
    }
 
    return true;
@@ -421,12 +419,12 @@ isDivisor (const type& u, const type& v, type& result) const
 
    if (&result == &u)
    {
-      typename type::DownI qend = polyReduceS (a, result, v);
+      typename type::DownI qend = polyReduceS (this->a, result, v);
       typename type::DownI rend = result.toA0();
       
       for (typename type::DownI i = qend; i != rend; ++i)
       {
-         if (! a.is0(*i))  return false;
+         if (! this->a.is0(*i))  return false;
       }
 
       result.getC().erase (qend, rend);
@@ -440,7 +438,8 @@ isDivisor (const type& u, const type& v, type& result) const
       {
          type temp;
          temp.reserve (u.numCoeff() - v.numCoeff() + 1);
-         bool ok = findLc (a, uu, polyReduce (a, uu, v, temp)) == uu.toA0();
+         bool ok =   findLc (this->a, uu, polyReduce (this->a, uu, v, temp))
+                  == uu.toA0();
          if (ok)  destructiveAssign (result, temp);
          return ok;
       }
@@ -449,7 +448,8 @@ isDivisor (const type& u, const type& v, type& result) const
          result.makeZero();
          result.reserve (u.numCoeff() - v.numCoeff() + 1);
 
-         return findLc (a, uu, polyReduce (a, uu, v, result)) == uu.toA0();
+         return findLc (this->a, uu, polyReduce (this->a, uu, v, result))
+             == uu.toA0();
       }
    }
 }
@@ -463,20 +463,52 @@ template<typename A>
 typename HIntLib::Private::PRBA_Field<A>::unit_type
 HIntLib::Private::PRBA_Field<A>::makeCanonical (type &p) const
 {
-   if (is0(p) || isCanonical(p)) return a.one();
+   if (is0(p) || isCanonical(p))  return this->a.one();
 
    unit_type l = p.lc();
-   unit_type il = a.recip (l);
+   unit_type il = this->a.recip (l);
 
-   p.lc() = a.one();
+   p.lc() = this->a.one();
 
    const typename type::DownI end = p.toA0();
    for (typename type::DownI i = p.fromLc() + 1; i != end; ++i)
    {
-      a.mulBy (*i, il);
+      this->a.mulBy (*i, il);
    }
 
    return l;
+}
+
+
+/**
+ *  is Associate ()
+ *
+ *  Determines if  p1  is associate to  p2, i.e. if there exists a unit  m
+ *  such that p2 * m = p1
+ */
+
+template<typename A>
+bool
+HIntLib::Private::PRBA_Field<A>::
+isAssociate (const type &p1, const type &p2, unit_type &u) const
+{
+   if (p1.degree() != p2.degree())  return false;
+   if (is0(p1))
+   {
+      u = this->a.one();
+      return true;
+   }
+
+   u = this->a.div (p1.lc(), p2.lc());
+
+   const typename type::CDownI end1 = p1.toA0();
+   for (typename type::CDownI i1 = p1.fromLc() + 1,
+                              i2 = p2.fromLc() + 1; i1 != end1; ++i1, ++i2)
+   {
+      if (! (this->a.mul (*i2, u) == *i1))  return false;
+   }
+
+   return true;
 }
 
 
@@ -665,8 +697,6 @@ squarefreeFactorImp (const A& a, typename A::Factorization& f,
                      const typename A::type& p, char_prime)
 {
    typedef typename A::type type;
-   if (p.is0())  throwDivisionByZero();
-   if (p.isConstant())  return p.lc();
 
    // Step 1  --  Initialize
 
@@ -753,9 +783,6 @@ squarefreeFactorImp (const A& a, typename A::Factorization& f,
 {
    typedef typename A::type type;
 
-   if (p.is0())  throwDivisionByZero();
-   if (p.isConstant())  return p.lc();
-
    // Step 1  --  Initialize
 
    unsigned k = 0;
@@ -800,525 +827,17 @@ typename HIntLib::Private::PRBA_Field<A>::unit_type
 HIntLib::Private::PRBA_Field<A>::
 squarefreeFactor (Factorization& f, const type& p) const
 {
+   if (p.is0())  throwDivisionByZero();
+   if (p.isConstant())  return p.lc();
+   if (p.degree() == 1)
+   {
+      f.push_back (std::make_pair (p, 1));
+      return makeCanonical (f.back().first);
+   }
+
    return squarefreeFactorImp (
       *static_cast<const PolynomialRing<A>*> (this),
       f, p, typename A::char_category());
-}
-
-
-/********************  Polynomial Ring <rational_tag>  ***********************/
-
-
-/**
- *  isPrime()
- *
- *  We use Kronecker's method for determining if there is a non-trivial
- *  factorization.
- *
- *  See Lidl/Niederreiter, Finite Fields, Exercise 1.30, and
- *      Knuth, TACP, vol 2, 4.6.2, p. 449-450 for details.
- */
-
-template<class A>
-bool
-HIntLib::Private::PRBA_Rational<A>::isPrime (const type& p) const
-{
-   const int degree = p.degree();
-
-   if (degree <= 0)  return false;
-   if (degree == 1)  return true;  //  bx+a  is always prime
-
-   if (a.is0 (p.ct()))  return false; // ...+ cx^2 + bx + 0  is never prime
-
-   // Make sure p is square-free
-
-   if (! isSquarefree (p))  return false;
-   
-   // we have to check for divisors up to degree  s
-
-   int s = degree / 2;
-
-   // Integer algebra and type
-
-   typedef typename A::base_algebra int_algebra;
-   int_algebra intAlg = a.getBaseAlgebra();
-   typedef typename A::base_type int_type;
-
-   // Integer polynomial algebra and type 
-
-   typedef PolynomialRing<int_algebra> intPoly_algebra;
-   intPoly_algebra intPolyAlg (intAlg);
-   typedef typename intPoly_algebra::type intPoly_type;
-
-   // Make a copy of p with integer coefficients
-   
-   int_type gcdNum = p.ct().numerator();
-   int_type lcmDen = p.ct().denominator();
-
-   for (int i = 1; i <= degree; ++i)
-   {
-      if (! a.is0 (p[i]))
-      {
-         gcdNum = genGcd (intAlg, gcdNum, p[i].numerator());
-         lcmDen = genLcm (intAlg, lcmDen, p[i].denominator());
-      }
-   }
-   
-   intPoly_type intp; intp.reserve (degree + 1);
-
-   for (int i = degree; i >= 0; --i)
-   {
-      if (a.is0 (p[i]))
-      {
-         intp.mulByX();
-      }
-      else
-      {
-         intp.mulAndAdd (
-            intAlg.mul (intAlg.quot (p[i].numerator(), gcdNum),
-                        intAlg.quot (lcmDen, p[i].denominator())));
-      }
-   }
-
-#if 0
-cout << endl
-     << "degree = " << degree << endl
-     << "s = " << s << endl
-     << "p = ";
-printShort (cout, p);
-cout << endl << "pi= ";
-intPolyAlg.printShort (cout, intp);
-cout << endl << "gcdNum = ";
-intAlg.printShort (cout, gcdNum);
-cout << endl << "lcmDen = ";
-intAlg.printShort (cout, lcmDen);
-cout << endl;
-#endif
-
-   // Determine divisors of f(a)
-   
-   Array<std::vector<int_type> > divisors (s + 1);
-   Array<int_type> nodes (s + 1);
-
-   for (int num = 0, index = 0; num <= s; ++index)
-   {
-      const int_type ii = intAlg.element (index);
-      const int_type value = intPolyAlg.evaluate (intp, ii);
-
-      if (intAlg.is0 (value))  continue;
-
-      nodes [num] = ii;
-
-#if 0
-cout << "node " << num << ": f(";
-intAlg.printShort (cout, ii);
-cout << ") = ";
-intAlg.printShort (cout, value);
-#endif
-
-      divisors[num].push_back (intAlg.one());
-      if (num) divisors[num].push_back (intAlg.neg (intAlg.one()));
-
-      unsigned normValue = intAlg.norm (value);
-
-      if (normValue > 1)
-      {
-         divisors[num].push_back (value);
-         if (num) divisors[num].push_back (intAlg.neg (value));
-   
-         for (unsigned j = 2; ; ++j)
-         {
-            int_type candidate (j);
-
-            if (intAlg.norm (intAlg.mul (candidate, candidate)) > normValue)
-            {
-               break;
-            }
-
-            if (intAlg.isDivisor (value, candidate))
-            {
-               divisors[num].push_back (candidate);
-               if (num) divisors[num].push_back (intAlg.neg (candidate));
-
-               int_type candidate2 = intAlg.div (value, candidate);
-
-               if (candidate2 != candidate)
-               {
-                  divisors[num].push_back (candidate2);
-                  if (num) divisors[num].push_back (intAlg.neg (candidate2));
-               }
-            }
-         }
-      }
-
-#if 0
-cout << "   divisors: ";
-for (unsigned j = 0; j < divisors[num].size(); ++j)
-{
-   intAlg.printShort (cout, divisors[num][j]);
-   cout << ", ";
-}
-cout << endl;
-#endif
-
-      ++num;
-   }
-
-   // create Basis for Lagrange polynomials
-
-   Array<type> lagrangeBasis (s+1);
-   
-   for (int i = 0; i <= s; ++i)
-   {
-      // construct denominator
-
-      int_type den = intAlg.one();
-
-      for (int j = 0; j <= s; ++j)
-      {
-         if (i == j)  continue;
-
-         intAlg.mulBy (den, intAlg.sub (nodes[i], nodes[j]));
-      }
-
-      type pp; pp.reserve (s+1);
-      pp.mulAndAdd (a.makeElement (intAlg.one(), den));
-
-      // construct numerator
-
-      for (int j = 0; j <= s; ++j)
-      {
-         if (i == j)  continue;
-
-         type copy (pp);
-         pp.mulByX();
-         mulBy (copy, a.makeElement (intAlg.neg (nodes[j])));
-         addTo (pp, copy);
-      }
-
-      lagrangeBasis [i] = pp;
-   }
-
-   // Enumerate all s+1 - tupels
-
-   Array<unsigned> numDivisors (s + 1);
-   for (int i = 0; i <= s; ++i)  numDivisors[i] = divisors[i].size();
-   CounterMixedBase counter (numDivisors.begin(), numDivisors.begin() + s + 1);
-
-   do
-   {
-      // create Lagrange interpolation
-
-      type candidate;
-
-      for (int i = 0; i <= s; ++i)
-      {
-         addTo (candidate, mul (lagrangeBasis[i],
-                                a.makeElement (divisors[i][counter[i]])));
-      }
-
-      // is it a (non-trivial) divisor?
-
-#if 0
-cout << "candidate = ";
-printShort (cout, candidate);
-if (candidate.degree() >= 1)
-{
-   cout << "   rem = ";
-   printShort (cout, rem (p, candidate));
-}
-cout << endl;
-#endif
-
-      if (! candidate.isConstant() && isDivisor (p, candidate))  return false;
-   }
-   while (counter.next());
-   
-   return true;
-} 
-
-/**
- *  next()
- */
-
-template<typename T> template<typename A>
-HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::NextRational,A,T> x)
-{
-   const Private::PRBA_Rational<A>* a = x.a;
-   unsigned* n = x.n;
-   
-   for (;;)
-   {
-      P p = a->elementMonic ((*n)++);
-      if (p.degree() >= 6)  throw Overflow();
-
-      if (a->isPrime (p))
-      {
-         swap (p);
-         return;
-      }
-   }
-}
-
-
-/********************  Polynomial Ring <real_tag>  ***************************/
-
-
-/**
- *  isPrime()
- */
-
-template<class A>
-bool
-HIntLib::Private::PRBA_Real<A>::isPrime (const type& p) const
-{
-   const int degree = p.degree();
-
-   if (degree == 1)  return true;  //  bx+a  is always prime
-
-   // 0 is zero
-   // constants are units
-   // polynomials of degree >= 3 as well as  ax^2+bx  can always be factored
-   //    over the reals
-
-   if (degree <= 0 || degree >= 3 || a.is0(p.ct()))  return false;
-
-   // Calculate discriminant to determine if there is a (real) solution
-
-   const typename A::type disc
-      = a.sub (a.sqr (p[1]), a.mul (coeff_type(4), a.mul (p[2], p.ct())));
-   
-   return disc < 0.0 && ! a.is0 (disc);
-} 
-
-
-/**
- *  next()
- */
-
-template<typename T> template<typename A>
-HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::NextReal,A,T> x)
-{
-   const A* alg = x.a;
-   unsigned n = (*(x.n))++;
-   
-   if (n & 1)
-   {
-      // create polynomial  x^2 + bx + c
-      // with arbitrary  b, and  c  such that  b^2 < 4c
-
-      reserve (3);
-      unsigned ib, ic;
-      unthread (n / 2, ib, ic);
-
-      real b = alg->element (ib);  // arbitrary real number
-      real c = HIntLib::sqr(b) / 4.0 + alg->element (ic * 2 + 1);
-                   // (x > 0) + b^2 / 4
-
-      mulAndAdd (alg->one()).mulAndAdd (b).mulAndAdd (c);
-   }
-   else
-   {
-      // create polynomial  x + c
-
-      reserve (2);
-      mulAndAdd (alg->one()).mulAndAdd (alg->element (n / 2));
-   }
-}
-
-
-/********************  Polynomial Ring <complex_tag>  ************************/
-
-
-/**
- *  next()
- */
-
-template<typename T> template<typename A>
-HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::NextComplex,A,T> x)
-{
-   const A* a = x.a;
-   
-   reserve (2);
-   mulAndAdd (a->one()).mulAndAdd (a->element ((*(x.n))++));
-}
-
-
-/********************  Polynomial Ring <gf_tag>  *****************************/
-
-
-/**
- *  isPrimitive()
- *
- *  Determine if  p  is primitive, i.e.  x^m = 1 mod p  implies m >= 2^deg - 1
- *
- *  See Lidl/Niederreiter, Finite Fields, Theorem 3.18, and
- *      Knuth, TACP, vol 2, 3.2.2, p.30.
- */
-
-template<class A>
-bool
-HIntLib::Private::PRBA_GF<A>::isPrimitive (const type& p) const
-{
-   const int deg = p.degree();
-
-   if (deg <= 0 || ! isCanonical (p))  return false;
-
-   // calculate  a0 = (-1)^deg * p[0]
-
-   typename A::type a0 = p.ct();
-   if (odd (deg))  a.negate (a0);
-
-   // i)  a0  must be a primitive element
-
-   if (! a.isPrimitiveElement (a0))  return false;
-   
-   // ii) x^r mod p  must be equal to a0
-
-   const unsigned r = (powInt (a.size(), deg) - 1) / (a.size() - 1);
-   const type polyx = x();
-   const type xPowR
-      = powerMod (*static_cast<const PolynomialRing<A>*>(this), polyx, r, p);
-
-   if (! isUnit (xPowR) || xPowR.ct() != a0)  return false;
-
-   // iii) For all divisors rr of r, degree of x^rr must be positive
-
-   PrimeDivisors pd (r);
-
-   while (unsigned prime = pd.next())
-   {
-      if (powerMod (*static_cast<const PolynomialRing<A>*>(this),
-                    polyx, r / prime, p).degree() <= 0)
-      {
-         return false;
-      }
-   }
-
-   return true;
-}
-
-
-/**
- *  is Prime ()
- *
- *  After checking for a number of simple cases, we use Berlekamp's algorithm
- *  to determine the number of non-trivial factors.
- *
- *  See Knuth, TACP, vol 2, 4.6.2,
- *      Lidl/Niederreiter, Finite Fields, 4.1, and
- *      Cohen, CANT, Algorithm 3.4.10.
- */
-
-template<class A>
-bool
-HIntLib::Private::PRBA_GF<A>::isPrime (const type& p) const
-{
-   const int degree = p.degree();
-   const unsigned s = a.size();
-
-   // check for the trivial cases
-
-   if (degree == 1)  return true;       //  bx+a  is always prime
-   if (degree <= 0 || a.is0(p.ct()))  return false;  // zero, units or ...+0
-
-   // There is a large chance for a linear divisor.
-   // So try linear factors first is  s  is not too large.
-
-   if (s < 50 || (degree >= 5 && s < 80))
-   {
-      type q = x();
-
-      for (unsigned i = 1; i < s; ++i)   // x+1, x+2,...
-      {
-         q.ct() = a.element (i);
-         if (isDivisor (p, q))  return false;
-      }
-
-      if (degree <= 3)  return true;
-
-      // if  deg  is large compared to  s, try all quadratic divisors
-
-      if (s < 16 && degree > squareBeatsLinear[s])
-      {
-         type q = x(2);
-
-         for (unsigned i = 1; i < s; ++i)   // x+1, x+2,...
-         {
-            q.ct() = a.element (i);
-
-            for (unsigned j = 0; j < s; ++j)
-            {
-               q[1] = a.element (j);
-               if (isDivisor (p, q))  return false;
-            }
-         }
-
-         if (degree <= 5)  return true;
-      }
-   }
-
-   // Make sure p is square-free
-
-   if (! isSquarefree (p))  return false;
-
-   // Berlekamp's Algorithm
-
-   type factor =
-      (int (s) < degree) ? x(s) :
-      powerMod (*static_cast<const PolynomialRing<A>*>(this), x(), s, p);
-
-   // The frist row contains only zeros, so we do not include it in the matrix
-
-   Array<typename A::type> matrix ((degree - 1) * degree);
-   type q = one();
-
-   // Calculate the matrix  B - I
-
-   for (int row = 0; row < degree - 1; ++row)
-   {
-      mulBy (q, factor);
-      reduce (q, p);
-
-      for (int col = 0; col <= q.degree(); ++col)
-      {
-         matrix [row * degree + col] = q[col];
-      }
-
-      for (int col = q.degree() + 1; col < degree; ++col)
-      {
-         matrix [row * degree + col] = coeff_type();
-      }
-
-      a.subFrom (matrix [row * degree + row + 1], a.one());
-   }
-
-   // degree - rank (of the untruncated matrix) gives the number of factors
-
-   return isLinearlyIndependent (a, matrix.begin(), degree, degree - 1);
-}
-
-
-/**
- *  next()
- */
-
-template<typename T> template<typename A>
-HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::NextGF,A,T> x)
-{
-   const Private::PRBA_GF<A>* a = x.a;
-   unsigned* n = x.n;
-   
-   for (;;)
-   {
-      P p = a->elementMonic ((*n)++);
-
-      if (a->isPrime (p))
-      {
-         swap (p);
-         return;
-      }
-   }
 }
 
 
@@ -1342,8 +861,9 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::NextGF,A,T> x)
    template Polynomial<X::type>::DownI polyReduce \
       (const X&, Polynomial<X::type>&, const Polynomial<X::type>&, \
                  Polynomial<X::type>&); \
-   template bool PRBA_Field<X >::isDivisor \
-      (const type&, const type&) const; \
+   template bool PRBA_Field<X >::isAssociate \
+      (const type&, const type&, unit_type&) const; \
+   template bool PRBA_Field<X >::isDivisor (const type&, const type&) const; \
    template bool PRBA_Field<X >::isDivisor \
       (const type&, const type&, type&) const; \
    template PRBA_Field<X >::unit_type \
@@ -1354,43 +874,6 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::NextGF,A,T> x)
       (Factorization&, const type&) const; \
    } \
    HINTLIB_INSTANTIATE_GENGCD(PolynomialRing<X >)
-
-// Instantiate PolynomialRingBase<rational_tag>
-
-#define HINTLIB_INSTANTIATE_POLYNOMIALRING_RATIONAL(X) \
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_FIELD(X) \
-   template Polynomial<X::type>::Polynomial \
-      (Private::PG<Private::NextRational,X >);\
-   namespace Private { \
-   template bool PRBA_Rational<X >::isPrime (const type&) const; \
-   }
-
-// Instantiate PolynomialRingBase<real_tag>
-
-#define HINTLIB_INSTANTIATE_POLYNOMIALRING_REAL(X) \
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_FIELD(X) \
-   template Polynomial<X::type>::Polynomial \
-      (Private::PG<Private::NextReal,X >); \
-   namespace Private { \
-   template bool PRBA_Real<X >::isPrime (const type&) const; \
-   }
-
-// Instantiate PolynomialRingBase<complex_tag>
-
-#define HINTLIB_INSTANTIATE_POLYNOMIALRING_COMPLEX(X) \
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_FIELD(X) \
-   template Polynomial<X::type>::Polynomial \
-      (Private::PG<Private::NextComplex,X >);
-
-// Instantiate PolynomialRingBase<gf_tag>
-
-#define HINTLIB_INSTANTIATE_POLYNOMIALRING_GF(X) \
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_FIELD(X) \
-   template Polynomial<X::type>::Polynomial (Private::PG<Private::NextGF,X >);\
-   namespace Private { \
-   template bool PRBA_GF<X >::isPrimitive (const type&) const;\
-   template bool PRBA_GF<X >::isPrime (const type&) const; \
-   }
 
 #endif
 

@@ -36,7 +36,7 @@
 #include <HIntLib/prime.h>
 #include <HIntLib/exception.h>
 #include <HIntLib/array.h>
-#include <HIntLib/linearalgebra.h>
+#include <HIntLib/linearalgebragen.h>
 #include <HIntLib/hlmath.h>
 
 
@@ -105,7 +105,7 @@ L::GaloisField<B>::findPoly (unsigned base, unsigned deg, bool xPrim)
       if (ef.isPrimitiveElement (prim))
       {
          // We want the polynomial x to be a primitive root of the extension
-         // field.  If this is is the case already, we are done
+         // field.  If this is the case already, we are done
 
          if (n == base)  return p;
 

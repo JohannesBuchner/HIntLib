@@ -2,7 +2,7 @@
 
 echo RUNNING: arithmetic.test
 
-./test_arithmetic -n 4000
+./test_arithmetic -s -n 4000
 
 exit $?
 

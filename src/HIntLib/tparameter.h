@@ -30,6 +30,7 @@
 #include <HIntLib/generatormatrix2row.h>
 #include <HIntLib/lookupfield.h>
 #include <HIntLib/linearalgebra.h>
+#include <HIntLib/linearalgebra2.h>
 
 namespace HIntLib
 {
@@ -37,6 +38,8 @@ namespace HIntLib
 
 /***********  TCalc  *********************************************************/
 
+void fixOneDimensionalProjections (GeneratorMatrixGen<unsigned char>&);
+void fixTwoDimensionalProjections (GeneratorMatrixGen<unsigned char>&);
 
 /**
  *  TCalc
@@ -105,7 +108,7 @@ protected:
       { return ! isLinearlyIndependent (&selection[0], &selection[thickness]); }
 
    const GeneratorMatrix2Row<T> & gm;
-   static T selection [std::numeric_limits<T>::digits];
+   static HINTLIB_DLL_IMPORT T selection [std::numeric_limits<T>::digits];
 };
 
 
@@ -172,13 +175,13 @@ private:
 inline
 bool TCalcGen::singular (int thickness, int newM)
 {
-   return ! la->isLinearlyIndependent (&selection[0], newM, thickness);
+   return ! la->isLinearlyIndependent (&selection[0], thickness, newM);
 }
 
 inline
 bool TCalcGen::singular (int thickness)
 {
-   return ! la->isLinearlyIndependent (&selection[0], M, thickness);
+   return ! la->isLinearlyIndependent (&selection[0], thickness, M);
 }
 
 

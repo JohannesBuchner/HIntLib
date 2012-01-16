@@ -191,15 +191,15 @@ protected:
  * if we know if we have quotients of integers or quotients of polynomials.
  */
 
-template<typename A, typename AC, typename PC> class QFB2;
+template<typename A, typename AC> class QFB2;
 
-template<class A, typename AC, typename PC>
-std::ostream& operator<< (std::ostream &, const QFB2<A,AC,PC> &);
+template<class A, typename AC>
+std::ostream& operator<< (std::ostream &, const QFB2<A,AC> &);
 
 // integers
 
 template<typename A>
-class QFB2<A,integer_tag,nopolynomial_tag> : public QFB<A>
+class QFB2<A,integer_tag> : public QFB<A>
 {
 protected:
    QFB2 (const A& _a) : QFB<A> (_a) {}
@@ -214,12 +214,12 @@ public:
 
 template<class A>
 std::ostream&
-operator<< (std::ostream&, const QFB2<A,integer_tag,nopolynomial_tag>&);
+operator<< (std::ostream&, const QFB2<A,integer_tag>&);
 
 // polynomials over a field
 
 template<typename A>
-class QFB2<A,euclidean_tag,polynomial_tag> : public QFB<A>
+class QFB2<A,polyoverfield_tag> : public QFB<A>
 {
 protected:
    QFB2 (const A& _a) : QFB<A> (_a) {}
@@ -230,9 +230,9 @@ public:
 private:
    type timesImp (const type& u, unsigned, char_prime) const;
    type timesImp (const type& u, unsigned k, char_two) const
-      { return even(k) ? type() : u; }
+      { return (k & 1) ? u : type(); }
    type timesImp (const type& u, unsigned k, char_zero) const
-      { return k ? type (a.times (u.num, k), u.den) : type(); }
+      { return k ? type (this->a.times (u.num, k), u.den) : type(); }
 
 public:
    type times (const type& u, unsigned k) const
@@ -242,14 +242,21 @@ public:
    //    to get rid of the condition
 
    type dbl (const type& u) const
-      { return characteristic() == 2 ? type() : type (a.dbl (u.num), u.den); }
+   {
+      return this->characteristic() == 2 ?
+         type() : type (this->a.dbl (u.num), u.den);
+   }
    void times2 (type& u)   const
-      { if (characteristic() == 2) u = type(); else a.times2 (u.num); }
+   {
+      if (this->characteristic() == 2) u = type();
+      else this->a.times2 (u.num);
+   }
 };
 
 template<class A>
 std::ostream&
-operator<< (std::ostream&, const QFB2<A,euclidean_tag,polynomial_tag>&);
+operator<< (std::ostream&, const QFB2<A,polyoverfield_tag>&);
+
 
 /**
  *  Quotient Field Field Id
@@ -266,7 +273,7 @@ struct QuotientFieldFieldId<integer_tag>
 { typedef rational_tag algebra_category; };
 
 template<>
-struct QuotientFieldFieldId<euclidean_tag>
+struct QuotientFieldFieldId<polyoverfield_tag>
 { typedef ratfunfield_tag algebra_category; };
 
 } // namespace Private
@@ -280,8 +287,7 @@ struct QuotientFieldFieldId<euclidean_tag>
 
 template<class A>
 class QuotientField 
-   : public Private::QFB2<A,typename A::algebra_category,
-                            typename A::polynomial_category>
+   : public Private::QFB2<A,typename A::algebra_category>
 {
 public:
    typedef typename Private::QuotientFieldFieldId<typename A::algebra_category>
@@ -292,8 +298,7 @@ public:
    typedef nozerodivisor_tag zerodivisor_category;
 
    QuotientField (const A& _a)
-      : Private::QFB2<A,typename A::algebra_category,
-                        typename A::polynomial_category> (_a) {}
+      : Private::QFB2<A,typename A::algebra_category> (_a) {}
 };
 
 } // namespace HIntLib

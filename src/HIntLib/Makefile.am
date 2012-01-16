@@ -35,7 +35,7 @@ pkginclude_HEADERS = \
    generatormatrixgen.h \
    generatormatrixvec.h \
    gf2.h \
-   gf2vectorspace.h \
+   gf2vectorspace.h gf2vectorspace.tcc \
    halton.h \
    hlalgorithm.h \
    hlmath.h \
@@ -47,7 +47,9 @@ pkginclude_HEADERS = \
    kahanadd.h \
    lcg_pow2.h \
    lcg_prime.h \
-   linearalgebra.h linearalgebra.tcc \
+   linearalgebra.h \
+   linearalgebragen.h linearalgebragen.tcc \
+   linearalgebra2.h linearalgebra2.tcc \
    lookupfield.h \
    make.h \
    mcintegration.h \
@@ -64,8 +66,11 @@ pkginclude_HEADERS = \
    orbitrule.h \
    output.h \
    pointset.h \
-   polynomial.h polynomial.tcc polynomial_field.tcc polynomial_ring.tcc \
-   polynomial2.h \
+   polynomialbase.h \
+   polynomial.h polynomial.tcc polynomial_ring.tcc polynomial_field.tcc \
+      polynomial_gf.tcc polynomial_rational.tcc polynomial_real.tcc \
+   polynomial2base.h \
+   polynomial2.h polynomial2.tcc \
    prime.h \
    prime_generated.h \
    pseudoembeddedrule.h \

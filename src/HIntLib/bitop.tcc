@@ -27,10 +27,6 @@
 #ifndef HINTLIB_BITOP_TCC
 #define HINTLIB_BITOP_TCC 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
-
 #include <algorithm>
 
 #include <HIntLib/bitop.h>

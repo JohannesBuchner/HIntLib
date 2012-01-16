@@ -28,7 +28,7 @@
 #define HINTLIB_ORBITRULE_H 1
 
 #ifdef __GNUG__
-#pragma interface
+// #pragma interface
 #endif
 
 #include <HIntLib/hlmath.h>
@@ -58,7 +58,7 @@ protected:
    };
 
    // define some methods that are used for evaluating the integrand on
-   // certain symmetric point sets
+   // certain (fully) symmetric point sets
 
    real eval0_0      (Integrand &f);
    template<class T>
@@ -95,8 +95,8 @@ protected:
    Index numRRRR0_0fs() const
       { return Index(dim) * (dim-1) * (dim-2) / 3 * (dim-3) * 2; }
    Index numRR0_0s   () const
-      { return odd(dim) ? Index(dim) * ((dim-1) / 2) 
-                        : Index(dim / 2) * (dim-1); }
+      { return (dim & 1) ? Index(dim) * ((dim-1) / 2) 
+                         : Index(dim / 2) * (dim-1); }
    Index numRS0_0s   () const { return Index(dim) * (dim-1); }
    Index numR_Rfs    () const { return Index(1) << dim; }
    Index num3powS    () const { return powInt (3, dim); }
@@ -115,21 +115,22 @@ protected:
 
 inline
 void
-HIntLib :: OrbitRule :: setCenter (const real* center)
+HIntLib::OrbitRule::setCenter (const real* center)
 {
    for (unsigned i = 0; i != dim; ++i)  p[i] = center[i];
 }
 
 inline
-HIntLib::real HIntLib::OrbitRule::eval0_0 (Integrand &f)
+HIntLib::real
+HIntLib::OrbitRule::eval0_0 (Integrand &f)
 {
    return f(p);
 }
 
 template<class T>
 inline
-HIntLib::real HIntLib::OrbitRule::evalR0_0fs (
-   Integrand &f, const real* c, const T r)
+HIntLib::real
+HIntLib::OrbitRule::evalR0_0fs (Integrand &f, const real* c, const T r)
 {
    real sum = 0;
 
@@ -152,7 +153,8 @@ HIntLib::OrbitRule::evalR0_0fs (Integrand &f, const real* c, Point& a)
 
 template<class T1, class T2>
 inline
-unsigned HIntLib::OrbitRule::evalR0_0fs4d (
+unsigned
+HIntLib::OrbitRule::evalR0_0fs4d (
    Integrand &f, const real* c,
    real &sum0_, T1 r1, real &sum1, T2 r2, real &sum2)
 {
@@ -190,8 +192,8 @@ unsigned HIntLib::OrbitRule::evalR0_0fs4d (
 }
 
 inline
-HIntLib::real HIntLib::OrbitRule::evalRR0_0fs (
-   Integrand &f, const real*c, const real* r)
+HIntLib::real
+HIntLib::OrbitRule::evalRR0_0fs (Integrand &f, const real*c, const real* r)
 {
    real sum = 0;
 
@@ -215,7 +217,8 @@ HIntLib::real HIntLib::OrbitRule::evalRR0_0fs (
 }
 
 inline
-HIntLib::real HIntLib::OrbitRule::evalRS0_0fs (
+HIntLib::real
+HIntLib::OrbitRule::evalRS0_0fs (
    Integrand &f, const real*c, const real* r, const real *s)
 {
    real sum = 0;
@@ -244,8 +247,8 @@ HIntLib::real HIntLib::OrbitRule::evalRS0_0fs (
 
 
 inline
-HIntLib::real HIntLib::OrbitRule::evalRR0_0s (
-   Integrand &f, const real*c, const real* r)
+HIntLib::real
+HIntLib::OrbitRule::evalRR0_0s (Integrand &f, const real*c, const real* r)
 {
    real sum = 0;
 
@@ -265,8 +268,9 @@ HIntLib::real HIntLib::OrbitRule::evalRR0_0s (
 }
 
 inline
-HIntLib::real HIntLib::OrbitRule::evalRS0_0s (
-   Integrand &f, const real*c, const real* r, const real* s)
+HIntLib::real
+HIntLib::OrbitRule::evalRS0_0s (
+      Integrand &f, const real*c, const real* r, const real* s)
 {
    real sum = 0;
 

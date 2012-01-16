@@ -85,9 +85,9 @@ L::Rule2Simplex::Rule2Simplex (unsigned d)
          r [i*dim + 2*k + 1] = sqrt2by3 * HINTLIB_MN sin (t);
       }
 
-      if (odd(dim))
+      if (dim & 1)
       {
-         r [i*dim + (dim-1)] = odd(i) ? oneDivSqrt3 : -oneDivSqrt3;
+         r [i*dim + (dim-1)] = (i & 1) ? oneDivSqrt3 : -oneDivSqrt3;
       }
    }
 }

@@ -57,7 +57,7 @@ template<typename T>
 Polynomial<T>&
 Polynomial<T>::operator= (const P& p)
 {
-   if (this != &p) c = p.c;
+   if (this != &p)  c = p.c;
    return *this;
 }
 
@@ -325,8 +325,8 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Neg<X>,A,T> x)
 
    reserve (p->numCoeff());
 
-   const P::CDownI end = p->toA0();
-   for (P::CDownI i = p->fromLc(); i != end; ++i)  mulAndAdd (a->neg (*i));
+   const CDownI end = p->toA0();
+   for (CDownI i = p->fromLc(); i != end; ++i)  mulAndAdd (a->neg (*i));
 }
 
 template<typename T> template<typename A>
@@ -346,8 +346,8 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Dbl<char_non>,A,T> x)
    const A* a = x.a;
    const P* p = x.p;
 
-   const P::CDownI end = p->toA0();
-         P::CDownI i = p->fromLc();
+   const CDownI end = p->toA0();
+         CDownI i = p->fromLc();
 
    while (i != end)
    {
@@ -373,8 +373,8 @@ Polynomial (Private::PG<Private::Dbl<char_zero>,A,T> x)
    const A* a = x.a;
    const P* p = x.p;
 
-   const P::CDownI end = x.p->toA0();
-         P::CDownI i   = x.p->fromLc();
+   const CDownI end = x.p->toA0();
+         CDownI i   = x.p->fromLc();
 
    reserve (end - i);
    while (i != end)  mulAndAdd (a->dbl (*i++));
@@ -390,8 +390,8 @@ Polynomial (Private::PG<Private::Dbl<char_prime>,A,T> x)
    if (a->characteristic() == 2)  return;
    const P* p = x.p;
 
-   const P::CDownI end = x.p->toA0();
-         P::CDownI i   = x.p->fromLc();
+   const CDownI end = x.p->toA0();
+         CDownI i   = x.p->fromLc();
 
    reserve (end - i);
    while (i != end)  mulAndAdd (a->dbl (*i++));
@@ -487,8 +487,8 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Times<char_non>,A,T> x)
    const A* a = x.a;
    const P* p = x.p;
 
-   const P::CDownI end = p->toA0();
-         P::CDownI i = p->fromLc();
+   const CDownI end = p->toA0();
+         CDownI i = p->fromLc();
 
    while (i != end)
    {
@@ -516,8 +516,8 @@ Polynomial (Private::PG<Private::Times<char_zero>,A,T> x)
 
    const A* a = x.a;
 
-   const P::CDownI end = x.p->toA0();
-         P::CDownI i   = x.p->fromLc();
+   const CDownI end = x.p->toA0();
+         CDownI i   = x.p->fromLc();
 
    reserve (end - i);
    while (i != end)  mulAndAdd (a->times (*i++, n));
@@ -543,8 +543,8 @@ Polynomial (Private::PG<Private::Times<char_prime>,A,T> x)
       return;
    }
 
-   const P::CDownI end = x.p->toA0();
-         P::CDownI i   = x.p->fromLc();
+   const CDownI end = x.p->toA0();
+         CDownI i   = x.p->fromLc();
 
    while (i != end)
    {
@@ -597,9 +597,9 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Add,A,T> x)
    const int num1 = p1->numCoeff();
    const int num2 = p2->numCoeff();
 
-   const P::CDownI end1 = p1->toA0();
-         P::CDownI i1   = p1->fromLc();
-         P::CDownI i2   = p2->fromLc();
+   const CDownI end1 = p1->toA0();
+         CDownI i1   = p1->fromLc();
+         CDownI i2   = p2->fromLc();
    
    if (num1 != num2)
    {
@@ -640,9 +640,9 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Sub,A,T> x)
    const int num1 = p1->numCoeff();
    const int num2 = p2->numCoeff();
 
-   const P::CDownI end1 = p1->toA0();
-         P::CDownI i1   = p1->fromLc();
-         P::CDownI i2   = p2->fromLc();
+   const CDownI end1 = p1->toA0();
+         CDownI i1   = p1->fromLc();
+         CDownI i2   = p2->fromLc();
 
    if (num1 > num2)   // p1 longer: copy extra coefficients
    {
@@ -654,7 +654,7 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::Sub,A,T> x)
    {
       reserve (num2);
 
-      const P::CDownI end = p2->toA0() - num1;
+      const CDownI end = p2->toA0() - num1;
       while (i2 != end)  mulAndAdd (a->neg (*i2++));
    }
    else   // deg1 == deg2:  find first non-zero result
@@ -875,8 +875,8 @@ HIntLib::Polynomial<T>::Polynomial (Private::PG<Private::MulCoeff,A,T> x)
    
    reserve (p->numCoeff());
 
-   const P::CDownI end = p->toA0();
-   for (P::CDownI i = p->fromLc(); i != end; ++i)  mulAndAdd (a->mul (*i, *u));
+   const CDownI end = p->toA0();
+   for (CDownI i = p->fromLc(); i != end; ++i)  mulAndAdd (a->mul (*i, *u));
 }
 
 
@@ -890,6 +890,28 @@ HIntLib::Private::PRBA<A>::mulBy (type &p, const coeff_type& u) const
 {
    const typename type::DownI end = p.toA0();
    for (typename type::DownI i = p.fromLc(); i != end; ++i)  a.mulBy (*i, u);
+}
+
+
+/**
+ *  divByLinearFactor()
+ *
+ *  Given a polynomial  p  and a ring element  u, set  p := p / (X - u).
+ */
+
+template<typename A>
+void
+HIntLib::Private::PRBA<A>::divByLinearFactor (
+      type &p, const coeff_type& u) const
+{
+   if (p.degree() < 1)  throw DivisionByZero();
+   p.divByX();
+
+   const typename type::DownI end = p.toA0();
+   for (typename type::DownI i = p.fromLc() + 1; i != end; ++i)
+   {
+      a.addTo (*i, a.mul (u, *(i-1)));
+   }
 }
 
 
@@ -927,7 +949,7 @@ Polynomial (Private::PG<Private::Sqr<zerodivisor_tag,Y>,A,T> x)
 
       a->times2 (c);
 
-      if (even(k))  a->addTo (c, a->sqr ((*p)[k / 2]));
+      if ((k & 1) == 0)  a->addTo (c, a->sqr ((*p)[k / 2]));
 
       if (nonZero || ! a->is0 (c))
       {
@@ -963,7 +985,7 @@ Polynomial (Private::PG<Private::Sqr<nozerodivisor_tag,Y>,A,T> x)
 
       a->times2 (c);
 
-      if (even(k))  a->addTo (c, a->sqr ((*p)[k / 2]));
+      if ((k & 1) == 0)  a->addTo (c, a->sqr ((*p)[k / 2]));
 
       mulAndAdd (c);
    }
@@ -1269,6 +1291,7 @@ HIntLib::Private::PRBA<A>::print (std::ostream& o, const type& p) const
    template void PRBA<Y >::addTo (type&,const type&) const; \
    template void PRBA<Y >::subFrom (type&,const type&) const; \
    template void PRBA<Y >::mulBy (type&, const coeff_type&) const; \
+   template void PRBA<Y >::divByLinearFactor (type &, const coeff_type&) const;\
    template Y::type PRBA<Y >::evaluate (const type&, const coeff_type&) const; \
    template std::ostream& operator<< (std::ostream &, const PRBA<Y > &); \
    template void PRBA<Y >::print (std::ostream &, const type&) const; \

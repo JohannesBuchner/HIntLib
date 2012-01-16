@@ -22,6 +22,8 @@
 
 #include <HIntLib/gcd.h>
 #include <HIntLib/output.h>
+#include <HIntLib/bitop.h>
+#include <HIntLib/exception.h>
 
 
 /**
@@ -95,11 +97,12 @@ HIntLib::Private::QFB<A>::index (const type& u) const
 
    // examine irreducible factors
 
-   typename A::PrimeGenerator gen (a);
-   unsigned indices [10];  // sqrt(digits) is sufficient
+   const unsigned MAX_NUM_PRIMES = 10;
+   unsigned indices [MAX_NUM_PRIMES];  // sqrt(digits) is sufficient
    unsigned n = 0;
+   typename A::PrimeGenerator gen (a);
 
-   while (! (a.is1 (num) && a.is1 (den)) && n < 10)
+   while (! (a.is1 (num) && a.is1 (den)) && n < MAX_NUM_PRIMES)
    {
       base_type irred = gen.next();
 
@@ -486,12 +489,11 @@ HIntLib::Private::QFB<A>::print (std::ostream& o, const type& u) const
 
 template<class A>
 typename HIntLib::Private::QFB<A>::type
-HIntLib::Private::QFB2<A,HIntLib::integer_tag,HIntLib::nopolynomial_tag>::
-dbl (const type& u) const
+HIntLib::Private::QFB2<A,HIntLib::integer_tag>::dbl (const type& u) const
 {
-   return a.isEven (u.den) ?
-      type (u.num, a.div (u.den, a.dbl (a.one()))) :
-      type (a.dbl (u.num), u.den);
+   return this->a.isEven (u.den) ?
+      type (u.num, this->a.div (u.den, this->a.dbl (this->a.one()))) :
+      type (this->a.dbl (u.num), u.den);
 }
 
 
@@ -501,16 +503,15 @@ dbl (const type& u) const
 
 template<class A>
 void
-HIntLib::Private::QFB2<A,HIntLib::integer_tag,HIntLib::nopolynomial_tag>::
-times2 (type& u) const
+HIntLib::Private::QFB2<A,HIntLib::integer_tag>::times2 (type& u) const
 {
-   if (a.isEven (u.den))
+   if (this->a.isEven (u.den))
    {
-      a.divBy (u.den, a.dbl (a.one()));
+      this->a.divBy (u.den, this->a.dbl (this->a.one()));
    }
    else
    {
-      a.times2 (u.num);
+      this->a.times2 (u.num);
    }
 }
 
@@ -521,20 +522,23 @@ times2 (type& u) const
 
 template<class A>
 typename HIntLib::Private::QFB<A>::type
-HIntLib::Private::QFB2<A,HIntLib::integer_tag,HIntLib::nopolynomial_tag>::
+HIntLib::Private::QFB2<A,HIntLib::integer_tag>::
 times (const type& u, unsigned k) const
 {
+   typedef typename A::type base_type;
+
    if (k == 0 || is0 (u))  return type();
 
-   const typename A::type d = genGcd (a, base_type (k), u.den);
+   const A& aa (this->a);
+   const base_type d = genGcd (aa, base_type (k), u.den);
 
-   if (a.isUnit (d) || a.is1 (u.den))
+   if (aa.isUnit (d) || aa.is1 (u.den))
    {
-      return type (a.times (u.num, k), u.den);
+      return type (aa.times (u.num, k), u.den);
    }
    else
    {
-      return type (a.mul (u.num, a.div (base_type(k), d)), a.div (u.den, d));
+      return type (aa.mul (u.num, aa.div (base_type(k), d)), aa.div (u.den, d));
    }
 }
 
@@ -547,8 +551,7 @@ template<typename A>
 std::ostream&
 HIntLib::Private::
 operator<< (std::ostream& o,
-            const HIntLib::Private::QFB2<A,HIntLib::integer_tag,
-                                           HIntLib::nopolynomial_tag>&)
+            const HIntLib::Private::QFB2<A,HIntLib::integer_tag>&)
 {
    return o << "Q";
 }
@@ -564,13 +567,13 @@ operator<< (std::ostream& o,
 
 template<class A>
 typename HIntLib::Private::QFB<A>::type
-HIntLib::Private::QFB2<A,HIntLib::euclidean_tag,HIntLib::polynomial_tag>::
+HIntLib::Private::QFB2<A,HIntLib::polyoverfield_tag>::
 timesImp (const type& u, unsigned k, char_prime) const
 {
    if (k)
    {
-      const typename A::type num = a.times (u.num, k);
-      if (! a.is0 (num)) return type (num, u.den);
+      const typename A::type num = this->a.times (u.num, k);
+      if (! this->a.is0 (num)) return type (num, u.den);
    }
    return type();
 }
@@ -584,8 +587,7 @@ template<typename A>
 std::ostream&
 HIntLib::Private::
 operator<< (std::ostream& o,
-            const HIntLib::Private::QFB2<A,HIntLib::euclidean_tag,
-                                           HIntLib::polynomial_tag>& a)
+            const HIntLib::Private::QFB2<A,HIntLib::polyoverfield_tag>& a)
 {
    Printer ss (o);
 
@@ -622,22 +624,21 @@ template void QFB<X >::print (std::ostream&, const type&) const; \
 #define HINTLIB_INSTANTIATE_QUOTIENTFIELD_INT(X) \
    HINTLIB_INSTANTIATE_QUOTIENTFIELD(X) \
    namespace Private { \
-   template QFB<X >::type QFB2<X,integer_tag,nopolynomial_tag>::times \
+   template QFB<X >::type QFB2<X,integer_tag>::times \
                (const type&, unsigned k) const; \
-   template QFB<X >::type QFB2<X,integer_tag,nopolynomial_tag>::dbl \
-               (const type&) const; \
-   template void QFB2<X,integer_tag,nopolynomial_tag>::times2 (type&) const; \
+   template QFB<X >::type QFB2<X,integer_tag>::dbl (const type&) const; \
+   template void QFB2<X,integer_tag>::times2 (type&) const; \
    template std::ostream& operator<< \
-               (std::ostream&, const QFB2<X,integer_tag,nopolynomial_tag> &); \
+           (std::ostream&, const QFB2<X,integer_tag> &); \
    }
 
 #define HINTLIB_INSTANTIATE_QUOTIENTFIELD_POL(X) \
    HINTLIB_INSTANTIATE_QUOTIENTFIELD(X) \
    namespace Private { \
-   template QFB<X >::type QFB2<X,euclidean_tag,polynomial_tag>::timesImp \
+   template QFB<X >::type QFB2<X,polyoverfield_tag>::timesImp \
                (const type&, unsigned k, X::char_category) const; \
    template std::ostream& operator<< \
-               (std::ostream&, const QFB2<X,euclidean_tag,polynomial_tag> &); \
+               (std::ostream&, const QFB2<X,polyoverfield_tag> &); \
    }
 
 

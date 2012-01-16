@@ -102,12 +102,12 @@ class MCPointSetBase : public MCPointSetBase_,
 {
 protected:
    MCPointSetBase(Index alignment, unsigned start)
-      : MCPointSetBase_(alignemnt), PRNGImp<T> (start) {}
+      : MCPointSetBase_(alignment), PRNGImp<T> (start) {}
    MCPointSetBase(Index alignment) : MCPointSetBase_(alignment) {}
 
 public:
-   virtual void select (unsigned start, unsigned num) { mc.init (start); }
-   virtual void randomize (unsigned seed) { mc.init (seed); }
+   virtual void select (unsigned start, unsigned num) { this->mc.init (start); }
+   virtual void randomize (unsigned seed) { this->mc.init (seed); }
 };
 
 
@@ -125,12 +125,12 @@ public:
 
    void doJob (real *point, Job &job, Index n)
    {
-      mcDoJob (point, mc, *h, job, n);
+      mcDoJob (point, this->mc, *(this->h), job, n);
    }
 
    bool doJobRep (real *point, ReportingJob &job, Index n)
    {
-      return mcDoJobRep (point, mc, *h, job, n);
+      return mcDoJobRep (point, this->mc, *(this->h), job, n);
    }
 };
 
@@ -144,14 +144,14 @@ public:
    void integrate (real point [], Integrand &f, Index n, PointSet::Stat &stat)
    {
       Statistic<real, Sum> s;
-      mcIntegration (point, mc, *h, f, n, s);
+      mcIntegration (point, this->mc, *(this->h), f, n, s);
       stat = s;
    }
 
    void integrate (real point [], Integrand &f, Index n, PointSet::StatVar &stat)
    {
       StatisticVar<real, Sum> s;
-      mcIntegration (point, mc, *h, f, n, s);
+      mcIntegration (point, this->mc, *(this->h), f, n, s);
       stat = s;
    }
 };
@@ -171,7 +171,7 @@ public:
 
    void doJob (real *point, Job &job, Index n)
    {
-      stratifiedDoJob (point, mc, *h, job, n);
+      stratifiedDoJob (point, this->mc, *(this->h), job, n);
    }
 };
 
@@ -185,14 +185,14 @@ public:
    void integrate (real point [], Integrand &f, Index n, PointSet::Stat &stat)
    {
       Statistic<real, Sum> s;
-      stratifiedIntegration (point, mc, *h, f, n, s);
+      stratifiedIntegration (point, this->mc, *(this->h), f, n, s);
       stat = s;
    }
 
    void integrate (real point [], Integrand &f, Index n, PointSet::StatVar &stat)
    {
       StatisticVar<real, Sum> s;
-      stratifiedIntegration (point, mc, *h, f, n, s);
+      stratifiedIntegration (point, this->mc, *(this->h), f, n, s);
       stat = s;
    }
 };
@@ -211,7 +211,7 @@ public:
 
    void doJob (real *point, Job &job, Index n)
    {
-      antitheticDoJob (point, mc, *h, job, n);
+      antitheticDoJob (point, this->mc, *(this->h), job, n);
    }
 };
 
@@ -226,7 +226,7 @@ public:
       real point [], Integrand &f, Index n, PointSet::Stat &stat)
    {
       Statistic<real, Sum> s;
-      antitheticIntegration (point, mc, *h, f, n, s);
+      antitheticIntegration (point, this->mc, *(this->h), f, n, s);
       stat = s;
    }
 
@@ -234,7 +234,7 @@ public:
       real point [], Integrand &f, Index n, PointSet::StatVar &stat)
    {
       StatisticVar<real, Sum> s;
-      antitheticIntegration (point, mc, *h, f, n, s);
+      antitheticIntegration (point, this->mc, *(this->h), f, n, s);
       stat = s;
    }
 };
@@ -264,13 +264,13 @@ public:
    void doJob (real *point, Job &job, Index n)
    {
       T mc (start);
-      mcDoJob (point, mc, *h, job, n);
+      mcDoJob (point, mc, *(this->h), job, n);
    }
 
    bool doJobRep (real *point, ReportingJob &job, Index n)
    {
       T mc (start);
-      return mcDoJobRep (point, mc, *h, job, n);
+      return mcDoJobRep (point, mc, *(this->h), job, n);
    }
 };
 
@@ -285,18 +285,18 @@ public:
    void integrate (
       real point [], Integrand &f, Index n, PointSet::StatVar &stat)
    {
-      T m (start);
+      T m (this->start);
       StatisticVar<real, Sum> s;
-      mcIntegration (point, m, *h, f, n, s);
+      mcIntegration (point, m, *(this->h), f, n, s);
       stat = s;
    }
 
    void integrate (
       real point [], Integrand &f, Index n, PointSet::Stat &stat)
    {
-      T m (start);
+      T m (this->start);
       Statistic<real, Sum> s;
-      mcIntegration (point, m, *h, f, n, s);
+      mcIntegration (point, m, *(this->h), f, n, s);
       stat = s;
    }
 };
@@ -320,7 +320,7 @@ public:
    void doJob (real *point, Job &job, Index n)
    {
       T mc (start);
-      stratifiedDoJob (point, mc, *h, job, n);
+      stratifiedDoJob (point, mc, *(this->h), job, n);
    }
 };
 
@@ -335,18 +335,18 @@ public:
    void integrate (
       real point [], Integrand &f, Index n, PointSet::StatVar &stat)
    {
-      T m (start);
+      T m (this->start);
       StatisticVar<real, Sum> s;
-      stratifiedIntegration (point, m, *h, f, n, s);
+      stratifiedIntegration (point, m, *(this->h), f, n, s);
       stat = s;
    }
 
    void integrate (
       real point [], Integrand &f, Index n, PointSet::Stat &stat)
    {
-      T m (start);
+      T m (this->start);
       Statistic<real, Sum> s;
-      stratifiedIntegration (point, m, *h, f, n, s);
+      stratifiedIntegration (point, m, *(this->h), f, n, s);
       stat = s;
    }
 };
@@ -371,7 +371,7 @@ public:
    void doJob (real *point, Job &job, Index n)
    {
       T mc (start);
-      antitheticDoJob (point, mc, *h, job, n);
+      antitheticDoJob (point, mc, *(this->h), job, n);
    }
 };
 
@@ -386,18 +386,18 @@ public:
    void integrate (
       real point [], Integrand &f, Index n, PointSet::StatVar &stat)
    {
-      T m (start);
+      T m (this->start);
       StatisticVar<real, Sum> s;
-      antitheticIntegration (point, m, *h, f, n, s);
+      antitheticIntegration (point, m, *(this->h), f, n, s);
       stat = s;
    }
 
    void integrate (
       real point [], Integrand &f, Index n, PointSet::Stat &stat)
    {
-      T m (start);
+      T m (this->start);
       Statistic<real, Sum> s;
-      antitheticIntegration (point, m, *h, f, n, s);
+      antitheticIntegration (point, m, *(this->h), f, n, s);
       stat = s;
    }
 };

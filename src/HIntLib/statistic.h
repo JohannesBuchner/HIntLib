@@ -164,13 +164,13 @@ public:
 
    real getVariance() const 
    {
-      return real(squares) / real(getCount()) - sqr(getMean());
+      return real(squares) / real (this->getCount()) - sqr (this->getMean());
    }
 
    real getVarianceSample() const
    {
-      return   (real(squares) - real(getCount()) * sqr(getMean()))
-             / real(getCount()-1);
+      return   (real (squares) - real(this->getCount()) * sqr(this->getMean()))
+             / real(this->getCount()-1);
    }
 
    real getStdDev()       const { return HINTLIB_MN sqrt(getVariance()); }

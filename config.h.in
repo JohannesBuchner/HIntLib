@@ -162,7 +162,25 @@
 /* Size of Index data type. */
 #undef INDEX
 
-/* strategy to get math functions right */
+/* function to use for lgamma(double) */
+#undef LGAMMA_FOR_DOUBLE
+
+/* function number to use for lgamma(double) */
+#undef LGAMMA_FOR_DOUBLE_NUM
+
+/* function to use for lgamma(float) */
+#undef LGAMMA_FOR_FLOAT
+
+/* function number to use for lgamma(float) */
+#undef LGAMMA_FOR_FLOAT_NUM
+
+/* function to use for lgamma(long double) */
+#undef LGAMMA_FOR_LONG_DOUBLE
+
+/* function number to use for lgamma(long double) */
+#undef LGAMMA_FOR_LONG_DOUBLE_NUM
+
+/* strategy to get standard math functions right */
 #undef MATH_FUN_STRATEGY
 
 /* define if namespace std::rel_ops exists */

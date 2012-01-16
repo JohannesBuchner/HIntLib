@@ -52,7 +52,7 @@ std::ostream& P::operator<< (std::ostream &o, const ZRing&)
 template<typename T>
 T L::IntegerRing<T>::element (unsigned i)
 {
-   return odd(i)  ?  T(i/2 + 1)  :  -T(i/2);
+   return (i & 1)  ?  T(i/2 + 1)  :  -T(i/2);
 }
 
 

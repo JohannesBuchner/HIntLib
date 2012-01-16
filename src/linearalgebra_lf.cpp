@@ -20,13 +20,13 @@
 
 #define HINTLIB_LIBRARY_OBJECT
 
-#include <HIntLib/linearalgebra.tcc>
+#include <HIntLib/linearalgebragen.tcc>
 
 #include <HIntLib/modulararithmetic.h>
 
 namespace HIntLib
 {
-   HINTLIB_INSTANTIATE_LINEARALGEBRA (ModularArithmeticField<unsigned short>)
-   HINTLIB_INSTANTIATE_LINEARALGEBRA (ModularArithmeticField<unsigned char>)
+   HINTLIB_INSTANTIATE_LINEARALGEBRAGEN (ModularArithmeticField<unsigned char>)
+   HINTLIB_INSTANTIATE_LINEARALGEBRAGEN (ModularArithmeticField<unsigned short>)
 }
 

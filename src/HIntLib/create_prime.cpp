@@ -76,6 +76,8 @@ int main (int argc, const char** argv)
          "#pragma implementation\n"
          "#endif\n"
          "\n"
+         "#define HINTLIB_LIBRARY_OBJECT\n"
+         "\n"
          "#include <HIntLib/prime.h>\n"
          "\n"
          "const unsigned short HIntLib::Prime::nextPrimeArray [MAX_N+1] =\n"

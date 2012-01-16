@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = create
+EXTRA_DIST = create.sh
 
 noinst_HEADERS = include.h
 
@@ -14,8 +14,8 @@ main_SOURCES = main.cpp
 AM_CXXFLAGS = @COMPILERWARNINGS@
 LDADD = libhintlibtest.la
 
-result.h: main@EXEEXT@ create
-	$(srcdir)/create
+result.h: main@EXEEXT@ create.sh
+	$(srcdir)/create.sh
 
 clean-local:
 	rm -rf ii_files result.h

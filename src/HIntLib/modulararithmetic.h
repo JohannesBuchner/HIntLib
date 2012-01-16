@@ -50,22 +50,18 @@ public:
    void printSuffix (std::ostream &) const;
 
 protected:
-   ModularArithmeticBase (unsigned modulus)
-      : m(modulus), nilradical (calcNilradical(modulus)) {}
+   ModularArithmeticBase (unsigned modulus, unsigned max, bool field);
 
    static void invalidType();
 
    // some methods for fields
 
-   void checkField (unsigned) const;
    unsigned recipImp (unsigned) const;
    unsigned orderImp (unsigned) const;
+   bool isPrimitiveImp (unsigned) const;
 
    // some methods for rings
 
-   static unsigned calcNilradical (unsigned);
-
-   void checkRing (unsigned) const;
    unsigned additiveOrderImp (unsigned) const;
    bool isUnitImp (unsigned) const;
    unsigned unitElementImp(unsigned) const;
@@ -77,8 +73,13 @@ protected:
    static void prnShort  (std::ostream &, unsigned);
           void prn       (std::ostream &, unsigned) const;
 
+   // state
+
    const unsigned m;
-   const unsigned nilradical;
+   unsigned nilradical;
+   Prime::Factorization fac;
+
+   typedef Prime::Factorization::const_iterator FacI;
 };
 
 std::ostream& operator<< (std::ostream &, const ModularArithmeticBase &);
@@ -92,8 +93,9 @@ template <class T>
 class ModularArithmetic : public Private::ModularArithmeticBase
 {
 protected:
-   ModularArithmetic (unsigned modulus)
-      : Private::ModularArithmeticBase (modulus)
+   ModularArithmetic (unsigned modulus, bool field)
+      : Private::ModularArithmeticBase (
+            modulus, std::numeric_limits<T>::max(), field)
    {
       if (   std::numeric_limits<T>::is_signed
           || ! std::numeric_limits<T>::is_integer
@@ -171,18 +173,17 @@ public:
    typedef T unit_type;
 
    ModularArithmeticRing (unsigned modulus)
-      : Private::ModularArithmetic<T> (modulus)
-      { checkRing (std::numeric_limits<T>::max()); }
+      : Private::ModularArithmetic<T> (modulus, false) {}
 
    bool isUnit (const T& a) const  { return isUnitImp (a); }
    bool isZerodivisor (const T& a) const { return ! isUnitImp (a); }
-   bool isNilpotent (const T& a) const  { return a % nilradical == 0; }
+   bool isNilpotent (const T& a) const  { return a % this->nilradical == 0; }
 
-   unsigned numUnits()      const  { return eulerPhi (m); }
-   unsigned numNilpotents() const  { return m / nilradical; }
+   unsigned numUnits()      const  { return Prime::eulerPhi (this->m); }
+   unsigned numNilpotents() const  { return this->m / this->nilradical; }
 
    unsigned unitIndex (const T& a) const  { return unitIndexImp (a); }
-   T unitElement (unsigned n)      const  { return unitElementImp (n); }
+   T unitElement (unsigned n)      const  { return this->unitElementImp (n); }
 
    static T toUnit   (const T& a)  { return a; }
    static T fromUnit (const T& a)  { return a; }
@@ -194,7 +195,7 @@ public:
    unsigned additiveOrder (T a) const  { return additiveOrderImp (a); }
 
    T power (const T& a, unsigned k) const
-      { return powerMod (unsigned(a), k, unsigned(m)); }
+      { return powerMod (unsigned(a), k, unsigned(this->m)); }
 };
 
 
@@ -214,10 +215,9 @@ public:
    typedef T type;
 
    ModularArithmeticField (unsigned modulus)
-      : Private::ModularArithmetic<T> (modulus)
-      { checkField(std::numeric_limits<T>::max()); }
+      : Private::ModularArithmetic<T> (modulus, true) {}
 
-   unsigned characteristic() const  { return m; }
+   unsigned characteristic() const  { return this->m; }
 
    T recip (const T& x) const { return T (recipImp (x)); }
    void reciprocal (T& x) const { x = recipImp (x); }
@@ -225,10 +225,10 @@ public:
    T div  (const T& a, const T& b) const  { return mul (a, recip(b)); }
    void divBy (T& a,  const T& b) const  { mulBy (a, recip(b)); }
 
-   unsigned order (T a) const    { return orderImp (a); }
-   bool isPrimitiveElement (T a) const  { return isPrimitiveRoot (a, m); }
+   unsigned order (const T& a) const    { return orderImp (a); }
+   bool isPrimitiveElement (const T& a) const  { return isPrimitiveImp (a); }
    T power (const T& a, unsigned k) const
-      { return powerModReduce (unsigned(a), k, unsigned(m)); }
+      { return powerModReduce (unsigned(a), k, unsigned(this->m)); }
 
    HINTLIB_TRIVIAL_CYCLIC_MEMBERS
 };

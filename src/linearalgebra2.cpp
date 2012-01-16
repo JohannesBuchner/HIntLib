@@ -18,33 +18,20 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifdef __GNUG__
+#pragma implementation
+#endif
+
 #define HINTLIB_LIBRARY_OBJECT
 
-#include <HIntLib/polynomial_field.tcc>
-
-#include <HIntLib/realfield.h>
-#include <HIntLib/gf2.h>
-#include <HIntLib/quotientfield.h>
-#include <HIntLib/integerring.h>
-#include <HIntLib/lookupfield.h>
+#include <HIntLib/defaults.h>
+#include <HIntLib/linearalgebra2.tcc>
 
 namespace HIntLib
 {
-   // Polynomial<>
-
-   HINTLIB_INSTANTIATE_POLYNOMIAL_NO_EQUAL (Real<real>)
-   HINTLIB_INSTANTIATE_POLYNOMIAL_NO_EQUAL (Complex<real>)
-   HINTLIB_INSTANTIATE_POLYNOMIAL (Quotient<int>)
-   HINTLIB_INSTANTIATE_POLYNOMIAL (Quotient<Polynomial<unsigned char> >)
-
-   // PolynomialRing<>
-
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_RATIONAL(QuotientField<IntegerRing<int> >)
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_REAL (RealField<real>)
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_COMPLEX (ComplexField<real>)
-
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_GF (GF2)
-
-   HINTLIB_INSTANTIATE_POLYNOMIALRING_FIELD(QuotientField<PolynomialRing<GF2> >)
+   HINTLIB_INSTANTIATE_LINEARALGEBRA2 (u32*)
+#ifdef HINTLIB_U32_NOT_EQUAL_U64
+   HINTLIB_INSTANTIATE_LINEARALGEBRA2 (u64*)
+#endif
 }
 

@@ -388,9 +388,11 @@ void L::LookupFieldBase<T>::setFrobenius (T a, T b)
 template<typename T>
 void L::LookupField<T>::privSetPointers ()
 {
-   addTable = invFrobTable + size();
-   negTable = addTable + HIntLib::sqr(size());
-   dblTable = negTable + size();
+   const unsigned S = this->size();
+
+   addTable = this->invFrobTable + S;
+   negTable = addTable + HIntLib::sqr(S);
+   dblTable = negTable + S;
 }
 
 template<typename T>
@@ -443,20 +445,18 @@ void L::LookupField<T>::dump (std::ostream &o) const
 {
    LookupFieldBase<T>::dump (o);
 
+   const unsigned S = this->size();
+
    o << '\n' << setw (3) << "+";
-   for (unsigned j = 0; j < size(); ++j)  o << setw(3) << j;
+   for (unsigned j = 0; j != S; ++j)  o << setw(3) << j;
    o << '\n' << setw (3) << "-";
-   for (unsigned j = 0; j < size(); ++j)  o << setw(3) << unsigned (neg (j));
+   for (unsigned j = 0; j != S; ++j)  o << setw(3) << unsigned (neg (j));
    o << '\n';
 
-   for (unsigned i = 0; i < size(); ++i)
+   for (unsigned i = 0; i != S; ++i)
    {
       o << setw(3) << i;
-
-      for (unsigned j = 0; j < size(); ++j)
-      {
-         o << setw(3) << unsigned (add (i,j));
-      }
+      for (unsigned j = 0; j != S; ++j)  o << setw(3) << unsigned (add (i,j));
       o << '\n';
    }
 }
@@ -469,13 +469,15 @@ void L::LookupField<T>::dump (std::ostream &o) const
 template<typename T>
 void L::LookupField<T>::setAdd (T a, T b, T sum)
 {
-   if (a   >= size())  throw LookupFieldSet (a,   size());
-   if (b   >= size())  throw LookupFieldSet (b,   size());
-   if (sum >= size())  throw LookupFieldSet (sum, size());
+   const unsigned S = this->size();
 
-   write();
-   addTable [a + size() * b] = sum;
-   addTable [b + size() * a] = sum;
+   if (a   >= S)  throw LookupFieldSet (a,   S);
+   if (b   >= S)  throw LookupFieldSet (b,   S);
+   if (sum >= S)  throw LookupFieldSet (sum, S);
+
+   this->write();
+   addTable [a + S * b] = sum;
+   addTable [b + S * a] = sum;
 
    if (a == b)  dblTable [a] = sum;
 
@@ -577,15 +579,17 @@ void L::LookupVectorSpaceBase<T,C>::dump (std::ostream &o, unsigned as) const
 template<typename T, typename C>
 void L::LookupVectorSpace<T,C>::setPointers ()
 {
-   mulTable = static_cast<T*> (getDataPtr());
-   addTable = mulTable + size() * algebra.size();
-   negTable = mulTable + size() * algebra.index(algebra.neg(algebra.one()));
+   const unsigned S = this->size();
+
+   this->mulTable = static_cast<T*> (this->getDataPtr());
+   addTable = this->mulTable + S * algebra.size();
+   negTable = this->mulTable + S * algebra.index(algebra.neg(algebra.one()));
 }
 
 template<typename T, typename C>
 void L::LookupVectorSpacePow2<T,C>::setPointers ()
 {
-   mulTable = static_cast<T*> (getDataPtr());
+   this->mulTable = static_cast<T*> (this->getDataPtr());
 }
 
 
@@ -606,40 +610,43 @@ L::LookupVectorSpace<T,C>::LookupVectorSpace
 {
    setPointers();
 
-   Array<C> as (dimension());
-   Array<C> bs (dimension());
-   Array<C> cs (dimension());
+   const unsigned DIM = this->dimension();
+   const unsigned S = this->size();
 
-   for (unsigned i = 0; i < size(); ++i)
+   Array<C> as (DIM);
+   Array<C> bs (DIM);
+   Array<C> cs (DIM);
+
+   for (unsigned i = 0; i != S; ++i)
    {
-      toCoord (element(i), &as[0]);
+      toCoord (this->element(i), &as[0]);
 
       // fill mulTable
 
-      for (unsigned j = 0; j < algebra.size(); ++j)
+      for (unsigned j = 0; j != algebra.size(); ++j)
       {
          C s = algebra.element (j);
 
-         for (unsigned k = 0; k < dimension(); ++k)
+         for (unsigned k = 0; k != DIM; ++k)
          {
             cs[k] = algebra.mul (as[k], s);
          }
 
-         fromCoord (mulTable [i + size() * j], &cs[0]);
+         fromCoord (this->mulTable [i + S * j], &cs[0]);
       }
 
       // Fill addTable
 
-      for (unsigned j = 0; j < size(); ++j)
+      for (unsigned j = 0; j != S; ++j)
       {
-         toCoord (element(j), &bs[0]);
+         toCoord (this->element(j), &bs[0]);
 
-         for (unsigned k = 0; k < dimension(); ++k)
+         for (unsigned k = 0; k != DIM; ++k)
          {
             cs[k] = algebra.add (as[k], bs[k]);
          }
 
-         fromCoord (addTable [i + size() * j], &cs[0]);
+         fromCoord (addTable [i + S * j], &cs[0]);
       }
    }
 }
@@ -657,23 +664,26 @@ L::LookupVectorSpacePow2<T,C>::LookupVectorSpacePow2
 {
    setPointers();
 
-   Array<C> as (dimension());
-   Array<C> cs (dimension());
+   const unsigned DIM = this->dimension();
+   const unsigned S = this->size();
 
-   for (unsigned i = 0; i < size(); ++i)
+   Array<C> as (DIM);
+   Array<C> cs (DIM);
+
+   for (unsigned i = 0; i != S; ++i)
    {
-      toCoord (element(i), &as[0]);
+      toCoord (this->element(i), &as[0]);
 
       for (unsigned j = 0; j < algebra.size(); ++j)
       {
-         C s = element (j);
+         C s = this->element (j);
 
-         for (unsigned k = 0; k < dimension(); ++k)
+         for (unsigned k = 0; k != DIM; ++k)
          {
             cs[k] = algebra.mul (as[k], s);
          }
 
-         fromCoord (mulTable [i + size() * j], &cs[0]);
+         fromCoord (this->mulTable [i + S * j], &cs[0]);
       }
    }
 }
@@ -759,17 +769,19 @@ void L::LookupVectorSpace<T,C>::dump (std::ostream &o) const
 {
    LookupVectorSpaceBase<T,C>::dump (o, algebra.size());
 
+   const unsigned S = this->size();
+
    o << '\n' << setw (3) << "+";
-   for (unsigned j = 0; j < size(); ++j)  o << setw(3) << j;
+   for (unsigned j = 0; j != S; ++j)  o << setw(3) << j;
    o << '\n' << setw (3) << "-";
-   for (unsigned j = 0; j < size(); ++j)  o << setw(3) << unsigned (neg (j));
+   for (unsigned j = 0; j != S; ++j)  o << setw(3) << unsigned (neg (j));
    o << '\n';
 
-   for (unsigned i = 0; i < size(); ++i)
+   for (unsigned i = 0; i != S; ++i)
    {
       o << setw(3) << i;
 
-      for (unsigned j = 0; j < size(); ++j)
+      for (unsigned j = 0; j != S; ++j)
       {
          o << setw(3) << unsigned (add (i,j));
       }
@@ -788,8 +800,10 @@ L::LookupVectorSpace<T,C>::printShort (std::ostream &o, T x) const
 {
    Private::Printer ss (o);
 
+   const unsigned DIM = this->dimension();
+
    ss << '(';
-   for (unsigned i = 0; i < dimension(); ++i)
+   for (unsigned i = 0; i != DIM; ++i)
    {
       if (i > 0)  ss << ',';
       algebra.printShort (ss, coord (x, i));
@@ -803,8 +817,10 @@ L::LookupVectorSpacePow2<T,C>::printShort (std::ostream &o, T x) const
 {
    Private::Printer ss (o);
 
+   const unsigned DIM = this->dimension();
+
    ss << '(';
-   for (unsigned i = 0; i < dimension(); ++i)
+   for (unsigned i = 0; i != DIM; ++i)
    {
       if (i > 0)  ss << ',';
       algebra.printShort (ss, coord (x, i));

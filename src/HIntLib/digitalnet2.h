@@ -79,9 +79,9 @@ protected:
    typedef GF2VectorSpace<T> A;
    typedef typename A::scalar_algebra SA;
 
+   const unsigned totalPrec;
    A alg;
    SA scalAlg;
-   const unsigned totalPrec;
    GeneratorMatrix2<T> c;
    Array<T> x;      // current vector (size dim)
    Array<T> xStart; // Inital values for x (size dim)
@@ -125,18 +125,18 @@ public:
        unsigned m, Index i, bool equi, DigitalNet::Truncation t,
        bool correct = true)
       : DigitalNet2<T> (gm, _h, m, i, equi, t)
-      { if (correct)  c.prepareForGrayCode(); }
+      { if (correct)  this->c.prepareForGrayCode(); }
 
    DigitalNet2Gray
       (const GeneratorMatrix2<T> &gm, const Hypercube& _h,
        bool correct = true)
-      : DigitalNet2<T> (gm, _h, gm.getM(), 0, false, FULL)
-      { if (correct)  c.prepareForGrayCode(); }
+      : DigitalNet2<T> (gm, _h, gm.getM(), 0, false, this->FULL)
+      { if (correct)  this->c.prepareForGrayCode(); }
 
    void first          (real*p, Index _n = 0)
-      { resetX          (grayCode(n = _n), p); }
+      { resetX          (grayCode(this->n = _n), p); }
    void firstDontScale (real*p, Index _n = 0)
-      { resetXDontScale (grayCode(n = _n), p); }
+      { resetXDontScale (grayCode(this->n = _n), p); }
 
    void next          (real*);
    void nextDontScale (real*);
@@ -203,22 +203,24 @@ template<class T>
 inline
 void HIntLib::DigitalNet2Gray<T>::next (real* point)
 {
-   const T *vp = c (ls0 (n++));  // determine digit that changed
+   const T *vp = c (ls0 (this->n++));  // determine digit that changed
+   const unsigned DIM = this->getDimension();
 
-   for (unsigned d = 0; d < getDimension(); ++d)  alg.addTo (x[d], vp[d]);
+   for (unsigned d = 0; d != DIM; ++d)  this->alg.addTo (this->x[d], vp[d]);
 
-   copyXtoP (point);
+   this->copyXtoP (point);
 } 
 
 template<class T>
 inline
 void HIntLib::DigitalNet2Gray<T>::nextDontScale (real* point)
 {
-   const T *vp = c (ls0 (n++)); // determine digit that changed
+   const T *vp = c (ls0 (this->n++)); // determine digit that changed
+   const unsigned DIM = this->getDimension();
 
-   for (unsigned d = 0; d < getDimension(); ++d)  alg.addTo (x[d], vp[d]);
+   for (unsigned d = 0; d != DIM; ++d)  this->alg.addTo (this->x[d], vp[d]);
 
-   copyXtoPDontScale (point);
+   this->copyXtoPDontScale (point);
 } 
 
 
@@ -317,9 +319,7 @@ class DigitalNet2PointSet<real>: public DigitalNet2PointSetBase
 {
 public:
    DigitalNet2PointSet<real> (
-      const GeneratorMatrix& gm,
-      bool e = true, DigitalNet::Truncation t = DigitalNet::TRUNCATE,
-      Index i = 0)
+      const GeneratorMatrix& gm, bool e, DigitalNet::Truncation t, Index i)
    : DigitalNet2PointSetBase(gm, e, t, i) {}
 
    void integratePartition (real *, Integrand &, Index, Index, Index, Stat&);

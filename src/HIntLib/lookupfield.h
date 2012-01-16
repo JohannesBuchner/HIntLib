@@ -38,6 +38,7 @@
 #endif
 
 #include <HIntLib/algebra.h>
+#include <HIntLib/hlmath.h>
 
 
 namespace HIntLib
@@ -229,7 +230,7 @@ public:
  *  Lookup Field
  */
 
-template <typename T>
+template<typename T>
 class LookupField : public LookupFieldBase<T>
 {
 private:
@@ -255,7 +256,7 @@ public:
 
    bool is0 (T a) const  { return a == T(0); }
 
-   T    add   (T  a, T b) const  { return addTable [a + size() * b]; }
+   T    add   (T  a, T b) const  { return addTable [a + this->size() * b]; }
    void addTo (T& a, T b) const  { a = add (a,b); }
 
    T    neg    (T  a) const  { return negTable [a]; }
@@ -268,8 +269,8 @@ public:
    void times2 (T& a) const  { a = dbl (a); }
    T times (T a, unsigned k) const;
 
-   unsigned characteristic() const  { return getCharacteristic(); }
-   unsigned extensionDegree() const  { return getExtensionDegree(); }
+   unsigned characteristic() const  { return this->getCharacteristic(); }
+   unsigned extensionDegree() const  { return this->getExtensionDegree(); }
 
    void dump (std::ostream &) const;
 
@@ -317,7 +318,7 @@ public:
    LookupFieldPow2 & operator= (const LookupFieldPow2<T> &r)
       { LookupFieldBase<T>::operator=(r); return *this; }
 
-   unsigned extensionDegree() const  { return getExtensionDegree(); }
+   unsigned extensionDegree() const  { return this->getExtensionDegree(); }
 
    HINTLIB_TRIVIAL_DOMAIN_MEMBERS
 };
@@ -345,23 +346,31 @@ public:
 
    T add (const T& a, const T& b) const
       { unsigned t = unsigned(a) + unsigned(b);
-        return     (t>=size()) ? t - size() : t; }
+        return     (t>=this->size()) ? t - this->size() : t; }
    void addTo (T& a,    const T& b) const  { a = add (a, b); }
 
-   T neg (const T& a) const  { return a != 0  ?  size() - a  :  0; }
-   void negate (T& a) const    { if (a != 0) a = size() - a; }
+   T neg (const T& a) const  { return a != 0  ?  this->size() - a  :  0; }
+   void negate (T& a) const    { if (a != 0) a = this->size() - a; }
 
    T sub (const T& a, const T& b) const
-      { int t = int(a) - int(b); return (t<0) ? t+size() : t; }
+      { int t = int(a) - int(b); return (t<0) ? t + this->size() : t; }
    void subFrom (T& a,  const T& b) const  { a = sub (a, b); }
 
    T dbl (T a) const
-      { unsigned t = unsigned (a) << 1; return t >= size() ? t - size() : t; }
+   {
+      unsigned t = unsigned (a) << 1;
+      return t >= this->size() ? t - this->size() : t;
+   }
+
    void times2 (T& a) const  { a = dbl (a); }
    T times (const T& a, unsigned k) const
-      { if (k >= size()) k %= size();  return (a * k) % size(); }
+   {
+      unsigned S = this->size();
+      if (k >= S)  k %= S;
+      return (a * k) % S;
+   }
 
-   unsigned characteristic () const  { return size(); }
+   unsigned characteristic () const  { return this->size(); }
 
    HINTLIB_TRIVIAL_CYCLIC_MEMBERS
 };
@@ -516,14 +525,16 @@ public:
 
    template<typename I> void toCoord (T a, I p) const
    {
-      for (unsigned i = 0; i != dimension(); ++i, a /= shift)
+      unsigned DIM = this->dimension();
+      for (unsigned i = 0; i != DIM; ++i, a /= shift)
          *p++ = C (a % shift);
    }
    template<typename I> void fromCoord (T& a, I p) const
    {
+      unsigned DIM = this->dimension();
       a = 0;
-      p += dimension();
-      for (unsigned i = 0; i != dimension(); ++i) a = (a * shift) + (*--p);
+      p += DIM;
+      for (unsigned i = 0; i != DIM; ++i)  a = (a * shift) + (*--p);
    }
 
    C coord (const T& a, unsigned k) const
@@ -533,7 +544,7 @@ public:
 
    bool is0 (T a) const  { return !a; }
 
-   T    add   (T  a, T b) const  { return addTable [a + size() * b]; }
+   T    add   (T  a, T b) const  { return addTable [a + this->size() * b]; }
    void addTo (T& a, T b) const  { a = add (a,b); }
 
    T    neg    (T  a) const  { return negTable [a]; }
@@ -542,7 +553,7 @@ public:
    T    sub     (T  a, T b) const  { return add   (a, neg (b)); }
    void subFrom (T& a, T b) const  { addTo (a, neg (b)); }
 
-   T dbl (T a) const  { return addTable [a * (size() + 1)]; }
+   T dbl (T a) const  { return addTable [a * (this->size() + 1)]; }
    void times2 (T& a) const  { a = dbl (a); }
    T times (T a, unsigned k) const;
 
@@ -613,14 +624,15 @@ public:
 
    template<typename I> void toCoord (T a, I p) const
    {
-      for (unsigned i = 0; i != dimension(); ++i, a>>=shift)
-         *p++ = C (a & mask);
+      unsigned DIM = this->dimension();
+      for (unsigned i = 0; i != DIM; ++i, a>>=shift)  *p++ = C (a & mask);
    }
    template<typename I> void fromCoord (T& a, I p) const
    {
+      unsigned DIM = this->dimension();
       a = 0;
-      p += dimension();
-      for (unsigned i = 0; i != dimension(); ++i) a = (a << shift) | (*--p);
+      p += DIM;
+      for (unsigned i = 0; i != DIM; ++i) a = (a << shift) | (*--p);
    }
 
    C coord (const T& a, unsigned k) const

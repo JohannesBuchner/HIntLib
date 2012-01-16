@@ -27,17 +27,21 @@
 #ifndef HINTLIB_MCINTEGRATION_H
 #define HINTLIB_MCINTEGRATION_H 1
 
+#ifdef __GNUG__
+#pragma interface
+#endif
+
 #include <HIntLib/hypercube.h>
 #include <HIntLib/distribution.h>
 #include <HIntLib/pointset.h>
 #include <HIntLib/cubepartitioner.h>
+#include <HIntLib/integrand.h>
 
 
 namespace HIntLib
 {
 
 class Hypercube;
-class Integrand;
 
 /**
  *  mcIntegration()
@@ -131,8 +135,8 @@ namespace Private
  
       void action (const Hypercube &h)
       {
-         uniform (gen, h, p);
-         stat << f(p);
+         uniform (this->gen, h, this->p);
+         this->stat << this-> f(this->p);
       }
    };
 
@@ -149,14 +153,14 @@ namespace Private
  
       void action (const Hypercube &h)
       {
-         uniform (gen, h, p);
-         stat << f(p);
+         uniform (this->gen, h, this->p);
+         this->stat << this-> f(this->p);
  
          for (unsigned i = 0; i < h.getDimension(); ++i)
          {
-            p[i] = 2 * h.getCenter(i) - p[i];
+            this->p[i] = 2 * h.getCenter(i) - this->p[i];
          }
-         stat << f(p);
+         this->stat << this->f (this->p);
       }
    };
 
@@ -202,7 +206,7 @@ void antitheticIntegration (
  
    // if n is odd, draw one additional sample
  
-   if (odd(n))
+   if (n & 1)
    {
       uniform (gen, h, point);
       stat << f(point);
@@ -241,8 +245,8 @@ namespace Private
  
       void action (const Hypercube &h)
       {
-         uniform (gen, h, point);
-         job (point);
+         uniform (this->gen, h, this->point);
+         this->job (this->point);
       }
    };
 
@@ -259,14 +263,14 @@ namespace Private
  
       void action (const Hypercube &h)
       {
-         uniform (gen, h, point);
-         job (point);
+         uniform (this->gen, h, this->point);
+         this->job (this->point);
  
          for (unsigned i = 0; i < h.getDimension(); ++i)
          {
-            point[i] = 2 * h.getCenter(i) - point[i];
+            this->point[i] = 2 * h.getCenter(i) - this->point[i];
          }
-         job (point);
+         this->job (this->point);
       }
    };
 
@@ -303,7 +307,7 @@ void antitheticDoJob (
 
    // if n is odd, draw one additional sample
  
-   if (odd(n))
+   if (n & 1)
    {
       uniform (gen, h, point);
       job (point);

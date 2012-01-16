@@ -28,6 +28,10 @@
 #ifndef HINTLIB_HLALGORITHM_H
 #define HINTLIB_HLALGORITHM_H 1
 
+#ifdef __GNUG__
+#pragma interface
+#endif
+
 #include <algorithm>
 
 

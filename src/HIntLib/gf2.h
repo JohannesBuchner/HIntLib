@@ -44,6 +44,7 @@ class GF2 : public BitOpBasedAddition<unsigned char>
 {
 public:
    GF2 () {}
+   GF2 (unsigned) {}
 
    typedef unsigned char type;
    typedef cyclic_tag algebra_category;
@@ -56,7 +57,7 @@ public:
    static unsigned modulus()  { return 2; }
    static unsigned extensionDegree()  { return 1; }
 
-   static type one()  { return type(1); }
+   static type one()  { return 1; }
 
    static bool is1 (type a)  { return a; }
 
@@ -83,7 +84,7 @@ public:
 
    static unsigned additiveOrder (const type& a)  { return a + 1; }
    static unsigned order (const type&)  { return 1; }
-   static bool isPrimitiveElement (const type&)  { return true; }
+   static bool isPrimitiveElement (const type& a)  { return a; }
    
    static void print (std::ostream&, type);
    static void printShort (std::ostream&, type);

@@ -18,16 +18,17 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef HINTLIB_POLYNOMIAL2_H
-#define HINTLIB_POLYNOMIAL2_H 1
+#ifndef HINTLIB_POLYNOMIAL_2_H
+#define HINTLIB_POLYNOMIAL_2_H 1
 
 #ifdef __GNUG__
-#pragma interface
+// #pragma interface
 #endif
 
 #include <vector>
 #include <utility>
 
+#include <HIntLib/polynomial2base.h>
 #include <HIntLib/gf2.h>
 #include <HIntLib/bitop.h>
 #include <HIntLib/exception.h>
@@ -198,6 +199,8 @@ std::ostream& operator<< (std::ostream &o, const Polynomial2<T> p)
    p.printShort (o, 'x'); return o;
 }
 
+// functions for Polynomial<>s
+
 template<typename T>
 Polynomial2<T> sqr (Polynomial2<T>);
 
@@ -209,50 +212,16 @@ Polynomial2<T> powerMod (Polynomial2<T>, unsigned e, Polynomial2<T> m);
 
 
 /**
- *  Polynomial 2 Ring Base
- */
-
-class Polynomial2RingBase
-{
-public:
-   struct unit_type {};
-
-   static unsigned size()  { return 0; }
-   static unsigned characteristic()  { return 2; }
-
-   static unsigned numUnits()  { return 1; }
-   static unit_type unitRecip (unit_type)  { return unit_type(); }
-   static unit_type unitElement (unsigned) { return unit_type(); }
-   static unsigned unitIndex (unit_type)  { return 0; }
-
-   static void printSuffix (std::ostream &);
-   void printVariable (std::ostream &) const;
-
-protected:
-   Polynomial2RingBase (char _var) : var (_var) {}
-   const char var;
-};
-
-inline
-bool operator== (Polynomial2RingBase::unit_type, Polynomial2RingBase::unit_type)
-{
-   return true;
-}
-
-std::ostream& operator<< (std::ostream &, const Polynomial2RingBase &);
-
-
-/**
  *  Polynomial 2 Ring
  */
 
 template <typename T>
-class Polynomial2Ring : public Polynomial2RingBase
+class Polynomial2Ring : public Private::Polynomial2RingBase
 {
 public:
    typedef Polynomial2<T> type;
-   typedef euclidean_tag algebra_category;
-   typedef primedetection_tag primedetection_category;
+   typedef polyoverfield_tag algebra_category;
+   typedef factor_tag primedetection_category;
    typedef polynomial_tag polynomial_category;
    typedef char_two char_category;
    typedef nozerodivisor_tag zerodivisor_category;
@@ -263,7 +232,7 @@ public:
    typedef BitRef<T> coeff_reference;
    typedef std::vector<std::pair<type,unsigned> > Factorization;
 
-   Polynomial2Ring (char _var = 'x') : Polynomial2RingBase (_var) {}
+   Polynomial2Ring (char _var = 'x') : Private::Polynomial2RingBase (_var) {}
 
    static coeff_algebra getCoeffAlgebra()  { return GF2(); }
 
@@ -287,7 +256,7 @@ public:
 
    static type dbl (const type&)  { return type(); }
    static void times2 (type& p)   { p = type(); }
-   static type times (const type& p, unsigned k) { return odd(k) ? p : type(); }
+   static type times (const type& p, unsigned k) { return (k&1) ? p : type(); }
 
    static type mul (const type& a, const type& b)  { return a *  b; }
    static void mulBy (type& a,    const type& b)  { a *= b; }
@@ -317,6 +286,10 @@ public:
       type::div (a, b, a, r);
       if (! r.is0())  throwDivisionByZero();
    }
+
+   static bool isAssociate (const type& a, const type& b)  { return a == b; }
+   static bool isAssociate (const type& a, const type& b, unit_type&)
+      { return a == b; }
    static bool isDivisor (const type& a, const type& b)
       { return (a % b).is0(); }
    static bool isDivisor (const type& a, const type& b, type& c)
@@ -351,6 +324,7 @@ public:
    static unsigned order (const type& p)  { return is1(p) ? 1 : 0; }
 
    unit_type squarefreeFactor (Factorization&, type) const;
+   unit_type factor           (Factorization&, type) const;
 
    class PrimeGenerator
    {

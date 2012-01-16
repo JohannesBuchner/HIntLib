@@ -1,0 +1,13 @@
+#! /bin/sh
+
+for dim in 1 2 3 4 5 6 7
+do
+   ./test_qrnsequence -d $dim seq 2006 0 10000 > /dev/null
+
+   if test $? -ne 0; then
+      echo "test_qrnsequence failed!"
+      exit 1
+   fi
+done
+
+exit 0

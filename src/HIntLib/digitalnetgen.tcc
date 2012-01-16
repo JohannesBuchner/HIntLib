@@ -231,24 +231,26 @@ Index DigitalNetGen<A,S>::getOptimalNumber(Index max) const
 template<class A, typename S>
 void HIntLib::DigitalNetGenNormal<A,S>::updateX ()
 {
-   Index n1 = n;
-   Index n2 = ++n;
-   const Index bas = base;
-   const unsigned p = prec;
+   Index n1 = this->n;
+   Index n2 = ++(this->n);
+   const Index bas = this->base;
+   const unsigned p = this->prec;
+   const unsigned DIM = this->getDimension();
 
    for (unsigned r = 0; n1 != n2; ++r)
    {
-      typename A::scalar_type digit = scalArith.sub (n2 % bas, n1 % bas);
+      typename A::scalar_type digit = this->scalArith.sub (n2 % bas, n1 % bas);
 
       n1 /= bas; n2 /= bas;
 
-      for (unsigned d = 0; d != getDimension(); ++d)
+      for (unsigned d = 0; d != DIM; ++d)
       {
          // x [d] ^= c(d,r);
 
          for (unsigned b = 0; b != p; ++b)
          {
-            arith.addTo (x [d * p + b], arith.mul(c(d,r,b), digit));
+            this->arith.addTo (this->x [d * p + b],
+			       this->arith.mul(this->c(d,r,b), digit));
          }
       }
    }
@@ -268,10 +270,11 @@ void HIntLib::DigitalNetGenNormal<A,S>::updateX ()
 template<class A, typename S>
 void HIntLib::DigitalNetGenGray<A,S>::updateX ()
 {
-   const Index bas = base;
-   const unsigned p = prec;
-   Index n1 = n;
-   Index n2 = ++n;
+   const Index bas = this->base;
+   const unsigned p = this->prec;
+   const unsigned DIM = this->getDimension();
+   Index n1 = this->n;
+   Index n2 = ++(this->n);
 
    int r = -1;
    typename A::scalar_type rem1, rem2;
@@ -284,15 +287,16 @@ void HIntLib::DigitalNetGenGray<A,S>::updateX ()
    }
    while (n1 != n2);
 
-   const typename A::scalar_type digit = scalArith.sub (rem2, rem1);
+   const typename A::scalar_type digit = this->scalArith.sub (rem2, rem1);
    
-   for (unsigned d = 0; d != getDimension(); ++d)
+   for (unsigned d = 0; d != DIM; ++d)
    {
       // x [d] ^= c(d,r);
 
       for (unsigned b = 0; b != p; ++b)
       {
-         arith.addTo (x [d * p + b], arith.mul(c(d,r,b), digit));
+         this->arith.addTo (this->x [d * p + b],
+			    this->arith.mul(this->c(d,r,b), digit));
       }
    }
 } 
@@ -311,10 +315,11 @@ void HIntLib::DigitalNetGenGray<A,S>::updateX ()
 template<class A, typename S>
 void HIntLib::DigitalNetGenCyclicGray<A,S>::updateX ()
 {
-   const Index bas = base;
-   const unsigned p = prec;
-   Index n1 = n;
-   Index n2 = ++n;
+   const Index bas = this->base;
+   const unsigned p = this->prec;
+   const unsigned DIM = this->getDimension();
+   Index n1 = this->n;
+   Index n2 = ++(this->n);
 
    unsigned r = 0;
 
@@ -322,13 +327,13 @@ void HIntLib::DigitalNetGenCyclicGray<A,S>::updateX ()
 
    while ((n1 /= bas) != (n2 /= bas))  ++r;
 
-   for (unsigned d = 0; d != getDimension(); ++d)
+   for (unsigned d = 0; d != DIM; ++d)
    {
       // x [d] ^= c(d,r);
 
       for (unsigned b = 0; b != p; ++b)
       {
-         arith.addTo (x [d * p + b], c(d,r,b));
+         this->arith.addTo (this->x [d * p + b], this->c(d,r,b));
       }
    }
 } 

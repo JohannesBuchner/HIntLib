@@ -228,17 +228,18 @@ L::approxc (const std::complex<T>& a, const std::complex<T>& b, T factor)
  *  power()
  */
 
-std::complex<long double>
-HIntLib::Private::complexPower (const std::complex<long double>& a, unsigned k)
+template<>
+L::ComplexField<long double>::type
+L::ComplexField<long double>::power (const type& a, unsigned k)
 {
-   std::complex<long double> x = a;
-   std::complex<long double> y = (k & 1) ? std::complex<long double>(x)
-                                         : std::complex<long double>(1);
+   std::complex<long double> x = a.x;
+   std::complex<long double> y = std::complex<long double>(1);
 
-   while (k >>= 1)
+   while (k)
    {
-      x *= x;
       if (k & 1)  y *= x;
+      x *= x;
+      k >>= 1;
    }
 
    return y;
@@ -294,8 +295,20 @@ L::ComplexField<T>::print (std::ostream& o, const type& x)
    }
    else if (f.is0 (x.x.real()))
    {
-      Private::Printer p (o);
-      p << x.x.imag() << 'i';
+      if (f.is1 (x.x.imag()))
+      {
+         if (o.flags() & o.showpos)  o << "+i";
+         else                        o << "i";
+      }
+      else if (f.is1 (f.neg (x.x.imag())))
+      {
+         o << "-i";
+      }
+      else
+      {
+         Private::Printer p (o);
+         p << x.x.imag() << 'i';
+      }
    }
    else
    {
@@ -326,32 +339,46 @@ L::ComplexField<T>::print (std::ostream& o, const type& x)
 
 template<typename T>
 bool
-L::operator==(const Polynomial<Complex<T> >& p1,
-              const Polynomial<Complex<T> >& p2)
+L::operator==(const Polynomial<Complex<T> >& pp1,
+              const Polynomial<Complex<T> >& pp2)
 {
    typedef std::complex<T> TT;
+
+   // Make sure that  deg p1 <= deg p2
+
+   bool swap = pp1.degree() > pp2.degree();
+
+   const Polynomial<Complex<T> >& p1 = swap ? pp2 : pp1;
+   const Polynomial<Complex<T> >& p2 = swap ? pp1 : pp2;
 
    // determine magnitude of coefficients
 
    int deg1 = p1.degree();
    int deg2 = p2.degree();
-   int deg = std::max (deg1, deg2);
 
    T mag = 0.0;
 
-   for (int i = 0; i <= deg; ++i)
+   for (int i = 0; i <= deg1; ++i)
    {
-      if (i <= deg1)  mag = std::max (mag, std::abs (p1[i].data()));
-      if (i <= deg2)  mag = std::max (mag, std::abs (p2[i].data()));
+      mag = std::max (mag, std::abs (p1[i].data()));
+      mag = std::max (mag, std::abs (p2[i].data()));
+   }
+   for (int i = deg1 + 1; i <= deg2; ++i)
+   {
+      mag = std::max (mag, std::abs (p2[i].data()));
    }
 
-   mag *= T(deg + 1) * std::numeric_limits<T>::epsilon() * 100.0;
+   // Check distances
 
-   for (int i = 0; i <= deg; ++i)
+   mag *= T(deg2 + 1) * std::numeric_limits<T>::epsilon() * 100.0;
+
+   for (int i = 0; i <= deg1; ++i)
    {
-      TT x1 = (i <= deg1) ? TT(p1[i].data()) : 0;
-      TT x2 = (i <= deg2) ? TT(p2[i].data()) : 0;
-      if (std::abs (x1 - x2) > mag)  return false;
+      if (std::abs (TT(p1[i].data()) - TT(p2[i].data())) > mag)  return false;
+   }
+   for (int i = deg1 + 1; i <= deg2; ++i)
+   {
+      if (std::abs (TT(p2[i].data())) > mag)  return false;
    }
 
    return true;
@@ -361,23 +388,23 @@ L::operator==(const Polynomial<Complex<T> >& p1,
 namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) \
-   template RealField<X>::type RealField<X>::element(unsigned); \
-   template unsigned RealField<X>::index(type); \
-   template unsigned RealField<X>::order(const type&); \
+   template RealField<X >::type RealField<X >::element(unsigned); \
+   template unsigned RealField<X >::index(type); \
+   template unsigned RealField<X >::order(const type&); \
    template bool operator== \
-      (const Polynomial<Real<X> >&, const Polynomial<Real<X> >&);
+      (const Polynomial<Real<X > >&, const Polynomial<Real<X > >&);
 
    HINTLIB_INSTANTIATE(real)
 #undef HINTLIB_INSTANTIATE
 
 #define HINTLIB_INSTANTIATE(X) \
-   template ComplexField<X>::type ComplexField<X>::element(unsigned); \
-   template unsigned ComplexField<X>::index(const type&); \
-   template unsigned ComplexField<X>::order(const type&); \
-   template void ComplexField<X>::print(std::ostream&, const type&); \
-   template bool approxc (const std::complex<X>&, const std::complex<X>&, X); \
+   template ComplexField<X >::type ComplexField<X >::element(unsigned); \
+   template unsigned ComplexField<X >::index(const type&); \
+   template unsigned ComplexField<X >::order(const type&); \
+   template void ComplexField<X >::print(std::ostream&, const type&); \
+   template bool approxc (const std::complex<X >&, const std::complex<X >&, X);\
    template bool operator== \
-      (const Polynomial<Complex<X> >&, const Polynomial<Complex<X> >&);
+      (const Polynomial<Complex<X > >&, const Polynomial<Complex<X > >&);
 
    HINTLIB_INSTANTIATE(real)
 #undef HINTLIB_INSTANTIATE

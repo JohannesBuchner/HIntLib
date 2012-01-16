@@ -73,8 +73,9 @@ using HIntLib::infinite_tag;
 using HIntLib::polynomial_tag;
 using HIntLib::nopolynomial_tag;
 
-using HIntLib::primedetection_tag;
 using HIntLib::noprimedetection_tag;
+using HIntLib::primedetection_tag;
+using HIntLib::factor_tag;
 
 using HIntLib::Overflow;
 using HIntLib::Prime;
@@ -104,6 +105,15 @@ extern unsigned primitivesCounter;
 extern unsigned lastNorm;
 extern int lastDegree;
 
+// function prototypes
+
+bool performTest (
+      const std::string& cat, const std::string& name, const std::string& type);
+void printNumberOrInf (unsigned n);
+void checkCounter (unsigned expected, unsigned actual, bool all, const char* s);
+void checkIndex (unsigned size, unsigned index, const char* s);
+void checkInfiniteInFinite (unsigned size, unsigned n, const char* s);
+
 
 /**
  *  fl();
@@ -122,25 +132,97 @@ template<typename X>
 inline
 void ensureEqualType (const X*, const X*) {}
 
+/**
+ *  Cache
+ */
+
+struct CacheBase
+{
+   // no elements
+
+   unsigned size;
+   unsigned numUnits;
+   unsigned numNilpotents;
+   unsigned characteristic;
+   unsigned extensionDegree;
+   unsigned dimension;
+   unsigned baseSize;
+
+   // one element
+
+   unsigned index;         // reinitialized for two elements
+   bool is0;               // reinitialized for two elements
+   unsigned additiveOrder;
+   unsigned order;
+   int degree;
+   bool isPrime;           // reinitialized for two elements
+   bool isPrimitive;
+   bool is1;
+   bool isUnit;            // reinitialized for two elements
+   bool isNilpotent;
+   bool isCanonical;
+   bool isPrimitiveElement;
+   unsigned norm;          // reinitialized for two elements
+
+   // two elements
+
+   unsigned indexB;
+   bool is0B;
+   bool isUnitB;
+};
+
+template<class A>
+struct Cache : public CacheBase
+{
+   typedef typename A::type T;
+
+   Cache (const A& _a) : arith (_a) {}
+
+   const A& operator()()  { return arith; }
+   void print (const T& x) const  { arith.printShort (cout, x); }
+
+   // no elements
+
+   T zero;
+   T one;
+   T x;
+
+   // one element
+
+   T neg;
+   T dbl;
+   T derivative;  // reinitialized for two elements
+   T sqr;
+   T recip;
+
+   // two elements
+
+   T add;
+   T sub;
+   T mul;
+
+private:
+   const A arith;
+};
+
 
 /*****************************************************************************/
 /*************  size_category                                    *************/
 /*****************************************************************************/
 
-template<class G>
-void doTest (const G& g, finite_tag)
+
+// no elements
+
+inline
+void doTest (CacheBase& c, finite_tag)
 {
-   unsigned size = g.size();
-   if (size == 0)  error ("size() == 0 in finite structure");
-   DEB1 cout << "  Size: " << size << endl;
+   if (c.size == 0)  error ("size() == 0 in finite_tag structure");
 }
 
-template<class G>
-void doTest (const G& g, infinite_tag)
+inline
+void doTest (CacheBase& c, infinite_tag)
 {
-   if (g.size() != 0)  error ("size() != 0 in infinite structure");
-
-   DEB1  cout << "  Size: inf" << endl;
+   if (c.size != 0)  error ("size() != 0 in infinite_tag structure");
 }
 
 
@@ -150,75 +232,81 @@ void doTest (const G& g, infinite_tag)
 
 
 template<class G>
-void doTest (const G& g, group_tag)
+void doTest (Cache<G>& c, group_tag)
 {
-   // doTest (g, XXXX());
+   // doTest (c, XXXX());
 
    typedef typename G::type T;
 
-   const T zero = T();
+   c.zero = T();
+
    DEB1
    {
       cout << "  Zero: ";
-      g.printShort (cout, zero);
+      c().print (cout, c.zero);
+      cout << endl;
    }
 
-   unsigned ind = g.index(zero);
+   if (c().index(c.zero) != 0)  error ("index(zero) invalid");
 
-   if (g.size() && ind >= g.size())  error ("index(zero) invalid");
-
-   if (ind != 0 || ! g.is0 (g.element(0)))
+   if (! c().is0 (c().element(0)))
    {
-      error ("index(zero) != 0!");
+      error ("element(0) != 0");
    }
-   DEB1  cout << endl;
 }
 
 template<class G>
-void doTest (const G& g, const typename G::type& a, group_tag)
+void doTest (Cache<G>& c, const typename G::type& a, group_tag)
 {
-   // doTest (g, a, XXXX());
+   // doTest (c, a, XXXX());
 
    typedef typename G::type T;
 
    // Copy and assignment
 
-   T x (a);
-   if (x != a)  error ("Copy constructor or operator==() broken!");
-   x = a;
-   if (x != a)  error ("Assignment, or operator==() broken!");
+   {
+      T zero;
+      T copy (a);
+      if (copy != a)  error ("Copy constructor or operator==() broken");
+      zero = a;
+      if (zero != a)  error ("Assignment, or operator==() broken");
+   }
    
-   const T zero = T();
-   const unsigned s = g.size();
-
    // is0()
 
-   bool is0 = g.is0(a);
-   DEB2  if (is0)  cout << ", zero";
-   if (is0 != (a == zero))  error ("is0() fails");
+   c.is0 = c().is0(a);
+   DEB2  if (c.is0)  cout << ", zero";
+   if (c.is0 != (a == c.zero))  error ("is0() or operator==() fails");
    
    // zero
 
-   if (g.add (a, zero) != a)  error ("a+0 != a");
+   if (c().add (a, c.zero) != a)  error ("a+0 != a");
 
    // additive inverse
 
-   T neg = g.neg(a);
+   c.neg = c().neg(a);
    DEB2
    {
       cout << ", -a = ";
-      g.printShort (cout, neg);
+      c.print (c.neg);
    }
 
-   if (s && g.index(neg) >= s)  error ("-a invalid");
-   if (! g.is0 (g.add (a, neg)))  error ("a + (-a) != 0");
+   checkIndex (c.size, c().index(c.neg), "neg");
+   if (! c().is0 (c().add (a, c.neg)))  error ("a + (-a) != 0");
 
    {
       // negate()
 
-      T x = a;
-      g.negate (x);
-      if (x != neg)  error ("negate(a) != -a");
+      T x (a);
+      c().negate (x);
+
+      DEB4
+      {
+         cout << ", negate(a) = ";
+         c.print (x);
+      }
+
+      if (x != c.neg)  error ("negate(a) != -a");
    }
    
    fl();
@@ -226,21 +314,21 @@ void doTest (const G& g, const typename G::type& a, group_tag)
    // double
 
    {
-      T doub = g.dbl(a);
+      c.dbl = c().dbl(a);
       DEB2
       {
          cout << ", 2a = ";
-         g.printShort (cout, doub);
+         c.print (c.dbl);
       }
 
-      if (doub != g.add (a,a))  error ("dbl(a) invalid");
+      if (c.dbl != c().add (a,a))  error ("dbl(a) invalid");
 
       T d = a;
-      g.times2 (d);
-      if (d != doub)
+      c().times2 (d);
+      if (d != c.dbl)
       {
          error ("times2() invalid");
-         g.printShort (cout,d);
+         c.print (d);
       }
 
       fl();
@@ -248,29 +336,29 @@ void doTest (const G& g, const typename G::type& a, group_tag)
 
    // check times()
 
-   if (sqr (g.index(a)) < SIZE)
+   if (sqr (c.index) < SIZE)
    {
       DEB3 cout << ", times = ";
 
       unsigned SS = unsigned (HINTLIB_MN sqrt(double(SIZE)));
 
-      T x = zero;
+      T x = T();
       for (unsigned l = 0; l < SS; ++l)
       {
-         T sum = g.times(a,l);
-         DEB3 { g.printShort (cout, sum); cout << '/'; }
+         T sum = c().times(a,l);
+         DEB3 { c.print (sum); cout << '/'; }
          if (x != sum)
          {
             error ("a+...+a != times (a,k)");
             cout << "a+...+a = ";
-            g.printShort (cout, x);
+            c.print (x);
             cout << ",  times (a," << l << ") = ";
-            g.printShort (cout, sum);
+            c.print (sum);
             cout << ",  diff = ";
-            g.printShort (cout, g.sub (x, sum));
+            c.print (c().sub (x, sum));
             cout << endl;
          }
-         g.addTo (x, a);
+         c().addTo (x, a);
       }
    }
 
@@ -278,98 +366,121 @@ void doTest (const G& g, const typename G::type& a, group_tag)
 
    // additive order of the element
 
-   if (sqr(s) < SIZE)
+   c.additiveOrder = c().additiveOrder (a);
+   DEB2
    {
-      unsigned o = g.additiveOrder (a);
-      DEB2
+      cout << ", add.order: ";
+      printNumberOrInf (c.additiveOrder);
+   }
+
+   if (c.additiveOrder == 0)
+   {
+      if (c.size != 0)  error ("infinite additive order in finite group");
+   }
+   else
+   {
+      if (c.size && c.additiveOrder > c.size)
       {
-         cout << ", add.order: ";
-         if (o) cout << o; else cout << "inf";
+         error ("additiveOrder() larger than size()");
+      }
+      if (c.size && c.size % c.additiveOrder != 0)
+      {
+         error ("additiveOrder() does not divide size()");
       }
 
-      if (o == 0)
+      if (sqr(c.size) < SIZE)
       {
-         if (s != 0)  error ("infinite additive order in finite group!");
-
-         return;
+         T x = T();
+         for (unsigned i = 1; i < c.additiveOrder; ++i)
+         {
+            c().addTo (x, a);
+            if (c().is0(x))  error ("additveOrder() is too high");
+         }
+         c().addTo (x,a);
+         if (! c().is0(x))  error ("additiveOrder() is too low");
       }
-
-      if (s && o > s)  error ("additiveOrder() larger than size()");
-      if (s && s % o != 0)  error ("additiveOrder() does not divide size()!");
-
-      T x = zero;
-      for (unsigned i = 1; i < o; ++i)
+      else
       {
-         g.addTo (x, a);
-         if (g.is0(x))  error ("additveOrder() is too high!");
+         if (! c().is0(c().times(a, c.additiveOrder)))
+         {
+            error ("additiveOrder() wrong");
+         }
       }
-      g.addTo (x,a);
-      if (! g.is0(x))  error ("additiveOrder() is too low!");
    }
 
    fl();
 }
 
+inline
+void counterTest (CacheBase&, bool, group_tag)  {}
+
 template<class G>
-void doTest
-   (const G& g, const typename G::type& a, const typename G::type& b, group_tag)
+void doTest (Cache<G>& c, const typename G::type& a,
+                          const typename G::type& b, group_tag)
 {
-   // doTest (g, a, b, XXXX());
+   // doTest (c, a, b, XXXX());
 
    typedef typename G::type T;
 
+   // reinitialize one-element cache values
+
+   c.is0B   = c().is0 (b);
+   c.indexB = c().index (b);
+
+   if (c.indexB == 0)
+   {
+      c.is0    = c().is0 (a);
+      c.index  = c().index (a);
+   }
+
    // Make sure, operators dont leave domain
 
-   T add = g.add (a,b);
-   T sub = g.sub (a,b);
+   c.add = c().add (a,b);
+   c.sub = c().sub (a,b);
 
    DEB2
    {
       cout << ", a+b = ";
-      g.printShort (cout, add);
+      c.print (c.add);
       cout << ", a-b = ";
-      g.printShort (cout, sub);
+      c.print (c.sub);
    }
 
-   if (g.size())
-   {
-      if (g.index (add) >= g.size())  error ("a+b invalid");
-      if (g.index (sub) >= g.size())  error ("a-b invalid");
-   }
+   checkIndex (c.size, c().index (c.add), "add");
+   checkIndex (c.size, c().index (c.sub), "add");
    
    // Commutativity
 
-   if (add != g.add (b,a))  error ("a+b != b+a");
+   if (c.add != c().add (b,a))  error ("a+b != b+a");
 
    // derived operations
 
-   T negB = g.neg (b);
-   if (g.add (a, negB) != sub)  error ("sub() fails");
+   if (c().add (a, c().neg(b)) != c.sub)  error ("sub() fails");
 
    T x;
 
    x = a;
-   g.addTo (x, b);
-   if (x != add) error ("addTo() fails");
+   c().addTo (x, b);
+   if (x != c.add) error ("addTo() fails");
 
    x = a;
-   g.subFrom (x, b);
-   if (x != sub) error ("subFrom() fails");
+   c().subFrom (x, b);
+   if (x != c.sub) error ("subFrom() fails");
 
    fl();
 }
 
 template<class G>
 void doTest
-   (const G& g, const typename G::type& a,
-                const typename G::type& b,
-                const typename G::type& c, group_tag)
+   (Cache<G>& cc, const typename G::type& a,
+                  const typename G::type& b,
+                  const typename G::type& c, group_tag)
 {
-   // doTest (g, a, b, c, XXXX());
+   // doTest (cc, a, b, c, XXXX());
 
    // Associativity of addition
 
-   if (g.add(g.add(a,b), c) != g.add(a, g.add(b,c)))
+   if (cc().add(cc().add(a, b), c) != cc().add(a, cc().add(b,c)))
    {
       error("(a+b) + c != a + (b+c)");
    }
@@ -387,73 +498,89 @@ inline void requireCharacteristic (HIntLib::char_exists) {}
 
 // no element
 
-template<class R>
 inline
-void doTest (const R &, HIntLib::char_non)
+void doTest (CacheBase&, HIntLib::char_non)
 {
    DEB1  cout << "  Char: ---" << endl;
 }
 
 template<class R>
 inline
-void doTest (const R &r, HIntLib::char_zero)
+void doTest (Cache<R>& c, HIntLib::char_zero)
 {
    DEB1  cout << "  Char: inf" << endl;
 
-   unsigned c = r.characteristic();
+   c.characteristic = c().characteristic();
 
-   if (c != 0)  error ("Finite characteristic() in char_zero structure!");
+   if (c.characteristic != 0)
+   {
+      error ("Finite characteristic() in char_zero structure");
+   }
 }
 
 template<class R>
 inline
-void doTest (const R &r, HIntLib::char_two)
+void doTest (Cache<R>& c, HIntLib::char_two)
 {
    DEB1  cout << "  Char: 2" << endl;
 
-   unsigned c = r.characteristic();
+   c.characteristic = c().characteristic();
 
-   if (c != 2)  error ("Wrong characteristic() in char_two structure!");
+   if (c.characteristic != 2)
+   {
+      error ("Wrong characteristic() in char_two structure");
+   }
 }
 
 template<class R>
 inline
-void doTest (const R &r, HIntLib::char_prime)
+void doTest (Cache<R>& c, HIntLib::char_prime)
 {
-   unsigned c = r.characteristic();
+   c.characteristic = c().characteristic();
 
-   DEB1  cout << "  Char: prime = " << c << endl;
+   DEB1  cout << "  Char: prime = " << c.characteristic << endl;
 
-   if (c == 0)  error ("Infinite characteristic() in char_prime structure!");
+   if (c.characteristic == 0)
+   {
+      error ("Infinite characteristic() in char_prime structure");
+   }
 
-   if (! Prime::test (c))  error ("Finite characteristic not a prime number!");
+   if (! Prime::test (c.characteristic))
+   {
+      error ("Finite characteristic not a prime number");
+   }
 }
 
 // one element
 
 template<class R>
 inline
-void doTest (const R&, const typename R::type&, HIntLib::char_non) {}
+void doTest (Cache<R>&, const typename R::type&, HIntLib::char_non)
+{}
 
 template<class R>
 inline
-void doTest (const R &r, const typename R::type& a, HIntLib::char_exists)
+void doTest (Cache<R>& c, const typename R::type&, HIntLib::char_exists)
 {
    // additive order must match characteristic
 
-   if (! r.is0 (a))
+   if (! c.is0)
    {
-      if (r.additiveOrder (a) != r.characteristic())
+      if (c.additiveOrder != c.characteristic)
       {
-         error ("additiveOrder() != characteristic()!");
+         error ("additiveOrder() != characteristic()");
       }
    }
 }
 
+// two elements
+
 template<class R>
 inline
-void doTest (const R&, const typename R::type&,
-                       const typename R::type&, HIntLib::char_any) {}
+void doTest (Cache<R>&, const typename R::type&,
+                        const typename R::type&, HIntLib::char_any)
+{}
+
 
 /*****************************************************************************/
 /*************  zerodivisor_category                             *************/
@@ -463,16 +590,14 @@ inline void requireNozerodivisor (HIntLib::nozerodivisor_tag) {}
 
 // no element
 
-template<class R>
 inline
-void doTest (const R&, HIntLib::zerodivisor_tag)
+void doTest (CacheBase&, HIntLib::zerodivisor_tag)
 {
    DEB1  cout << "  Zero divisors: yes" << endl;
 }
 
-template<class R>
 inline
-void doTest (const R&, HIntLib::nozerodivisor_tag)
+void doTest (CacheBase&, HIntLib::nozerodivisor_tag)
 {
    DEB1  cout << "  Zero divisors: no" << endl;
 }
@@ -481,53 +606,55 @@ void doTest (const R&, HIntLib::nozerodivisor_tag)
 
 template<class R>
 inline
-void doTest (const R&, const typename R::type&, HIntLib::zerodivisor_tag) {}
+void doTest (Cache<R>&, const typename R::type&, HIntLib::zerodivisor_tag) {}
 
 template<class R>
 inline
-void doTest (const R &r, const typename R::type& a, HIntLib::nozerodivisor_tag)
+void doTest (Cache<R>& c, const typename R::type& a, HIntLib::nozerodivisor_tag)
 {
    // multiplicative order of the element
 
    typedef typename R::type T;
 
-   if (! r.is0 (a))
+   if (! c.is0)
    {
-      unsigned s = r.size();
+      c.order = c().order (a);
 
-      if (sqr(s) < SIZE)
+      DEB2
       {
-         unsigned ord = r.order (a);
+         cout << ", mult.order: ";
+         printNumberOrInf (c.order);
+      }
 
-         DEB2
+      if (c.order == 0)
+      {
+         if (c.size != 0)
          {
-            cout << ", mult.order: ";
-            if (ord) cout << ord; else cout << "inf";
+            error ("infinite multiplicative order in finite ring");
+         }
+      }
+      else  // ord finite
+      {
+         if (c.size && c.order > c.size-1)  error ("order() larger than size()-1");
+         if (c.size && (c.size-1) % c.order != 0)
+         {
+            error ("order() does not divide size()-1");
          }
 
-         if (ord == 0)
+         if (sqr(c.size) < SIZE)
          {
-            if (s != 0)
+            T x = c.one;
+            for (unsigned i = 1; i < c.order; ++i)
             {
-               error ("infinite multiplicative order in finite ring!");
+               c().mulBy (x, a);
+               if (c().is1(x))  error ("order() is too high");
             }
+            c().mulBy (x,a);
+            if (! c().is1(x))  error ("order() is too low");
          }
-         else  // ord finite
+         else
          {
-            if (s && ord > s-1)  error ("order() larger than size()-1");
-            if (s && (s-1) % ord != 0)
-            {
-               error ("order() does not divide size()-1!");
-            }
-
-            T x = r.one();
-            for (unsigned i = 1; i < ord; ++i)
-            {
-               r.mulBy (x, a);
-               if (r.is1(x))  error ("order() is too high!");
-            }
-            r.mulBy (x,a);
-            if (! r.is1(x))  error ("order() is too low!");
+            if (! c().is1 (c().power (a, c.order)))  error ("order() wrong");
          }
       }
    }
@@ -540,1380 +667,22 @@ void doTest (const R &r, const typename R::type& a, HIntLib::nozerodivisor_tag)
 template<class R>
 inline
 void doTest (
-   const R &,
+   Cache<R>&,
    const typename R::type&, const typename R::type&, HIntLib::zerodivisor_tag)
 {}
 
 template<class R>
 inline
 void doTest (
-   const R &r, const typename R::type& a,
-               const typename R::type& b, HIntLib::nozerodivisor_tag)
+   Cache<R>& c, const typename R::type&,
+                const typename R::type&, HIntLib::nozerodivisor_tag)
 {
    // no zero divisors
 
-   if (r.is0(a) || r.is0(b))  return;
-   if (r.is0 (r.mul (a, b)))  error ("a * b = 0!");
-}
-
-
-/*****************************************************************************/
-/*************  Ring / Field                                     *************/
-/*****************************************************************************/
-
-template<class R>
-void doTest (const R &r, ringfield_tag)
-{
-   doTest (r, group_tag());
-
-   // Check one()
-
-   const typename R::type one = r.one();
-   if (r.size() && r.index(one) >= r.size())  error ("index(one) invalid");
-   DEB1 { cout << "  One:  "; r.printShort (cout, one); cout << endl; }
-
-   if (r.index(one) != 1 || ! r.is1(r.element(1)))  error ("index(one) != 1!");
-
-   // call characteristic and zerodivisor tests
-
-   doTest (r, typename R::polynomial_category());
-   doTest (r, typename R::char_category());
-   doTest (r, typename R::zerodivisor_category());
-}
-
-template<class R>
-void doTest (const R &r, const typename R::type& a, ringfield_tag)
-{
-   doTest (r, a, group_tag());
-   doTest (r, a, typename R::polynomial_category());
-   doTest (r, a, typename R::char_category());
-   doTest (r, a, typename R::zerodivisor_category());
-
-   typedef typename R::type T;
-
-   // is1(), one()
-
-   const T one = r.one();
-
-   bool is1 = r.is1(a);
-   DEB2 if (is1)  cout << ", one";
-   if (is1 != (a == one ))  error ("is1() fails");
-      
-   // neutral
-
-   if (r.mul (a, one) != a)  error ("a*1 != a");
-
-   // square
-
+   if (! c.is0 && ! c.is0B)
    {
-      try
-      {
-         T sq = r.sqr(a);
-         DEB2
-         {
-            cout << ", a\262 = ";
-            r.printShort (cout, sq);
-         }
-
-         if (sq != r.mul (a,a))  error ("sqr(a) invalid");
-
-         T s = a;
-         r.square (s);
-         if (s != sq)  error ("square() invalid");
-
-         fl();
-      }
-      catch (Overflow &) {}
+      if (c().is0 (c.mul))  error ("a * b = 0");
    }
-
-   // check power()
-
-   if (sqr(r.index(a)) < SIZE)
-   {
-      DEB3 cout << ", power = ";
-
-      unsigned SS = unsigned (HINTLIB_MN sqrt(double (SIZE)));
-
-      if (SS > 10) SS = 7;
-
-      T x = a;
-      for (unsigned l = 1; l < SS; ++l)
-      {
-         try
-         {
-            T p = r.power (a, l);
-         
-            DEB3
-            {
-               r.printShort (cout, p);
-               DEB4  { cout << '='; r.printShort (cout, x); }
-               cout << '/';
-            }
-            if (x != p)
-            {
-               error ("a*...*a != power (a,k)");
-               cout << "a*...*a = ";
-               r.print (cout, x);
-               cout << ",  power (a," << l << ") = ";
-               r.print (cout, p);
-               cout << endl;
-            }
-            r.mulBy (x, a);
-         }
-         catch (Overflow &)
-         {
-            break;
-         }
-      }
-   }
-
-   fl();
-}
-
-template<class R>
-void doTest
-   (const R& r, const typename R::type& a,
-                const typename R::type& b, ringfield_tag)
-{
-   doTest (r, a, b, group_tag());
-   doTest (r, a, b, typename R::polynomial_category());
-   doTest (r, a, b, typename R::zerodivisor_category());
-   doTest (r, a, b, typename R::char_category());
-
-   // mul()
-
-   typedef typename R::type T;
-
-   const T mul = r.mul (a,b);
-
-   DEB2
-   {
-      cout << ", a*b = ";
-      r.printShort (cout, mul);
-   }
-
-   if (r.size())  if (r.index (mul) >= r.size())  error ("a*b invalid");
-
-   // Commutativity of multiplication
-
-   if (mul != r.mul (b,a))  error ("a*b != b*a");
-
-   T x = a;
-   r.mulBy (x, b);
-   if (x != mul) error ("mulBy() fails");
-
-   fl();
-}
-
-template<class R>
-void doTest
-   (const R& r, const typename R::type& a,
-                const typename R::type& b,
-                const typename R::type& c, ringfield_tag)
-{
-   doTest (r, a, b, c, group_tag());
-
-   // Associativity of multiplication
-
-   if (r.mul(r.mul(a,b), c) != r.mul(a, r.mul(b,c)))
-         error("(a*b) * c != a * (b*c)");
-
-   // Distributivity
-
-   if (r.mul (a, r.add(b,c)) != r.add (r.mul(a,b), r.mul(a,c)))
-         error("a*(b+c) != (a*b)+(a*c)");
-   if (r.mul (r.add(a,b), c) != r.add (r.mul(a,c), r.mul(b,c)))
-      error("(a+b)*c != (a*c)+(b*c)");
-
-   fl();
-}
-
-
-
-/*****************************************************************************/
-/*************  Rings / Domain                                   *************/
-/*****************************************************************************/
-
-template<class R>
-void doTest (const R &r, ringdomain_tag)
-{
-   doTest (r, ringfield_tag());
-
-   typedef typename R::type T;
-   typedef typename R::unit_type UT;
-
-   // make sure, unit_type works
-
-   {
-      UT x = r.toUnit(r.one());
-      UT def = x;
-      if (def != x)  error ("unit_type broken");
-      def = x;
-      if (def != x)  error ("unit_type broken");
-   }
-
-   // isUnit(one), isUnit(zero)
-
-   if (! r.isUnit (r.one()))  error ("1 must be a unit!");
-   if (  r.isUnit (T()))      error ("0 must not be a unit!");
-}
-
-template<class R>
-void doTest (const R &r, const typename R::type& a, ringdomain_tag)
-{
-   doTest (r, a, ringfield_tag());
-
-   typedef typename R::type T;
-   typedef typename R::unit_type UT;
-
-   // check properties of units
-
-   bool is0    = r.is0 (a);
-   bool isUnit = r.isUnit (a);
-
-   DEB2 if (isUnit) cout << ", unit";
-   fl();
-
-   if (is0 + isUnit > 1)  error ("Classifiaction ambiguous!");
-
-   if (isUnit)
-   {
-      UT unit = r.toUnit (a);
-
-      if (r.fromUnit(unit) != a)
-      {
-         error ("toUnit() and fromUnit() do not match!");
-      }
-
-      UT recip = r.unitRecip (unit);
-      T recipElem = r.fromUnit (recip);
-
-      DEB2
-      {
-         cout << ", a^-1 = ";
-         r.printShort (cout, recipElem);
-      }
-
-      if (r.size() && r.index(recipElem) >= r.size())  error ("a^-1 invalid");
-
-      if (! r.is1 (r.mul (a, recipElem)))
-      {
-         error ("Reciprocal of unit is wrong!");
-      }
-      if (! r.is1 (r.mulUnit (a, recip)))
-      {
-         error ("Reciprocal of unit is wrong!");
-      }
-      if (! r.is1 (r.fromUnit (r.mulUnit (unit, recip))))
-      {
-         error ("Reciprocal of unit is wrong!");
-      }
-   }
-
-   fl();
-}
-
-template<class R>
-void doTest (const R& r, const typename R::type& a,
-                         const typename R::type& b, ringdomain_tag)
-{
-   doTest (r, a, b, ringfield_tag());
-
-   typedef typename R::type T;
-   typedef typename R::unit_type UT;
-
-   const T product = r.mul (a,b);
-
-   const bool aIsUnit = r.isUnit (a);
-   const bool bIsUnit = r.isUnit (b);
-   const bool pIsUnit = r.isUnit (product);
-
-   // product of units/non-units
-
-   if (aIsUnit && bIsUnit)
-   {
-      if (! pIsUnit)  error ("Product of units must be a unit!");
-   }
-   else
-   {
-      if (pIsUnit)  error ("Product with non-unit cannot be a unit!");
-   }
-
-   // mulUnit(), mulByUnit()
-
-   if (aIsUnit)
-   {
-      UT aUnit = r.toUnit (a);
-
-      if (r.mulUnit (b,aUnit) != product)
-      {
-         error("mulUnit(type,unit_type) broken!");
-      }
-
-      T x (b);
-      r.mulByUnit (x, aUnit);
-      if (x != product)  error ("mulByUnit(type&, unit_type) broken!");
-
-      if (bIsUnit)
-      {
-         UT bUnit = r.toUnit (b);
-         if (r.fromUnit(r.mulUnit (aUnit, bUnit)) != product)
-         {
-            error ("mulUnit(unit_type, unit_type) broken!");
-         }
-
-         UT xUnit (aUnit);
-         r.mulByUnit (xUnit, bUnit);
-
-         if (r.fromUnit(xUnit) != product)
-         {
-            error ("mulByUnit(unit_type&, unit_type) broken!");
-         }
-      }
-   }
-}
-
-
-/*****************************************************************************/
-/*************  Rings                                            *************/
-/*****************************************************************************/
-
-template<class R>
-void doTest (const R &r, ring_tag)
-{
-   doTest (r, ringdomain_tag());
-
-   typedef typename R::type T;
-
-   // numNilpotent()
-
-   unsigned numNilpotents = r.numNilpotents();
-   nilpotentsCounter = 0;
-
-   DEB1
-   {
-      cout << "  # nilpotents: ";
-      if (numNilpotents) cout << numNilpotents; else cout << "inf";
-      cout << endl;
-   }
-
-   if (r.size())
-   {
-      if (! numNilpotents)
-      {
-         error ("infinite number of nilpotents in finite ring!");
-      }
-      else if (r.size() % numNilpotents != 0)
-      {
-         error ("numNilpotents does not divide ring size!");
-      }
-   }
-}
-
-template<class R>
-void doTest (const R &r, const typename R::type& a, ring_tag)
-{
-   doTest (r, a, ringdomain_tag());
-
-   typedef typename R::type T;
-
-   // isNilpotent()
-
-   const bool is0         = r.is0 (a);
-   const bool isUnit      = r.isUnit (a);
-   const bool isNilpotent = r.isNilpotent (a);
-
-   DEB2 if (isNilpotent) cout << ", nilpotent";
-
-   if (isUnit && isNilpotent)  error ("unit cannot be nilpotent!");
-   if (is0 && ! isNilpotent)  error ("0 must be nilpotent!");
-
-   if (isNilpotent)
-   {
-      ++nilpotentsCounter;
-
-      T p (a);
-      unsigned i = 0;
-
-      while (! r.is0(p))
-      {
-         r.square (p);
-
-         if (++i > 20)
-         {
-            error ("Element does not seem to be nilpotent!");
-            break;
-         }
-      }
-   }
-   else
-   {
-      T p (a);
-
-      for (unsigned i = 0; i < 5; ++i)
-      {
-         r.square (p);
-
-         if (r.is0 (p))
-         {
-            error ("Element is nilpotent!");
-            break;
-         }
-      }
-   } 
-
-   if (r.index (a) == r.size() - 1)
-   {
-      if (nilpotentsCounter != r.numNilpotents())
-      {
-         error ("numNilptents() wrong!");
-      }
-   }
-}
-
-
-/*****************************************************************************/
-/*************  Prime Detection                                  *************/
-/*****************************************************************************/
-
-template<class R>
-void doTest (const R&, noprimedetection_tag)
-{
-   DEB1  cout << "  Prime detection: no" << endl;
-}
-
-template<class R>
-void doTest (const R &r, primedetection_tag)
-{
-   DEB1  cout << "  Prime detection: yes" << endl;
-
-   // Prime generator
-
-   typedef typename R::type T;
-   typename R::PrimeGenerator pg (r);
-
-   DEB3 cout << "Primes: ";
-   bool first = true;
-
-   for (unsigned i = 0; i < SIZE; ++i)
-   {
-      T p = pg.next();
-
-      DEB3
-      {
-         if (! first)  cout << ", ";
-         r.printShort (cout, p);
-         fl();
-         first = false;
-      }
-
-      if (! r.isCanonical (p))
-      {
-         return error ("PrimeGenerator::next() does not return canonical!");
-      }
-
-      if (! r.isPrime (p))
-      {
-         return error ("PrimeGenerator::next() does not return prime!");
-      }
-   }
-
-   DEB3 cout << endl;
-}
-
-template<class R>
-void doTest (const R&, const typename R::type&, noprimedetection_tag)
-{}
-
-template<class R>
-void doTest (const R &r, const typename R::type& a, primedetection_tag)
-{
-   bool is0     = r.is0 (a);
-   bool isUnit  = r.isUnit (a);
-   bool isPrime = r.isPrime (a);
-   bool isComp  = r.isComposit (a);
-
-   DEB2
-   {
-      if (isPrime)     cout << ", prime";
-      if (isComp)      cout << ", composit";
-   }
-
-   if (is0 + isUnit + isPrime + isComp != 1)
-   {
-      error ("Classifiaction ambiguous!");
-   }
-
-   fl();
-}
-
-template<class R>
-void doTest
-  (const R&, const typename R::type&, const typename R::type&,
-   noprimedetection_tag)
-{}
-
-
-template<class R>
-void doTest
-  (const R &r, const typename R::type& a, const typename R::type& b,
-   primedetection_tag)
-{
-   if (r.is0(a) || r.is0(b))  return;
-
-   typename R::type prod = r.mul (a,b);
-
-   bool aIsUnit      = r.isUnit (a);
-   bool bIsUnit      = r.isUnit (b);
-
-   if (! aIsUnit || ! bIsUnit)  // two units has already been checked
-   {
-      bool aIsPrime = r.isPrime (a);
-      bool bIsPrime = r.isPrime (b);
-
-      if ((aIsUnit && bIsPrime) || (aIsPrime && bIsUnit))
-      {
-         if (! r.isPrime (prod))
-            error ("Product of unit and prime must be prime!");
-      }
-      else
-      {
-         if (! r.isComposit (prod))
-         {
-            error ("product of two non-units must be composit!");
-         }
-      }
-   }
-}
-
-
-/*****************************************************************************/
-/*************  Domains                                          *************/
-/*****************************************************************************/
-
-
-template<class R>
-void doTest (const R &r, domain_tag)
-{
-   doTest (r, ringdomain_tag());
-   doTest (r, typename R::primedetection_category());
-
-   requireCharacteristic (typename R::char_category());
-   requireNozerodivisor  (typename R::zerodivisor_category());
-}
-
-template<class R>
-void doTest (const R & r, const typename R::type& a, domain_tag)
-{
-   doTest (r, a, ringdomain_tag());
-   doTest (r, a, typename R::primedetection_category());
-}
-
-template<class R>
-void doTest (const R &r, const typename R::type& a,
-                         const typename R::type& b, domain_tag)
-{
-   doTest (r, a, b, ringdomain_tag());
-   doTest (r, a, b, typename R::primedetection_category());
-
-   // isDivisor
-
-   typedef typename R::type T;
-
-   if (! r.is0(b))
-   {
-      bool isDivisor = r.isDivisor (a,b);
-      bool isUnitA = r.isUnit (a);
-      bool isUnitB = r.isUnit (b);
-
-      DEB2 if (isDivisor)  cout << ", b|a";
-
-      T div;
-
-      if (r.isDivisor (a,b,div) != isDivisor)
-      {
-         error ("isDivisor()-2 and isDivisor()-3 inconsistent!");
-      }
-
-      if (isDivisor)
-      {
-         DEB2
-         {
-            cout << ", a/b = ";
-            r.printShort (cout, div);
-         }
-
-         if (r.mul (b,div) != a)  error ("exact division broken!");
-
-         if (r.div (a,b) != div)  error ("div() broken!");
-
-         T div2 (a);
-         r.divBy (div2,b);
-         if (div2 != div)  error ("divBy() broken!");
-      }
-
-      if (isUnitB && ! isDivisor)  error ("unit must be a divisor!");
-      if (isUnitA && isUnitB && ! r.isUnit (div))
-      {
-         error ("unit/unit must be unit!");
-      }
-      if (isUnitA && ! isUnitB && isDivisor)
-      {
-         error ("unit has non-unit divisor!");
-      }
-
-      fl();
-   }
-}
-
-
-/*****************************************************************************/
-/*************  UFDs                                             *************/
-/*****************************************************************************/
-
-template<class R>
-void doTest (const R &r, ufd_tag)
-{
-   typedef typename R::type T;
-   typedef typename R::unit_type UT;
-
-   doTest (r, domain_tag());
-
-   unsigned numUnits = r.numUnits();
-   unsigned size = r.size();
-   unitsCounter = 0;
-
-   // number of units
-
-   DEB1
-   {
-      cout << "  # units: ";
-      if (numUnits)  cout << numUnits; else cout << "inf";
-      cout << endl;
-   }
-
-   if (size)
-   {
-      if (numUnits == 0 || numUnits >= size)
-      {
-         error ("More units than elements!");
-      }
-   }
-
-   // enumerate units
-
-   DEB3 cout << "Units: ";
-   bool first = true;
-
-   unsigned ub = numUnits ? std::min (SIZE, numUnits) : SIZE;
-   for (unsigned i = 0; i < ub; ++i)
-   {
-      UT unit = r.unitElement (i);
-      T  unitElem = r.fromUnit (unit);
-
-      DEB3
-      {
-         if (! first)  cout << ", ";
-         r.printShort (cout, unitElem);
-         first = false;
-      }
-
-      if (! r.isUnit (unitElem))
-      {
-         error ("result of unitElement() not isUnit()!");
-      }
-      
-      if (r.unitIndex (unit) != i)
-      {
-         error ("unitElement() and unitIndex() do not match!");
-      }
-
-      if (size)
-      {
-         if (r.element(i + 1) != unitElem)
-         {
-            error ("element() and unitElement() do not match!");
-         }
-      }
-   }
-
-   DEB3 cout << endl;
-}
-
-template<class R>
-void doTest (const R &r, const typename R::type& a, ufd_tag)
-{
-   typedef typename R::type T;
-   typedef typename R::unit_type UT;
-
-   doTest (r, a, domain_tag());
-
-   bool is0         = r.is0 (a);
-   bool isUnit      = r.isUnit (a);
-   bool isCanonical = r.isCanonical (a);
-
-   DEB2  if (isCanonical) cout << ", canonical";
-
-   if (is0 && ! isCanonical)  error ("0 should be canonical!");
-
-   // make canonical
-
-   {
-      T copy = a;
-      UT unit = r.makeCanonical (copy);
-      T unitElem = r.fromUnit (unit);
-
-      if (r.mulUnit (copy, unit) != a || r.mul (copy, unitElem) != a)
-      {
-         error ("makeCanonical() does not factor!");
-      }
-
-      if (! r.isUnit(unitElem))
-      {
-         error ("makeCanonical() does not return a unit!");
-      }
-      if (! r.isCanonical (copy))
-      {
-         error ("makeCanonical() does not create a canonical form!");
-      }
-
-      // Canonical form of units
-
-      if (isUnit)
-      {
-         if (a != unitElem || ! r.is1 (copy))
-         {
-            error ("makeCanonical() of unit is broken!");
-         }
-      }
-
-      // Canonical form of (non-)canonical forms
-
-      if (isCanonical)
-      {
-         if (! r.is1(unitElem) || copy != a)
-         {
-            error ("makeCanonical() of canonical form invalid!");
-         }
-      }
-      else // ! isCanonical
-      {
-         if (r.is1(unitElem) || copy == a)
-         {
-            error ("makeCanonical() for non-canonical form invalid!");
-         }
-      }
-   }
-
-   fl();
-
-   // advanced unit properties
-
-   if (isUnit)
-   {
-      UT unit = r.toUnit (a);
-
-      unsigned numUnits = r.numUnits();
-      unsigned index = r.unitIndex (unit);
-      DEB2 cout << ", unit index = " << index;
-      if (numUnits && index >= numUnits)  error ("unitIndex() invalid!");
-   }
-
-   // numUnits()
-
-   if (isUnit)  ++unitsCounter;
-
-   if (r.index(a) == r.size() - 1)
-   {
-      if (r.numUnits() != unitsCounter)  error ("numUnits() wrong!");
-   }
-}
-
-template<class R>
-void doTest
-  (const R &r, const typename R::type& a, const typename R::type& b, ufd_tag)
-{
-   doTest (r, a, b, domain_tag());
-
-   typedef typename R::type T;
-
-   // isCononical()
-   
-   bool isCanonicalA = r.isCanonical (a);
-   bool isCanonicalB = r.isCanonical (b);
-
-   if (isCanonicalA && isCanonicalB)
-   {
-      if (! r.isCanonical (r.mul (a,b)))
-      {
-         error ("Product of canonicals must be canonical!");
-      }
-   }
-}
-
-
-/*****************************************************************************/
-/*************  Euclidean Ring                                   *************/
-/*****************************************************************************/
-
-
-template<class R>
-void doTest (const R &r, const typename R::type& a, euclidean_tag)
-{
-   typedef typename R::type T;
-
-   doTest (r, a, ufd_tag());
-
-   unsigned norm = r.norm (a);
-
-   DEB2
-   {
-      cout << ", norm = " << norm;
-   }
-
-   if (r.is0(a) != (norm == 0))  error ("norm(a)==0 iff a==0 failed!");
-   if (r.isUnit(a) != (norm == 1))  error ("norm(a)==1 iff isUnit(a) failed!");
-   if (r.numUnits() && norm < lastNorm)  error ("norm() decreased!");
-   lastNorm = norm;
-
-   if (r.is0 (a))  return;
-
-   unsigned size = r.size();
-   unsigned num = r.numOfRemainders (a);
-
-   DEB2
-   {
-      cout << ", numRem: ";
-      if (num) cout << num; else cout << "inf";
-   }
-
-   if (! size)  return;
-
-   if (num == 0 || num >= size)  error ("numOfRemainders() >= size()!");
-}
-
-template<class R>
-void doTest (const R &r, const typename R::type& a,
-                         const typename R::type& b, euclidean_tag)
-{
-   typedef typename R::type T;
-
-   doTest (r, a, b, ufd_tag());
-
-   lastNorm = 0;
-
-   // norm
-
-   unsigned normA  = r.norm(a);
-   unsigned normB  = r.norm(b);
-   unsigned normAB = r.norm(r.mul(a,b));
-
-   if (normA * normB < normAB)  error ("norm(a)norm(b) < norm(ab)!");
-
-   // div(), quot(), and rem()
-
-   if (! r.is0 (b))
-   {
-      if (normA > normAB)  error ("norm(ab) < norm(a)!");
-
-      // div()
-
-      T q, re;
-      r.div (a, b, q, re);
-
-      // Make sure, operators don't leave domain
-
-      if (r.size())
-      {
-         if (r.index (q)  >= r.size())  error ("quot() invalid!");
-         if (r.index (re) >= r.size())  error ("rem() invalid!");
-      }
-
-      DEB2
-      {
-         cout << ", quotient = ";
-         r.printShort (cout, q);
-         cout << ", remainder = ";
-         r.printShort (cout, re);
-      }
-
-      if (r.add (r.mul (b, q), re) != a)  error ("div() fails!");
-
-      // rem() and quot()
-
-      if (r.rem(a,b) != re)  error ("rem() inconsistent with div()!");
-
-      T x = a;
-      r.reduce (x, b);
-      if (x != re)  error ("reduce() inconsistent with div()!");
-
-      if (r.quot(a,b) != q)  error ("quot() inconsistent with div()!");
-
-      x = a;
-      r.quotient (x, b);
-      if (x != q)  error ("quotient() inconsistent with div()!");
-
-      if (r.norm (re) >= r.norm (b))  error ("norm(rem()) >= norm(b)!");
-
-      fl();
-   }
-
-   // genGcd()
-
-   {
-      T ma, mb;
-      T g = genGcd (r, a, b, ma, mb);
-
-      DEB2
-      {
-         cout << ", gcd(a,b) = ";
-         r.printShort (cout, g);
-         cout << ", ma = ";
-         r.printShort (cout, ma);
-         cout << ", mb = ";
-         r.printShort (cout, mb);
-      }
-
-      if (r.is0 (g))
-      {
-         if (! r.is0(a) || ! r.is0(b))  error ("gcd(a,b) is zero!");
-      }
-      else
-      {
-         if (! r.isDivisor(a,g) || ! r.isDivisor(b,g))
-         {
-            error ("gcd(a,b) does not divide a or b!");
-         }
-      }
-
-      if (r.add (r.mul (a, ma), r.mul (b, mb)) != g)
-      {
-         error ("multiplicators wrong!");
-      }
-
-      if (genGcd (r, a, b) != g)  error ("genGcd()-3 broken!");
-
-      T ma2;
-      if (genGcd (r, a, b, ma2) != g || ma2 != ma)
-      {
-         error ("genGcd()-4 broken!");
-      }
-
-      fl();
-   }
-}
-
-
-/*****************************************************************************/
-/*************  Field                                            *************/
-/*****************************************************************************/
-
-
-template<class R>
-void doTest (const R &f, field_tag)
-{
-   requireCharacteristic (typename R::char_category());
-   requireNozerodivisor  (typename R::zerodivisor_category());
-
-   typedef typename R::type T;
-
-   doTest (f, ringfield_tag());
-
-   unsigned s = f.size();
-
-   if (s == 0)  return;   // remaining stuff only for finite fields
-
-   unsigned power;
-   unsigned prime;
-   if (! Prime::isPrimePower (s, prime, power))
-   {
-      error ("Size of finite field is not a prime power!");
-   }
-}
-
-template<class R>
-void doTest (const R &f, const typename R::type& a, field_tag)
-{
-   typedef typename R::type T;
-
-   doTest (f, a, ringfield_tag());
-
-   if (! f.is0 (a))
-   {
-      // multiplicative inverse
-
-      T r = f.recip(a);
-      DEB2
-      {
-         cout << ", a^-1 = ";
-         f.printShort (cout, r);
-      }
-
-      if (! f.is1 (f.mul (a, r)))  error ("a * (a^-1) != 1");
-
-      T rr = a;
-      f.reciprocal (rr);
-
-      if (rr != r)  error ("reciprocal() broken");
-   }
-
-   fl();
-}
-
-template<class R>
-void doTest
-   (const R &f, const typename R::type& a, const typename R::type& b,
-    field_tag)
-{
-   doTest (f, a, b, ringfield_tag());
-
-   if (! f.is0(b))
-   {
-      typename R::type q = f.div(a, b);
-      typename R::type r = f.recip (b);
-      DEB2
-      {
-         cout << ", a/b = ";
-         f.printShort (cout, q);
-      }
-
-      if (f.mul (a, r) != q)  error ("div() fails");
-
-      typename R::type x;
-
-      x = a;
-      f.divBy (x, b);
-      if (x != q) error ("divBy() fails");
-   }
-
-   fl();
-}
-
-
-/*****************************************************************************/
-/*************  Finite Field                                     *************/
-/*****************************************************************************/
-
-template<class R>
-void doTest (const R &f, gf_tag)
-{
-   primitivesCounter = 0;
-
-   typedef typename R::type T;
-
-   doTest (f, field_tag());
-
-   unsigned s = f.size();
-   unsigned c = f.characteristic();
-   unsigned deg = f.extensionDegree();
-
-   DEB1  cout << "  Degree: " << deg << endl;
-
-   if (s == 0)
-   {
-      error ("size infinite in finite field!");
-      return;
-   }
-
-   unsigned power;
-   unsigned prime;
-   if (! Prime::isPrimePower (s, prime, power))
-   {
-      error ("Size of finite field is not a prime power!");
-   }
-
-   if (c != prime)    error ("characteristic() and field size incompatible!");
-   if (deg != power)  error ("extensionDegree() and field size incompatible!");
-}
-
-template<class R>
-void doTest (const R &f, const typename R::type& a, gf_tag)
-{
-   typedef typename R::type T;
-
-   doTest (f, a, field_tag());
-
-   // isPrimitiveElement()
-
-   if (! f.is0 (a))
-   {
-      unsigned s = f.size();
-
-      if (sqr(s) < SIZE)
-      {
-         unsigned o = f.order (a);
-         bool isPrimitiveElement = f.isPrimitiveElement(a);
-
-         if (isPrimitiveElement)
-         {
-            DEB2  cout << ", primitive root";
-            ++primitivesCounter;
-         }
-
-         if (f.index (a) == s - 1)
-         {
-            if (primitivesCounter != Prime::eulerPhi (s - 1))
-            {
-               error ("number of primitive elements is wrong!");
-            }
-         }
-   
-         if (isPrimitiveElement != (o == s - 1))
-         {
-            error ("isPrimitiveRoot() broken!");
-         }
-      }
-   }
-
-   fl();
-}
-
-
-/*****************************************************************************/
-/*************  Cyclic Field                                     *************/
-/*****************************************************************************/
-
-
-template<class R>
-void doTest (const R &f, cyclic_tag)
-{
-   doTest (f, gf_tag());
-
-   unsigned c = f.characteristic();
-   unsigned s = f.size();
-
-   if (s != c || ! Prime::test (s))  error ("Additive group not cyclic!");
-}
-
-
-/*****************************************************************************/
-/*************  Vectorspace                                      *************/
-/*****************************************************************************/
-
-template<class V>
-void doTest (const V& v, vectorspace_tag)
-{
-   doTest (v, group_tag());
-   
-   typedef typename V::scalar_algebra A;
-   typedef typename V::type T;
-   typedef typename V::scalar_type ST;
-   const A alg = v.getScalarAlgebra();
-   const unsigned dim = v.dimension();
-
-   DEB1
-   {
-      cout << "  Dim:  " << dim << endl
-           << "  Alg:  " << alg << endl;
-   }
-
-   ensureEqualType (static_cast<ST*>(0), static_cast<typename A::type*>(0));
-
-   if (alg.size() == 0 && v.size() != 0)
-   {
-      error("Finite vector space over infinte field!");
-   }
-   if (alg.size() != 0 && v.size() == 0)
-   {
-      error("Infinite vector space over finte field!");
-   }
-   if (alg.size() != 0 && v.size() != 0)
-   {
-      if (logInt (std::numeric_limits<unsigned>::max(), unsigned (alg.size()))
-          <= int (v.dimension()))
-      {
-         if (v.size() != powInt (alg.size(), dim))
-            error ("dim (F^n) != (dim F)^n");
-      }
-   }
-
-   Array<ST> coords (dim);
-   T x = T();
-   v.toCoord (x, &coords[0]);
-
-   for (unsigned i = 0; i < dim; ++i)
-   {
-      if (! alg.is0 (coords[i]))  error ("zero has non-zero coordinates!");
-   }
-}
-
-template<class V>
-void doTest (const V& v, const typename V::type& a, vectorspace_tag)
-{
-   doTest (v, a, group_tag());
-   
-   typedef typename V::scalar_algebra A;
-   typedef typename V::type T;
-   typedef typename V::scalar_type ST;
-   const A& alg = v.getScalarAlgebra();
-   const unsigned dim = v.dimension();
-
-   // toCoords()
-   
-   Array<ST> coords (dim);
-   v.toCoord (a, &coords[0]);
-
-   T aCopy = a;
-
-   DEB2
-   {
-      cout << ", coord = ";
-      for (unsigned i = 0; i < dim; ++i)
-      {
-         if (i > 0)  cout << ',';
-         alg.printShort (cout, coords[i]);
-      }
-   }
-
-   for (unsigned i = 0; i < dim; ++i)
-   {
-      if (alg.size() && alg.index(coords[i]) >= alg.size())
-         error ("Coordinate invalid!");
-      if (coords[i] != v.coord(a,i))  error("coord() and toCoords() mismatch!");
-      typename V::scalar_reference ref = v.coord(aCopy, i);
-      if (coords[i] != ref)  error("coord() and toCoords() mismatch!");
-   }
-
-   // fromCoords()
-
-   T b;
-   v.fromCoord (b, &coords[0]);
-   if (a != b)  error ("fromCoord() broken!");
-
-   // coords()
-
-   b = T();
-   for (unsigned i = 0; i < dim; ++i)  v.coord(b, i) = coords[i];
-   if (a != b)  error ("Assignment to coord() broken!");
-
-   b = T();
-   for (int i = dim - 1; i >= 0; --i)  v.coord(b, i) = coords[i];
-   if (a != b)  error ("Assignment to coord() broken!");
-
-   // Multiplication with 1
-
-   b = v.mul (a, alg.one());
-
-   if (b != a)  error ("1v != v!");
-
-   // Multiplication with 0
-
-   b = v.mul (a, ST());
-
-   if (! v.is0 (b))  error ("0v != 0!");
-
-   //  neg()
-
-   b = v.neg (a);
-   for (unsigned i = 0; i < dim; ++i)
-   {
-      if (v.coord(b,i) != alg.neg (v.coord(a,i)))
-      {
-         error ("neg() for vector does not match neg() for coordinates!");
-      }
-   }
-
-   // mul()
-
-   if (sqr (v.index(a)) < SIZE)
-   {
-      unsigned SS = unsigned (HINTLIB_MN sqrt(double(SIZE)));
-      if (alg.size())  SS = std::min (SS, alg.size());
-
-      for (unsigned l = 0; l < SS; ++l)
-      {
-         ST scal = alg.element (l);
-
-         b = v.mul (a, scal);
-
-         for (unsigned i = 0; i < dim; ++i)
-         {
-            if (v.coord(b,i) != alg.mul (v.coord(a,i), scal))
-            {
-               error ("mul() for vector does not match mul() for coordinates!");
-            }
-         }
-      }
-   }
-
-   // Associativity and Distributivity (scalar, scalar, vector)
-
-   if (cube (v.index(a)) < SIZE)
-   {
-      unsigned SS = unsigned (HINTLIB_MN pow(double(SIZE), 1.0/3.0));
-      if (alg.size())  SS = std::min (SS, alg.size());
-
-      for (unsigned l1 = 0; l1 < SS; ++l1)
-      {
-         ST scal1 = alg.element (l1);
-
-         for (unsigned l2 = 0; l2 < SS; ++l2)
-         {
-            ST scal2 = alg.element (l2);
-
-            if (   v.mul (a, alg.mul (scal1, scal2))
-                != v.mul (v.mul (a, scal1), scal2))
-            {
-               error ("(ab)v != a(bv)!");
-            }
-
-            if (   v.mul (a, alg.add (scal1, scal2))
-                != v.add (v.mul(a, scal1), v.mul(a, scal2)))
-            {
-               error ("(a+b)v != av + bv!");
-            }
-         }
-      }
-   }
-
-   fl();
-}
-
-template<class V>
-void doTest
-   (const V& v, const typename V::type& a, const typename V::type& b,
-    vectorspace_tag)
-{
-   doTest (v, a, b, group_tag());
-   
-   typedef typename V::scalar_algebra A;
-   typedef typename V::type T;
-   typedef typename V::scalar_type ST;
-   const A& alg = v.getScalarAlgebra();
-   const unsigned dim = v.dimension();
-
-   // add()
-
-   T sum = v.add (a, b);
-
-   for (unsigned i = 0; i < dim; ++i)
-   {
-      if (v.coord(sum,i) != alg.add (v.coord(a,i), v.coord(b,i)))
-      {
-         error ("add() for vector does not match add() for coordinates!");
-      }
-   }
-
-   // Distributivity (scalar, vector, vector)
-
-   if (cube (v.index(a)) < SIZE && cube (v.index(b)) < SIZE)
-   {
-      unsigned SS = unsigned (HINTLIB_MN pow(double(SIZE), 1.0/3.0));
-      if (alg.size())  SS = std::min (SS, alg.size());
-
-      for (unsigned l = 0; l < SS; ++l)
-      {
-         ST scal = alg.element (l);
-
-         if (   v.mul (v.add(a,b), scal)
-             != v.add (v.mul (a, scal), v.mul (b, scal)))
-         {
-            error ("a (v1+v2) != (a v1) + (b + v2)!");
-         }
-      }
-   }
-
-   fl();
 }
 
 
@@ -1921,16 +690,16 @@ void doTest
 /*************  Polynomials                                      *************/
 /*****************************************************************************/
 
-// no arguments
+// no element
 
 template<class R>
-void doTest (const R&, nopolynomial_tag)
+void doTest (Cache<R>&, nopolynomial_tag)
 {
    DEB1 cout << "  Polynomials: no" << endl;
 }
 
 template<class R>
-void doTest (const R& r, polynomial_tag)
+void doTest (Cache<R>& c, polynomial_tag)
 {
    lastDegree = -2;
    primitivesCounter = 0;
@@ -1939,8 +708,10 @@ void doTest (const R& r, polynomial_tag)
    typedef typename R::type T;
    typedef typename R::coeff_type CT;
 
-   const A& alg = r.getCoeffAlgebra();
+   const A& alg = c().getCoeffAlgebra();
    DEB1 cout << "  Polynomials: yes, coeff algebra:  " << alg << endl;
+
+   c.baseSize = alg.size();
 
    ensureEqualType (static_cast<CT*>(0), static_cast<typename A::type*>(0));
    ensureEqualType (static_cast<CT*>(0),
@@ -1948,30 +719,30 @@ void doTest (const R& r, polynomial_tag)
 
    // x()
 
-   T x = r.x();
+   c.x = c().x();
    DEB1
    {
       cout << "  x: ";
-      r.print (cout, x);
+      c().print (cout, c.x);
       cout << endl;
    }
 
-   if (x.degree() != 1 || ! alg.is1(x.lc()) || ! alg.is0 (x[0]))
+   if (c.x.degree() != 1 || ! alg.is1(c.x.lc()) || ! alg.is0 (c.x[0]))
    {
       error ("x() is invalid");
    }
 
    for (int i = 0; i < 5; ++i)
    {
-      T xx = r.x (i);
+      T xx = c().x (i);
 
       if (xx.degree() != i || ! alg.is1(xx.lc()))
       {
-         error ("x(k) is invalid!");
+         error ("x(k) is invalid");
       }
       for (int j = 0; j < i; ++j)
       {
-         if (! alg.is0 (xx[j]))  error ("x(k) is invalid!");
+         if (! alg.is0 (xx[j]))  error ("x(k) is invalid");
       }
       
       T xxdiv1 = xx;
@@ -1979,23 +750,23 @@ void doTest (const R& r, polynomial_tag)
       T xxdiv2 = xx;
       xxdiv2.divByX (i+1);
 
-      if (! r.is1 (xxdiv1) || ! r.is0 (xxdiv2))  error ("divByX() broken!");
+      if (! c().is1 (xxdiv1) || ! c().is0 (xxdiv2))  error ("divByX() broken");
 
-      T one = r.one();
-      if (xx != one.mulByX (i))  error ("mulByX() broken!");
+      T one = c.one;
+      if (xx != one.mulByX (i))  error ("mulByX() broken");
    }
 }
 
-// one argument
+// one element
 
 template<class R>
 inline
-void doTestPoly (const R&, const typename R::type&, ringfield_tag) {}
+void doTestPoly (Cache<R>&, const typename R::type&, ringfield_tag) {}
 
 template<class R>
-void doTestPoly (const R& r, const typename R::type& a, field_tag)
+void doTestPoly (Cache<R>& c, const typename R::type& a, field_tag)
 {
-   doTestPoly (r, a, ringfield_tag());
+   doTestPoly (c, a, ringfield_tag());
 
    typedef typename R::type T;
    typedef typename R::unit_type UT;
@@ -2003,86 +774,95 @@ void doTestPoly (const R& r, const typename R::type& a, field_tag)
 
    // squarefreeFactor()
 
-   if (! r.is0 (a))
+   if (! c.is0)
    {
       F f;
-      UT unit = r.squarefreeFactor (f, a);
+      UT unit = c().squarefreeFactor (f, a);
 
       DEB2
       {
          cout << ", s.f.f: ";
-         r.printShort (cout, r.fromUnit (unit));
+         c.print (c().fromUnit (unit));
          for (typename F::const_iterator i = f.begin(); i != f.end(); ++i)
          {
             cout << " * ";
-            r.printShort (cout, i->first);
-            cout << " ^ " << i->second;
+            c().printShort (cout, i->first, FIT_FOR_MUL);
+            cout << '^' << i->second;
          } 
       }
 
-      T prod = r.fromUnit (unit);
+      T prod = c().fromUnit (unit);
 
       for (typename F::const_iterator i = f.begin(); i != f.end(); ++i)
       {
-         if (! r.isSquarefree (i->first)) error ("factor not square free!");
-         if (! r.isMonic(i->first))       error ("factor not monic!");
+         if (! c().isSquarefree (i->first)) error ("factor not square free");
+         if (! c().isCanonical(i->first))   error ("factor not canonical");
+         if (c().is0(i->first) || c().isUnit (i->first))
+         {
+            error ("factor 0 or unit");
+         }
 
          for (typename F::const_iterator j = f.begin(); j != f.end(); ++j)
          {
             if (i == j)  continue;
-            if (! genIsCoprime (r, i->first, j->first))
+            if (! genIsCoprime (c(), i->first, j->first))
             {
-               error ("factors are not coprime!");
+               error ("factors are not coprime");
             }
          }
 
-         r.mulBy (prod, r.power (i->first, i->second));
+         c().mulBy (prod, c().power (i->first, i->second));
       } 
 
-      if (prod != a)  error ("Product of factors wrong!");
+      if (prod != a)
+      {
+         cout << "\nDifference: ";
+         c().print (cout, c().sub (prod, a));
+         
+         error ("Product of factors wrong");
+      }
    }
 
    fl();
 }
 
 template<class R>
-void doTestPoly (const R& r, const typename R::type& a, gf_tag)
+void doTestPoly (Cache<R>& c, const typename R::type& a, gf_tag)
 {
-   doTestPoly (r, a, field_tag());
+   doTestPoly (c, a, field_tag());
 
-   if (a.degree() != lastDegree)
+   if (c.degree != lastDegree)
    {
-      if (a.degree() > lastDegree)
+      if (c.degree > lastDegree)
       {
-         const unsigned order =
-            powInt (r.getCoeffAlgebra().size(), lastDegree) - 1;
+         const unsigned order = powInt (c.baseSize, lastDegree) - 1;
 
          const unsigned expected =
             lastDegree <= 0 ? 0 : Prime::eulerPhi (order) / lastDegree;
 
          if (primitivesCounter != expected)
          {
-            error ("Number of primitive polynomials is wrong!");
+            error ("Number of primitive polynomials is wrong");
             cout << "\nPrimitives found: " << primitivesCounter
                  << "  Expected: " << expected << endl;
          }
       }
 
       primitivesCounter = 0;
-      lastDegree = a.degree();
+      lastDegree = c.degree;
    }
 
    fl();
 
    // isPrimitive
 
-   bool isPrimitive = r.isPrimitive (a);
+   c.isPrimitive = c().isPrimitive (a);
 
-   if (isPrimitive)
+   if (c.isPrimitive)
    {
       DEB2 cout << ", primitive";
 
-      if (! r.isPrime (a))  error ("primitive without prime!");
+      if (! c().isPrime(a))  error ("primitive without prime");
 
       ++primitivesCounter;
    }
@@ -2092,21 +872,21 @@ void doTestPoly (const R& r, const typename R::type& a, gf_tag)
 
 template<class R>
 inline
-void doTest (const R&, const typename R::type&, nopolynomial_tag) {}
+void doTest (Cache<R>&, const typename R::type&, nopolynomial_tag) {}
 
 template<class R>
-void doTest (const R& r, const typename R::type& a, polynomial_tag)
+void doTest (Cache<R>& c, const typename R::type& a, polynomial_tag)
 {
    typedef typename R::coeff_algebra A;
    typedef typename R::type T;
    typedef typename R::coeff_type CT;
 
-   const A& alg = r.getCoeffAlgebra();
+   const A& alg = c().getCoeffAlgebra();
 
    // degree 
 
-   int deg = a.degree();
-   DEB2  cout << ", degree = " << deg;
+   c.degree = a.degree();
+   DEB2  cout << ", degree = " << c.degree;
    fl();
 
    // isConstant
@@ -2115,17 +895,17 @@ void doTest (const R& r, const typename R::type& a, polynomial_tag)
 
    DEB2 if (constant)  cout << ", constant";
 
-   if (constant != (deg <= 0))  error ("isConstant() is wrong!");
+   if (constant != (c.degree <= 0))  error ("isConstant() is wrong");
 
-   if (deg == -1)
+   if (c.degree == -1)
    {
-      if (! r.is0(a))  error ("Polynomial with deg=-1 is not 0!");
+      if (! c.is0)  error ("Polynomial with deg=-1 is not 0");
    }
    else
    {
       // isMonic()
 
-      bool monic = r.isMonic (a);
+      bool monic = c().isMonic (a);
       DEB2  if (monic)  cout << ", monic";
 
       // lc()
@@ -2137,9 +917,9 @@ void doTest (const R& r, const typename R::type& a, polynomial_tag)
          alg.printShort (cout, lc);
       }
 
-      if (monic != alg.is1(lc))  error ("monic() is wrong!");
-      if (lc != a[a.degree()])  error ("lc() != leading coefficient!");
-      if (alg.is0(lc))  error ("lc() is zero!");
+      if (monic != alg.is1(lc))  error ("monic() is wrong");
+      if (lc != a[a.degree()])  error ("lc() != leading coefficient");
+      if (alg.is0(lc))  error ("lc() is zero");
 
       // ct()
 
@@ -2150,18 +930,18 @@ void doTest (const R& r, const typename R::type& a, polynomial_tag)
          alg.printShort (cout, ct);
       }
 
-      if (ct != a[0])  error ("ct() != constant term!");
+      if (ct != a[0])  error ("ct() != constant term");
 
       fl();
    }
 
    // Access
 
-   Array<CT> coeff (deg + 1);
+   Array<CT> coeff (c.degree + 1);
    a.toCoeff (&coeff[0]);
 
    DEB2 cout << ", coeff = /";
-   for (int i = 0; i <= deg; ++i)
+   for (int i = 0; i <= c.degree; ++i)
    {
       DEB2
       {
@@ -2169,16 +949,16 @@ void doTest (const R& r, const typename R::type& a, polynomial_tag)
          cout << '/';
       }
       
-      if (coeff[i] != a[i])  error ("toCoeff() or operator[]() broken!");
+      if (coeff[i] != a[i])  error ("toCoeff() or operator[]() broken");
    }
 
    fl();
 
    // Constructor with iterators
 
-   T b (&coeff[0], &coeff[deg+1]);
+   T b (&coeff[0], &coeff[c.degree + 1]);
 
-   if (a != b)  error ("Constructor with iterators broken!");
+   if (a != b)  error ("Constructor with iterators broken");
 
    // mulByX(), divByX()
 
@@ -2193,8 +973,8 @@ void doTest (const R& r, const typename R::type& a, polynomial_tag)
       div1.divByX (i);
       mul1.mulByX (i);
 
-      if (div != div1)  error ("divByX() broken!");
-      if (mul != mul1)  error ("mulByX() broken!");
+      if (div != div1)  error ("divByX() broken");
+      if (mul != mul1)  error ("mulByX() broken");
 
       div.divByX();
       mul.mulByX();
@@ -2202,81 +982,1602 @@ void doTest (const R& r, const typename R::type& a, polynomial_tag)
 
    // derivative()
 
-   T deriv = r.derivative (a);
+   c.derivative = c().derivative (a);
 
    DEB2
    {
       cout << ", derivative = ";
-      r.printShort (cout, deriv);
+      c.print (c.derivative);
    }
    
-   T deriv1 = r.derivative (r.neg (a));
-   T deriv2 = r.neg (r.derivative(a));
+   T deriv1 = c().derivative (c.neg);
+   T deriv2 = c().neg (c.derivative);
 
    if (deriv1 != deriv2)
    {
-      error ("derivative() inconsistent with negation!");
+      error ("derivative() inconsistent with negation");
    }
 
    fl();
 
    // evaluate()
 
-   if (sqr (r.index(a)) <= SIZE)
+   if (sqr (c.index) <= SIZE)
    {
       unsigned ub = unsigned (HINTLIB_MN sqrt(double(SIZE)));
-      if (ub > alg.size())  ub = alg.size();
+      if (c.baseSize && ub > c.baseSize)  ub = c.baseSize;
    
       for (unsigned i = 0; i < ub; ++i)
       {
          CT x = alg.element (i);
-         CT eval = r.evaluate (a, x);
+         CT eval = c().evaluate (a, x);
 
          CT res = CT();
-         for (int i = a.degree(); i >= 0; --i)
+         for (int i = c.degree; i >= 0; --i)
          {
             res = alg.add (alg.mul (res, x), a[i]);
          }
       
-         if (eval != res)  error ("evaluate() broken!");
+         if (eval != res)  error ("evaluate() broken");
       }
    }
 
-   doTestPoly (r, a, typename A::algebra_category());
+   doTestPoly (c, a, typename A::algebra_category());
 }
 
-// two arguments
+// two elements
 
 template<class R>
 inline
-void doTest (const R&, const typename R::type&,
-                       const typename R::type&, nopolynomial_tag) {}
+void doTest (Cache<R>&, const typename R::type&,
+                        const typename R::type&, nopolynomial_tag) {}
 
 template<class R>
-void doTest (const R& r, const typename R::type& a,
-                         const typename R::type& b, polynomial_tag)
+void doTest (Cache<R>& c, const typename R::type& a,
+                          const typename R::type& b, polynomial_tag)
 {
    typedef typename R::coeff_algebra A;
    typedef typename R::type T;
    typedef typename R::coeff_type CT;
 
+   // reinitialize one-element cache values
+
+   if (c.indexB == 0)
+   {
+      c.derivative = c().derivative (a);
+   }
+
    // derivative()
 
-   T deriv1 = r.derivative (r.add (a,b));
-   T deriv2 = r.add (r.derivative(a), r.derivative(b));
+   const T derivB = c().derivative (b);
 
-   if (deriv1 != deriv2)
+   if (c().derivative (c.add) != c().add (c.derivative, derivB))
    {
-      error ("derivative() inconsistent with addition!");
+      error ("derivative() inconsistent with addition");
    }
 
-   deriv1 = r.derivative (r.mul (a,b));
-   deriv2 = r.add (r.mul (a, r.derivative(b)), r.mul (b, r.derivative(a)));
-
-   if (deriv1 != deriv2)
+   if (   c().derivative (c.mul)
+       != c().add (c().mul (a, derivB), c().mul (b, c.derivative)))
    {
-      error ("derivative() inconsistent with multiplication!");
+      error ("derivative() inconsistent with multiplication");
    }
+}
+
+
+/*****************************************************************************/
+/*************  Ring / Field                                     *************/
+/*****************************************************************************/
+
+template<class R>
+void doTest (Cache<R>& c, ringfield_tag)
+{
+   doTest (c, group_tag());
+
+   // Check one()
+
+   c.one = c().one();
+
+   DEB1
+   {
+      cout << "  One:  ";
+      c().print (cout, c.one);
+      cout << endl;
+   }
+
+   if (c().index(c.one) != 1)  error ("index(one) != 1");
+
+   if (! c().is1(c().element(1)))  error ("element(1) invalid");
+
+   // call characteristic and zerodivisor tests
+
+   doTest (c, typename R::polynomial_category());
+   doTest (c, typename R::char_category());
+   doTest (c, typename R::zerodivisor_category());
+}
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a, ringfield_tag)
+{
+   doTest (c, a, group_tag());
+
+   typedef typename R::type T;
+
+   // is1(), one()
+
+   c.is1 = c().is1(a);
+   DEB2 if (c.is1)  cout << ", one";
+   if (c.is1 != (a == c.one ))  error ("is1() fails");
+      
+   // neutral
+
+   if (c().mul (a, c.one) != a)  error ("a*1 != a");
+
+   // square
+
+   {
+      try
+      {
+         c.sqr = c().sqr(a);
+         DEB2
+         {
+            cout << ", a\262 = ";
+            c.print (c.sqr);
+         }
+
+         if (c.sqr != c().mul (a,a))  error ("sqr(a) invalid");
+
+         T s = a;
+         c().square (s);
+         if (s != c.sqr)  error ("square() invalid");
+
+         fl();
+      }
+      catch (Overflow &) {}
+   }
+
+   // check power()
+
+   if (sqr(c.index) < SIZE)
+   {
+      DEB3 cout << ", power = ";
+
+      unsigned SS = unsigned (HINTLIB_MN sqrt(double (SIZE)));
+
+      if (SS > 10) SS = 7;
+
+      T x = a;
+      for (unsigned l = 1; l < SS; ++l)
+      {
+         try
+         {
+            T p = c().power (a, l);
+         
+            DEB3
+            {
+               c.print (p);
+               DEB4  { cout << '='; c.print (x); }
+               cout << '/';
+            }
+            if (x != p)
+            {
+               error ("a*...*a != power (a,k)");
+               cout << "a*...*a = ";
+               c().print (cout, x);
+               cout << ",  power (a," << l << ") = ";
+               c().print (cout, p);
+               cout << endl;
+            }
+            c().mulBy (x, a);
+         }
+         catch (Overflow &)
+         {
+            break;
+         }
+      }
+   }
+
+   fl();
+
+   doTest (c, a, typename R::polynomial_category());
+   doTest (c, a, typename R::char_category());
+   doTest (c, a, typename R::zerodivisor_category());
+}
+
+template<class R>
+void doTest
+   (Cache<R>& c, const typename R::type& a,
+                 const typename R::type& b, ringfield_tag)
+{
+   doTest (c, a, b, group_tag());
+
+   // mul()
+
+   typedef typename R::type T;
+
+   c.mul = c().mul (a,b);
+
+   DEB2
+   {
+      cout << ", a*b = ";
+      c.print (c.mul);
+   }
+
+   checkIndex (c.size, c().index (c.mul), "mul");
+
+   // Commutativity of multiplication
+
+   if (c.mul != c().mul (b,a))  error ("a*b != b*a");
+
+   T x = a;
+   c().mulBy (x, b);
+   if (x != c.mul) error ("mulBy() fails");
+
+   fl();
+
+   doTest (c, a, b, typename R::polynomial_category());
+   doTest (c, a, b, typename R::zerodivisor_category());
+   doTest (c, a, b, typename R::char_category());
+}
+
+template<class R>
+void doTest
+   (Cache<R>& cc, const typename R::type& a,
+                  const typename R::type& b,
+                  const typename R::type& c, ringfield_tag)
+{
+   doTest (cc, a, b, c, group_tag());
+
+   // Associativity of multiplication
+
+   if (cc().mul(cc().mul(a, b), c) != cc().mul(a, cc().mul(b, c)))
+   {
+      error("(a*b) * c != a * (b*c)");
+   }
+
+   // Distributivity
+
+   if (cc().mul (a, cc().add(b, c)) != cc().add (cc().mul(a, b), cc().mul(a,c)))
+   {
+      error("a*(b+c) != (a*b)+(a*c)");
+   }
+
+   if (cc().mul (cc().add(a, b), c) != cc().add (cc().mul(a,c), cc().mul(b,c)))
+   {
+      error("(a+b)*c != (a*c)+(b*c)");
+   }
+
+   fl();
+}
+
+
+/*****************************************************************************/
+/*************  Rings / Domain                                   *************/
+/*****************************************************************************/
+
+
+template<class R>
+void doTest (Cache<R>& c, ringdomain_tag)
+{
+   doTest (c, ringfield_tag());
+
+   typedef typename R::type T;
+   typedef typename R::unit_type UT;
+
+   // make sure, unit_type works
+
+   {
+      UT x = c().toUnit(c.one);
+      UT def = x;
+      if (def != x)  error ("unit_type broken");
+      def = x;
+      if (def != x)  error ("unit_type broken");
+   }
+
+   // isUnit(one), isUnit(zero)
+
+   if (! c().isUnit (c.one))  error ("1 must be a unit");
+   if (  c().isUnit (c.zero)) error ("0 must not be a unit");
+
+   // initialize counter for units
+
+   unitsCounter = 0;
+
+   // numUnits()
+
+   c.numUnits = c().numUnits();
+
+   DEB1
+   {
+      cout << "  # units: ";
+      printNumberOrInf (c.numUnits);
+      cout << endl;
+   }
+
+   checkInfiniteInFinite (c.size, c.numUnits, "units");
+}
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a, ringdomain_tag)
+{
+   doTest (c, a, ringfield_tag());
+
+   typedef typename R::type T;
+   typedef typename R::unit_type UT;
+
+   // check properties of units
+
+   c.isUnit = c().isUnit (a);
+
+   DEB2 if (c.isUnit) cout << ", unit";
+   fl();
+
+   if (c.is0 + c.isUnit > 1)  error ("Classifiaction ambiguous");
+
+   if (c.isUnit)
+   {
+      ++unitsCounter;
+
+      UT unit = c().toUnit (a);
+
+      if (c().fromUnit(unit) != a)
+      {
+         error ("toUnit() and fromUnit() do not match");
+      }
+
+      UT recip = c().unitRecip (unit);
+      T recipElem = c().fromUnit (recip);
+
+      DEB2
+      {
+         cout << ", a^-1 = ";
+         c.print (recipElem);
+      }
+
+      checkIndex (c.size, c().index(recipElem), "unitRecip");
+
+      if (! c().is1 (c().mul (a, recipElem)))
+      {
+         error ("Reciprocal of unit is wrong");
+      }
+      if (! c().is1 (c().mulUnit (a, recip)))
+      {
+         error ("Reciprocal of unit is wrong");
+      }
+      if (! c().is1 (c().fromUnit (c().mulUnit (unit, recip))))
+      {
+         error ("Reciprocal of unit is wrong");
+      }
+   }
+
+   fl();
+}
+
+inline
+void counterTest (CacheBase& c, bool all, ringdomain_tag)
+{
+   counterTest (c, all, ringfield_tag());
+
+   // numUnits()
+
+   checkCounter (c.numUnits, unitsCounter, all, "numUnits()");
+}
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a,
+                          const typename R::type& b, ringdomain_tag)
+{
+   doTest (c, a, b, ringfield_tag());
+
+   typedef typename R::type T;
+   typedef typename R::unit_type UT;
+
+   // reinitialize one-element cache values
+
+   if (c.indexB == 0)
+   {
+      c.isUnit = c().isUnit (a);
+   }
+
+   // product of units/non-units
+
+   c.isUnitB = c().isUnit (b);
+   const bool pIsUnit = c().isUnit (c.mul);
+
+   if (c.isUnit && c.isUnitB)
+   {
+      if (! pIsUnit)  error ("Product of units must be a unit");
+   }
+   else
+   {
+      if (pIsUnit)  error ("Product with non-unit cannot be a unit");
+   }
+
+   // mulUnit(), mulByUnit()
+
+   if (c.isUnit)
+   {
+      UT aUnit = c().toUnit (a);
+
+      if (c().mulUnit (b, aUnit) != c.mul)
+      {
+         error("mulUnit(type,unit_type) broken");
+      }
+
+      T x (b);
+      c().mulByUnit (x, aUnit);
+      if (x != c.mul)  error ("mulByUnit(type&, unit_type) broken");
+
+      if (c.isUnitB)
+      {
+         UT bUnit = c().toUnit (b);
+         if (c().fromUnit(c().mulUnit (aUnit, bUnit)) != c.mul)
+         {
+            error ("mulUnit(unit_type, unit_type) broken");
+         }
+
+         UT xUnit (aUnit);
+         c().mulByUnit (xUnit, bUnit);
+
+         if (c().fromUnit(xUnit) != c.mul)
+         {
+            error ("mulByUnit(unit_type&, unit_type) broken");
+         }
+      }
+   }
+}
+
+
+/*****************************************************************************/
+/*************  Rings                                            *************/
+/*****************************************************************************/
+
+template<class R>
+void doTest (Cache<R>& c, ring_tag)
+{
+   doTest (c, ringdomain_tag());
+
+   typedef typename R::type T;
+
+   // numNilpotent()
+
+   c.numNilpotents = c().numNilpotents();
+   nilpotentsCounter = 0;
+
+   DEB1
+   {
+      cout << "  # nilpotents: ";
+      printNumberOrInf (c.numNilpotents);
+      cout << endl;
+   }
+
+   checkInfiniteInFinite (c.size, c.numNilpotents, "nilpotents");
+
+   if (c.size && c.size % c.numNilpotents != 0)
+   {
+      error ("numNilpotents() does not divide size()");
+   }
+}
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a, ring_tag)
+{
+   doTest (c, a, ringdomain_tag());
+
+   typedef typename R::type T;
+
+   // isNilpotent()
+
+   c.isNilpotent = c().isNilpotent (a);
+
+   DEB2 if (c.isNilpotent) cout << ", nilpotent";
+
+   if (c.isUnit && c.isNilpotent)  error ("unit cannot be nilpotent");
+   if (c.is0 && ! c.isNilpotent)  error ("0 must be nilpotent");
+
+   if (c.isNilpotent)
+   {
+      ++nilpotentsCounter;
+
+      T p (a);
+      unsigned i = 0;
+
+      while (! c().is0(p))
+      {
+         c().square (p);
+
+         if (++i > 20)
+         {
+            error ("Element does not seem to be nilpotent");
+            break;
+         }
+      }
+   }
+   else
+   {
+      T p (a);
+
+      for (unsigned i = 0; i < 5; ++i)
+      {
+         c().square (p);
+
+         if (c().is0 (p))
+         {
+            error ("Element is nilpotent");
+            break;
+         }
+      }
+   } 
+}
+
+inline
+void counterTest (CacheBase& c, bool all, ring_tag)
+{
+   counterTest (c, all, ringdomain_tag());
+
+   // numNilpotents()
+
+   checkCounter (c.numNilpotents, nilpotentsCounter, all, "numNilpotents()");
+}
+
+
+/*****************************************************************************/
+/*************  Prime Detection                                  *************/
+/*****************************************************************************/
+
+// no element
+
+template<class R>
+void doTest (Cache<R>&, noprimedetection_tag)
+{
+   DEB1  cout << "  Prime detection: no" << endl;
+}
+
+template<class R>
+void doTest (Cache<R>& c, primedetection_tag)
+{
+   DEB1  cout << "  Prime detection: yes" << endl;
+
+   // Prime generator
+
+   typedef typename R::type T;
+   typename R::PrimeGenerator pg (c());
+
+   DEB3 cout << "Primes: ";
+   bool first = true;
+
+   for (unsigned i = 0; i < SIZE; ++i)
+   {
+      T p = pg.next();
+
+      DEB3
+      {
+         if (! first)  cout << ", ";
+         c.print (p);
+         fl();
+         first = false;
+      }
+
+      if (! c().isCanonical (p))
+      {
+         return error ("PrimeGenerator::next() does not return canonical");
+      }
+
+      if (! c().isPrime (p))
+      {
+         return error ("PrimeGenerator::next() does not return prime");
+      }
+   }
+
+   DEB3 cout << endl;
+}
+
+template<class R>
+void doTest (Cache<R>& c, factor_tag)
+{
+   doTest (c, primedetection_tag());
+   DEB1  cout << "  Factorization possible" << endl;
+}
+
+// one element
+
+template<class R>
+void doTest (Cache<R>&, const typename R::type&, noprimedetection_tag)
+{}
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a, primedetection_tag)
+{
+   c.isPrime = c().isPrime (a);
+   bool isComp  = c().isComposit (a);
+
+   DEB2
+   {
+      if (c.isPrime) cout << ", prime";
+      if (  isComp)  cout << ", composit";
+   }
+
+   if (c.is0 + c.isUnit + c.isPrime + isComp != 1)
+   {
+      error ("Classifiaction ambiguous");
+   }
+
+   fl();
+}
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a, factor_tag)
+{
+   typedef typename R::type T;
+   typedef typename R::unit_type UT;
+   typedef typename R::Factorization F;
+
+   doTest (c, a, primedetection_tag());
+
+   // factor()
+
+   if (! c.is0)
+   {
+      F f;
+      UT unit = c().factor (f, a);
+
+      DEB2
+      {
+         cout << ", fact.: ";
+         c.print (c().fromUnit (unit));
+         for (typename F::const_iterator i = f.begin(); i != f.end(); ++i)
+         {
+            cout << " * ";
+            c().printShort (cout, i->first, FIT_FOR_MUL);
+            cout << '^' << i->second;
+         } 
+      }
+
+      T prod = c().fromUnit (unit);
+
+      for (typename F::const_iterator i = f.begin(); i != f.end(); ++i)
+      {
+         if (! c().isPrime (i->first)) error ("factor not prime");
+         if (! c().isCanonical(i->first))   error ("factor not canonical");
+
+         for (typename F::const_iterator j = f.begin(); j != f.end(); ++j)
+         {
+            if (i == j)  continue;
+            if (! genIsCoprime (c(), i->first, j->first))
+            {
+               error ("factors are not coprime");
+            }
+         }
+
+         c().mulBy (prod, c().power (i->first, i->second));
+      } 
+
+      if (prod != a)
+      {
+         cout << "\nDifference: ";
+         c().print (cout, c().sub (prod, a));
+         error ("Product of factors wrong");
+      }
+   }
+
+   fl();
+}
+
+// two elements
+
+template<class R>
+void doTest
+  (Cache<R>&, const typename R::type&, const typename R::type&,
+   noprimedetection_tag)
+{}
+
+template<class R>
+void doTest
+  (Cache<R>& c, const typename R::type& a, const typename R::type& b,
+   primedetection_tag)
+{
+   // reinitialize one-element cache values
+
+   if (c.indexB == 0)
+   {
+      c.isPrime = c().isPrime (a);
+   }
+
+   if (c.is0 || c.is0B)  return;
+
+   if (! c.isUnit || ! c.isUnitB)  // two units has already been checked
+   {
+      bool bIsPrime = c().isPrime (b);
+
+      if ((c.isUnit && bIsPrime) || (c.isPrime && c.isUnitB))
+      {
+         if (! c().isPrime (c.mul))
+            error ("Product of unit and prime must be prime");
+      }
+      else
+      {
+         if (! c().isComposit (c.mul))
+         {
+            error ("product of two non-units must be composit");
+         }
+      }
+   }
+}
+
+
+/*****************************************************************************/
+/*************  Domains                                          *************/
+/*****************************************************************************/
+
+
+template<class R>
+void doTest (Cache<R>& c, domain_tag)
+{
+   doTest (c, ringdomain_tag());
+   doTest (c, typename R::primedetection_category());
+
+   requireCharacteristic (typename R::char_category());
+   requireNozerodivisor  (typename R::zerodivisor_category());
+}
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a, domain_tag)
+{
+   doTest (c, a, ringdomain_tag());
+   doTest (c, a, typename R::primedetection_category());
+
+   if (! c().isAssociate (a, a))
+   {
+      error ("isAssociate() must be reflexive");
+   }
+
+   if (! c.is0)
+   {
+      if (! c().isDivisor (a, a))
+      {
+         error ("isDivisor() must be reflexive");
+      }
+   }
+}
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a,
+                          const typename R::type& b, domain_tag)
+{
+   doTest (c, a, b, ringdomain_tag());
+   doTest (c, a, b, typename R::primedetection_category());
+
+   // isAssociate
+
+   bool isAssociate = c().isAssociate (a, b);
+
+   DEB2 if (isAssociate)  cout << ", a ass b";
+
+   if (isAssociate != c().isAssociate (b,a))
+   {
+      error ("isAssociate() must be symmetric");
+   }
+
+   // isDivisor
+
+   typedef typename R::type T;
+
+   if (! c.is0B)
+   {
+      bool isDivisor = c().isDivisor (a,b);
+      bool isUnitB   = c().isUnit (b);
+
+      DEB2 if (isDivisor)  cout << ", b|a";
+
+      if (! isAssociate && isDivisor && ! c.is0 && c().isDivisor (b,a))
+      {
+         error ("isDivisor() must be anti-symmetric");
+      }
+
+      T div;
+
+      if (c().isDivisor (a,b,div) != isDivisor)
+      {
+         error ("isDivisor()-2 and isDivisor()-3 inconsistent");
+      }
+
+      if (isDivisor)
+      {
+         DEB2
+         {
+            cout << ", a/b = ";
+            c.print (div);
+         }
+
+         if (c().mul (b,div) != a)  error ("exact division broken");
+
+         if (c().div (a,b) != div)  error ("div() broken");
+
+         T div2 (a);
+         c().divBy (div2,b);
+         if (div2 != div)  error ("divBy() broken");
+
+         if (isAssociate && ! c().isUnit (div))
+         {
+            error ("divisor for associates must be a unit");
+         }
+      }
+
+      if (isUnitB && ! isDivisor)  error ("unit must be a divisor");
+      if (c.isUnit && isUnitB && ! c().isUnit (div))
+      {
+         error ("unit/unit must be unit");
+      }
+      if (c.isUnit && ! isUnitB && isDivisor)
+      {
+         error ("unit has non-unit divisor");
+      }
+
+      fl();
+
+      // isAssociate
+
+      if (isAssociate)
+      {
+         if (! isDivisor)
+         {
+            error ("associates must divide each other");
+         }
+      }
+   }
+   else  // b = 0
+   {
+      if (c.is0 != isAssociate)  error ("isAssociate() for zero wrong");
+   }
+}
+
+template<class R>
+void doTest (Cache<R>& cc, const typename R::type& a,
+                           const typename R::type& b,
+                           const typename R::type& c, domain_tag)
+{
+   doTest (cc, a, b, c, ringdomain_tag());
+
+   // Transitivity of isAssociate()
+
+   if (   cc().isAssociate(a,b) && cc().isAssociate(b,c)
+       && ! cc().isAssociate(a,c))
+   {
+      error ("isAssociate() must be transitive");
+   }
+
+   // Transitivity of isDivisor()
+
+   if (! cc().is0(b) && ! cc().is0(c))
+   {
+      if (cc().isDivisor(a,b) && cc().isDivisor(b,c) && ! cc().isDivisor(a,c))
+      {
+         error ("isDivisor() must be transitive");
+      }
+   }
+}
+
+
+/*****************************************************************************/
+/*************  UFDs                                             *************/
+/*****************************************************************************/
+
+template<class R>
+void doTest (Cache<R>& c, ufd_tag)
+{
+   typedef typename R::type T;
+   typedef typename R::unit_type UT;
+
+   doTest (c, domain_tag());
+
+   // enumerate units
+
+   DEB3 cout << "Units: ";
+   bool first = true;
+
+   unsigned ub = c.numUnits ? std::min (SIZE, c.numUnits) : SIZE;
+   for (unsigned i = 0; i < ub; ++i)
+   {
+      UT unit = c().unitElement (i);
+      T  unitElem = c().fromUnit (unit);
+
+      DEB3
+      {
+         if (! first)  cout << ", ";
+         c.print (unitElem);
+         first = false;
+      }
+
+      if (! c().isUnit (unitElem))
+      {
+         error ("result of unitElement() not isUnit()");
+      }
+      
+      if (c().unitIndex (unit) != i)
+      {
+         error ("unitElement() and unitIndex() do not match");
+      }
+
+      if (c.size)
+      {
+         if (c().element(i + 1) != unitElem)
+         {
+            error ("element() and unitElement() do not match");
+         }
+      }
+   }
+
+   DEB3 cout << endl;
+}
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a, ufd_tag)
+{
+   typedef typename R::type T;
+   typedef typename R::unit_type UT;
+
+   doTest (c, a, domain_tag());
+
+   c.isCanonical = c().isCanonical (a);
+
+   DEB2  if (c.isCanonical) cout << ", canonical";
+
+   if (c.is0 && ! c.isCanonical)  error ("0 should be canonical");
+
+   // make canonical
+
+   {
+      T copy = a;
+      UT unit = c().makeCanonical (copy);
+      T unitElem = c().fromUnit (unit);
+
+      if (c().mulUnit (copy, unit) != a || c().mul (copy, unitElem) != a)
+      {
+         error ("makeCanonical() does not factor");
+      }
+
+      if (! c().isUnit(unitElem))
+      {
+         error ("makeCanonical() does not return a unit");
+      }
+      if (! c().isCanonical (copy))
+      {
+         error ("makeCanonical() does not create a canonical form");
+      }
+
+      // Canonical form of units
+
+      if (c.isUnit)
+      {
+         if (a != unitElem || ! c().is1 (copy))
+         {
+            error ("makeCanonical() of unit is broken");
+         }
+      }
+
+      // Canonical form of (non-)canonical forms
+
+      if (c.isCanonical)
+      {
+         if (! c().is1(unitElem) || copy != a)
+         {
+            error ("makeCanonical() of canonical form invalid");
+         }
+      }
+      else // ! isCanonical
+      {
+         if (c().is1(unitElem) || copy == a)
+         {
+            error ("makeCanonical() for non-canonical form invalid");
+         }
+      }
+   }
+
+   fl();
+
+   // advanced unit properties
+
+   if (c.isUnit)
+   {
+      UT unit = c().toUnit (a);
+
+      unsigned index = c().unitIndex (unit);
+      DEB2 cout << ", unit index = " << index;
+      checkIndex (c.numUnits, index, "unitIndex");
+   }
+}
+
+template<class R>
+void doTest
+  (Cache<R>& c, const typename R::type& a, const typename R::type& b, ufd_tag)
+{
+   doTest (c, a, b, domain_tag());
+
+   typedef typename R::type T;
+
+   // reinitialize one-element cache values
+
+   if (c.indexB == 0)
+   {
+      c.isCanonical = c().isCanonical (a);
+   }
+
+   // isCononical()
+   
+   const bool isCanonicalB = c().isCanonical (b);
+
+   if (c.isCanonical && isCanonicalB)
+   {
+      if (! c().isCanonical (c.mul))
+      {
+         error ("Product of canonicals must be canonical");
+      }
+   }
+}
+
+
+/*****************************************************************************/
+/*************  Euclidean Ring                                   *************/
+/*****************************************************************************/
+
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a, euclidean_tag)
+{
+   typedef typename R::type T;
+
+   doTest (c, a, ufd_tag());
+
+   c.norm = c().norm (a);
+
+   DEB2
+   {
+      cout << ", norm = " << c.norm;
+   }
+
+   if (c.is0 != (c.norm == 0))  error ("norm(a)==0 iff a==0 failed");
+   if (c.isUnit != (c.norm == 1))  error ("norm(a)==1 iff isUnit(a) failed");
+   if (c.numUnits && ((c.norm) < lastNorm)) error ("norm() decreased");
+   lastNorm = c.norm;
+
+   if (! c.is0)
+   {
+      unsigned num = c().numOfRemainders (a);
+
+      DEB2
+      {
+         cout << ", numRem: ";
+         printNumberOrInf (num);
+      }
+
+      checkInfiniteInFinite (c.size, num, "remainders");
+   }
+}
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a,
+                          const typename R::type& b, euclidean_tag)
+{
+   typedef typename R::type T;
+
+   doTest (c, a, b, ufd_tag());
+
+   lastNorm = 0;
+
+   // reinitialize one-element cache values
+
+   if (c.indexB == 0)
+   {
+      c.norm = c().norm (a);
+   }
+
+   // norm
+
+   unsigned normB  = c().norm(b);
+   unsigned normAB = c().norm(c.mul);
+
+   if (c.norm * normB < normAB)  error ("norm(a)norm(b) < norm(ab)");
+
+   // div(), quot(), and rem()
+
+   if (! c().is0 (b))
+   {
+      if (c.norm > normAB)  error ("norm(ab) < norm(a)");
+
+      // div()
+
+      T q, re;
+      c().div (a, b, q, re);
+
+      // Make sure, operators don't leave domain
+
+      checkIndex (c.size, c().index (q),  "quot");
+      checkIndex (c.size, c().index (re), "rem");
+
+      DEB2
+      {
+         cout << ", quotient = ";
+         c.print (q);
+         cout << ", remainder = ";
+         c.print (re);
+      }
+
+      if (c().add (c().mul (b, q), re) != a)  error ("div() fails");
+
+      // rem() and quot()
+
+      if (c().rem(a,b) != re)  error ("rem() inconsistent with div()");
+
+      T x = a;
+      c().reduce (x, b);
+      if (x != re)  error ("reduce() inconsistent with div()");
+
+      if (c().quot(a,b) != q)  error ("quot() inconsistent with div()");
+
+      x = a;
+      c().quotient (x, b);
+      if (x != q)  error ("quotient() inconsistent with div()");
+
+      if (c().norm (re) >= c().norm (b))  error ("norm(rem()) >= norm(b)");
+
+      fl();
+   }
+
+   // genGcd()
+
+   {
+      T ma, mb;
+      T g = genGcd (c(), a, b, ma, mb);
+
+      DEB2
+      {
+         cout << ", gcd(a,b) = ";
+         c.print (g);
+         cout << ", ma = ";
+         c.print (ma);
+         cout << ", mb = ";
+         c.print (mb);
+      }
+
+      if (c().is0 (g))
+      {
+         if (! c.is0 || ! c.is0B)  error ("gcd(a,b) is zero");
+      }
+      else
+      {
+         if (! c().isDivisor(a,g) || ! c().isDivisor(b,g))
+         {
+            error ("gcd(a,b) does not divide a or b");
+         }
+      }
+
+      if (c().add (c().mul (a, ma), c().mul (b, mb)) != g)
+      {
+         error ("multiplicators wrong");
+      }
+
+      if (genGcd (c(), a, b) != g)  error ("genGcd()-3 broken");
+
+      T ma2;
+      if (genGcd (c(), a, b, ma2) != g || ma2 != ma)
+      {
+         error ("genGcd()-4 broken");
+      }
+
+      fl();
+   }
+}
+
+
+/*****************************************************************************/
+/*************  Field                                            *************/
+/*****************************************************************************/
+
+
+template<class R>
+void doTest (Cache<R>& c, field_tag)
+{
+   requireCharacteristic (typename R::char_category());
+   requireNozerodivisor  (typename R::zerodivisor_category());
+
+   typedef typename R::type T;
+
+   doTest (c, ringfield_tag());
+
+   if (c.size)
+   {
+      unsigned prime;
+
+      if (! Prime::isPrimePower (c.size, prime, c.extensionDegree))
+      {
+         error ("Size of finite field must be a prime power");
+      }
+      else
+      {
+         if (c.characteristic != prime)
+         {
+            error ("characteristic() and field size incompatible");
+         }
+      }
+   }
+}
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a, field_tag)
+{
+   typedef typename R::type T;
+
+   doTest (c, a, ringfield_tag());
+
+   if (! c.is0)
+   {
+      // multiplicative inverse
+
+      c.recip = c().recip(a);
+      DEB2
+      {
+         cout << ", a^-1 = ";
+         c.print (c.recip);
+      }
+
+      if (! c().is1 (c().mul (a, c.recip)))  error ("a * (a^-1) != 1");
+
+      {
+         T rr = a;
+         c().reciprocal (rr);
+
+         if (rr != c.recip)  error ("reciprocal() broken");
+      }
+
+      fl();
+   }
+}
+
+template<class R>
+void doTest
+   (Cache<R>& c, const typename R::type& a, const typename R::type& b,
+    field_tag)
+{
+   typedef typename R::type T;
+
+   doTest (c, a, b, ringfield_tag());
+
+   if (! c.is0B)
+   {
+      T q = c().div(a, b);
+      T r = c().recip (b);
+      DEB2
+      {
+         cout << ", a/b = ";
+         c.print (q);
+      }
+
+      if (c().mul (a, r) != q)  error ("div() fails");
+
+      T x = a;
+      c().divBy (x, b);
+      if (x != q) error ("divBy() fails");
+
+      fl();
+   }
+}
+
+
+/*****************************************************************************/
+/*************  Finite Field                                     *************/
+/*****************************************************************************/
+
+template<class R>
+void doTest (Cache<R>& c, gf_tag)
+{
+   primitivesCounter = 0;
+
+   typedef typename R::type T;
+
+   doTest (c, field_tag());
+
+   unsigned extensionDegree = c().extensionDegree();
+
+   DEB1  cout << "  Degree: " << extensionDegree << endl;
+
+   if (c.size == 0)
+   {
+      error ("size infinite in finite field");
+   }
+   else
+   {
+      if (c.extensionDegree != extensionDegree)
+      {
+         error ("extensionDegree() and field size incompatible");
+      }
+   }
+}
+
+template<class R>
+void doTest (Cache<R>& c, const typename R::type& a, gf_tag)
+{
+   typedef typename R::type T;
+
+   doTest (c, a, field_tag());
+
+   // isPrimitiveElement()
+
+   c.isPrimitiveElement = c().isPrimitiveElement(a);
+
+   if (c.isPrimitiveElement)
+   {
+      DEB2  cout << ", primitive element";
+      ++primitivesCounter;
+   }
+
+   if (! c.is0)
+   {
+      if (c.isPrimitiveElement != (c.order == c.size - 1))
+      {
+         error ("isPrimitiveRoot() incompatible with order()");
+      }
+   }
+   else  // a = 0
+   {
+      if (c.isPrimitiveElement)  error ("0 cannot be primitive element");
+   }
+
+   fl();
+}
+
+inline
+void counterTest (CacheBase& c, bool all, gf_tag)
+{
+   counterTest (c, all, field_tag());
+
+   // number of primitive elements
+
+   checkCounter (Prime::eulerPhi (c.size - 1), primitivesCounter, all,
+                 "number of primitive elements");
+}
+
+
+/*****************************************************************************/
+/*************  Cyclic Field                                     *************/
+/*****************************************************************************/
+
+
+template<class R>
+void doTest (Cache<R>& c, cyclic_tag)
+{
+   doTest (c, gf_tag());
+
+   if (c.extensionDegree != 1)  error ("extensionDegree() != 1");
+}
+
+
+/*****************************************************************************/
+/*************  Vectorspace                                      *************/
+/*****************************************************************************/
+
+template<class V>
+void doTest (Cache<V>& c, vectorspace_tag)
+{
+   doTest (c, group_tag());
+   
+   typedef typename V::scalar_algebra A;
+   typedef typename V::type T;
+   typedef typename V::scalar_type ST;
+   const A alg = c().getScalarAlgebra();
+
+   c.dimension = c().dimension();
+   c.baseSize  = alg.size();
+
+   DEB1
+   {
+      cout << "  Dim:  " << c.dimension << "\n"
+              "  Alg:  " << alg << endl;
+   }
+
+   ensureEqualType (static_cast<ST*>(0), static_cast<typename A::type*>(0));
+
+   if (c.baseSize == 0 && c.size != 0)
+   {
+      error("Finite vector space over infinte field");
+   }
+   if (c.baseSize != 0 && c.size == 0)
+   {
+      error("Infinite vector space over finte field");
+   }
+   if (c.baseSize != 0 && c.size != 0)
+   {
+      if (logInt (std::numeric_limits<unsigned>::max(), unsigned (c.baseSize))
+          <= int (c.dimension))
+      {
+         if (c.size != powInt (c.baseSize, c.dimension))
+            error ("dim (F^n) != (dim F)^n");
+      }
+   }
+
+   Array<ST> coords (c.dimension);
+   T x = T();
+   c().toCoord (x, &coords[0]);
+
+   for (unsigned i = 0; i < c.dimension; ++i)
+   {
+      if (! alg.is0 (coords[i]))  error ("zero has non-zero coordinates");
+   }
+}
+
+template<class V>
+void doTest (Cache<V>& c, const typename V::type& a, vectorspace_tag)
+{
+   doTest (c, a, group_tag());
+   
+   typedef typename V::scalar_algebra A;
+   typedef typename V::type T;
+   typedef typename V::scalar_type ST;
+   const A& alg = c().getScalarAlgebra();
+
+   // toCoords()
+   
+   Array<ST> coords (c.dimension);
+   c().toCoord (a, &coords[0]);
+
+   T aCopy = a;
+
+   DEB2
+   {
+      cout << ", coord = ";
+      for (unsigned i = 0; i < c.dimension; ++i)
+      {
+         if (i > 0)  cout << ',';
+         alg.printShort (cout, coords[i]);
+      }
+   }
+
+   for (unsigned i = 0; i < c.dimension; ++i)
+   {
+      checkIndex (c.baseSize, alg.index(coords[i]), "coords");
+      if (coords[i] != c().coord(a,i))
+      {
+         error("coord() and toCoords() mismatch");
+      }
+      typename V::scalar_reference ref = c().coord(aCopy, i);
+      if (coords[i] != ref)  error("coord() and toCoords() mismatch");
+   }
+
+   // fromCoords()
+
+   T b;
+   c().fromCoord (b, &coords[0]);
+   if (a != b)  error ("fromCoord() broken");
+
+   // coords()
+
+   b = T();
+   for (unsigned i = 0; i < c.dimension; ++i)  c().coord(b, i) = coords[i];
+   if (a != b)  error ("Assignment to coord() broken");
+
+   b = T();
+   for (int i = c.dimension - 1; i >= 0; --i)  c().coord(b, i) = coords[i];
+   if (a != b)  error ("Assignment to coord() broken");
+
+   // Multiplication with 1
+
+   b = c().mul (a, alg.one());
+
+   if (b != a)  error ("1v != v");
+
+   // Multiplication with 0
+
+   b = c().mul (a, ST());
+
+   if (! c().is0 (b))  error ("0v != 0");
+
+   //  neg()
+
+   b = c.neg;
+   for (unsigned i = 0; i < c.dimension; ++i)
+   {
+      if (c().coord(b,i) != alg.neg (c().coord(a,i)))
+      {
+         error ("neg() for vector does not match neg() for coordinates");
+      }
+   }
+
+   // mul()
+
+   if (sqr (c.index) < SIZE)
+   {
+      unsigned SS = unsigned (HINTLIB_MN sqrt(double(SIZE)));
+      if (c.baseSize)  SS = std::min (SS, c.baseSize);
+
+      for (unsigned l = 0; l < SS; ++l)
+      {
+         ST scal = alg.element (l);
+
+         b = c().mul (a, scal);
+
+         for (unsigned i = 0; i < c.dimension; ++i)
+         {
+            if (c().coord(b,i) != alg.mul (c().coord(a,i), scal))
+            {
+               error ("mul() for vector does not match mul() for coordinates");
+            }
+         }
+      }
+   }
+
+   // Associativity and Distributivity (scalar, scalar, vector)
+
+   if (cube (c.index) < SIZE)
+   {
+      unsigned SS = unsigned (HINTLIB_MN pow(double(SIZE), 1.0/3.0));
+      if (c.baseSize)  SS = std::min (SS, c.baseSize);
+
+      for (unsigned l1 = 0; l1 < SS; ++l1)
+      {
+         ST scal1 = alg.element (l1);
+
+         for (unsigned l2 = 0; l2 < SS; ++l2)
+         {
+            ST scal2 = alg.element (l2);
+
+            if (   c().mul (a, alg.mul (scal1, scal2))
+                != c().mul (c().mul (a, scal1), scal2))
+            {
+               error ("(ab)v != a(bv)");
+            }
+
+            if (   c().mul (a, alg.add (scal1, scal2))
+                != c().add (c().mul(a, scal1), c().mul(a, scal2)))
+            {
+               error ("(a+b)v != av + bv");
+            }
+         }
+      }
+   }
+
+   fl();
+}
+
+template<class V>
+void doTest
+   (Cache<V>& c, const typename V::type& a, const typename V::type& b,
+    vectorspace_tag)
+{
+   doTest (c, a, b, group_tag());
+   
+   typedef typename V::scalar_algebra A;
+   typedef typename V::type T;
+   typedef typename V::scalar_type ST;
+   const A& alg = c().getScalarAlgebra();
+
+   // add()
+
+   for (unsigned i = 0; i < c.dimension; ++i)
+   {
+      if (c().coord(c.add, i) != alg.add (c().coord(a,i), c().coord(b,i)))
+      {
+         error ("add() for vector does not match add() for coordinates");
+      }
+   }
+
+   // Distributivity (scalar, vector, vector)
+
+   if (cube (c.index) < SIZE && cube (c.indexB) < SIZE)
+   {
+      unsigned SS = unsigned (HINTLIB_MN pow(double(SIZE), 1.0/3.0));
+      if (c.baseSize)  SS = std::min (SS, c.baseSize);
+
+      for (unsigned l = 0; l < SS; ++l)
+      {
+         ST scal = alg.element (l);
+
+         if (   c().mul (c.add, scal)
+             != c().add (c().mul (a, scal), c().mul (b, scal)))
+         {
+            error ("a (v1+v2) != (a v1) + (b + v2)");
+         }
+      }
+   }
+
+   fl();
 }
 
 
@@ -2286,8 +2587,8 @@ inline const char* typeName (group_tag)       { return "group"; }
 inline const char* typeName (ring_tag)        { return "ring"; }
 inline const char* typeName (domain_tag)      { return "integral domain"; }
 inline const char* typeName (ufd_tag)         { return "UFD"; }
-inline const char* typeName (euclidean_tag)   { return "Euclidean ring"; }
-inline const char* typeName (integer_tag)     { return "Euclidean ring of integers"; }
+inline const char* typeName (euclidean_tag)   { return "Euclidean domain"; }
+inline const char* typeName (integer_tag)     { return "Euclidean domain of integers"; }
 inline const char* typeName (field_tag)       { return "field"; }
 inline const char* typeName (numberfield_tag) { return "number field"; }
 inline const char* typeName (rational_tag)    { return "field of rational numbers"; }
@@ -2302,8 +2603,6 @@ inline const char* typeName (vectorspace_tag) { return "vector space"; }
 
 /*************  Main test procedure  *****************************************/
 
-bool performTest (const std::string&, const std::string&, const std::string&);
-
 template<class A>
 void doTests(A r, const char* type)
 {
@@ -2315,16 +2614,25 @@ void doTests(A r, const char* type)
 
    if (! performTest (typeName(cat()), ss.str(), type))  return;
 
-   NORMAL cout << "Testing " << typeName(cat())
-               << " \"" << ss.str() << "\" (" << type << ")..." << endl;
+   // Initialize cache
 
+   Cache<A> c (r);
+
+   c.size = c().size();
    unsigned S = SIZE;
-   if (r.size() > 0)  S = std::min (S, r.size());
+   if (c.size > 0)  S = std::min (S, c.size);
 
    // No variable
 
-   doTest (r, typename A::size_category());
-   doTest (r, cat());
+   DEB1
+   {
+      cout << "  Size: ";
+      printNumberOrInf (c.size);
+      cout << endl;
+   }
+
+   doTest (c, typename A::size_category());
+   doTest (c, cat());
 
    // One variable
 
@@ -2340,35 +2648,26 @@ void doTests(A r, const char* type)
          break;
       }
 
-      DEB1 { cout << setw(W); r.printShort (cout, a); }
+      DEB1 { cout << setw(W); c.print (a); }
 
       // element() and index()
 
-      unsigned ind = r.index(a);
-      DEB2 cout << ", index = " << ind;
+      c.index = r.index(a);
+      DEB2 cout << ", index = " << c.index;
       fl();
-      if (ind != i)  error ("index(a) != i");
+      if (c.index != i)  error ("index(a) != i");
 
-      DEB2
-      {
-         cout << ", fit for mul: ";
-         r.printShort (cout, a, FIT_FOR_MUL);
-      }
-      else
-      {
-         std::ostringstream ss;
-         r.printShort (ss, a, FIT_FOR_MUL);
-      }
-
-      doTest (r, a, cat());
+      doTest (c, a, cat());
 
       DEB1 cout << endl;
    }
 
+   counterTest (c, S == c.size, cat());
+
    // two variables
 
    S = unsigned(HINTLIB_MN sqrt(double(SIZE)));
-   if (r.size() > 0)  S = std::min (S, r.size());
+   if (c.size > 0)  S = std::min (S, c.size);
 
    for (unsigned i = 0; i < S; i++)
    {
@@ -2380,8 +2679,8 @@ void doTests(A r, const char* type)
 
          DEB1
          {
-            cout << setw(W); r.printShort (cout, a);
-            cout << setw(W); r.printShort (cout, b);
+            cout << setw(W); c.print (a);
+            cout << setw(W); c.print (b);
          }
 
          // Make sure, == makes sense
@@ -2389,7 +2688,7 @@ void doTests(A r, const char* type)
          if ((a == b) != (i == j))  error ("a==b incorrect");
          if ((a != b) != (i != j))  error ("a!=b incorrect");
 
-         doTest (r, a, b, cat());
+         doTest (c, a, b, cat());
 
          DEB1 cout << endl;
       }
@@ -2398,7 +2697,7 @@ void doTests(A r, const char* type)
    // three variables
 
    S = unsigned(HINTLIB_MN pow(double(SIZE), 1.0 / 3.0));
-   if (r.size() > 0)  S = std::min (S, r.size());
+   if (c.size > 0)  S = std::min (S, c.size);
 
    for (unsigned i = 0; i < S; i++)
    {
@@ -2410,16 +2709,16 @@ void doTests(A r, const char* type)
 
          for (unsigned k = 0; k < S; ++k)
          {
-            const T c = r.element (k);
+            const T d = r.element (k);
 
             DEB1
             {
-               cout << setw(W); r.printShort (cout, a);
-               cout << setw(W); r.printShort (cout, b);
-               cout << setw(W); r.printShort (cout, c);
+               cout << setw(W); c.print (a);
+               cout << setw(W); c.print (b);
+               cout << setw(W); c.print (d);
             }
 
-            doTest (r, a, b, c, cat());
+            doTest (c, a, b, d, cat());
 
             DEB1 cout << endl;
          }
