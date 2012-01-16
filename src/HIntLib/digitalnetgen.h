@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -53,6 +53,8 @@ class DigitalNetGen: public QRNSequenceBase, public DigitalNet
 public:
    typedef typename A::type T;
 
+   ~DigitalNetGen() {}
+
    const GeneratorMatrixVec<T> & getGeneratorMatrix() const  { return c; }
    Index getOptimalNumber(Index max) const;
 
@@ -64,9 +66,9 @@ protected:
    const A arith;
    const typename A::scalar_algebra scalArith;
    const T base;
-   const unsigned totalPrec;
-   GeneratorMatrixVec<T> c;
    const unsigned prec;
+   GeneratorMatrixVec<T> c;
+   const unsigned vecPrec;
    const S vecBase;
    Array<T> x;      // current vector (size dim)
    Array<T> xStart; // Inital values for x (size dim)
@@ -188,7 +190,7 @@ private:
  *
  *  Traverses the net in gray-code order
  *
- *  This optimized routine assumes that A is a filed with cyclic additive
+ *  This optimized routine assumes that A is a field with cyclic additive
  *  group (i.e.  base is prime).
  */
 

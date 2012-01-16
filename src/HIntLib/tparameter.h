@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,8 +26,7 @@
 #pragma interface
 #endif
 
-#include <HIntLib/generatormatrixgen.h>
-#include <HIntLib/generatormatrix2row.h>
+#include <HIntLib/generatormatrix.h>
 #include <HIntLib/lookupfield.h>
 #include <HIntLib/linearalgebra.h>
 #include <HIntLib/linearalgebra2.h>
@@ -35,11 +34,18 @@
 namespace HIntLib
 {
 
+template<class T> class GeneratorMatrixGen;
+template<class T> class GeneratorMatrixGenRow;
+template<class T> class GeneratorMatrix2Row;
+
+void makeRegular (GeneratorMatrixGenRow<unsigned char>&, unsigned d);
+void fixOneDimensionalProjections (GeneratorMatrixGenRow<unsigned char>&);
+void fixTwoDimensionalProjections (GeneratorMatrixGenRow<unsigned char>&);
+void withIdentityMatrix (GeneratorMatrixGenRow<unsigned char>&, unsigned d = 0);
+void withIdentityMatrix2(GeneratorMatrixGenRow<unsigned char>&, unsigned d = 0);
+
 
 /***********  TCalc  *********************************************************/
-
-void fixOneDimensionalProjections (GeneratorMatrixGen<unsigned char>&);
-void fixTwoDimensionalProjections (GeneratorMatrixGen<unsigned char>&);
 
 /**
  *  TCalc
@@ -185,28 +191,6 @@ bool TCalcGen::singular (int thickness)
 }
 
 
-/**
- *  copy To Selection ()
- */
-
-inline
-void TCalcGen::copyToSelection (int d, int num, unsigned& pos)
-{
-   for (int i = 0; i < num; ++i)
-   {
-      for (int j = 0; j < M; ++j)  selection [pos * M + j] = gm (d, j, i);
-      ++pos;
-   }
-}
-
-inline
-void TCalcGen::copyToSelection ()
-{
-   unsigned pos = 0;
-   for (int d = 0; d < dim; ++d)  copyToSelection (d, partition[d], pos);
-}
-
-
 /*****************  Interface to public routines  ****************************/
 
 enum TOption
@@ -222,13 +206,10 @@ enum TOption
  *  tParameter()
  */
 
-int tParameter (
-      const GeneratorMatrixGen<unsigned char> &, int lb, int ub,
-      TOption = DEFAULT);
+int tParameter (const GeneratorMatrix&, int lb, int ub, TOption = DEFAULT);
 
 inline
-int tParameter (
-      const GeneratorMatrixGen<unsigned char> &gm, TOption opts = DEFAULT)
+int tParameter (const GeneratorMatrix& gm, TOption opts = DEFAULT)
 {
    return tParameter (gm, 0, gm.getM(), opts);
 }
@@ -238,25 +219,32 @@ int tParameter (
  */
 
 int tParameterRestricted (
-      const GeneratorMatrixGen<unsigned char> &,
+      const GeneratorMatrix&,
       int lb, int ub, int maxRows, TOption opts = DEFAULT);
 
 /**
  *  confirmT()
  */
 
-bool confirmT (
-      const GeneratorMatrixGen<unsigned char> &gm, int t,
-      TOption opts = DEFAULT);
+bool confirmT (const GeneratorMatrix& gm, int t, TOption opts = DEFAULT);
 
 /**
  *  confirmTRestricted ()
  */
 
 bool confirmTRestricted (
-      const GeneratorMatrixGen<unsigned char> &gm, int t, int maxRows,
-      TOption opts = DEFAULT);
+      const GeneratorMatrix& gm, int t, int maxRows, TOption opts = DEFAULT);
 
+
+/*************** t-Parameter of low-dimensionl projections *******************/
+
+
+int tParameter1DimProjection (const GeneratorMatrix&, unsigned d);
+int tParameter2DimProjection (const GeneratorMatrix&, unsigned d1, unsigned d2);
+
+int tParameterMax1DimProjection (const GeneratorMatrix&);
+int tParameterMax2DimProjection (const GeneratorMatrix&);
+int tParameterMax3DimProjection (const GeneratorMatrix&);
 
 }  // namespace HIntLib
 

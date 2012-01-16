@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -49,10 +49,10 @@ void L::assign (
    cerr <<"A3" <<endl;
    cerr << "dim = " << srcM.getDimension() << " "<<dstM.getDimension() << endl;
    cerr << "m = " << srcM.getM() << " "<<dstM.getM() << endl;
-   cerr << "totalPrec = " << srcM.getTotalPrec() << " "<<dstM.getTotalPrec() << endl;
-   cerr << "base = " << srcM.getBase() << " "<<dstM.getBase() << endl;
    cerr << "prec = " << srcM.getPrec() << " "<<dstM.getPrec() << endl;
-   cerr << "vec = " << srcM.getVectorization() << " "<<dstM.getVectorization() << endl;
+   cerr << "base = " << srcM.getBase() << " "<<dstM.getBase() << endl;
+   cerr << "vecPrec = " << srcM.getVecPrec() << " "<<dstM.getVecPrec() << endl;
+   cerr << "vec = " << srcM.getVec() << " "<<dstM.getVec() << endl;
 #endif
 
    GeneratorMatrix::checkCopy (src, dst);
@@ -67,24 +67,11 @@ void L::assign (
       throw DimensionTooHigh (dstDim, dst.getDimension() - 1);
    }
 
-   if (dst.getVectorization() == 1 && src.getVectorization() == 1)
+   if (dst.getVec() == 1)
    {
       for (unsigned r = 0; r < dst.getM(); ++r)
       {
-         for (unsigned b = 0; b < dst.getTotalPrec(); ++b)
-         {
-            dst.setv (dstDim, r, b, T(src.getVector (srcDim, r, b)));
-         }
-      }
-   }
-   else if (dst.getVectorization() == 1)
-   {
-      // FIXME Optimization for src.getVectorization() > 1 missing
-      // cf. GeneratorMatrixGen::assign()
-
-      for (unsigned r = 0; r < dst.getM(); ++r)
-      {
-         for (unsigned b = 0; b < dst.getTotalPrec(); ++b)
+         for (unsigned b = 0; b < dst.getPrec(); ++b)
          {
             dst.setv (dstDim, r, b, src.getDigit (srcDim, r, b));
          }
@@ -93,7 +80,7 @@ void L::assign (
    else  // dst use non-trivial vectorization
    {
       const unsigned base = dst.getBase();
-      const unsigned vectorization = dst.getVectorization();
+      const unsigned vectorization = dst.getVec();
       const unsigned leadingDigits = dst.getNumOfLeadingDigits();
 
       for (unsigned r = 0; r < dst.getM(); ++r)
@@ -110,7 +97,7 @@ void L::assign (
             dst.setv (dstDim, r, 0, x);
          }
 
-         for (unsigned b = 1; b < dst.getPrec(); ++b)
+         for (unsigned b = 1; b < dst.getVecPrec(); ++b)
          {
             T x (0);
             for (unsigned v = 0; v < vectorization; ++v)
@@ -132,6 +119,42 @@ void L::assign (
 
 
 /*****************************************************************************/
+/***     Generator Matrix Base                                             ***/
+/*****************************************************************************/
+
+inline
+L::GeneratorMatrixVecBase::GeneratorMatrixVecBase
+      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec,
+       unsigned _vec)
+   : GeneratorMatrix (_base, _dim, _m, _prec),
+     vec (_vec),
+     vecBase (powInt (base, _vec)),
+     vecPrec (divAndRoundUp (_prec, _vec)),
+     dimPrec (dim*vecPrec)
+{}
+
+inline
+L::GeneratorMatrixVecBase::GeneratorMatrixVecBase
+      (const GeneratorMatrix &gm, unsigned _vec)
+   : GeneratorMatrix (gm),
+     vec (_vec),
+     vecBase (powInt (base, _vec)),
+     vecPrec (divAndRoundUp (prec, _vec)),
+     dimPrec (dim * vecPrec)
+{}
+
+inline
+L::GeneratorMatrixVecBase::GeneratorMatrixVecBase
+      (const GeneratorMatrixVecBase& gm)
+   : GeneratorMatrix (gm),
+     vec     (gm.vec),
+     vecBase (gm.vecBase),
+     vecPrec (gm.vecPrec),
+     dimPrec (gm.dimPrec)
+{}
+
+
+/*****************************************************************************/
 /***     Generator Matrix Vec <T>                                          ***/
 /*****************************************************************************/
 
@@ -141,9 +164,9 @@ void L::assign (
 
 template<typename T>
 L::GeneratorMatrixVec<T>::GeneratorMatrixVec
-      (unsigned _base, unsigned _vec, unsigned _dim)
+      (unsigned _base, unsigned _dim, unsigned _vec)
    : GeneratorMatrixVecBase (
-         _base, _vec, _dim, getDefaultM (_base), getDefaultTotalPrec (_base))
+         _base, _dim, getDefaultM (_base), getDefaultPrec (_base), _vec)
 {
    checkVecBase();
    allocate();
@@ -151,9 +174,9 @@ L::GeneratorMatrixVec<T>::GeneratorMatrixVec
 
 template<typename T>
 L::GeneratorMatrixVec<T>::GeneratorMatrixVec
-      (unsigned _base, unsigned _vec, unsigned _dim, unsigned _m)
+      (unsigned _base, unsigned _dim, unsigned _m, unsigned _vec)
    : GeneratorMatrixVecBase (
-         _base, _vec, _dim, _m, std::min (_m, getDefaultTotalPrec (_base)))
+         _base, _dim, _m, std::min (_m, getDefaultPrec (_base)), _vec)
 {
    checkVecBase();
    allocate();
@@ -178,13 +201,14 @@ L::GeneratorMatrixVec<T>::GeneratorMatrixVec (const GeneratorMatrixVec<T> &gm)
  */
 
 template<typename T>
-L::GeneratorMatrixVec<T>::GeneratorMatrixVec (const GeneratorMatrix &gm)
+L::GeneratorMatrixVec<T>::GeneratorMatrixVec
+      (const GeneratorMatrix &gm)
    : GeneratorMatrixVecBase (
       gm.getBase(),
-      digitsRepresentable (T(gm.getBase())),
       gm.getDimension(),
       gm.getM(),
-      gm.getTotalPrec())
+      gm.getPrec(),
+      digitsRepresentable (T(gm.getBase())))
 {
    checkVecBase();
    allocate();
@@ -192,52 +216,24 @@ L::GeneratorMatrixVec<T>::GeneratorMatrixVec (const GeneratorMatrix &gm)
 }
 
 
-/**
- *  Constructor  (truncating a given Generator Matrix)
- */
-
 template<typename T>
-L::GeneratorMatrixVec<T>::GeneratorMatrixVec (
-   const GeneratorMatrixVec<T> &gm, const GMCopy &c)
-: GeneratorMatrixVecBase
-   (gm.getBase(),
-    c.getVectorization (gm, std::numeric_limits<T>::digits),
-    c.getDimension (gm),
-    c.getM (gm),
-    c.getTotalPrec (gm))
+L::GeneratorMatrixVec<T>::GeneratorMatrixVec
+      (const GeneratorMatrix &gm, unsigned _vec)
+   : GeneratorMatrixVecBase (
+      gm.getBase(),
+      gm.getDimension(),
+      gm.getM(),
+      gm.getPrec(),
+      _vec)
 {
    checkVecBase();
-
-   const int dd = c.getEqui();
-   checkCopyDim (gm, *this, dd);
-
-   allocate();
-
-   for (unsigned d = 0; d < dim - dd; ++d)  assign (gm, d, *this, d + dd);
-
-   if (dd && dim)  makeEquidistributedCoordinate (0);
-}
-
-template<typename T>
-L::GeneratorMatrixVec<T>::GeneratorMatrixVec (
-   const GeneratorMatrix &gm, const GMCopy& c)
-: GeneratorMatrixVecBase
-   (gm.getBase(),
-    c.getVectorization(gm, std::numeric_limits<T>::digits),
-    c.getDimension (gm),
-    c.getM (gm),
-    c.getTotalPrec (gm))
-{
-   checkVecBase();
-
-   const int dd = c.getEqui();
-   checkCopyDim (gm, *this, dd);
+   if (_vec < 1 || _vec > digitsRepresentable (T(gm.getBase())))
+   {
+      throw FIXME (__FILE__, __LINE__);
+   }
 
    allocate();
-
-   for (unsigned d = 0; d < dim - dd; ++d)  assign (gm, d, *this, d + dd);
-
-   if (dd && dim)  makeEquidistributedCoordinate (0);
+   for (unsigned d = 0; d < dim; ++d)  assign (gm, d, *this, d);
 }
 
 
@@ -275,10 +271,10 @@ template<typename T>
 typename L::GeneratorMatrixVec<T>::D
 L::GeneratorMatrixVec<T>::getd (unsigned d, unsigned r, unsigned b) const
 {
-   if (vec == 1) return operator()(d,r,b);
+   if (vec == 1) return (*this)(d,r,b);
 
    b += getNumOfMissingDigits();
-   return (operator()(d, r, b / vec) / powInt(base, vec - b % vec - 1)) % base;
+   return ((*this)(d, r, b / vec) / powInt(base, vec - b % vec - 1)) % base;
 }
 
 
@@ -295,7 +291,7 @@ void L::GeneratorMatrixVec<T>::setd
    {
       b += getNumOfMissingDigits();
 
-      T& vector = c[r*dimPrec + d*prec + b / vec];
+      T& vector = c[r*dimPrec + d*vecPrec + b / vec];
 
       T shift = powInt(base, vec - b % vec - 1);
 
@@ -359,23 +355,6 @@ L::GeneratorMatrixVec<T>::getDigit (unsigned d, unsigned r, unsigned b) const
 
 
 /**
- *  getVector ()
- */
-
-template<typename T>
-L::u64
-L::GeneratorMatrixVec<T>::getVector (unsigned d, unsigned r, unsigned b) const
-{
-   if (numeric_limits<T>::digits > numeric_limits<u64>::digits)
-   {
-      throw InternalError (__FILE__, __LINE__);
-   }
-
-   return u64(operator() (d, r, b));
-}
-
-
-/**
  *  setDigit ()
  */
 
@@ -391,24 +370,6 @@ void L::GeneratorMatrixVec<T>::setDigit
    }
 
    setd (d, r, b, typename GeneratorMatrixVec<T>::D(x));
-}
-
-
-/**
- *  setVector ()
- */
-
-template<typename T>
-void L::GeneratorMatrixVec<T>::setVector
-   (unsigned d, unsigned r, unsigned b, u64 x)
-{
-   if (   numeric_limits<T>::digits < numeric_limits<u64>::digits
-       && x >= getVecBase())
-   {
-      throw InternalError (__FILE__, __LINE__);
-   }
-
-   setv (d, r, b, T(x));
 }
 
 
@@ -432,17 +393,17 @@ L::GeneratorMatrixVec<T>::vSetPackedRowVector (unsigned d, unsigned b, u64 x)
 
 
 /**
- *  make Equidistributed Coordinate()
+ *  make Hammersley()
  */
 
 template<typename T>
-void L::GeneratorMatrixVec<T>::makeEquidistributedCoordinate (unsigned d)
+void L::GeneratorMatrixVec<T>::makeHammersley (unsigned d)
 {
    makeZeroMatrix (d);
 
    for (unsigned r = 0; r < m; ++r)
    {
-      if (m-(r+1) < totalPrec)  setd (d, r, m-(r+1), 1);
+      if (m-(r+1) < prec)  setd (d, r, m-(r+1), 1);
    }
 }
 
@@ -456,7 +417,7 @@ void L::GeneratorMatrixVec<T>::makeIdentityMatrix  (unsigned d)
 {
    makeZeroMatrix (d);
 
-   const unsigned ub = std::min (m, totalPrec);
+   const unsigned ub = std::min (m, prec);
    for (unsigned r = 0; r < ub; ++r)  setd (d, r, r, 1);
 }
 
@@ -470,8 +431,8 @@ void L::GeneratorMatrixVec<T>::makeZeroMatrix (unsigned d)
 {
    for (unsigned r = 0; r < m; ++r)
    {
-      T* base = c + r*dimPrec + d*prec;
-      std::fill (base, base + prec, 0);
+      T* base = c + r*dimPrec + d*vecPrec;
+      std::fill (base, base + vecPrec, 0);
    }
 }
 
@@ -490,15 +451,15 @@ template<typename T>
 bool L::operator==
    (const L::GeneratorMatrixVec<T> &m1, const L::GeneratorMatrixVec<T> &m2)
 {
-   if (m1.getVectorization() == m2.getVectorization())
+   if (m1.getVec() == m2.getVec())
    {
       return m1.getDimension() == m2.getDimension()
           && m1.getM()         == m2.getM()
-          && m1.getTotalPrec() == m2.getTotalPrec()
+          && m1.getPrec()      == m2.getPrec()
           && std::equal(
                m1.getMatrix(),
                m1.getMatrix()
-                   + m1.getDimension() * m1.getTotalPrec() * m1.getM(),
+                   + m1.getDimension() * m1.getPrec() * m1.getM(),
                m2.getMatrix());
    }
 

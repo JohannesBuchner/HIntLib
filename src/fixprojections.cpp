@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,110 +25,185 @@
 #include <memory>
 
 #include <HIntLib/tparameter.h>
+#include <HIntLib/generatormatrixvirtual.h>
+#include <HIntLib/generatormatrixgenrow.h>
 #include <HIntLib/minmaxfinder.h>
 #include <HIntLib/array.h>
+#include <HIntLib/exception.h>
 
 namespace L = HIntLib;
+typedef L::GeneratorMatrixGenRow<unsigned char> GM;
+
+using std::cout;
+using std::endl;
+
+
+/**
+ *  makeRegular()
+ */
+
+void
+L::makeRegular (GM& gm, unsigned d)
+{
+   const unsigned M = gm.getM();
+
+   if (gm.getPrec() < M)  throw FIXME(__FILE__, __LINE__);
+   if (d >= gm.getDimension())  throw InvalidDimension (d);
+
+   gm.la().basisSupplement (gm(d), M, M);
+}
+
+
+/**
+ *  fixOneDimensionalProjections()
+ */
+
+void
+L::fixOneDimensionalProjections (GM& gm)
+{
+   const unsigned M = gm.getM();
+   const unsigned DIM = gm.getDimension();
+
+   if (gm.getPrec() < M)  throw FIXME(__FILE__, __LINE__);
+
+   for (unsigned d = 0; d < DIM; ++d)  gm.la().basisSupplement (gm(d), M, M);
+}
+
+
+/**
+ *  withIdentityMatrix ()
+ */
+
+void
+L::withIdentityMatrix (GeneratorMatrixGenRow<unsigned char>& gm, unsigned d)
+{
+   const unsigned DIM = gm.getDimension();
+   if (d >= DIM)  throw InvalidDimension (d);
+
+   LinearAlgebra& la = gm.la();
+
+   const unsigned m  = gm.getM();
+   const unsigned m2 = m * m;
+   const unsigned numRows  = gm.getPrec();
+   const unsigned numRows2 = std::min (m, numRows);
+
+   Array<unsigned char> scratch (m * (m + numRows));
+   unsigned char* scratch1 = scratch.begin();
+   unsigned char* scratch2 = scratch.begin() + m2;
+
+   // Copy first matrix to scrap. Add 0-rows in order to ensure that it is a
+   // square matrix
+
+   std::copy (gm(d), gm(d) + m * numRows2, scratch1);
+   std::fill (scratch1 + m * numRows2, scratch1 + m2, 0);
+
+   // replace trailing lin.depending vectors by basis vectors, then invert
+
+   la.basisSupplement (scratch1, m, m);
+   la.matrixInverse   (scratch1, m);
+
+   // multiply with all matrices
+
+   for (unsigned d = 0; d < gm.getDimension(); ++d)
+   {
+      std::copy (gm(d), gm(d) + m * numRows, scratch2);
+      la.matrixMul (scratch2, scratch1, numRows, m, m, gm(d));
+   }
+}
+
+
+/**
+ *  withIdentityMatrix2()
+ */
+
+void
+L::withIdentityMatrix2 (GM& gm, unsigned d)
+{
+   const unsigned DIM = gm.getDimension();
+   if (d >= DIM)  throw InvalidDimension (d);
+
+   const unsigned M = gm.getM();
+   if (M != gm.getPrec())  throw FIXME (__FILE__, __LINE__);
+
+   const unsigned M2 = M * M;
+   LinearAlgebra& la = gm.la();
+
+   // Construct inverse transformation, tranforming original matrix into E
+
+   if (! la.matrixInverse (gm(d), M))
+   {
+      throw FIXME (__FILE__, __LINE__);
+   }
+
+#if 0
+   cout << "Transformation: \n";
+   printMatrix (gm(d), M, M);
+#endif
+
+   // Transform the other matrices
+
+   Array<unsigned char> temp (M2);
+
+   for (unsigned dd = 0; dd < DIM; ++dd)
+   {
+      if (dd == d)  continue;
+
+      la.matrixMul (gm(dd), gm(d), M, temp.begin());
+      std::copy (temp.begin(), temp.begin() + M2, gm(dd));
+   }
+
+#if 0
+   cout << "Transformed matrices: \n";
+   printMatrix (tm, M * DIM, M);
+#endif
+
+   // Replace transformation matrix with identity matrix
+
+   gm.makeIdentityMatrix (d);
+}
+
+
+/**
+ *  With Identity Matrix
+ */
+
+void
+L::WithIdentityMatrix::init (unsigned d, const GeneratorMatrix& src)
+{
+   GeneratorMatrixGenRow<unsigned char>& gm =
+      *new GeneratorMatrixGenRow<unsigned char> (src);
+   setMatrix (&gm);
+
+   withIdentityMatrix (gm, d);
+}
 
 
 namespace
 {
 
-using std::cout;
-using std::endl;
-
-typedef L::GeneratorMatrixGen<unsigned char> GM;
-
-
-/**
- *  tParameter1()
- *
- *  Calculates the maximum of the t-parameters of all 1-dimensional projections
- */
-
-unsigned tParameter1 (const GM& gm)
+void
+printMatrix (std::ostream& o,
+             const unsigned char* m, unsigned numRows, unsigned numCols)
 {
-   const unsigned DIM = gm.getDimension();
+   o << '\n';
 
-   L::MaxFinder<unsigned> mf;
-
-   L::GMCopy copy; copy.dim(1);
-   GM m (gm, copy);
-
-   for (unsigned i = 1; i < DIM; ++i)
+   for (unsigned row = 0; row < numRows; ++row)
    {
-      assign (gm, i, m, 0);
-      mf << tParameter (m);
+      for (unsigned col = 0; col < numCols; ++col)
+      {
+         o << std::setw (2) << int (*m++);
+      }
+      o << '\n';
    }
-
-   return mf.getMaximum();
+   o << '\n';
 }
 
-
-/**
- *  tParameter2()
- *
- *  Calculates the maximum of the t-parameters of all 2-dimensional projections
- */
-
-unsigned tParameter2 (const GM& gm)
+void
+printVector (std::ostream& o, const unsigned char* i, const unsigned char* end)
 {
-   const unsigned DIM = gm.getDimension();
-
-   L::MaxFinder<unsigned> mf;
-
-   L::GMCopy copy; copy.dim(2);
-   GM m (gm, copy);
-
-   for (unsigned i = 1; i < DIM; ++i)
-   {
-      assign (gm, i, m, 0);
-
-      for (unsigned j = 0; j < i; ++j)
-      {
-         assign (gm, j, m, 1);
-         mf << tParameter (m);
-      }
-   }
-
-   return mf.getMaximum();
-}
-
-
-/**
- *  tParameter3()
- *
- *  Calculates the maximum of the t-parameter of all 2-dimensional projections
- */
-
-unsigned tParameter3 (const GM& gm)
-{
-   const unsigned DIM = gm.getDimension();
-
-   if (DIM < 3)  return tParameter2 (gm);
-
-   L::MaxFinder<unsigned> mf;
-
-   L::GMCopy copy; copy.dim(3);
-   GM m (gm, copy);
-
-   for (unsigned i = 2; i < DIM; ++i)
-   {
-      assign (gm, i, m, 0);
-
-      for (unsigned j = 1; j < i; ++j)
-      {
-         assign (gm, j, m, 1);
-
-         for (unsigned k = 0; k < j; ++k)
-         {
-            assign (gm, k, m, 2);
-            mf << tParameter (m);
-         }
-      }
-   }
-
-   return mf.getMaximum();
+   o << '(';
+   while (i != end)  o << int (*i++);
+   o << ')';
 }
 
 
@@ -143,52 +218,18 @@ inline
 unsigned char*
 copyToMatrix (const GM& gm, unsigned dim, unsigned num, unsigned char* m)
 {
-   const unsigned M = gm.getM();
-
-   for (unsigned r = 0; r < M; ++r)
-   {
-      const unsigned char* in = gm (dim,r);
-      const unsigned char* inub = gm (dim, r) + num;
-
-      unsigned char* out = m++;
-
-      while (in != inub)
-      {
-         *out = *in++;
-         out += M;
-      }
-   }
-
-   return m - M + M * num;
-}
-
-inline
-unsigned char*
-copyToMatrix (const GM& gm, unsigned dim, unsigned char* m)
-{
-   return copyToMatrix (gm, dim, gm.getM(), m);
-}
-
-
-/**
- *  copyFromMatrix()
- */
-
-void copyFromMatrix (GM& gm, unsigned dim, const unsigned char* m)
-{
-   const unsigned M = gm.getM();
-
-   for (unsigned r = 0; r < M; ++r)
-   {
-      unsigned char* p  = gm(dim, r);
-
-      for (unsigned b = 0; b < M; ++b)  *p++ = m [b * M + r];
-   }
+   const unsigned char* base = gm(dim);
+   return std::copy (base, base + gm.getM() * num, m);
 }
 
 
 /**
  *  AchievableThickness
+ *
+ *  Records an upper bound on the maximum achievable thickness
+ *    - between two coordinates,
+ *    - from a given coordinate to all others, and
+ *    - for the whole net.
  */
 
 class AchievableThickness
@@ -215,7 +256,6 @@ private:
    const unsigned M;
 
    L::Array<unsigned char> m;
-   std::auto_ptr<L::LinearAlgebra> la;
 
    L::Array<int> data2;
    L::Array<int> data1;
@@ -225,18 +265,13 @@ private:
 AchievableThickness::AchievableThickness (const GM& gm)
    : DIM (gm.getDimension()), M (gm.getM()),
      m (M * M),
-     la (L::LinearAlgebra::make(gm.getBase())),
      data2 (DIM * DIM, M), data1 (DIM, M), data0 (M)
 {}
 
 int AchievableThickness::getMax (unsigned d) const
 {
    L::MaxFinder<int> mf;
-
-   for (unsigned i = 0; i < DIM; ++i)
-   {
-      if (i != d)  mf << get (i, d);
-   }
+   for (unsigned i = 0; i < DIM; ++i)  if (i != d)  mf << get (i, d);
    return mf.getMaximum();
 }
 
@@ -257,22 +292,31 @@ bool AchievableThickness::set (unsigned d1, unsigned d2, int x)
    else  return false;
 }
 
-void AchievableThickness::init (const GM& gm, unsigned max)
+/**
+ *  init()
+ *
+ *  Determines if there are any thickness-bounds resulting from the first
+ *  _numRows_ rows.
+ */
+
+void AchievableThickness::init (const GM& gm, unsigned numRows)
 {
+   const unsigned MAX_THICKNESS = std::min (2u * numRows, M);
+
    for (unsigned d1 = 1; d1 < DIM; ++d1)
    for (unsigned d2 = 0; d2 < d1;  ++d2)
    {
-      for (unsigned k = 1; k <= std::min (unsigned (2 * max), M); ++k)
+      for (unsigned k = 1; k <= MAX_THICKNESS; ++k)
       {
          for (unsigned k1 = 0; k1 <= k; ++k1)
          {
-            if (k1 > max || k - k1 > max)  continue;
+            if (k1 > numRows || k - k1 > numRows)  continue;
 
             unsigned char* p = m.begin();
             p = copyToMatrix (gm, d1, k1,     p);
                 copyToMatrix (gm, d2, k - k1, p);
 
-            if (! la->isLinearlyIndependent(m.begin(), k, M))
+            if (! gm.la().isLinearlyIndependent(m.begin(), k, M))
             {
                set (d1, d2, k - 1);
                goto failed;
@@ -284,31 +328,41 @@ void AchievableThickness::init (const GM& gm, unsigned max)
    }
 }
 
-void AchievableThickness::update (const GM& gm, int max)
+
+/**
+ *  update()
+ *
+ *  Check if there are any new thickness-bounds resulting from the last one of 
+ *  _numRows_ rows.
+ */
+
+void AchievableThickness::update (const GM& gm, int numRows)
 {
    for (unsigned d1 = 1; d1 < DIM; ++d1)
    for (unsigned d2 = 0; d2 < d1;  ++d2)
    {
       {
-         if (get(d1,d2) < max) continue;
+         if (get(d1,d2) < numRows) continue;
 
          unsigned char* p = m.begin();
-         p = copyToMatrix (gm, d1, max,              p);
-             copyToMatrix (gm, d2, get(d1,d2) - max, p);
+         p = copyToMatrix (gm, d1, numRows,              p);
+             copyToMatrix (gm, d2, get(d1,d2) - numRows, p);
 
-         int num = la->numLinearlyIndependentVectors (m.begin(), get(d1,d2), M);
-         if (num < 2 * max)  set (d1, d2, num);
+         int num =
+            gm.la().numLinearlyIndependentVectors (m.begin(), get(d1,d2), M);
+         if (num < 2 * numRows)  set (d1, d2, num);
       }
 
       {
-         if (get(d1,d2) < max) continue;
+         if (get(d1,d2) < numRows) continue;
 
          unsigned char* p = m.begin();
-         p = copyToMatrix (gm, d2, max,              p);
-             copyToMatrix (gm, d1, get(d1,d2) - max, p);
+         p = copyToMatrix (gm, d2, numRows,              p);
+             copyToMatrix (gm, d1, get(d1,d2) - numRows, p);
 
-         int num = la->numLinearlyIndependentVectors (m.begin(), get(d1,d2), M);
-         if (num < 2 * max)  set (d1, d2, num);
+         int num =
+            gm.la().numLinearlyIndependentVectors (m.begin(), get(d1,d2), M);
+         if (num < 2 * numRows)  set (d1, d2, num);
       }
    }
 }
@@ -334,23 +388,76 @@ void AchievableThickness::print() const
 
 
 /**
- *  fullCorrect()
+ *  increment()
  *
- *  Correct all 2-dimensional projections simultaniously
+ *  Iterate through all linearly independent vectors.
+ *
+ *  The least significant non-zero digit is always one.
  */
 
 inline
 bool increment (unsigned char* begin, unsigned char* end, unsigned base)
 {
-   while (*begin == base - 1)
+   if (*begin == 0)  // a trailing zero can always be incremented
    {
-      *begin = 0;
-      if (++begin == end)  return false;
+      *begin = 1;
+   }
+   else   // trailing one ...
+   {
+      unsigned char* i = begin;
+
+      *i = 0;  // ... is reset to zero and triggers a carry
+      if (++i == end)  return false;
+
+      // ... carry is propagated by all digits  base-1, which are reset to 0
+
+      while (*i == base - 1)
+      {
+         *i = 0;
+         if (++i == end)  return false;
+      }
+
+      // Finaly, we reach a digit which can be incremented.
+      // However, this is now the least significant non-zero digits. If it not
+      // equal to one, we increment again by one, which resets the least
+      // significant digit.
+
+      if (++ *i > 1)  *begin = 1;
    }
 
-   ++ *begin;
    return true;
 }
+
+
+/**
+ *  fillFirstRow()
+ */
+
+inline
+void fillFirstRow (GM& gm)
+{
+   const unsigned B = gm.getBase();
+   const unsigned M = gm.getM();
+   const unsigned DIM = gm.getDimension();
+
+   unsigned char* p = gm(0);
+   std::fill (p, p + M, 0);
+   increment (p, p + M, B);
+
+   for (unsigned d = 1; d < DIM; ++d)
+   {
+      std::copy (p, p + M, gm(d));
+      p = gm(d);
+      increment (p, p + M, B);
+   }
+}
+
+
+/**
+ *  fullCorrect()
+ *
+ *  Correct all 2-dimensional projections simultaniously
+ */
 
 bool
 fullCorrect (
@@ -359,10 +466,18 @@ fullCorrect (
 {
    const unsigned DEB = 0;
 
+   // Geometry of the matrix
+
+   const unsigned M   = gm.getM();
+   const unsigned M2  = M * M;
+   const unsigned DIM = gm.getDimension();
+   const unsigned B   = gm.getBase();
+   L::LinearAlgebra& la = gm.la();
+
    if (DEB > 1) cout << endl;
    if (DEB > 0)
    {
-      cout << "Doing dimension " << d << ", out = " << out;
+      cout << "Doing dimension " << d << "/" << DIM << ", out = " << out;
       if (specialAlgo)  cout << ", special algo";
       cout << endl;
    }
@@ -375,23 +490,14 @@ fullCorrect (
    }
 #endif
  
-   // Geometry of the matrix
-
-   const unsigned M   = gm.getM();
-   const unsigned M2  = M * M;
-   const unsigned DIM = gm.getDimension();
-   const unsigned B   = gm.getBase();
-
-   std::auto_ptr<L::LinearAlgebra> la (L::LinearAlgebra::make (B));
-
    // we need  m^2 (3 + dim) + 2 M  bytes
 
-   unsigned char* const trans1     = work;
-   unsigned char* const trans2     = trans1 + M2;
-   unsigned char* const tm         = trans2 + M2;
-   unsigned char* const m          = tm + M2 * DIM;
-   unsigned char* const candidate  = m + M2;
-   unsigned char* const optimalVec = candidate + M;
+   unsigned char* const trans1     = work;          // m^2
+   unsigned char* const trans2     = trans1 + M2;   // m^2
+   unsigned char* const tm         = trans2 + M2;   // m^2 * dim
+   unsigned char* const m          = tm + M2 * DIM; // m^2
+   unsigned char* const candidate  = m + M2;        // m
+   unsigned char* const optimalVec = candidate + M; // m
 
    // determine breadth resulting from original vector
 
@@ -414,7 +520,7 @@ fullCorrect (
          p = copyToMatrix (gm, d,  out + 1,       p);
              copyToMatrix (gm, d2, M - (out + 1), p);
 
-         int num = la->numLinearlyIndependentVectors (m, M, M);
+         int num = la.numLinearlyIndependentVectors (m, M, M);
          if (num < out + 1)
          {
             originalBreadth = -1;
@@ -423,7 +529,7 @@ fullCorrect (
 
          int localBreadth = num - (out + 1);
          
-         if (originalBreadth > localBreadth)  originalBreadth = localBreadth;
+         if (localBreadth < originalBreadth)  originalBreadth = localBreadth;
       }
 
       if (DEB > 1)  cout << "Original vector has breadth " << originalBreadth
@@ -444,19 +550,29 @@ fullCorrect (
    // Build transformation matrix, tranforming E into original matrix
 
    copyToMatrix (gm, d, out, trans2);
-   if (int (la->basisSupplement (trans2, out, M)) < out)
+   if (int (la.basisSupplement (trans2, out, M)) < out)
    {
-      cout << "Error basisSupplement()";
-      exit(1);
+      throw L::InternalError (__FILE__, __LINE__);
+   }
+
+   if (DEB > 2)
+   {
+      cout << "Inverse Transformation: \n";
+      printMatrix (cout, trans2, M, M);
    }
 
    // Construct inverse transformation, tranforming original matrix into E
 
    std::copy (trans2, trans2 + M2, trans1);
-   if (! la->matrixInverse (trans1, M))
+   if (! la.matrixInverse (trans1, M))
    {
-      cout << "Error matrixInverse()" <<endl;
-      exit (1);
+      throw L::InternalError (__FILE__, __LINE__);
+   }
+
+   if (DEB > 2)
+   {
+      cout << "Transformation: \n";
+      printMatrix (cout, trans1, M, M);
    }
 
    // Transform all generator matrices
@@ -464,7 +580,13 @@ fullCorrect (
    for (unsigned dd = 0; dd < DIM; ++dd)
    {
       copyToMatrix (gm, dd, M, m);
-      la->matrixMul (m, trans1, M, m + dd * M2);
+      la.matrixMul (m, trans1, M, tm + dd * M2);
+   }
+
+   if (DEB > 3)
+   {
+      cout << "Transformed matrices: \n";
+      printMatrix (cout, tm, M * DIM, M);
    }
 
    const int MM = M - out;
@@ -505,7 +627,7 @@ fullCorrect (
             // count linearly independent vectors for this dimension
 
             int localBreadth
-               = la->numLinearlyIndependentVectors (m, MM, MM) - 1;
+               = la.numLinearlyIndependentVectors (m, MM, MM) - 1;
             breadths[d2] = localBreadth;
 
             // Discard extra precision
@@ -575,6 +697,15 @@ fullCorrect (
          std::fill (candidate, candidate + MM, 0);
          while (increment(candidate, candidate + MM, B))
          {
+            // Print candidate vector for debugging
+
+            if (DEB > 3)
+            {
+               cout <<"     checking ";
+               printVector (cout, candidate, candidate + MM);
+               cout << "  ";
+            }
+
             // check linear independence with each matrix
             
             for (unsigned d2 = 0; d2 < DIM; ++d2)
@@ -589,13 +720,17 @@ fullCorrect (
                   p = std::copy (in + out, in + M, p);
                }
 
-               if (! la->isLinearlyIndependent(m, breadth + 1, MM))
+               if (! la.isLinearlyIndependent(m, breadth + 1, MM))
                {
+                  if (DEB > 3)  cout << 'x' << endl;
                   goto vectorFailed1;
                }
+               if (DEB > 3)  cout << '.';
             }
 
             // vector passed all tests
+
+            if (DEB > 3)  cout << "  ok, done!" << endl;
 
             std::copy (candidate, candidate + MM, optimalVec);
             optimalBreadth = breadth;
@@ -632,22 +767,22 @@ fullCorrect (
    {
       if (DEB > 1)
       {
-         cout << "Transformed output vector " << out << " is (";
-         for (int i = 0; i < MM; ++i)  cout << int (optimalVec[i]);
-         cout << ')' << endl;
+         cout << "Transformed output vector " << out << " is ";
+         printVector (cout, &optimalVec[0], &optimalVec[MM]);
+         cout << endl;
       }
 
       // transform back vector
 
-      la->matrixMul (optimalVec, trans2 + out * M, 1, MM, M, m);
+      la.matrixMul (optimalVec, trans2 + out * M, 1, MM, M, m);
 
       // copy new vector back to generator matrix
 
       if (DEB > 1)
       {
-         cout << "Output vector " << out << " is (";
-         for (unsigned i = 0; i < M; ++i)  cout << int (m[i]);
-         cout << ')' << endl;
+         cout << "Output vector " << out << " is ";
+         printVector (cout, &m[0], &m[M]);
+         cout << endl;
       }
 
       for (unsigned i = 0; i < M; ++i)  gm.setd (d, i, out, m[i]);
@@ -658,6 +793,11 @@ fullCorrect (
 
 }  // anonimous namespace
 
+
+/**
+ *  fixTwoDimensionalProjections()
+ */
+
 void L::fixTwoDimensionalProjections (GM& gm)
 {
    const unsigned DEB = 0;
@@ -665,13 +805,13 @@ void L::fixTwoDimensionalProjections (GM& gm)
    const unsigned M = gm.getM();
    const unsigned DIM = gm.getDimension();
 
-   if (gm.getTotalPrec() < M)  throw 1;
+   if (gm.getPrec() < M)  throw 1;
 
    Array<unsigned char> work ((3 + DIM) * M * M + 2 * M);
 
-   const int initialOut = std::max (
-         std::max (M - tParameter3(gm), 2u) - 2,  // what is taboo
-         (M - tParameter2(gm)) / 2                // what is alright already
+   int initialOut = std::max (
+      std::max (M - tParameterMax3DimProjection(gm), 2u) - 2,  // what is taboo
+      (M - tParameterMax2DimProjection(gm)) / 2     // what is alright already
    );
 
    AchievableThickness at (gm);
@@ -680,9 +820,17 @@ void L::fixTwoDimensionalProjections (GM& gm)
 
    Array<bool> dimensionDone (DIM);
 
+   if (initialOut == 0)
+   {
+      fillFirstRow (gm);
+      initialOut = 1;
+   }
+
    for (int out = initialOut; out < int (M); ++out)
    {
-      if (DEB > 1)  cout << "out = " << out << endl;
+      if (DEB > 1)  cout << "\nout = " << out << endl;
+
+      fixOneDimensionalProjections (gm);
 
       std::fill (dimensionDone.begin(), dimensionDone.begin() + DIM, false);
       bool changes;
@@ -711,6 +859,8 @@ void L::fixTwoDimensionalProjections (GM& gm)
                if (DEB > 1)  cout << (c ? '*' : '-');
             }
             if (DEB > 1)  cout << endl;
+
+            if (DEB > 3)  gm.print (cout);
          }
       }
       while (changes);
@@ -718,30 +868,8 @@ void L::fixTwoDimensionalProjections (GM& gm)
       at.update (gm, out + 1);
       if (DEB > 2)  at.print();
    }
-}
 
-
-/**
- *  fixOneDimensionalProjections()
- */
-
-void L::fixOneDimensionalProjections (GM& gm)
-{
-   const unsigned M = gm.getM();
-   const unsigned DIM = gm.getDimension();
-
-   if (gm.getTotalPrec() < M)  throw 1;
-
-   std::auto_ptr<LinearAlgebra> la (LinearAlgebra::make (gm.getBase()));
-
-   Array<unsigned char> m (M * M);
-
-   for (unsigned d = 0; d < DIM; ++d)
-   {
-      copyToMatrix   (gm, d, m.begin());
-      la->basisSupplement (m.begin(), M, M);
-      copyFromMatrix (gm, d, m.begin());
-   }
+   fixOneDimensionalProjections (gm);
 }
 
 

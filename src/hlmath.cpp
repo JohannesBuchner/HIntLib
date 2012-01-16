@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -226,6 +226,7 @@ L::real L::radicalInverseFunction2 (Index n)
 }
 
 
+#if 0
 /**
  *  lfact()
  *
@@ -235,12 +236,14 @@ L::real L::radicalInverseFunction2 (Index n)
 double
 L::lfact (unsigned n)
 {
-   static double a[101];
+   const unsigned MAX_TABLE_N = 300;
+   static double a[MAX_TABLE_N + 1];
    
    if (n <= 1)  return 0.0;
-   if (n <= 300)  return a[n] ? a[n] : (a[n] = lgamma(n + 1.0));
+   if (n <= MAX_TABLE_N)  return a[n] ? a[n] : (a[n] = lgamma(n + 1.0));
    else return lgamma (n + 1.0);
 }
+#endif
 
 
 #include <HIntLib/bitop.tcc>

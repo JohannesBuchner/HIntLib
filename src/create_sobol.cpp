@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -228,8 +228,8 @@ int main (void)
  *   Calculation of vectors v according to Bratley-Fox
  */
 
-SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _totalPrec)
-   : GeneratorMatrix2<u64> (_dim, _m, _totalPrec)
+SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _prec)
+   : GeneratorMatrix2<u64> (_dim, _m, _prec)
 {
    // Initialize v for all possible dimensions
 
@@ -243,18 +243,18 @@ SobolM::SobolM (unsigned _dim, unsigned _m, unsigned _totalPrec)
 
       for (int i = 0; i < deg; ++i)
       {
-         setv(d,i, vinit [d][i] << (totalPrec - 1 - i));
+         setv(d,i, vinit [d][i] << (prec - 1 - i));
       }
 
       // Calculate the following elements according to the recurrency
 
       for (unsigned i = deg; i < m; ++i)
       {
-         BaseType x = operator()(d, i-deg) >> deg;
+         BaseType x = (*this)(d, i-deg) >> deg;
 
          for (int j = 1; j <= deg; ++j)
          {
-            if (p[deg - j])  x ^= operator()(d, i-j);
+            if (p[deg - j])  x ^= (*this)(d, i-j);
          }
 
          setv (d, i, x);

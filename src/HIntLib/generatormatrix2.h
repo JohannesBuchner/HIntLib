@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -44,17 +44,18 @@ namespace HIntLib
 class GeneratorMatrix2Base : public GeneratorMatrix
 {
 public:
+   ~GeneratorMatrix2Base () {}
+
    void CArrayDump (std::ostream &) const;
 
    unsigned getBase() const  { return 2; }
-   unsigned getPrec() const  { return 1; }
-   unsigned getNumOfLeadingDigits() const { return totalPrec; }
-   unsigned getNumOfMissingDigits() const { return vec - totalPrec; }
+
+   virtual u64 getVector (unsigned d, unsigned r) const = 0;
 
 protected:
    GeneratorMatrix2Base
-      (unsigned availableBits, unsigned _dim, unsigned _m, unsigned _totalPrec)
-      : GeneratorMatrix (2, availableBits, _dim, _m, _totalPrec) {} 
+      (unsigned availableBits, unsigned _dim, unsigned _m, unsigned _prec)
+      : GeneratorMatrix (2, _dim, _m, _prec) {} 
 
    GeneratorMatrix2Base (const GeneratorMatrix2Base &gm)
       : GeneratorMatrix (gm)  {}
@@ -82,16 +83,12 @@ public:
 
    explicit GeneratorMatrix2 (unsigned _dim);
    GeneratorMatrix2 (unsigned _dim, unsigned _m);
-   GeneratorMatrix2 (unsigned _dim, unsigned _m, unsigned _totalPrec);
+   GeneratorMatrix2 (unsigned _dim, unsigned _m, unsigned _prec);
 
    // Copy constructors
 
    GeneratorMatrix2 (const GeneratorMatrix2<T> &);
    GeneratorMatrix2 (const GeneratorMatrix &);
-
-   // Truncate a given matrix
-
-   GeneratorMatrix2 (const GeneratorMatrix &, const GMCopy &);
 
    ~GeneratorMatrix2 () { delete[] c; }
 
@@ -118,10 +115,10 @@ public:
    // get/set digits
 
 private:
-   T mask (unsigned b) const  { return T(1) << (totalPrec - b - 1); }
+   T mask (unsigned b) const  { return T(1) << (prec - b - 1); }
 
    unsigned char getdMask (unsigned d, unsigned r, T ma) const
-      { return (operator()(d,r) & ma) != 0; }
+      { return ((*this)(d,r) & ma) != 0; }
 
    void setd0Mask (unsigned d, unsigned r, T ma)
       { c[r*dim + d] &= ~ma; }
@@ -144,17 +141,17 @@ public:
    // virtual get/set
 
    virtual unsigned getDigit (unsigned d, unsigned r, unsigned b) const;
-   virtual u64 getVector (unsigned d, unsigned r, unsigned) const;
    virtual void setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
-   virtual void setVector (unsigned d, unsigned r, unsigned b, u64 x);
 
    virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
    virtual void vSetPackedRowVector (unsigned d, unsigned b, u64 x);
 
+   virtual u64 getVector (unsigned d, unsigned r) const;
+
    // Manipulations
 
-   void adjustTotalPrec (unsigned);
-   void makeEquidistributedCoordinate (unsigned d);
+   void adjustPrec (unsigned);
+   void makeHammersley (unsigned d);
    void makeIdentityMatrix (unsigned d);
    void makeZeroMatrix (unsigned d);
    void makeZeroMatrix ();
@@ -167,7 +164,7 @@ protected:
    void setMatrix (const T*);
 
 private:
-   void checkTotalPrec() const;
+   void checkPrec() const;
    void allocate();
 
    T* c; 

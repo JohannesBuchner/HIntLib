@@ -22,6 +22,7 @@
 
 #include <HIntLib/digitalnetgen.h>
 
+#include <HIntLib/generatormatrixvirtual.h>
 #include <HIntLib/exception.h>
 #include <HIntLib/hlalgorithm.h>
 
@@ -41,35 +42,36 @@ DigitalNetGen<A,S>::DigitalNetGen (
   arith (_arith),
   scalArith (arith.getScalarAlgebra()),
   base (_c.getBase()),
-  totalPrec (min3 (
-     (_trunc == FULL) ? _c.getTotalPrec() : m,  // what we want
+  prec (min3 (
+     (_trunc == FULL) ? _c.getPrec() : m,  // what we want
      digitsRepresentable (S(scalArith.size())), // what we can get for this S
      unsigned (HINTLIB_MN ceil (
            HINTLIB_MN log(2.0) / HINTLIB_MN log(double(scalArith.size()))
                * double(std::numeric_limits<real>::digits - 1)))
                                                 // what can be stored in real
      )),
-  c (_c, GMCopy().dim(getDimension()).m(m).totalPrec(totalPrec)
-                 .equi(equi).vec(arith.dimension())),
-  prec   (c.getPrec()),
+  c (AdjustPrec (prec, DiscardDimensions (getDimension(),
+              NetFromSequence (m, equi, _c))),
+     arith.dimension()),
+  vecPrec(c.getVecPrec()),
   vecBase(c.getVecBase()),
-  x      (getDimension() * prec),
-  xStart (getDimension() * prec, 0),
+  x      (getDimension() * vecPrec),
+  xStart (getDimension() * vecPrec, 0),
   trunc (_trunc),
   ss (h),
-  trivialScale (1.0 / HINTLIB_MN pow(real(base), int (totalPrec)))
+  trivialScale (1.0 / HINTLIB_MN pow(real(base), int (prec)))
 {
    if (arith.size() != c.getVecBase())  throw FIXME (__FILE__, __LINE__);
-   if (arith.dimension() != c.getVectorization())
+   if (arith.dimension() != c.getVec())
          throw FIXME (__FILE__, __LINE__);
 
    setCube (h);
 
 #if 0
-   c.dump(cerr);
-   c.vectorDump(cerr);
-   cerr << " totalPrec=" << totalPrec
-        << " prec=" << prec
+   c.print(cerr);
+   c.printVector(cerr);
+   cerr << " prec=" << prec
+        << " vecPrec=" << vecPrec
         << " vecBase=" << vecBase
         << " base=" << int (base)
         << " h=" << h
@@ -118,7 +120,7 @@ template<class A, typename S>
 void DigitalNetGen<A,S>::setCube (const Hypercube &h)
 {
    real shift = trunc==CENTER ? -1./base : .0;
-   ss.set (h, shift, HINTLIB_MN pow(real(base), int (totalPrec)) + shift);
+   ss.set (h, shift, HINTLIB_MN pow(real(base), int (prec)) + shift);
 }
 
 
@@ -129,7 +131,7 @@ void DigitalNetGen<A,S>::setCube (const Hypercube &h)
 template<class A, typename S>
 void DigitalNetGen<A,S>::randomize (PRNG &g)
 {
-   for (unsigned i = 0; i < prec * getDimension(); ++i)
+   for (unsigned i = 0; i < vecPrec * getDimension(); ++i)
    {
       xStart [i] = g.equidist (int (vecBase));
    }
@@ -149,9 +151,9 @@ void DigitalNetGen<A,S>::copyXtoP (real* point)
    {
       S sum = 0;
 
-      for (unsigned b = 0; b < prec; ++b)
+      for (unsigned b = 0; b < vecPrec; ++b)
       {
-         sum = vecBase * sum + x[d * prec + b];
+         sum = vecBase * sum + x[d * vecPrec + b];
       }
 
       point[d] = ss[d] (sum);
@@ -165,9 +167,9 @@ void DigitalNetGen<A,S>::copyXtoPDontScale (real* point)
    {
       S sum = 0;
 
-      for (unsigned b = 0; b < prec; ++b)
+      for (unsigned b = 0; b < vecPrec; ++b)
       {
-         sum = vecBase * sum + x[d * prec + b];
+         sum = vecBase * sum + x[d * vecPrec + b];
       }
 
       point[d] = sum * trivialScale;
@@ -182,9 +184,9 @@ void DigitalNetGen<A,S>::copyXtoPDontScale (real* point)
 template<class A, typename S>
 void DigitalNetGen<A,S>::resetX (Index nn)
 {
-   std::copy (&xStart[0], &xStart[getDimension() * prec], &x[0]);
+   std::copy (&xStart[0], &xStart[getDimension() * vecPrec], &x[0]);
    const Index bas = base;
-   const unsigned p = prec;
+   const unsigned p = vecPrec;
 
    for (unsigned r = 0; nn != 0; ++r)
    {
@@ -234,7 +236,7 @@ void HIntLib::DigitalNetGenNormal<A,S>::updateX ()
    Index n1 = this->n;
    Index n2 = ++(this->n);
    const Index bas = this->base;
-   const unsigned p = this->prec;
+   const unsigned p = this->vecPrec;
    const unsigned DIM = this->getDimension();
 
    for (unsigned r = 0; n1 != n2; ++r)
@@ -271,7 +273,7 @@ template<class A, typename S>
 void HIntLib::DigitalNetGenGray<A,S>::updateX ()
 {
    const Index bas = this->base;
-   const unsigned p = this->prec;
+   const unsigned p = this->vecPrec;
    const unsigned DIM = this->getDimension();
    Index n1 = this->n;
    Index n2 = ++(this->n);
@@ -316,7 +318,7 @@ template<class A, typename S>
 void HIntLib::DigitalNetGenCyclicGray<A,S>::updateX ()
 {
    const Index bas = this->base;
-   const unsigned p = this->prec;
+   const unsigned p = this->vecPrec;
    const unsigned DIM = this->getDimension();
    Index n1 = this->n;
    Index n2 = ++(this->n);

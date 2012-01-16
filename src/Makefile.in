@@ -171,6 +171,7 @@ libcreatematrix_la_SOURCES = \
    generatormatrix.cpp \
    generatormatrix2.cpp \
    generatormatrixgen.cpp \
+   generatormatrixgenrow.cpp \
    linearalgebra.cpp \
    linearalgebra2.cpp \
    lookupfield.cpp \
@@ -195,11 +196,15 @@ ALLSRC = \
    fixprojections.cpp \
    generatormatrix2row.cpp \
    generatormatrixvec.cpp \
+   generatormatrixvirtual.cpp \
    halton.cpp \
    hypercube.cpp \
    integerring.cpp \
    integrator.cpp \
    kahanadd.cpp \
+   linereader.cpp \
+   loadbinary.cpp \
+   loadedel.cpp \
    loadlibseq.cpp \
    make.cpp \
    makecubaturerulefactory.cpp \
@@ -272,7 +277,7 @@ libhintlib_la_LDFLAGS = $(NOUNDEFINED) -version-info $(SHARED_VERSION_NUMBER)
 libhintlib_la_LIBADD = libcreatematrix.la
 
 libhintlibmpi_la_SOURCES = $(ALLSRCMPI)
-libhintlibmpi_la_LDFLAGS = $(NOUNDEFINED) -rpath $(libdir)
+libhintlibmpi_la_LDFLAGS = $(NOUNDEFINED) -version-info $(SHARED_VERSION_NUMBER) -rpath $(libdir)
 libhintlibmpi_la_LIBADD = libcreatematrix.la
 
 noinst_PROGRAMS = create_sobol create_niederreiter create_bitop create_lookupfield
@@ -302,18 +307,19 @@ am_libcreatelookupfield_la_OBJECTS = bitop.lo exception.lo \
 libcreatelookupfield_la_OBJECTS = $(am_libcreatelookupfield_la_OBJECTS)
 libcreatematrix_la_DEPENDENCIES = libcreatelookupfield.la
 am_libcreatematrix_la_OBJECTS = generatormatrix.lo generatormatrix2.lo \
-	generatormatrixgen.lo linearalgebra.lo linearalgebra2.lo \
-	lookupfield.lo lookupfield_generated.lo lookupgaloisfield.lo \
-	niederreitermatrixgen.lo polynomial_gm.lo polynomial2.lo \
-	polynomial2base.lo
+	generatormatrixgen.lo generatormatrixgenrow.lo linearalgebra.lo \
+	linearalgebra2.lo lookupfield.lo lookupfield_generated.lo \
+	lookupgaloisfield.lo niederreitermatrixgen.lo polynomial_gm.lo \
+	polynomial2.lo polynomial2base.lo
 libcreatematrix_la_OBJECTS = $(am_libcreatematrix_la_OBJECTS)
 libhintlib_la_DEPENDENCIES = libcreatematrix.la
 am__objects_1 = adaptintegrator.lo builtinprng.lo compruleintegrator.lo \
 	counter.lo cubepartitioner.lo digitalnet2.lo digitalnetgen.lo \
 	factorring_x.lo faure.lo fixprojections.lo \
-	generatormatrix2row.lo generatormatrixvec.lo halton.lo \
-	hypercube.lo integerring.lo integrator.lo kahanadd.lo \
-	loadlibseq.lo make.lo makecubaturerulefactory.lo \
+	generatormatrix2row.lo generatormatrixvec.lo \
+	generatormatrixvirtual.lo halton.lo hypercube.lo integerring.lo \
+	integrator.lo kahanadd.lo linereader.lo loadbinary.lo \
+	loadedel.lo loadlibseq.lo make.lo makecubaturerulefactory.lo \
 	makeqrnsequence.lo mcintegrator.lo mcpointset.lo \
 	mersennetwister.lo miser.lo niederreitermatrix.lo orbitrule.lo \
 	pointset.lo polynomial_gf.lo polynomial_rational.lo \
@@ -386,7 +392,9 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/generatormatrix2.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/generatormatrix2row.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/generatormatrixgen.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/generatormatrixgenrow.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/generatormatrixvec.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/generatormatrixvirtual.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/halton.Plo ./$(DEPDIR)/hlmath.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/hlmpi.Plo ./$(DEPDIR)/hypercube.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/hypercube_MPI.Plo \
@@ -395,6 +403,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/linearalgebra.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/linearalgebra2.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/linearalgebra_lf.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/linereader.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/loadbinary.Plo ./$(DEPDIR)/loadedel.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/loadlibseq.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/lookupfield.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/lookupfield_generated.Plo \
@@ -587,7 +597,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generatormatrix2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generatormatrix2row.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generatormatrixgen.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generatormatrixgenrow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generatormatrixvec.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generatormatrixvirtual.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/halton.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hlmath.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hlmpi.Plo@am__quote@
@@ -599,6 +611,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linearalgebra.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linearalgebra2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linearalgebra_lf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linereader.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/loadbinary.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/loadedel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/loadlibseq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lookupfield.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lookupfield_generated.Plo@am__quote@

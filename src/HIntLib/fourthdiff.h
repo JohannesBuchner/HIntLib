@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -94,7 +94,7 @@ unsigned FourthDiff::operator() (Integrand &f, const real* c, const real* w)
 inline
 unsigned FourthDiff::operator() (Integrand &f, const Hypercube &h)
 {
-   return operator()(f, h.getCenter(), h.getWidth());
+   return (*this)(f, h.getCenter(), h.getWidth());
 }
 
 }  // namespace HIntLib

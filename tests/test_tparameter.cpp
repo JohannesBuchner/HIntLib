@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 #include <memory>
 
 #include <HIntLib/defaults.h>
@@ -34,6 +35,8 @@
 
 #include <HIntLib/make.h>
 #include <HIntLib/tparameter.h>
+#include <HIntLib/generatormatrixgen.h>
+#include <HIntLib/generatormatrixvirtual.h>
 #include <HIntLib/array.h>
 #include <HIntLib/hlalgorithm.h>
 
@@ -116,12 +119,12 @@ void determineT (
    // Do we know t for a lower-dimensional sub-matrix?
 
    if (lowDimMatrix && lowDimMatrix->getM() >= m
-                    && lowDimMatrix->getTotalPrec() >=m)
+                    && lowDimMatrix->getPrec() >=m)
    {
-      GMCopy copy; copy.dim(s-1).m(m).totalPrec(m).equi(ADD_EQUI);
-      Matrix g1 (*lowDimMatrix, copy);
-      Matrix g2 (matrix,        copy);
-      if (g1 == g2)
+      if (   DiscardDimensions (s - 1 - ADD_EQUI, AdjustM (m,
+                  AdjustPrec (m, *lowDimMatrix)))
+          == DiscardDimensions (s - 1 - ADD_EQUI, AdjustM (m,
+                  AdjustPrec (m, matrix))))
       {
          // t cannot decrease compared to s-1
 
@@ -130,10 +133,8 @@ void determineT (
       }
    }
 
-   GMCopy copy;
-   copy.dim(s).m(m).totalPrec(m).equi(ADD_EQUI);
-
-   Matrix g (matrix, copy);
+   Matrix g (DiscardDimensions (s, NetFromSequence (m, ADD_EQUI,
+                           AdjustPrec (m, matrix))));
 
    int t = t_matrix [m * MAX_S + s] = tParameter (g, lb, ub, opts);
 
@@ -220,7 +221,8 @@ void test (int argc, char** argv)
    }
    else   // reading matrix from file
    { 
-      std::auto_ptr<Matrix> gm (loadLibSeq (argv[0]));
+      std::ifstream ifs (argv[0]);
+      std::auto_ptr<Matrix> gm (loadLibSeq (ifs));
       NORMAL cout << "Matrix from file '" << argv[0] << "'\n\n";
       NORMAL if (! RESTRICTED)  cout << "   s=";
 
@@ -230,8 +232,7 @@ void test (int argc, char** argv)
 
          if (ss <= gm->getDimension())
          {
-            GMCopy copy; copy.dim(ss);
-            matrices [s] = new Matrix (*gm, copy);
+            matrices [s] = new Matrix (DiscardDimensions (ss, *gm));
             NORMAL if (! RESTRICTED)  cout << setw(3) << s << flush;
          }
          else
@@ -255,7 +256,7 @@ void test (int argc, char** argv)
       {
          Matrix* matrix = matrices [s];
 
-         if (matrix && matrix->getM() >= m && matrix->getTotalPrec() >= m)
+         if (matrix && matrix->getM() >= m && matrix->getPrec() >= m)
          {
             determineT (s, m, *matrix, t_matrix, matrices[s-1]);
          }

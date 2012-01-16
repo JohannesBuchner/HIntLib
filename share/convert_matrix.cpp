@@ -18,7 +18,9 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <memory>
 #include <iostream>
+#include <fstream>
 #include <exception>
 
 #include <HIntLib/generatormatrixgen.h>
@@ -36,9 +38,29 @@ int main (int argc, char** argv)
 
    try
    {
-      HIntLib::GeneratorMatrix* m = HIntLib::loadLibSeq (argv [1]);
-      m->binaryDump (argv [2]);
-      delete m;
+      // Read matrix from input file
+
+      std::ifstream ifs (argv[1]);
+
+      std::auto_ptr<HIntLib::GeneratorMatrix> m (HIntLib::loadLibSeq (ifs));
+
+      if (! ifs)
+      {
+         cerr << "Error reading input file '" << argv[1] << "'!\n\n";
+         return 1;
+      }
+
+      // Write matrix to output file
+
+      std::ofstream ofs (argv[2]);
+
+      m->binaryExport (ofs);
+
+      if (! ofs)
+      {
+         cerr << "Error writing output file '" << argv[2] << "'!\n\n";
+         return 1;
+      }
    }
    catch (std::exception &e)
    {

@@ -33,7 +33,9 @@ pkginclude_HEADERS = \
    generatormatrix2.h \
    generatormatrix2row.h \
    generatormatrixgen.h \
+   generatormatrixgenrow.h \
    generatormatrixvec.h \
+   generatormatrixvirtual.h \
    gf2.h \
    gf2vectorspace.h gf2vectorspace.tcc \
    halton.h \
@@ -50,6 +52,7 @@ pkginclude_HEADERS = \
    linearalgebra.h \
    linearalgebragen.h linearalgebragen.tcc \
    linearalgebra2.h linearalgebra2.tcc \
+   linereader.h \
    lookupfield.h \
    make.h \
    mcintegration.h \

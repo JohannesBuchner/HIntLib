@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -231,10 +231,10 @@ inline
 real LCG_Pow2<T,a,e,c>::getReal()
 {
    if (c & 1)
-      return (real(operator()()) + real(0.5)) * RESOLUTION;
+      return (real((*this)()) + real(0.5)) * RESOLUTION;
    else
    {
-      return real(operator()()) * RESOLUTION;
+      return real((*this)()) * RESOLUTION;
    }
 }
  
@@ -257,7 +257,7 @@ int LCG_Pow2<T,a,e,c>::operator() (int upperBound)
    if (int(e) + std::numeric_limits<unsigned>::digits
              <= std::numeric_limits<u64>::digits)
    {
-      return int ((u64(operator()()) * upperBound) >> e);
+      return int ((u64((*this)()) * upperBound) >> e);
    }
    else
 #endif

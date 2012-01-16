@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ namespace HIntLib
  *
  *  A Digital Net in base 2
  *
- *  T .. unsigned integer type at least  _totalPrec  bits
+ *  T .. unsigned integer type at least  _prec_  bits
  *         usually either "u32" or "u64"
  */
 
@@ -79,7 +79,7 @@ protected:
    typedef GF2VectorSpace<T> A;
    typedef typename A::scalar_algebra SA;
 
-   const unsigned totalPrec;
+   const unsigned prec;
    A alg;
    SA scalAlg;
    GeneratorMatrix2<T> c;

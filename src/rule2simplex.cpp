@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ L::Rule2Simplex::Rule2Simplex (unsigned d)
    {
       for (unsigned k = 0; k < dim/2; ++k)
       {
-         real t = 2 * (i+1) * (k+1) * M_PI / (dim + 1);
+         real t = 2 * (i+1) * (k+1) * Constants<real>::pi() / (dim + 1);
 
          r [i*dim + 2*k] =     sqrt2by3 * HINTLIB_MN cos (t);
          r [i*dim + 2*k + 1] = sqrt2by3 * HINTLIB_MN sin (t);

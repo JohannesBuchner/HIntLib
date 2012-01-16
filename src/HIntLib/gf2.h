@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ public:
 
    static type one()  { return 1; }
 
-   static bool is1 (type a)  { return a; }
+   static bool is1 (type a)  { return a != 0; }
 
    static type element  (unsigned i)  { return type(i); }
    static unsigned index  (type x)  { return x; }
@@ -84,7 +84,7 @@ public:
 
    static unsigned additiveOrder (const type& a)  { return a + 1; }
    static unsigned order (const type&)  { return 1; }
-   static bool isPrimitiveElement (const type& a)  { return a; }
+   static bool isPrimitiveElement (const type& a)  { return a != 0; }
    
    static void print (std::ostream&, type);
    static void printShort (std::ostream&, type);

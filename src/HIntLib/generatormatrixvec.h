@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -43,7 +43,13 @@ namespace HIntLib
 class GeneratorMatrixVecBase : public GeneratorMatrix
 {
 public:
+   unsigned getVec()     const  { return vec; }
    unsigned getVecBase() const  { return vecBase; }
+   unsigned getVecPrec() const  { return vecPrec; }
+
+   unsigned getNumOfLeadingDigits() const
+      { return prec - (vec * (vecPrec - 1)); }
+   unsigned getNumOfMissingDigits() const { return vecPrec * vec - prec; }
 
    // no public constructor!
 
@@ -51,22 +57,19 @@ protected:
    // Constructor with direct initialization
 
    GeneratorMatrixVecBase
-      (unsigned _base, unsigned _vec,
-       unsigned _dim, unsigned _m, unsigned _totalPrec)
-   : GeneratorMatrix (_base, _vec, _dim, _m, _totalPrec),
-     dimPrec (dim*prec),
-     vecBase (powInt (base, vec)) {}
+      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec,
+       unsigned _vec);
 
    // protected copy constructor
 
-   GeneratorMatrixVecBase (const GeneratorMatrix &gm)
-      : GeneratorMatrix (gm), dimPrec (dim*prec), vecBase (powInt (base, vec))
-      {}
-   GeneratorMatrixVecBase (const GeneratorMatrixVecBase &gm)
-      : GeneratorMatrix (gm), dimPrec (gm.dimPrec), vecBase (gm.vecBase) {}
+   GeneratorMatrixVecBase (const GeneratorMatrix&, unsigned _vec);
+   GeneratorMatrixVecBase (const GeneratorMatrixVecBase&);
+
+   const unsigned vec;
+   const unsigned vecBase;
+   const unsigned vecPrec;
 
    const unsigned dimPrec;
-   const unsigned vecBase;
 };
 
 
@@ -84,24 +87,20 @@ public:
 
    // Constructors
 
-   GeneratorMatrixVec (unsigned _base, unsigned _vec, unsigned _dim);
+   GeneratorMatrixVec (unsigned _base, unsigned _dim, unsigned _vec);
    GeneratorMatrixVec
-      (unsigned _base, unsigned _vec, unsigned _dim, unsigned _m);
+      (unsigned _base, unsigned _dim, unsigned _m, unsigned _vec);
    GeneratorMatrixVec
-      (unsigned _base, unsigned _vec,
-       unsigned _dim, unsigned _m, unsigned _totalPrec)
-    : GeneratorMatrixVecBase (_base, _vec, _dim, _m, _totalPrec)
+      (unsigned _base, 
+       unsigned _dim, unsigned _m, unsigned _prec, unsigned _vec)
+    : GeneratorMatrixVecBase (_base, _dim, _m, _prec, _vec)
       { checkVecBase(); allocate(); }
 
    // Copy constructors
 
-   GeneratorMatrixVec (const GeneratorMatrixVec<T> &);
-   GeneratorMatrixVec (const GeneratorMatrix &);
-
-   // Truncate a given Matrix
-
-   GeneratorMatrixVec (const GeneratorMatrixVec<T> &, const GMCopy &);
-   GeneratorMatrixVec (const GeneratorMatrix &, const GMCopy &);
+   GeneratorMatrixVec (const GeneratorMatrixVec<T>&);
+   GeneratorMatrixVec (const GeneratorMatrix&);
+   GeneratorMatrixVec (const GeneratorMatrix&, unsigned _vec);
 
    ~GeneratorMatrixVec ()  { delete[] c; }
 
@@ -111,12 +110,12 @@ public:
 
    const T* operator() (unsigned r) const  { return &c[r*dimPrec]; }
    const T* operator() (unsigned d, unsigned r) const
-      { return &c[r*dimPrec + d*prec]; }
+      { return &c[r*dimPrec + d*vecPrec]; }
    T operator() (unsigned d, unsigned r, unsigned b) const
-      { return c[r*dimPrec + d*prec + b]; }
+      { return c[r*dimPrec + d*vecPrec + b]; }
    D getd (unsigned d, unsigned r, unsigned b) const;
    void setv (unsigned d, unsigned r, unsigned b, T x)
-      { c[r*dimPrec + d*prec + b] = x; }
+      { c[r*dimPrec + d*vecPrec + b] = x; }
    void setd (unsigned d, unsigned r, unsigned b,
               typename GeneratorMatrixVec<T>::D x);
    
@@ -126,16 +125,14 @@ public:
    // Virtual set/get
 
    virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual u64      getVector (unsigned d, unsigned r, unsigned b) const;
    virtual void setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
-   virtual void setVector (unsigned d, unsigned r, unsigned b, u64 x);
 
    virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
    virtual void vSetPackedRowVector (unsigned d, unsigned b, u64 x);
 
    // Manipulation
 
-   void makeEquidistributedCoordinate (unsigned);
+   void makeHammersley (unsigned);
    void makeIdentityMatrix (unsigned);
    void makeZeroMatrix (unsigned);
    void makeZeroMatrix ();

@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 
 /**
  *  AdaptIntegrator
- *
  */
 
 #ifndef HINTLIB_ADAPTINTEGRATOR_H
@@ -40,12 +39,38 @@ namespace HIntLib
    {
    public:
       AdaptIntegrator (const EmbeddedRuleFactory *fac)
-         : EmbeddedRuleBasedIntegrator(fac) {}
+         : EmbeddedRuleBasedIntegrator(fac),
+           minNumEval(0),
+           minPercEval(0),
+           numInitialRegions(0),
+           numEvalInitialRegions(0),
+           percEvalInitialRegions(0)
+         {}
 
       virtual
       Status integrate (
          Integrand &f, const Hypercube &h, Index maxEval,
          real reqAbsError, real reqRelError, EstErr &ee);
+
+      // Set a minimum number of integrand evaluations
+
+      void setMinNumEval (Index n)  { minNumEval = n; }
+      void setMinPercEval (double);
+
+      // Set the number of (points spent in the) initial regions which are
+      // created by subdividing the integration domain in a regular way.
+
+      void setNumInitialRegions (Index n)    { numInitialRegions = n; }
+      void setNumEvalInitialRegions (Index n) { numEvalInitialRegions = n; }
+      void setPercEvalInitialRegions (double);
+      
+   private:
+      Index minNumEval;
+      double minPercEval;
+
+      Index numInitialRegions;
+      Index numEvalInitialRegions;
+      double percEvalInitialRegions;
    };
 }  // namespace HIntLib
 

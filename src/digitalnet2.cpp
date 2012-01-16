@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 
 #include <HIntLib/digitalnet2.h>
 
+#include <HIntLib/generatormatrixvirtual.h>
 #include <HIntLib/mersennetwister.h>
 #include <HIntLib/mcpointset.h>
 #include <HIntLib/exception.h>
@@ -54,18 +55,18 @@ L::DigitalNet2<T>::DigitalNet2 (
    unsigned _m, Index index, bool equi, Truncation _trunc)
 : QRNSequenceBase(_h),
   DigitalNet (_c.getBase(), _m),
-  totalPrec (std::min(
-     (_trunc == FULL) ? _c.getTotalPrec() : m,   // what we want
+  prec (std::min(
+     (_trunc == FULL) ? _c.getPrec() : m,   // what we want
      unsigned (std::numeric_limits<real>::digits - 1)
   )), // what makes sense
-  alg (totalPrec),
+  alg (prec),
   scalAlg (alg.getScalarAlgebra()),
-
-  c (_c, GMCopy().dim(getDimension()).m(m).totalPrec(totalPrec).equi(equi)),
+  c (AdjustPrec (prec, DiscardDimensions (getDimension(),
+              NetFromSequence (m, equi, _c)))),
   x      (getDimension()),
   xStart (getDimension(), 0),
   trunc (_trunc),
-  trivialScale (HINTLIB_MN pow(real(.5), int(c.getTotalPrec()))),
+  trivialScale (HINTLIB_MN pow(real(.5), int(c.getPrec()))),
   ss (h.getDimension())
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
   , ssMagic (h.getDimension()),
@@ -83,7 +84,7 @@ L::DigitalNet2<T>::DigitalNet2 (
    const int dd = equi;
    unsigned i = m;
    Index indexCopy = index;
-   int shift = _c.getTotalPrec() - c.getTotalPrec();
+   int shift = _c.getPrec() - c.getPrec();
 
    while (index)
    {
@@ -107,11 +108,11 @@ L::DigitalNet2<T>::DigitalNet2 (
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
    // Prepare for direct updates, if we can
 
-   if (c.getTotalPrec() <= floatBits)
+   if (c.getPrec() <= floatBits)
    {
       mode = DIRECT;
 
-      const int shift = floatBits - c.getTotalPrec();
+      const int shift = floatBits - c.getPrec();
       union { floatType f; T i; } x;
       x.f = 1.;
 
@@ -120,7 +121,7 @@ L::DigitalNet2<T>::DigitalNet2 (
          xStart [d] = (xStart[d] << shift) | x.i;
       }
 
-      c.adjustTotalPrec (floatBits);
+      c.adjustPrec (floatBits);
    }
 #endif
 }
@@ -138,11 +139,11 @@ void L::DigitalNet2<T>::setCube (const Hypercube &h)
   double centerShift = trunc == CENTER ? -.5 : .0;
 
   ss.set (h, centerShift,
-             centerShift + HINTLIB_MN pow(real(2.0), int (c.getTotalPrec())));
+             centerShift + HINTLIB_MN pow(real(2.0), int (c.getPrec())));
 
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
   double centerShiftMagic = trunc == CENTER
-     ? - HINTLIB_MN pow (real(.5), int (c.getTotalPrec()) + 1) : real(0);
+     ? - HINTLIB_MN pow (real(.5), int (c.getPrec()) + 1) : real(0);
 
   ssMagic.set (h, 1.0 + centerShiftMagic, 2.0 + centerShiftMagic);
 #endif
@@ -157,7 +158,7 @@ template<class T>
 void L::DigitalNet2<T>::randomize (PRNG &g)
 {
 #ifdef HINTLIB_IEEE_MAGIC_WORKS
-   const int shift = floatBits - totalPrec;
+   const int shift = floatBits - prec;
    union { floatType f; T i; } xx;
    xx.f = 1.;
 #endif
@@ -165,7 +166,7 @@ void L::DigitalNet2<T>::randomize (PRNG &g)
    for (unsigned d = 0; d < getDimension(); ++d)
    {
       T x = 0;
-      for (unsigned b = 0; b < totalPrec; ++b)
+      for (unsigned b = 0; b < prec; ++b)
       {
          x = (x << 1) | g.equidist(scalAlg.size());
       }

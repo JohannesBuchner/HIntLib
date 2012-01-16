@@ -32,6 +32,7 @@
 #endif
 
 #include <HIntLib/tparameter.h>
+#include <HIntLib/generatormatrixgen.h>
 #include <HIntLib/shiftnet.h>
 
 #include "test.h"

@@ -29,6 +29,7 @@ libcreatematrix_la_SOURCES = \
    generatormatrix.cpp \
    generatormatrix2.cpp \
    generatormatrixgen.cpp \
+   generatormatrixgenrow.cpp \
    linearalgebra.cpp \
    linearalgebra2.cpp \
    lookupfield.cpp \
@@ -52,11 +53,15 @@ ALLSRC= \
    fixprojections.cpp \
    generatormatrix2row.cpp \
    generatormatrixvec.cpp \
+   generatormatrixvirtual.cpp \
    halton.cpp \
    hypercube.cpp \
    integerring.cpp \
    integrator.cpp \
    kahanadd.cpp \
+   linereader.cpp \
+   loadbinary.cpp \
+   loadedel.cpp \
    loadlibseq.cpp \
    make.cpp \
    makecubaturerulefactory.cpp \
@@ -126,7 +131,7 @@ libhintlib_la_LDFLAGS = $(NOUNDEFINED) -version-info $(SHARED_VERSION_NUMBER)
 libhintlib_la_LIBADD = libcreatematrix.la
 
 libhintlibmpi_la_SOURCES = $(ALLSRCMPI)
-libhintlibmpi_la_LDFLAGS = $(NOUNDEFINED) -rpath $(libdir)
+libhintlibmpi_la_LDFLAGS = $(NOUNDEFINED) -version-info $(SHARED_VERSION_NUMBER) -rpath $(libdir)
 libhintlibmpi_la_LIBADD = libcreatematrix.la
 
 noinst_PROGRAMS = create_sobol create_niederreiter create_bitop create_lookupfield

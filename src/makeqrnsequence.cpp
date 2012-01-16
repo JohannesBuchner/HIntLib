@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -55,6 +55,9 @@
 #include <HIntLib/shiftnet.h>
 #include <HIntLib/digitalnet2.h>
 #include <HIntLib/digitalnetgen.h>
+#include <HIntLib/generatormatrixgen.h>
+#include <HIntLib/generatormatrixgenrow.h>
+#include <HIntLib/generatormatrixvirtual.h>
 #include <HIntLib/modulararithmetic.h>
 #include <HIntLib/lookupfield.h>
 #include <HIntLib/gf2.h>
@@ -123,16 +126,13 @@ GM2* L::Make::generatorMatrix2 (int n, unsigned dim)
     *  5 - Zero
     */
 
-   GMCopy copy;
-   copy.dim(dim);
-
    switch (n)
    {
    case 0:  // Sobol
    case 1:  // Niederreiter
       {
          if (dim > gm64[n]->getDimension())  throw InvalidDimension(dim);
-         return new GM2 (*gm64 [n], copy);
+         return new GM2 (DiscardDimensions (dim, *gm64 [n]));
       }
    case 2:  // NX
       {
@@ -140,7 +140,7 @@ GM2* L::Make::generatorMatrix2 (int n, unsigned dim)
 
          std::auto_ptr<GMGen> m (loadNiederreiterXing (dim < 4 ? 4 : dim));
 
-         return new GM2 (*m, copy);
+         return new GM2 (DiscardDimensions (dim, *m));
       }
    case 3:  // Random
       {
@@ -216,13 +216,6 @@ GMGen* L::Make::generatorMatrixGen (int n, unsigned dim, int m)
     *        xx base of Niederreiter Matrix
     */
 
-   GMCopy copy;
-   copy.dim(dim);
-   if (m >= 0)
-   {
-      copy.m(m).totalPrec(m);
-   }
-
    switch (n)
    {
    case 0:  // Faure
@@ -236,7 +229,7 @@ GMGen* L::Make::generatorMatrixGen (int n, unsigned dim, int m)
       {
          if (dim > gm64[0]->getDimension())  throw InvalidDimension(dim);
 
-         return new GMGen (*gm64 [0], copy);
+         return new GMGen (DiscardDimensions (dim, AdjustM (m, *gm64 [0])));
       }
    case 6:  // NX
       {
@@ -244,19 +237,15 @@ GMGen* L::Make::generatorMatrixGen (int n, unsigned dim, int m)
 
          GMGen* p = loadNiederreiterXing (dim < 4 ? 4 : dim);
 
-         if (m >= 0 || dim < 4)
-         {
-            GMGen* pp = new GMGen (*p, copy);
-            delete p;
-            p = pp;
-         }
+         GMGen* pp = new GMGen (DiscardDimensions (dim, AdjustM (m, *p)));
+         delete p;
 
-         return p;
+         return pp;
       }
    case 10:  // shift net
       {
          std::auto_ptr<GM2> p (generatorMatrix2 (4, dim));
-         return new GMGen (*p, copy);
+         return new GMGen (AdjustM (m, *p));
       }
    case 12:  // generalized faure
       {
@@ -362,8 +351,7 @@ L::QRNSequence* L::Make::qrnSequence (int n, const Hypercube &h)
     *   | |
     *   | \__ Generator Matrix 2
     *   |
-    *   \____
-    *         1 - Normal
+    *   \____ 1 - Normal
     *         2 - Gray-Code
     */
 
@@ -587,8 +575,7 @@ const char* L::Make::getQrnSequenceName (int n)
     *   | |
     *   | \__ Generator Matrix 2
     *   |
-    *   \____ 0 - Naive
-    *         1 - Normal
+    *   \____ 1 - Normal
     *         2 - Gray-Code
     */
 
@@ -608,7 +595,7 @@ const char* L::Make::getQrnSequenceName (int n)
       }
 
       int type = nn % 10; nn /= 10;
-      if (type >= 3)  throw QRNSequenceDoesNotExist (n);
+      if (type == 0 || type >= 3)  throw QRNSequenceDoesNotExist (n);
 
       std::ostringstream ss;
       ss << genName << '_' << typeNames3 [type];
@@ -834,14 +821,18 @@ L::QRNSequence* L::Make::qrnNet (int n, const Hypercube &h, Index size)
       unsigned base = gm->getBase();
 
       unsigned m = logInt (size, Index (base));
-      GMCopy copy; copy.m(m).totalPrec(m);
-      GMGen gm2 (*gm, copy);
+      GMGen gm2 (AdjustM (m, AdjustPrec (m, *gm)));
 
       int fix = nn % 10; nn /= 10;
       if (fix > 2)  throw QRNSequenceDoesNotExist (n);
 
-      if      (fix == 1)  fixOneDimensionalProjections (gm2);
-      else if (fix == 2)  fixTwoDimensionalProjections (gm2);
+      if (fix)
+      {
+         GeneratorMatrixGenRow<unsigned char> gm3 (gm2);
+         if (fix == 1)  fixOneDimensionalProjections (gm3);
+         else           fixTwoDimensionalProjections (gm3);
+         assign (gm3, gm2);
+      }
 
       QRNSequence* seq;
 

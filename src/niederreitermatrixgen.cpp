@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -80,7 +80,7 @@ void L::initNiederreiter
 
    const unsigned vSize
       = std::max (gm.getM() + degree - 1,   // these elements are copied to gm
-                  (gm.getTotalPrec() + degree + 1));  // used in the loop
+                  (gm.getPrec() + degree + 1));  // used in the loop
 
    Array<T> v (vSize);
    PolyRing poly (a);
@@ -91,7 +91,7 @@ void L::initNiederreiter
 
    int u = 0;
 
-   for (unsigned j = 0; j < gm.getTotalPrec(); j++)
+   for (unsigned j = 0; j < gm.getPrec(); j++)
    {
       // cout << "  j=" << j << endl;
       // Do we need a new v?

@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,8 +24,14 @@
 
 #define HINTLIB_LIBRARY_OBJECT
 
+#include <memory>
+
 #include <HIntLib/tparameter.h>
 
+#include <HIntLib/generatormatrix2row.h>
+#include <HIntLib/generatormatrixgen.h>
+#include <HIntLib/generatormatrixvirtual.h>
+#include <HIntLib/minmaxfinder.h>
 #include <HIntLib/hlalgorithm.h>
 #include <HIntLib/exception.h>
 
@@ -356,6 +362,30 @@ L::TCalcGen::~TCalcGen ()
 
 
 /**
+ *  copy To Selection ()
+ */
+
+inline
+void
+L::TCalcGen::copyToSelection (int d, int num, unsigned& pos)
+{
+   for (int i = 0; i < num; ++i)
+   {
+      for (int j = 0; j < M; ++j)  selection [pos * M + j] = gm (d, j, i);
+      ++pos;
+   }
+}
+
+inline
+void
+L::TCalcGen::copyToSelection ()
+{
+   unsigned pos = 0;
+   for (int d = 0; d < dim; ++d)  copyToSelection (d, partition[d], pos);
+}
+
+
+/**
  *  check()
  */
 
@@ -456,44 +486,50 @@ bool L::TCalcGen::checkRestrictedRO (int thickness, int maxRows)
 /*****************  Public routines  *****************************************/
 
 
-bool L::confirmT (const GMGen &gm, int t, TOption opts)
+bool L::confirmT (const GeneratorMatrix& gm, int t, TOption opts)
 {
    if (opts & LOWER_RESTRICTION_OK)  throw FIXME (__FILE__, __LINE__);
 
    if (t < 0 || t > int (gm.getM()))  throw FIXME (__FILE__, __LINE__);
-   if (gm.getM() - t > gm.getTotalPrec())  return false;
+   const unsigned k = gm.getM() - t;
+   if (k > gm.getPrec())  return false;
+
+   AdjustPrec gm1 (k, gm);
 
    if (use32bit (gm))
    {
-      GMCopy copy; copy.totalPrec (gm.getM() - t);
-      GeneratorMatrix2Row<u32> gm2 (gm, copy);
+      GeneratorMatrix2Row<u32> gm2 (gm1);
       TCalc2<u32> calc (gm2);
 
       if (opts & LARGER_T_OK)
-         return calc.check (gm.getM() - t, opts & LOWER_DIM_OK);
+         return calc.checkTO (k, opts & LOWER_DIM_OK);
       else
-         return calc.checkTO (gm.getM() - t, opts & LOWER_DIM_OK);
+         return calc.check (k, opts & LOWER_DIM_OK);
    }
    else
    {
-      TCalcGen calc (gm);
-      return calc.check (gm.getM() - t, opts & LOWER_DIM_OK);
+      GMGen gm2 (gm1);
+      TCalcGen calc (gm2);
+      return calc.check (k, opts & LOWER_DIM_OK);
    }
 }
 
-bool L::confirmTRestricted (const GMGen &gm, int t, int maxRows, TOption opts)
+bool L::confirmTRestricted (
+      const GeneratorMatrix& gm, int t, int maxRows, TOption opts)
 {
    if (opts & LOWER_DIM_OK)  throw FIXME (__FILE__, __LINE__);
 
    if (t < 0 || t > int (gm.getM()))  throw FIXME (__FILE__, __LINE__);
-   if (maxRows > int (gm.getTotalPrec()))  throw FIXME (__FILE__, __LINE__);
+   if (maxRows > int (gm.getPrec()))  throw FIXME (__FILE__, __LINE__);
 
    const int thickness = gm.getM() - t;
+   const int numRows = std::min (maxRows, thickness);
+
+   AdjustPrec gm1 (numRows, gm);
 
    if (use32bit (gm))
    {
-      GMCopy copy; copy.totalPrec (std::min (maxRows, thickness));
-      GeneratorMatrix2Row<u32> gm2 (gm, copy);
+      GeneratorMatrix2Row<u32> gm2 (gm1);
       TCalc2<u32> calc (gm2);
 
       if ((opts & LOWER_RESTRICTION_OK) && thickness > 1)
@@ -513,7 +549,8 @@ bool L::confirmTRestricted (const GMGen &gm, int t, int maxRows, TOption opts)
    }
    else
    {
-      TCalcGen calc (gm);
+      GMGen gm2 (gm1);
+      TCalcGen calc (gm2);
 
       // there is no way to optimize for LARGER_T_OK in base > 2
 
@@ -526,7 +563,7 @@ bool L::confirmTRestricted (const GMGen &gm, int t, int maxRows, TOption opts)
    }
 }
 
-int L::tParameter (const GMGen &gm, int lb, int ub, TOption opts)
+int L::tParameter (const GeneratorMatrix& gm, int lb, int ub, TOption opts)
 {
    if (opts & (LOWER_RESTRICTION_OK | LARGER_T_OK))
    {
@@ -543,7 +580,7 @@ int L::tParameter (const GMGen &gm, int lb, int ub, TOption opts)
 
    lb = max (lb,
         max (0,
-        max (M - int (gm.getTotalPrec()),
+        max (M - int (gm.getPrec()),
              min (M - 1,
                   int (L::logInt ((gm.getBase()-1) * gm.getDimension(),
                                   gm.getBase()) - 1)))));
@@ -552,10 +589,11 @@ int L::tParameter (const GMGen &gm, int lb, int ub, TOption opts)
    if (lb > ub)  throw InternalError (__FILE__, __LINE__);
    if (lb == ub)  return lb;
 
-   if (use32bit (gm))
+   AdjustPrec gm1 (M - lb, gm);
+
+   if (use32bit (gm1))
    {
-      GMCopy copy; copy.totalPrec (M - lb);
-      GeneratorMatrix2Row<u32> gm2 (gm, copy);
+      GeneratorMatrix2Row<u32> gm2 (gm1);
       TCalc2<u32> calc (gm2);
 
       for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
@@ -568,7 +606,8 @@ int L::tParameter (const GMGen &gm, int lb, int ub, TOption opts)
    }
    else
    {
-      TCalcGen calc (gm);
+      GMGen gm2 (gm1);
+      TCalcGen calc (gm2);
 
       while (lb != ub)
       {
@@ -588,13 +627,13 @@ int L::tParameter (const GMGen &gm, int lb, int ub, TOption opts)
 }
 
 int L::tParameterRestricted (
-      const GMGen &gm, int lb, int ub, int maxRows, TOption opts)
+      const GeneratorMatrix& gm, int lb, int ub, int maxRows, TOption opts)
 {
    if (opts)  throw FIXME (__FILE__, __LINE__);
 
    const int M = gm.getM();
 
-   if (maxRows > int (gm.getTotalPrec()))
+   if (maxRows > int (gm.getPrec()))
    {
       throw InternalError (__FILE__, __LINE__);
    }
@@ -605,10 +644,11 @@ int L::tParameterRestricted (
    if (lb > ub)  throw InternalError (__FILE__, __LINE__);
    if (lb == ub)  return lb;
 
-   if (use32bit (gm))
+   AdjustPrec gm1 (M - lb, gm);
+
+   if (use32bit (gm1))
    {
-      GMCopy copy; copy.totalPrec (M - lb);
-      GeneratorMatrix2Row<u32> gm2 (gm, copy);
+      GeneratorMatrix2Row<u32> gm2 (gm1);
       TCalc2<u32> calc (gm2);
 
       for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
@@ -621,7 +661,8 @@ int L::tParameterRestricted (
    }
    else
    {
-      TCalcGen calc (gm);
+      GMGen gm2 (gm1);
+      TCalcGen calc (gm2);
 
       while (lb != ub)
       {
@@ -638,5 +679,147 @@ int L::tParameterRestricted (
    }
 
    return lb;
+}
+
+
+/*************** t-Parameter of low-dimensional projections ******************/
+
+
+/**
+ *  tParameter1DimProjection()
+ */
+
+int L::tParameter1DimProjection (const GeneratorMatrix& gm, unsigned d)
+{
+   const unsigned m = gm.getM();
+   const unsigned prec = gm.getPrec();
+
+   Array<unsigned char> matrix (m * prec);
+
+   for (unsigned r = 0; r < m; ++r)
+   {
+      for (unsigned b = 0; b < prec; ++b)
+      {
+         matrix [r + m * b] = gm.getDigit (d, r, b);
+      }
+   }
+   
+   std::auto_ptr<LinearAlgebra> la (LinearAlgebra::make (gm.getBase()));
+
+   return la->numLinearlyIndependentVectors (matrix.begin(), prec, m);
+}
+
+
+/**
+ *  tParameterMax1DimProjection()
+ */
+
+int L::tParameterMax1DimProjection (const GeneratorMatrix& gm)
+{
+   const unsigned dim = gm.getDimension();
+   const unsigned m = gm.getM();
+   const unsigned prec = gm.getPrec();
+
+   Array<unsigned char> matrix (m * prec);
+   MaxFinder<unsigned> mf;
+
+   for (unsigned d = 0; d < dim; ++d)
+   {
+      for (unsigned r = 0; r < m; ++r)
+      {
+         for (unsigned b = 0; b < prec; ++b)
+         {
+            matrix [r + m * b] = gm.getDigit (dim, r, b);
+         }
+      }
+   
+      std::auto_ptr<LinearAlgebra> la (LinearAlgebra::make (gm.getBase()));
+
+      mf << la->numLinearlyIndependentVectors (matrix.begin(), prec, m);
+   }
+
+   return mf.getMaximum();
+}
+
+
+/**
+ *  tParameter2DimProjection()
+ */
+
+int L::tParameter2DimProjection
+      (const GeneratorMatrix& gm, unsigned d1, unsigned d2)
+{
+   unsigned dimensions [2];
+   dimensions [0] = d1;
+   dimensions [0] = d2;
+
+   SelectDimensions gm2 (dimensions, dimensions + 2, gm);
+
+   GeneratorMatrixGen<unsigned char> gm3 (gm2);
+
+   return tParameter (gm3);
+}
+
+
+/**
+ *  tParameterMax2DimProjection()
+ */
+
+int L::tParameterMax2DimProjection (const GeneratorMatrix& gm)
+{
+   const unsigned dim = gm.getDimension();
+
+   if (dim < 2)  return tParameterMax1DimProjection (gm);
+
+   MaxFinder<unsigned> mf;
+
+   SelectDimensions gm2 (2, gm);
+
+   for (unsigned d1 = 1; d1 < dim; ++d1)
+   {
+      gm2.selectDimension (0, d1);
+
+      for (unsigned d2 = 0; d2 < d1; ++d2)
+      {
+         gm2.selectDimension (1, d2);
+         mf << tParameter (gm2);
+      }
+   }
+
+   return mf.getMaximum();
+}
+
+
+/**
+ *  tParameterMax3DimProjection()
+ */
+
+int L::tParameterMax3DimProjection (const GeneratorMatrix& gm)
+{
+   const unsigned dim = gm.getDimension();
+
+   if (dim < 3)  return tParameterMax2DimProjection (gm);
+
+   MaxFinder<unsigned> mf;
+
+   SelectDimensions gm2 (3, gm);
+
+   for (unsigned d1 = 2; d1 < dim; ++d1)
+   {
+      gm2.selectDimension (0, d1);
+
+      for (unsigned d2 = 1; d2 < d1; ++d2)
+      {
+         gm2.selectDimension (1, d2);
+
+         for (unsigned d3 = 0; d3 < d2; ++d3)
+         {
+            gm2.selectDimension (2, d3);
+            mf << tParameter (gm2);
+         }
+      }
+   }
+
+   return mf.getMaximum();
 }
 

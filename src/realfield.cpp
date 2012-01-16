@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -252,7 +252,6 @@ L::ComplexField<long double>::power (const type& a, unsigned k)
  *  order()
  */
 
-#include <iostream>
 template<typename T>
 unsigned
 L::ComplexField<T>::order (const type& r)
@@ -261,7 +260,7 @@ L::ComplexField<T>::order (const type& r)
 
    if (! f.is1 (std::abs(r.x)))  return 0;
 
-   T phi = std::arg(r.x) / (T(2) * M_PI);
+   T phi = std::arg(r.x) / (T(2) * Constants<T>::pi());
    phi = phi - HINTLIB_MN floor (phi);
 
    // XXX no we should use Euclides Algorithm and determine the continued

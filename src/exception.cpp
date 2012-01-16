@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -169,7 +169,8 @@ void L::throwDimensionMismatch (unsigned dim1, unsigned dim2)
 void L::NoEvaluationsPossible::makeString() const
 {
    ostringstream ss;
-   ss << "Cannot apply this Integrator with only " << n << " abscissas!";
+   ss << "Cannot apply this Integrator with only " << n << " abscissa"
+      << (n == 1 ? "" : "s") << '!';
    setString (ms(ss));
 }
 

@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,9 +24,7 @@
 
 #define HINTLIB_LIBRARY_OBJECT
 
-#include <HIntLib/generatormatrix.h>
-#include <HIntLib/hlmath.h>
-#include <HIntLib/exception.h>
+#include <HIntLib/defaults.h>
 
 #ifdef HINTLIB_HAVE_OSTREAM
 #include <ostream>
@@ -35,73 +33,12 @@
 #endif
 
 #include <iomanip>
-#include <algorithm>
+
+#include <HIntLib/generatormatrix.h>
+#include <HIntLib/hlmath.h>
+#include <HIntLib/exception.h>
 
 namespace L = HIntLib;
-
-using std::numeric_limits;
-
-
-/*****************************************************************************/
-/***     GM Copy                                                           ***/
-/*****************************************************************************/
-
-L::GMCopy::GMCopy()
-   : dimValue          (-1),
-     maxDimValue       (-1),
-     mValue            (-1),
-     maxMValue         (-1),
-     totalPrecValue    (-1),
-     maxTotalPrecValue (-1),
-     vecValue          (-1),
-     equiValue      (false)
-{}
-
-unsigned L::GMCopy::getDimension (const GeneratorMatrix& m) const
-{
-   if (dimValue >= 0)  return dimValue;
-
-   int def = m.getDimension() + equiValue;
-
-   return (maxDimValue >= 0 && maxDimValue < def)  ? maxDimValue : def;
-}
-
-unsigned L::GMCopy::getM (const GeneratorMatrix& m) const
-{
-   if (mValue >= 0)  return mValue;
-   if (maxMValue >= 0 && unsigned(maxMValue) < m.getM())  return maxMValue;
-   return m.getM();
-}
-
-unsigned L::GMCopy::getTotalPrec (const GeneratorMatrix& m, unsigned max) const
-{
-   if (totalPrecValue >= 0)  return totalPrecValue;
-   if (maxTotalPrecValue >= 0)
-   {
-      return std::min (unsigned (maxTotalPrecValue), m.getTotalPrec());
-   }
-
-   if (max > 0)
-      return std::min (m.getTotalPrec(), max / ms1(m.getBase()));
-   else
-      return m.getTotalPrec();
-}
-
-unsigned L::GMCopy::getVectorization
-   (const GeneratorMatrix& m, unsigned /* bits */) const
-{
-   switch (vecValue)
-   {
-   case -1: return 1;
-   case -2: return m.getVectorization();
-   default: return vecValue;
-   };
-}
-
-void L::GMCopy::checkNoVec () const
-{
-   if (vecValue >= 0)  throw FIXME (__FILE__, __LINE__);
-}
 
 
 /*****************************************************************************/
@@ -109,17 +46,16 @@ void L::GMCopy::checkNoVec () const
 /*****************************************************************************/
 
 /**
- *  Copy Constructor
+ *  setParameters()
  */
 
-L::GeneratorMatrix::GeneratorMatrix (const GeneratorMatrix &gm)
-: base      (gm.base),
-  vec       (gm.vec),
-  prec      (gm.prec),
-  dim       (gm.dim),
-  m         (gm.m),
-  totalPrec (gm.totalPrec)
-{}
+void L::GeneratorMatrix::setParameters (const GeneratorMatrix& gm)
+{
+   base = gm.base;
+   dim  = gm.dim;
+   m    = gm.m;
+   prec = gm.prec;
+}
 
 
 /**
@@ -129,34 +65,30 @@ L::GeneratorMatrix::GeneratorMatrix (const GeneratorMatrix &gm)
 unsigned L::GeneratorMatrix::getDefaultM (unsigned base)
 {
    const Index maxNetSize
-      = numeric_limits<Index>::digits <= 49
-      ? numeric_limits<Index>::max()
+      = std::numeric_limits<Index>::digits <= 49
+      ? std::numeric_limits<Index>::max()
       : (Index(1) << 48) - 1;
 
    return logInt (maxNetSize, Index (base));
 }
 
 /**
- *  getDefaultTotalPrec ()
+ *  getDefaultPrec ()
  */
 
-unsigned L::GeneratorMatrix::getDefaultTotalPrec (unsigned base)
+unsigned L::GeneratorMatrix::getDefaultPrec (unsigned base)
 {
    return unsigned (HINTLIB_MN ceil(
       HINTLIB_MN log(2.0) / HINTLIB_MN log(double(base))
-                          * double(numeric_limits<real>::digits - 1)));
+                          * double(std::numeric_limits<real>::digits - 1)));
 }
 
 
 /**
  *  setDigit()
- *  setVector()
+ *  vSetPackedRowVector()
  *
  *  By default, a Generator Matrix cannot be written to.
- *
- *  Non-dummy implementations are available in
- *     MutableGeneratorMatrixGen<T> and
- *     MutalbeGeneratorMatrix2<T>.
  */
 
 void L::GeneratorMatrix::setDigit (unsigned, unsigned, unsigned, unsigned)
@@ -164,53 +96,51 @@ void L::GeneratorMatrix::setDigit (unsigned, unsigned, unsigned, unsigned)
    throw InternalError (__FILE__, __LINE__);
 }
 
-void L::GeneratorMatrix::setVector (unsigned, unsigned, unsigned, u64)
+void L::GeneratorMatrix::vSetPackedRowVector (unsigned, unsigned, u64)
 {
    throw InternalError (__FILE__, __LINE__);
 }
 
 
 /**
- *  dump()
+ *  print()
  */
 
-void L::GeneratorMatrix::dump (std::ostream &o) const
+void L::GeneratorMatrix::print (std::ostream &o) const
 {
    o << "Base=" << getBase()
      << " Dim=" << getDimension()
      << " m=" << getM()
-     << " TotalPrec=" << getTotalPrec()
-     << " (stored in " << getPrec() << " blocks of " << getVectorization()
-     << " digits)\n";
+     << " prec=" << getPrec() << '\n';
 
    for (unsigned d = 0; d < getDimension(); ++d)
    {
       o << "Dimension " << d << ":\n";
 
-      dumpDimension (o, d);
+      printDimension (o, d);
    }
 }
 
 
 /**
- *  dumpDimension()
+ *  printDimension()
  */
 
-void L::GeneratorMatrix::dumpDimension (std::ostream &o, unsigned d) const
+void L::GeneratorMatrix::printDimension (std::ostream &o, unsigned d) const
 {
-   for (unsigned b = 0; b < getTotalPrec(); ++b)
+   for (unsigned b = 0; b < getPrec(); ++b)
    {
-      dumpRowVector (o, d, b);
+      printRowVector (o, d, b);
       o << '\n';
    }
 }
 
 
 /**
- *  dumpRowVector ()
+ *  printRowVector ()
  */
 
-void L::GeneratorMatrix::dumpRowVector (
+void L::GeneratorMatrix::printRowVector (
       std::ostream &o, unsigned d, unsigned b) const
 {
    unsigned size = (base < 10) ? 1 : logInt (base, 10u) + 2;
@@ -223,40 +153,17 @@ void L::GeneratorMatrix::dumpRowVector (
 
 
 /**
- *  dumpColumnVector ()
+ *  printColumnVector ()
  */
 
-void L::GeneratorMatrix::dumpColumnVector (
+void L::GeneratorMatrix::printColumnVector (
       std::ostream &o, unsigned d, unsigned r) const
 {
    unsigned size = (base < 10) ? 1 : logInt (base, 10u) + 2;
 
-   for (unsigned b = 0; b < getTotalPrec(); ++b)
+   for (unsigned b = 0; b < getPrec(); ++b)
    {
       o << std::setw (size) << getDigit (d,r,b);
-   }
-}
-
-
-/**
- *  vectorDump()
- */
-
-void L::GeneratorMatrix::vectorDump (std::ostream &o) const
-{
-   for (unsigned d = 0; d < dim; ++d)
-   {
-      o << "Dimension " << d << ":\n";
-
-      for (unsigned r = 0; r < m; ++r)
-      {
-         for (unsigned p = 0; p < getPrec(); ++p)
-         {
-            if (p > 0)  o << ' ';
-            o << getVector (d,r,p);
-         }
-         o << '\n';
-      }
    }
 }
 
@@ -269,37 +176,20 @@ bool L::operator== (const L::GeneratorMatrix &gm1,
                     const L::GeneratorMatrix &gm2)
 {
    if (gm1.getDimension() != gm2.getDimension()
-    || gm1.getM() != gm2.getM()
-    || gm1.getBase() != gm2.getBase()
-    || gm1.getTotalPrec() != gm2.getTotalPrec())
+    || gm1.getM()         != gm2.getM()
+    || gm1.getBase()      != gm2.getBase()
+    || gm1.getPrec()      != gm2.getPrec())
    {
       return false;
    }
 
-   if (gm1.getVectorization() == gm2.getVectorization())
+   for (unsigned d = 0; d < gm1.getDimension(); ++d)
    {
-      for (unsigned d = 0; d < gm1.getDimension(); ++d)
+      for (unsigned r = 0; r < gm1.getM(); ++r)
       {
-         for (unsigned r = 0; r < gm1.getM(); ++r)
+         for (unsigned b = 0; b < gm1.getPrec(); ++b)
          {
-            for (unsigned b = 0; b < gm1.getPrec(); ++b)
-            {
-               if (gm1.getVector(d, r, b) != gm2.getVector(d, r, b))
-                  return false;
-            }
-         }
-      }
-   }
-   else
-   {
-      for (unsigned d = 0; d < gm1.getDimension(); ++d)
-      {
-         for (unsigned r = 0; r < gm1.getM(); ++r)
-         {
-            for (unsigned b = 0; b < gm1.getTotalPrec(); ++b)
-            {
-               if (gm1.getDigit(d, r, b) != gm2.getDigit(d, r, b)) return false;
-            }
+            if (gm1.getDigit(d, r, b) != gm2.getDigit(d, r, b)) return false;
          }
       }
    }
@@ -318,8 +208,8 @@ void L::GeneratorMatrix::checkCopy
    if (o.getBase() != n.getBase())
       throw GM_CopyBase (n.getBase(), o.getBase());
 
-   if (o.getTotalPrec() < n.getTotalPrec())
-      throw GM_CopyPrec (n.getTotalPrec(), o.getTotalPrec());
+   if (o.getPrec() < n.getPrec())
+      throw GM_CopyPrec (n.getPrec(), o.getPrec());
 
    if (o.getM() < n.getM())
       throw GM_CopyM (n.getM(), o.getM());
@@ -359,7 +249,7 @@ void L::assign (
 
    for (unsigned r = 0; r < dst.getM(); ++r)
    {
-      for (unsigned b = 0; b < dst.getTotalPrec(); ++b)
+      for (unsigned b = 0; b < dst.getPrec(); ++b)
       {
          dst.setDigit (dstDim, r, b, src.getDigit (srcDim, r, b));
       }
@@ -371,5 +261,4 @@ void L::assign (const GeneratorMatrix &src, GeneratorMatrix &dst)
 {
    for (unsigned d = 0; d < dst.getDimension(); ++d)  assign (src, d, dst, d);
 }
-
 

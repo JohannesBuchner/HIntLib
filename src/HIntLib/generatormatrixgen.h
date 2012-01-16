@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,19 +42,12 @@ namespace HIntLib
 
 class GeneratorMatrixGenBase : public GeneratorMatrix
 {
-public:
-   // no public constructor!
-
-   unsigned getVectorization()      const  { return 1; }
-   unsigned getNumOfLeadingDigits() const  { return 1; }
-   unsigned getNumOfMissingDigits() const  { return 0; }
-
 protected:
    // Constructor with direct initialization
 
    GeneratorMatrixGenBase
-      (unsigned _base, unsigned _dim, unsigned _m, unsigned _totalPrec)
-   : GeneratorMatrix (_base, 1, _dim, _m, _totalPrec), dimPrec (dim * prec) {}
+      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec)
+   : GeneratorMatrix (_base, _dim, _m, _prec), dimPrec (dim * prec) {}
 
    // protected copy constructor
 
@@ -81,17 +74,12 @@ public:
    GeneratorMatrixGen (unsigned _base, unsigned _dim);
    GeneratorMatrixGen (unsigned _base, unsigned _dim, unsigned _m);
    GeneratorMatrixGen
-      (unsigned _base, unsigned _dim, unsigned _m, unsigned _totalPrec);
+      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec);
 
    // Copying a given matrix
 
    GeneratorMatrixGen (const GeneratorMatrixGen<T> &);
    GeneratorMatrixGen (const GeneratorMatrix &);
-
-   // Truncate a given matrix
-
-   GeneratorMatrixGen (const GeneratorMatrixGen<T> &, const GMCopy &);
-   GeneratorMatrixGen (const GeneratorMatrix &, const GMCopy &);
 
    ~GeneratorMatrixGen()  { delete[] c; }
 
@@ -124,16 +112,14 @@ public:
    // Virtual set/get
 
    virtual unsigned getDigit  (unsigned d, unsigned r, unsigned b) const;
-   virtual u64      getVector (unsigned d, unsigned r, unsigned b) const;
    virtual void setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
-   virtual void setVector (unsigned d, unsigned r, unsigned b, u64 x);
 
    virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
    virtual void vSetPackedRowVector (unsigned d, unsigned b, u64 x);
 
    // Manipulation
 
-   void makeEquidistributedCoordinate (unsigned d);
+   void makeHammersley (unsigned d);
    void makeIdentityMatrix (unsigned d);
    void makeZeroMatrix ();
    void makeZeroMatrix (unsigned d);
@@ -151,9 +137,8 @@ template<typename T>
 bool operator== (const GeneratorMatrixGen<T> &, const GeneratorMatrixGen<T> &);
 
 GeneratorMatrixGen<unsigned char>* loadLibSeq (std::istream &);
-GeneratorMatrixGen<unsigned char>* loadLibSeq (const char*);
+GeneratorMatrixGen<unsigned char>* loadEdel   (std::istream &, unsigned);
 GeneratorMatrixGen<unsigned char>* loadBinary (std::istream &);
-GeneratorMatrixGen<unsigned char>* loadBinary (const char*);
 GeneratorMatrixGen<unsigned char>* loadNiederreiterXing (unsigned dim);
 
 

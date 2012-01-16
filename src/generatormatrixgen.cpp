@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -50,10 +50,8 @@ void L::assign (
    cerr <<"A3" <<endl;
    cerr << "dim = " << srcM.getDimension() << " "<<dstM.getDimension() << endl;
    cerr << "m = " << srcM.getM() << " "<<dstM.getM() << endl;
-   cerr << "totalPrec = " << srcM.getTotalPrec() << " "<<dstM.getTotalPrec() << endl;
-   cerr << "base = " << srcM.getBase() << " "<<dstM.getBase() << endl;
    cerr << "prec = " << srcM.getPrec() << " "<<dstM.getPrec() << endl;
-   cerr << "vec = " << srcM.getVectorization() << " "<<dstM.getVectorization() << endl;
+   cerr << "base = " << srcM.getBase() << " "<<dstM.getBase() << endl;
 #endif
 
    GeneratorMatrix::checkCopy (src, dst);
@@ -75,8 +73,6 @@ void L::assign (
          dst.setd (dstDim, r, b, src.getDigit (srcDim, r, b));
       }
    }
-
-   // FIXME  Optimization for src.getVectorization() != 1 is missing.
 }
 
 template<class T>
@@ -92,10 +88,9 @@ void L::assign (const GeneratorMatrix &src, GeneratorMatrixGen<T> &dst)
 L::GeneratorMatrixGenBase::GeneratorMatrixGenBase (const GeneratorMatrix &gm)
    : GeneratorMatrix (
         gm.getBase(),
-        1,
         gm.getDimension(),
         gm.getM(),
-        gm.getTotalPrec()),
+        gm.getPrec()),
      dimPrec (dim * prec)
 {}
 
@@ -111,7 +106,7 @@ L::GeneratorMatrixGenBase::GeneratorMatrixGenBase (const GeneratorMatrix &gm)
 template<class T>
 L::GeneratorMatrixGen<T>::GeneratorMatrixGen (unsigned _base, unsigned _dim)
    : GeneratorMatrixGenBase (
-      _base, _dim, getDefaultM (_base), getDefaultTotalPrec (_base))
+      _base, _dim, getDefaultM (_base), getDefaultPrec (_base))
 {
    checkBase();
    allocate();
@@ -122,7 +117,7 @@ template<class T>
 L::GeneratorMatrixGen<T>::GeneratorMatrixGen
       (unsigned _base, unsigned _dim, unsigned _m)
    : GeneratorMatrixGenBase (
-      _base, _dim, _m, std::min (_m, getDefaultTotalPrec (_base)))
+      _base, _dim, _m, std::min (_m, getDefaultPrec (_base)))
 {
    checkBase();
    allocate();
@@ -132,8 +127,8 @@ L::GeneratorMatrixGen<T>::GeneratorMatrixGen
 
 template<class T>
 L::GeneratorMatrixGen<T>::GeneratorMatrixGen
-      (unsigned _base, unsigned _dim, unsigned _m, unsigned _totalPrec)
-   : GeneratorMatrixGenBase (_base, _dim, _m, _totalPrec)
+      (unsigned _base, unsigned _dim, unsigned _m, unsigned _prec)
+   : GeneratorMatrixGenBase (_base, _dim, _m, _prec)
 {
    checkBase();
    allocate();
@@ -169,58 +164,13 @@ L::GeneratorMatrixGen<T>::GeneratorMatrixGen (const GeneratorMatrix &gm)
 
 
 /**
- *  Constructor  (using GMCopy)
- */
-
-template<class T>
-L::GeneratorMatrixGen<T>::GeneratorMatrixGen (
-   const GeneratorMatrixGen<T> &gm, const GMCopy &c)
-: GeneratorMatrixGenBase
-   (gm.getBase(),
-    c.getDimension (gm),
-    c.getM (gm),
-    c.getTotalPrec (gm))
-{
-   const int dd = c.getEqui();
-   checkCopyDim (gm, *this, dd);
-
-   allocate();
-
-   for (unsigned d = 0; d < dim - dd; ++d)  assign (gm, d, *this, d + dd);
-
-   if (dd && dim)  makeEquidistributedCoordinate (0);
-}
-
-template<class T>
-L::GeneratorMatrixGen<T>::GeneratorMatrixGen (
-   const GeneratorMatrix &gm, const GMCopy& c)
-: GeneratorMatrixGenBase
-   (gm.getBase(),
-    c.getDimension (gm),
-    c.getM (gm),
-    c.getTotalPrec (gm))
-{
-   checkBase();
-
-   const int dd = c.getEqui();
-   checkCopyDim (gm, *this, dd);
-
-   allocate();
-
-   for (unsigned d = 0; d < dim - dd; ++d)  assign (gm, d, *this, d + dd);
-
-   if (dd && dim)  makeEquidistributedCoordinate (0);
-}
-
-
-/**
  *  checkBase()
  */
 
 template<class T>
 void L::GeneratorMatrixGen<T>::checkBase() const
 {
-   if (getBase()-1 > numeric_limits<T>::max())
+   if (getBase() < 2 || getBase() - 1 > numeric_limits<T>::max())
    {
       throw GM_BaseTooLarge (getBase(), unsigned (numeric_limits<T>::max()));
    }
@@ -245,7 +195,7 @@ void L::GeneratorMatrixGen<T>::allocate()
 template<class T>
 void L::GeneratorMatrixGen<T>::makeZeroColumnVector (unsigned d, unsigned r)
 {
-   T* base = operator()(d,r);
+   T* base = (*this)(d,r);
    std::fill (base, base + prec, 0);
 }
 
@@ -259,7 +209,7 @@ L::u64
 L::GeneratorMatrixGen<T>::getPackedRowVector (unsigned d, unsigned b) const
 {
    u64 result (0);
-   for (int r = m - 1; r >= 0; --r)  result = result*base + operator()(d,r,b);
+   for (int r = m - 1; r >= 0; --r)  result = result*base + (*this)(d,r,b);
    return result;
 }
 
@@ -309,24 +259,7 @@ L::GeneratorMatrixGen<T>::getDigit (unsigned d, unsigned r, unsigned b) const
       throw InternalError (__FILE__, __LINE__);
    }
 
-   return unsigned(operator() (d, r, b));
-}
-
-
-/**
- *  getVector ()
- */
-
-template<class T>
-L::u64
-L::GeneratorMatrixGen<T>::getVector (unsigned d, unsigned r, unsigned b) const
-{
-   if (numeric_limits<T>::digits > numeric_limits<u64>::digits)
-   {
-      throw InternalError (__FILE__, __LINE__);
-   }
-
-   return u64(operator() (d, r, b));
+   return unsigned((*this) (d, r, b));
 }
 
 
@@ -339,24 +272,6 @@ void L::GeneratorMatrixGen<T>::setDigit
    (unsigned d, unsigned r, unsigned b, unsigned x)
 {
    if (   numeric_limits<T>::digits < numeric_limits<unsigned>::digits
-       && x >= getBase())
-   {
-      throw InternalError (__FILE__, __LINE__);
-   }
-
-   setd (d, r, b, T(x));
-}
-
-
-/**
- *  setVector ()
- */
-
-template<class T>
-void L::GeneratorMatrixGen<T>::setVector
-   (unsigned d, unsigned r, unsigned b, u64 x)
-{
-   if (   numeric_limits<T>::digits < numeric_limits<u64>::digits
        && x >= getBase())
    {
       throw InternalError (__FILE__, __LINE__);
@@ -386,17 +301,17 @@ L::GeneratorMatrixGen<T>::vSetPackedRowVector (unsigned d, unsigned b, u64 x)
 
 
 /**
- *  make Equidistributed Coordinate()
+ *  make Hammersley()
  */
 
 template<class T>
-void L::GeneratorMatrixGen<T>::makeEquidistributedCoordinate (unsigned d)
+void L::GeneratorMatrixGen<T>::makeHammersley (unsigned d)
 {
    makeZeroMatrix (d);
 
    for (unsigned r = 0; r < m; ++r)
    {
-      if (m-(r+1) < totalPrec)  setd (d, r, m-(r+1), 1);
+      if (m-(r+1) < prec)  setd (d, r, m-(r+1), 1);
    }
 }
 
@@ -410,7 +325,7 @@ void L::GeneratorMatrixGen<T>::makeIdentityMatrix  (unsigned d)
 {
    makeZeroMatrix (d);
 
-   const unsigned ub = std::min (m, totalPrec);
+   const unsigned ub = std::min (m, prec);
    for (unsigned r = 0; r < ub; ++r)  setd (d, r, r, 1);
 }
 
@@ -443,7 +358,7 @@ void L::GeneratorMatrixGen<T>::makeShiftNet (unsigned b)
 {
    for (unsigned r = 0; r < m; ++r)
    {
-      T x = operator()(0, r, b);
+      T x = (*this)(0, r, b);
 
       for (unsigned d = 1;       d < dim - r; ++d)  setd (d, d+r,     b, x);
       for (unsigned d = dim - r; d < dim;     ++d)  setd (d, d+r-dim, b, x);
@@ -453,7 +368,7 @@ void L::GeneratorMatrixGen<T>::makeShiftNet (unsigned b)
 template<typename T>
 void L::GeneratorMatrixGen<T>::makeShiftNet()
 {
-   for (unsigned b = 0; b < totalPrec; ++b)  makeShiftNet (b);
+   for (unsigned b = 0; b < prec; ++b)  makeShiftNet (b);
 }
 
 
@@ -467,10 +382,10 @@ bool L::operator==
 {
    return m1.getDimension() == m2.getDimension()
        && m1.getM()         == m2.getM()
-       && m1.getTotalPrec() == m2.getTotalPrec()
+       && m1.getPrec()      == m2.getPrec()
        && std::equal(
             m1.getMatrix(),
-            m1.getMatrix() + m1.getDimension() * m1.getTotalPrec() * m1.getM(),
+            m1.getMatrix() + m1.getDimension() * m1.getPrec() * m1.getM(),
             m2.getMatrix());
 }
 

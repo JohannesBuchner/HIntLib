@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ void L::assign (
    {
       const T mask = ~T(0) >> (dst.MAX_M - dst.getM());
 
-      for (unsigned b = 0; b < dst.getTotalPrec(); ++b)
+      for (unsigned b = 0; b < dst.getPrec(); ++b)
       {
          dst.setPackedRowVector (srcDim, b,
                T(src.vGetPackedRowVector (dstDim, b)) & mask);
@@ -68,7 +68,7 @@ void L::assign (
    }
    else
    {
-      for (unsigned b = 0; b < dst.getTotalPrec(); ++b)
+      for (unsigned b = 0; b < dst.getPrec(); ++b)
       {
          T x = 0;
          for (int r = dst.getM() - 1; r >= 0; --r)
@@ -109,8 +109,8 @@ L::GeneratorMatrix2Row<T>::GeneratorMatrix2Row (unsigned _dim, unsigned _m)
 
 template<typename T>
 L::GeneratorMatrix2Row<T>::GeneratorMatrix2Row
-      (unsigned _dim, unsigned _m, unsigned _totalPrec)
-   : GeneratorMatrix2RowBase (_dim, _m, _totalPrec)
+      (unsigned _dim, unsigned _m, unsigned _prec)
+   : GeneratorMatrix2RowBase (_dim, _m, _prec)
 {
    checkM();
    allocate();
@@ -135,36 +135,12 @@ L::GeneratorMatrix2Row<T>::GeneratorMatrix2Row (const GeneratorMatrix &gm)
    : GeneratorMatrix2RowBase (
        gm.getDimension(),
        gm.getM(),
-       gm.getTotalPrec())
+       gm.getPrec())
 {
    checkM();
    if (gm.getBase() != 2)  throw GM_CopyBase (2, gm.getBase());
    allocate();
    for (unsigned d = 0; d < dim; ++d)  assign (gm, d, *this, d);
-}
-
-
-/**
- *  Constructor  (using GMCopy)
- */
-
-template<typename T>
-L::GeneratorMatrix2Row<T>::GeneratorMatrix2Row (
-      const GeneratorMatrix &gm, const GMCopy &c)
-   : GeneratorMatrix2RowBase (
-      c.getDimension (gm),
-      c.getM         (gm),
-      c.getTotalPrec (gm))
-{
-   checkM();
-   const int dd = c.getEqui();
-   checkCopyDim (gm, *this, dd);   // dim is checked during assignment
-
-   allocate();
-
-   for (unsigned d = 0; d < dim - dd; ++d)  assign (gm, d, *this, d + dd);
-
-   if (dim && dd)  makeEquidistributedCoordinate(0);
 }
 
 
@@ -175,7 +151,7 @@ L::GeneratorMatrix2Row<T>::GeneratorMatrix2Row (
 template<typename T>
 void L::GeneratorMatrix2Row<T>::allocate()
 {
-   c = new T [dim * totalPrec];
+   c = new T [dim * prec];
    makeZeroMatrix();
 }
 
@@ -202,7 +178,7 @@ void L::GeneratorMatrix2Row<T>::checkM() const
 template<typename T>
 void L::GeneratorMatrix2Row<T>::setMatrix (const T* source)
 {
-   std::copy (source, source + totalPrec * dim, c);
+   std::copy (source, source + prec * dim, c);
 }
 
 
@@ -214,10 +190,10 @@ template<typename T>
 bool L::GeneratorMatrix2Row<T>::operator==
       (const L::GeneratorMatrix2Row<T> &gm) const
 {
-   return dim       == gm.dim
-       && m         == gm.m
-       && totalPrec == gm.totalPrec
-       && std::equal(c, c + dim*totalPrec , gm.c);
+   return dim  == gm.dim
+       && m    == gm.m
+       && prec == gm.prec
+       && std::equal(c, c + dim*prec , gm.c);
 }
 
 
@@ -229,19 +205,7 @@ template<typename T>
 unsigned
 L::GeneratorMatrix2Row<T>::getDigit (unsigned d, unsigned r, unsigned b) const
 {
-   return unsigned (operator() (d, r, b));
-}
-
-
-/**
- *  getVector()
- */
-
-template<typename T>
-L::u64 L::GeneratorMatrix2Row<T>::getVector (
-      unsigned d, unsigned r, unsigned b) const
-{
-   return u64 (operator() (d, r, b));
+   return unsigned ((*this) (d, r, b));
 }
 
 
@@ -252,18 +216,6 @@ L::u64 L::GeneratorMatrix2Row<T>::getVector (
 template<typename T>
 void L::GeneratorMatrix2Row<T>::setDigit
    (unsigned d, unsigned r, unsigned b, unsigned x)
-{
-   setd (d, r, b, x);
-}
-
-
-/**
- *  setVector()
- */
-
-template<typename T>
-void
-L::GeneratorMatrix2Row<T>::setVector (unsigned d, unsigned r, unsigned b, u64 x)
 {
    setd (d, r, b, x);
 }
@@ -289,7 +241,7 @@ L::GeneratorMatrix2Row<T>::vSetPackedRowVector (unsigned d, unsigned b, u64 x)
 
 
 /**
- *  make Equidistributed Coordinate()
+ *  make Hammersley()
  *
  *  Sets the matrix for dimension  d  to such that an equidistributed
  *  coordinate is produiced.
@@ -298,9 +250,9 @@ L::GeneratorMatrix2Row<T>::vSetPackedRowVector (unsigned d, unsigned b, u64 x)
 
 template<typename T>
 void
-L::GeneratorMatrix2Row<T>::makeEquidistributedCoordinate (unsigned d)
+L::GeneratorMatrix2Row<T>::makeHammersley (unsigned d)
 {
-   if (totalPrec >= m)
+   if (prec >= m)
    {
       T a = mask (m - 1);
       for (unsigned b = 0; b < m; ++b)
@@ -308,12 +260,12 @@ L::GeneratorMatrix2Row<T>::makeEquidistributedCoordinate (unsigned d)
          setPackedRowVector (d, b, a);
          a <<= 1;
       }
-      for (unsigned b = m; b < totalPrec; ++b)  makeZeroRowVector (d, b);
+      for (unsigned b = m; b < prec; ++b)  makeZeroRowVector (d, b);
    }
-   else  // totalPrec < m
+   else  // prec < m
    {
       T a = mask (m - 1);
-      for (unsigned b = 0; b < totalPrec; ++b)
+      for (unsigned b = 0; b < prec; ++b)
       {
          setPackedRowVector (d, b, a);
          a <<= 1;
@@ -333,14 +285,14 @@ template<typename T>
 void L::GeneratorMatrix2Row<T>::makeIdentityMatrix (unsigned d)
 {
    T a = mask (0);
-   unsigned ub = std::min (m, totalPrec);
+   unsigned ub = std::min (m, prec);
 
    for (unsigned b = 0; b < ub; ++b)
    {
       setPackedRowVector (d, b, a);
       a >>= 1;
    }
-   for (unsigned b = ub; b < totalPrec; ++b)  makeZeroRowVector (d, b);
+   for (unsigned b = ub; b < prec; ++b)  makeZeroRowVector (d, b);
 }
 
 
@@ -353,13 +305,13 @@ void L::GeneratorMatrix2Row<T>::makeIdentityMatrix (unsigned d)
 template<typename T>
 void L::GeneratorMatrix2Row<T>::makeZeroMatrix (unsigned d)
 {
-   std::fill (c + d * totalPrec, c + (d+1) * totalPrec, 0);
+   std::fill (c + d * prec, c + (d+1) * prec, 0);
 }
 
 template<typename T>
 void L::GeneratorMatrix2Row<T>::makeZeroMatrix ()
 {
-   std::fill (c, c + dim * totalPrec, 0);
+   std::fill (c, c + dim * prec, 0);
 }
 
 
@@ -387,9 +339,9 @@ void L::GeneratorMatrix2Row<T>::prepareForGrayCode ()
 {
    for (unsigned d = 0; d < dim; ++d)
    {
-      T a = operator()(d,0);
+      T a = (*this)(d,0);
 
-      for (unsigned r = 1; r < m; ++r)  a = (operator()(d,r) ^= a);
+      for (unsigned r = 1; r < m; ++r)  a = ((*this)(d,r) ^= a);
    }
 }
 
@@ -416,7 +368,7 @@ void L::GeneratorMatrix2Row<T>::restoreFromGrayCode ()
    {
       for (unsigned r = m - 1; r > 0; --r)
       {
-         operator()(d,r) ^= operator()(d,r-1);
+         (*this)(d,r) ^= (*this)(d,r-1);
       }
    }
 }
@@ -446,7 +398,7 @@ void L::GeneratorMatrix2Row<T>::makeShiftNet(unsigned b)
 template<typename T>
 void L::GeneratorMatrix2Row<T>::makeShiftNet()
 {
-   for (unsigned b = 0; b < totalPrec; ++b)  makeShiftNet (b);
+   for (unsigned b = 0; b < prec; ++b)  makeShiftNet (b);
 }
 
 

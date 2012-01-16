@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -56,9 +56,29 @@ namespace Private
    template<class A> class PRBA_Complex;
    template<class A> class PRBA_GF;
 
-/*
- * Stub objects
- */
+   /**
+    *  PG  -  Polynomial generator
+    *
+    *  Various specializations (tags with the classes defined above) are
+    *  returned by the methods of PolynomialRing wich are supposed to return
+    *  type.
+    *
+    *  The constructors and operator= of Polynomial<> accepts these PGs as
+    *  arguments and constructs the proper result in the target.
+    */
+      
+   template<typename Gen, typename A, typename T = typename A::type>
+   struct PG;
+
+   /*
+    *  The following templates are used for the definition of various PG's:
+    *
+    *  HINTLIB_PG_A      A PG remembering only the algebraic structure
+    *  HINTLIB_PG_A_N    A PG remembering alg. struct. and an int
+    *  HINTLIB_PG_A_P    A PG remembering alg. struct. and a poly
+    *  HINTLIB_PG_A_P_P  A PG remembering alg. struct. and two polys
+    *  HINTLIB_PG_A_P_N  A PG remembering alg. struct., a poly and an int
+    */
 
 #define HINTLIB_NEQ template<typename Gen2> bool operator!= (const PG<Gen2,A,T>& g2) const  { return ! (*this == g2); }
 
@@ -111,37 +131,9 @@ namespace Private
          : a(&_a), p(&_p), n(_n) {} \
    };
 
-   /**
-    *  PG  -  Polynomial generator
-    *
-    *  Various specializations (tages with the classes defined above) are
-    *  returned by the methods of PolynomialRing wich are supposed to return
-    *  type.
-    *
-    *  The constructors and operator= of Polynomial<> accepts these PGs as
-    *  arguments and constructs the proper result in the target.
-    */
-      
-   template<typename Gen, typename A, typename T = typename A::type>
-   struct PG {};
+   // One, X, Xn
 
-   // Zero, One, Copy
-
-   struct Zero {};
-   template<typename A, typename T> struct PG<Zero,A,T> {};
-   
    HINTLIB_PG_A (One)
-   
-   struct Copy {};
-   template<typename A, typename T> struct PG<Copy,A,T>
-   {
-      HINTLIB_NEQ
-      const Polynomial<T>* p;
-      PG (const Polynomial<T>& _p) : p(&_p) {}
-   };
-
-   // X, Xn
-
    HINTLIB_PG_A (X)
    HINTLIB_PG_A_N (Xn)
 
@@ -167,8 +159,8 @@ namespace Private
 
    // Neg, Dbl, Times
 
-   template<typename X> struct Neg {};
-   template<typename A, typename T, typename X> struct PG<Neg<X>,A,T>
+   template<typename CC> struct Neg {};
+   template<typename A, typename T, typename CC> struct PG<Neg<CC>,A,T>
    {
       HINTLIB_NEQ
       const A* a;
@@ -177,14 +169,14 @@ namespace Private
    };
 
    template<typename A, typename T> struct PG<Neg<char_two>,A,T>
-      : public PG<Copy,A,T>
    {
       HINTLIB_NEQ
-      PG (const A&, const Polynomial<T>& _p) : PG<Copy,A,T> (_p) {}
+      const Polynomial<T>* p;
+      PG (const A&, const Polynomial<T>& _p) : p (&_p) {}
    };
 
-   template<typename X> struct Dbl{};
-   template<typename A, typename T, typename X> struct PG<Dbl<X>,A,T>
+   template<typename CC> struct Dbl{};
+   template<typename A, typename T, typename CC> struct PG<Dbl<CC>,A,T>
    {
       HINTLIB_NEQ
       const A* a;
@@ -193,13 +185,12 @@ namespace Private
    };
 
    template<typename A, typename T> struct PG<Dbl<char_two>,A,T>
-      : public PG<Zero,A,T>
    {
       PG (const A&, const Polynomial<T>&) {}
    };
 
-   template<typename X> struct Times{};
-   template<typename A, typename T, typename X> struct PG<Times<X>,A,T>
+   template<typename CC> struct Times{};
+   template<typename A, typename T, typename CC> struct PG<Times<CC>,A,T>
    {
       HINTLIB_NEQ
       const A* a;
@@ -408,40 +399,16 @@ public:
    typedef typename V::reference coeff_reference;
    typedef typename V::const_reference coeff_const_reference;
 
-   // Constructors
+   /*
+    * Default- and Copy constructor. Destructor.
+    * Nothing unusual here...
+    */
 
    Polynomial () {}
    Polynomial (const P&);
    template<typename I> Polynomial (I a0, I an)
       : c (std::reverse_iterator<I> (an), std::reverse_iterator<I> (a0)) {}
    ~Polynomial();
-
-   /*
-    * Assignment and relatives
-    */
-
-   void swap (P& p)  { c.swap (p.c); }
-
-   // Polynomials<> are assigned by using assignemt of vector<>
-
-   P& operator= (const P&);
-
-   // By default, PGs are assigned by constructing a temporary and swaping its
-   // content.
-
-   template<typename Gen, typename A>
-   P& operator= (const Private::PG<Gen,A,T>& x)
-      { P p (x); swap(p); return *this; }
-
-   // For some PGs, an optimized version can be provided
-
-   template<typename A>
-   P& operator= (const Private::PG<Private::Zero,A,T>&)
-      { makeZero(); return *this; }
-
-   template<typename A>
-   P& operator= (const Private::PG<Private::Copy,A,T>& x)
-      { return operator= (*(x.p)); }
 
    /*
     * Constructors with creators
@@ -462,8 +429,8 @@ public:
    template<typename A> Polynomial
       (Private::PG<Private::ElementMonic<infinite_tag>,A,T>);
    // Neg
-   template<typename A, typename X>
-                        Polynomial (Private::PG<Private::Neg<X>,A,T>);
+   template<typename A, typename CC>
+                        Polynomial (Private::PG<Private::Neg<CC>,A,T>);
    template<typename A> Polynomial (Private::PG<Private::Neg<char_two>,A,T>);
    // Dbl
    template<typename A> Polynomial (Private::PG<Private::Dbl<char_non>,A,T>);
@@ -480,10 +447,10 @@ public:
    template<typename A> Polynomial (Private::PG<Private::Sub,A,T>);
    template<typename A> Polynomial (Private::PG<Private::Derivative,A,T>);
    // Sqr and Power
-   template<typename A, typename Y> Polynomial
-      (Private::PG<Private::Sqr<zerodivisor_tag,Y>,A,T>);
-   template<typename A, typename Y> Polynomial
-      (Private::PG<Private::Sqr<nozerodivisor_tag,Y>,A,T>);
+   template<typename A, typename CC> Polynomial
+      (Private::PG<Private::Sqr<zerodivisor_tag,CC>,A,T>);
+   template<typename A, typename CC> Polynomial
+      (Private::PG<Private::Sqr<nozerodivisor_tag,CC>,A,T>);
    template<typename A> Polynomial
       (Private::PG<Private::Sqr<nozerodivisor_tag,char_two>,A,T>);
 
@@ -517,6 +484,37 @@ public:
    template<typename A> Polynomial (Private::PG<Private::NextRational,A,T>);
    template<typename A> Polynomial (Private::PG<Private::NextComplex,A,T>);
    template<typename A> Polynomial (Private::PG<Private::NextReal,A,T>);
+
+   /*
+    * Assignment and relatives
+    */
+
+   // swap()  is reduced to  vector<>::swap()
+
+   void swap (P& p)  { c.swap (p.c); }
+
+   // Polynomials<> are assigned by using assignemt of vector<>
+
+   P& operator= (const P&);
+
+   // By default, PGs are assigned by constructing a temporary and swaping its
+   // content.
+
+   template<typename Gen, typename A>
+   P& operator= (const Private::PG<Gen,A,T>& x)
+      { P p (x); swap(p); return *this; }
+
+   // Some PGs are always the zero-polynomial
+
+   template<typename A>
+   P& operator= (const Private::PG<Private::Dbl<char_two>,A,T>&)
+      { makeZero(); return *this; }
+
+   // Some PGs result always in a simple copy
+
+   template<typename A>
+   P& operator= (const Private::PG<Private::Neg<char_two>,A,T>& x)
+      { return operator= (*(x.p)); }
 
    /*
     * Normal member functions
@@ -611,7 +609,7 @@ bool operator!= (const Private::PG<Gen,A>& g,
 
 
 // In case 1, by default, we create the polynomial and compare.
-// Specializations can be provided for Zero and One
+// Specializations can be provided for some PGs
 
 template<typename A, typename Gen>
 inline
@@ -621,13 +619,17 @@ bool operator== (const Polynomial<typename A::type>& p,
    return Polynomial<typename A::type>(g) == p;
 }
 
+// PGs denoting Zero
+
 template<typename A>
 inline
 bool operator== (const Polynomial<typename A::type>& p,
-                 const Private::PG<Private::Zero,A>&)
+                 const Private::PG<Private::Dbl<char_two>,A>&)
 {
    return p.is0();
 }
+
+// PGs denoting One
 
 template<typename A>
 inline
@@ -635,6 +637,16 @@ bool operator== (const Polynomial<typename A::type>& p,
                  const Private::PG<Private::One,A>& x)
 {
    return x.a->is1 (p);
+}
+
+// PGs denoting Copy
+
+template<typename A>
+inline
+bool operator== (const Polynomial<typename A::type>& p,
+                 const Private::PG<Private::Neg<char_two>,A>& x)
+{
+   return p == x->p;
 }
 
 

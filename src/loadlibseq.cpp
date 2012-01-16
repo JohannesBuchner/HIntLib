@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,235 +24,25 @@
 
 #define HINTLIB_LIBRARY_OBJECT
 
-#include <fstream>
-#include <iomanip>
-#include <string>
 #include <vector>
 
 #include <HIntLib/defaults.h>
 
-#ifdef HINTLIB_HAVE_SSTREAM
-  #include <sstream>
+#if defined(HINTLIB_HAVE_OSTREAM) && defined(HINTLIB_HAVE_ISTREAM)
+  #include <ostream>
+  #include <istream>
 #else
-  #include <HIntLib/fallback_sstream.h>
+  #include <iostream>
 #endif
 
+#include <iomanip>
+
+#include <HIntLib/linereader.h>
 #include <HIntLib/generatormatrixgen.h>
 #include <HIntLib/prime.h>
-#include <HIntLib/exception.h>
 
 
 namespace L = HIntLib;
-
-using std::numeric_limits;
-
-
-/**
- *  Line Reader
- */
-
-class LineReader
-{
-public:
-   LineReader (std::istream &_str)
-      : str (_str), line (""), pos (0), ln (0), nl (true) {}
-
-   int get();
-   void putBack ();
-   void ignoreLine()  { pos = line.length(); nl = false; }
-
-   unsigned getUnsigned ();
-   const char* getName ();
-
-   unsigned getLineNumber () const  { return ln; }
-   unsigned getPosition () const  { return pos + 1; }
-   const char* getLine () const  { return line.c_str(); }
-
-   void throwException (const char*) const;
-   void throwEOF () const;
-
-private:
-   std::istream &str;
-   std::string line;
-   unsigned pos;
-   unsigned ln;
-   bool nl;
-   std::string name;
-};
-
-int LineReader::get ()
-{
-   if (nl)
-   {
-      nl = false;
-
-      std::getline (str, line);
-      ++ln;
-      pos = 0;
-
-      if (!str)  return EOF;
-   }
-
-   if (pos == line.length())
-   {
-      nl = true;
-      return '\n';
-   }
-
-   return line[pos++];
-}
-
-void LineReader::putBack ()
-{
-   if (nl)  nl = false;
-   else if (pos != 0)  --pos;
-   else throw L::InternalError (__FILE__, __LINE__);
-}
-
-unsigned LineReader::getUnsigned ()
-{
-   int c = get();
-   if (c == EOF)  throwEOF ();
-   if (! isdigit(c))  throwException ("Number expected");
-   putBack();
-   unsigned x = 0;
-
-   while ((c = get()) != EOF && isdigit (c))  x = 10 * x + (c - '0');
-
-   if (c != EOF)  putBack();
-
-   return x;
-}
-
-const char* LineReader::getName ()
-{
-   int c = get();
-   if (c == EOF)  throwEOF ();
-   if (! isalpha(c))  throwException ("Invalid first character for name");
-   putBack();
-
-   name = "";
-
-   while ((c = get()) != EOF && (isalnum (c) || c == '_'))  name += c;
-
-   if (c != EOF)  putBack();
-
-   return name.c_str();
-}
-
-void LineReader::throwException (const char* msg) const
-{
-   throw L::LineReaderException (ln, pos, line.c_str(), msg);
-}
-void LineReader::throwEOF () const
-{
-   throw L::LineReaderException (ln, pos, line.c_str(), "End of file");
-}
-
-
-/**
- *  Tokenizer
- */
-
-class Tokenizer
-{
-public:
-
-   Tokenizer (std::istream &_str)
-      : lr(_str), nextToken (NONE), lastToken (NONE) {}
-
-   enum Token { END, NUMBER, NAME, NONE };
-   Token next ();
-   void putBack ();
-
-   unsigned getNumber ()  { return number; }
-   const char* getName()  { return s; }
-   void expectName (const char*);
-   void expectName ();
-   void expectNumber ();
-   void ignoreLine ();
-   void throwException (const char* msg) const  { lr.throwException (msg); }
-
-private:
-   LineReader lr;
-   Token nextToken;
-   Token lastToken;
-   unsigned number;
-   const char* s;
-};
-
-void Tokenizer::putBack ()
-{
-   if (nextToken != NONE || lastToken == NONE)
-   {
-      throw L::InternalError (__FILE__, __LINE__);
-   }
-   nextToken = lastToken;
-}
-
-Tokenizer::Token Tokenizer::next()
-{
-   if (nextToken != NONE)
-   {
-      lastToken = nextToken;
-      nextToken = NONE;
-      return lastToken;
-   }
-
-   int c;
-
-   for (;;)
-   {
-      // eat white space
-
-      while ((c = lr.get()) != EOF)
-      {
-         if (!isspace(c))  break;
-      }
-
-      if (c == EOF)  return lastToken = END;
-
-      if (c != '#')  break;
-
-      ignoreLine();
-   }
-
-   if (isdigit (c))
-   {
-      lr.putBack ();
-      number = lr.getUnsigned();
-      return lastToken = NUMBER;
-   }
-
-   lr.putBack ();
-   s = lr.getName();
-   return lastToken = NAME;
-}
-
-void Tokenizer::ignoreLine()
-{
-   lr.ignoreLine();
-}
-
-void Tokenizer::expectNumber ()
-{
-   if (next() != NUMBER)  lr.throwException ("Expected a number");
-}
-
-void Tokenizer::expectName ()
-{
-   if (next() != NAME)  lr.throwException ("Expected a name");
-}
-
-void Tokenizer::expectName (const char* name)
-{
-   if (next() != NAME || strcmp (getName(), name) != 0)
-   {
-      std::ostringstream ss;
-      ss << "Expected name \"" << name << "\" not found";
-      lr.throwException (ss.str().c_str());
-   }
-}
 
 
 /**
@@ -387,20 +177,13 @@ L::loadLibSeq (std::istream &str)
    return gm;
 }
 
-L::GeneratorMatrixGen<unsigned char>*
-L::loadLibSeq (const char* s)
-{
-   std::ifstream str (s);
-   return loadLibSeq (str);
-}
-
 
 /**
- *  dump Lib Seq ()
+ *  Lib Seq Export ()
  */
 
 
-void L::GeneratorMatrix::libSeqDump (std::ostream &o) const
+void L::GeneratorMatrix::libSeqExport (std::ostream &o) const
 {
    o <<
       keyBeginMatrix << '\n' <<
@@ -431,152 +214,4 @@ void L::GeneratorMatrix::libSeqDump (std::ostream &o) const
    o << keyEndMatrix << '\n';
 }
 
-void L::GeneratorMatrix::libSeqDump (const char* fName) const
-{
-   std::ofstream f (fName);
-   libSeqDump (f);
-}
-
-
-
-/**
- *  load Binary ()
- */
-
-namespace
-{
-   const char binaryMagic [] = "HIntLib GeneratorMatrix\n";
-}
-
-
-L::GeneratorMatrixGen<unsigned char>* L::loadBinary (std::istream &str)
-{
-   char s [sizeof (binaryMagic) - 1];
-   str.read (s, sizeof (binaryMagic) - 1);
-   if (! str)  throw FIXME (__FILE__, __LINE__);
-
-   if (! std::equal (s, s + sizeof (s), binaryMagic))
-   {
-      throw FIXME (__FILE__, __LINE__);
-   }
-
-   unsigned base = str.get();
-   unsigned dim  = str.get();
-   dim |= str.get() << numeric_limits<char>::digits;
-   unsigned m    = str.get();
-   unsigned prec = str.get();
-
-   if (! str)  throw FIXME (__FILE__, __LINE__);
-
-   GeneratorMatrixGen<unsigned char>* gm =
-      new GeneratorMatrixGen<unsigned char>(base, dim, m, prec);
-
-   char check = 0;
-
-   for (unsigned d = 0; d < gm->getDimension(); ++d)
-   {
-      for (unsigned b = 0; b < gm->getPrec(); ++b)
-      {
-         for (unsigned r = 0; r < gm->getM(); ++r)
-         {
-            char digit = str.get ();
-            gm->setd (d, r, b, digit);
-            check ^= digit;
-         }
-      }
-   }
-
-   if (! str || check != str.get() || ! str || str.get() != EOF)
-   {
-      throw FIXME (__FILE__, __LINE__);
-   }
-
-   return gm;
-}
-
-L::GeneratorMatrixGen<unsigned char>* L::loadBinary (const char* s)
-{
-   std::ifstream str (s, std::ios::binary);
-   if (! str)  throw FIXME (__FILE__, __LINE__);
-   return loadBinary (str);
-}
-
-
-/**
- *  dump Binary ()
- */
-
-
-void L::GeneratorMatrix::binaryDump (std::ostream &o) const
-{
-   if (   getBase ()      > numeric_limits<unsigned char>::max()
-       || getDimension()  > (1u << 2 * numeric_limits<char>::digits)
-       || getM ()         > numeric_limits<unsigned char>::max()
-       || getPrec() > numeric_limits<unsigned char>::max())
-   {
-      throw FIXME (__FILE__, __LINE__);
-   }
-
-   o << binaryMagic;
-   o.put (getBase());
-   o.put (getDimension() & ~char(0));
-   o.put (getDimension() >> numeric_limits<char>::digits);
-   o.put (getM());
-   o.put (getPrec());
-
-   char check = 0;
-
-   for (unsigned d = 0; d < getDimension(); ++d)
-   {
-      for (unsigned b = 0; b < getPrec(); ++b)
-      {
-         for (unsigned r = 0; r < getM(); ++r)
-         {
-            char digit = getDigit (d, r, b);
-            o.put (digit);
-            check ^= digit;
-         }
-      }
-   }
-
-   o.put (check);
-}
-
-void L::GeneratorMatrix::binaryDump (const char* fName) const
-{
-   std::ofstream f (fName, std::ios::binary);
-   binaryDump (f);
-}
-
-
-/**
- *  load Niederreiter Xing ()
- */
-
-namespace
-{
-   const char* nxFileNames [] =
-   {
-      HINTLIB_DATADIR "/fkmat",
-      HINTLIB_SRCDATADIR "/fkmat"
-   };
-}
-
-L::GeneratorMatrixGen<unsigned char>* L::loadNiederreiterXing (unsigned dim)
-{
-   for (unsigned i = 0; i < 2; ++i)
-   {
-      std::ostringstream ss;
-      ss << nxFileNames [i]
-         << std::setw(2) << std::setfill ('0') << dim << ".bin";
-
-      try
-      {
-         return loadBinary (ss.str().c_str());
-      }
-      catch (...)  { continue; }
-   }
-
-   throw InvalidDimension (dim);
-}
 

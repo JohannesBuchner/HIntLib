@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -167,7 +167,7 @@ template<typename T, T a, T m>
 inline
 real LCG_Prime<T,a,m>::getReal()
 {
-   return real(operator()()) * RESOLUTION;
+   return real((*this)()) * RESOLUTION;
 }
 
 
@@ -190,7 +190,7 @@ int LCG_Prime<T,a,m>::operator() (int upperBound)
    if (   std::numeric_limits<T>::digits + std::numeric_limits<unsigned>::digits
        <= std::numeric_limits<u64>::digits)
    {
-      return int ((u64(operator()()) * upperBound) / m);
+      return int ((u64((*this)()) * upperBound) / m);
    }
    else
 #endif
@@ -253,7 +253,7 @@ public:
 
    void init (unsigned start)
       { lcg1.init (start); lcg2.init (LCG2::M / (start+1));
-        operator()(); operator()(); operator()(); }
+        (*this)(); (*this)(); (*this)(); }
 
    // Constructors
  
@@ -289,7 +289,7 @@ template<typename T, T a1, T m1, T a2, T m2>
 inline
 T LCG_Combined<T,a1,m1,a2,m2>::operator() ()
 {
-   T x = lcg1.operator()() - lcg2.operator()();
+   T x = lcg1() - lcg2();
    return (x > 0) ? x : x + MAX;
 }
 
@@ -302,7 +302,7 @@ template<typename T, T a1, T m1, T a2, T m2>
 inline
 real LCG_Combined<T,a1,m1,a2,m2>::getReal()
 {
-   return real(operator()()) * RESOLUTION;
+   return real((*this)()) * RESOLUTION;
 }
 
 
@@ -324,7 +324,7 @@ int LCG_Combined<T,a1,m1,a2,m2>::operator() (int upperBound)
    if (   std::numeric_limits<T>::digits + std::numeric_limits<unsigned>::digits
        <= std::numeric_limits<u64>::digits)
    {
-      return int ((u64(operator()()) * upperBound) / M);
+      return int ((u64((*this)()) * upperBound) / M);
    }
    else
    {

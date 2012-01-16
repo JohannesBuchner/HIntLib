@@ -2,6 +2,69 @@
 NEWS
 ====
 
+0.0.10   February 17, 2005
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     47254  157529 1161470 total
+
+Manual:
+
++ New chapter "Generator Matrices"
+
+Build system:
+
+- Availability of header file <istream> is checked
++ Library function lgamma() is not required any more
+- Some compatibility problems with MSVC fixed, but many remain
+
+Generator matrices:
+
+/ The concept of vectorization (getVec(), getPrec()/getTotalPrec(),getVecBase(),
+  getNumOfLeadingDigits(), getNumOfMissingDigits()) is only available for
+  GeneratorMatrixGenVec instead of all GeneratorMatrix'es
+/ GeneratorMatrix::getVector() and ::setVector() removed
+/ Methods renamed in GeneratorMatrix and subclasses:
+     getTotalPrec()        => getPrec()
+     getDefaultTotalPrec() => getDefaultPrec()
+     adjustTotalPrec()     => adjustPrec()
+     getVectorization()    => getVec()
+     dump()                => print()
+     dumpDimension()       => printDimension()
+     dumpRowVector()       => printRowVector()
+     dumpColumnVector()    => printColumnVector()
+     libSeqDump()          => libSeqExport()
+     binaryDump()          => binaryExport()
+     vectorDump()          => printVector()
+     makeEquidistributedCoordinate() => makeHammersley()
+/ GMCopy and all related constructors removed
+/ loadLibSeq(), loadBinary(),... functions accept only an ifstream argument
+/ libSeqExport(), binaryExport(),... functions accept only an ostream argument
++ New header file generatormatrixgenrow.h with GeneratorMatrixGenRow<>
++ New header file generatormatrixvirtual.h with ZeroMatrices, IdentityMatrices,
+  AdjustPrec, AddLastRow, AdjustM, MReduction, NetFromSequence,
+  DiscardDimensions, SelectDimensions, BaseReduction, and WithIdentityMatrix.
++ tParameter1DimProjection(), tParameter2DimProjection(),
+  tParameterMax1DimProjection(), tParameterMax2DimProjection(),
+  tParameterMax3DimProjection()
++ withIdentityMatrix(), withIdentityMatrix2()
++ loadEdel() for loading matrices in Yves Edel's format
+- fixTwoDimensionalProjections() was completely boken in HIntLib-0.0.9
+/ fixOne/TwoDimensionalProjections(), makeRegular() use GeneratorMatrixGenRow<>
+  instead of GeneratorMatrixgen<> argument
++ tParameter(), confirmT() accepts GeneratorMatrix argument
+
+Cubature rule based integration:
+
++ AdaptIntegrator::setMinNumEval(), ::setMinPercEval(), ::setNumInitialRegions()
+  ::setNumEvalInitialRegions(), and ::setPercEvalInitialRegions()
+
+Miscellaneous:
+
+/ lfact(), bico(), lbico() removed
++ New function divAndRoundUp()
++ M_PIl is used instead of M_PI if long double precision is required
+
+
 
 0.0.9   July 11, 2004
 
@@ -10,7 +73,7 @@ NEWS
 
 Manual:
 
-+ New chapter about "Linear Algebra"
++ New chapter "Linear Algebra"
 + Updates in the "Algebraic Structures" chapter
 
 Build System and Ports:

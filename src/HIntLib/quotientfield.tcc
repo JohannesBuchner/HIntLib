@@ -130,18 +130,14 @@ HIntLib::Private::QFB<A>::index (const type& u) const
       indices[n++] = 2 * exponent - sign;
    }
 
-   unsigned primes = threadinf (indices, n);
+   const unsigned primes = threadinf (indices, n);
 
    // Combine unit-index and prime-index
 
-   if (const unsigned numUnits = a.numUnits())
-   {
-      return unit + numUnits * primes + 1;
-   }
-   else
-   {
-      return thread (primes, unit, 2, 1) + 1;
-   }
+   const unsigned numUnits = a.numUnits();
+
+   return numUnits ? (unit + numUnits * primes + 1)
+                   : (thread (primes, unit, 2, 1) + 1);
 }
 
 

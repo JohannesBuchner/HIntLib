@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration 
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -52,6 +52,37 @@
 
 namespace HIntLib
 {
+
+/**
+ *  Mathematical constants
+ *
+ *  For some reason MSVC does not define this
+ */
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#ifdef HINTLIB_HAVE_LONG_DOUBLE
+#ifndef M_PIl
+#define M_PIl 3.1415926535897932384626433832795029L
+#endif
+#endif
+
+template<typename T>
+struct Constants
+{
+  static T pi ()  { return M_PI; }
+};
+
+#ifdef HINTLIB_HAVE_LONG_DOUBLE
+template<>
+struct Constants<long double>
+{
+  static long double pi ()  { return M_PIl; }
+};
+#endif
+
 
 /**
  *  abs()
@@ -246,6 +277,7 @@ namespace HIntLib
 #endif
 
 
+#if 0
 /**
  *  Other math functions:  lgamma()
  */
@@ -271,6 +303,7 @@ inline long double lgamma (const long double& x)
 {
    return HINTLIB_LGAMMA_FOR_LONG_DOUBLE (x);
 }
+#endif
 #endif
 #endif
 
@@ -384,6 +417,16 @@ template<class T> inline unsigned digitsRepresentable(T base)
 
 
 /**
+ *  divAndRoundUp
+ */
+
+template<class T> inline T divAndRoundUp (T a, T b)
+{
+   return (a + b - 1) / b;
+}
+
+
+/**
  *  approx()
  *
  *  Determine if two (floating-point) numbers are approximately equal
@@ -422,6 +465,13 @@ T choose (T a, T b)
 }
 
 
+#if 0
+
+// The following functions have been removed. They are not used in HIntLib
+// anymore, but depend on lgamma(), which is not available on all C compilers
+// (e.g. MSVC), even though it is demanded by C99.
+
+
 /**
  *  lfact()
  *
@@ -440,7 +490,7 @@ inline
 double
 lbico (unsigned n, unsigned k)
 {
-   return lfact (n) - lfact (k) -lfact (n - k);
+   return lfact (n) - lfact (k) - lfact (n - k);
 }
 
 inline
@@ -449,6 +499,7 @@ bico (unsigned n, unsigned k)
 {
    return HINTLIB_MN floor (.5 + HINTLIB_MN exp (lbico (n, k)));
 }
+#endif
 
 
 /**

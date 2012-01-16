@@ -1,7 +1,7 @@
 /*
  *  HIntLib  -  Library for High-dimensional Numerical Integration
  *
- *  Copyright (C) 2002  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
+ *  Copyright (C) 2002,03,04,05  Rudolf Schürer <rudolf.schuerer@sbg.ac.at>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,13 +45,10 @@ class GeneratorMatrix2RowBase : public GeneratorMatrix
 {
 public:
    unsigned getBase() const  { return 2; }
-   unsigned getVectorization() const      { return 1; }
-   unsigned getNumOfLeadingDigits() const { return 1; }
-   unsigned getNumOfMissingDigits() const { return 0; }
 
 protected:
-   GeneratorMatrix2RowBase (unsigned _dim, unsigned _m, unsigned _totalPrec)
-      : GeneratorMatrix (2, 1, _dim, _m, _totalPrec) {} 
+   GeneratorMatrix2RowBase (unsigned _dim, unsigned _m, unsigned _prec)
+      : GeneratorMatrix (2, _dim, _m, _prec) {} 
 
    GeneratorMatrix2RowBase (const GeneratorMatrix2RowBase &gm)
       : GeneratorMatrix (gm)  {}
@@ -79,41 +76,32 @@ public:
 
    explicit GeneratorMatrix2Row (unsigned _dim);
    GeneratorMatrix2Row (unsigned _dim, unsigned _m);
-   GeneratorMatrix2Row (unsigned _dim, unsigned _m, unsigned _totalPrec);
+   GeneratorMatrix2Row (unsigned _dim, unsigned _m, unsigned _prec);
 
    // Copy constructors
 
    GeneratorMatrix2Row (const GeneratorMatrix2Row<T> &);
    GeneratorMatrix2Row (const GeneratorMatrix &);
 
-   // Truncate a given matrix
-
-   GeneratorMatrix2Row (const GeneratorMatrix &, const GMCopy &);
-
    ~GeneratorMatrix2Row () { delete[] c; }
 
    // get (parts of) Matrix
 
    const T* getMatrix() const  { return c; }
-   const T* operator() (unsigned d) const  { return &c[d*totalPrec]; }
-         T* operator() (unsigned d)        { return &c[d*totalPrec]; }
+   const T* operator() (unsigned d) const  { return &c[d*prec]; }
+         T* operator() (unsigned d)        { return &c[d*prec]; }
 
    // get/set column vectors
 
-   T  operator() (unsigned d, unsigned b) const  { return c[d*totalPrec + b]; }
-   T& operator() (unsigned d, unsigned b)        { return c[d*totalPrec + b]; }
-#if 0
-   void setv (unsigned d, unsigned r,           T x)  { c[r*dim + d] = x; }
-   void setv (unsigned d, unsigned r, unsigned, T x)  { setv (d,r,x); }
-   void makeZeroColumnVector (unsigned d, unsigned r) { setv (d,r,0); }
-#endif
+   T  operator() (unsigned d, unsigned b) const  { return c[d*prec + b]; }
+   T& operator() (unsigned d, unsigned b)        { return c[d*prec + b]; }
 
    // get/set row vectors
 
    T getPackedRowVector (unsigned d, unsigned b) const
-      { return operator()(d,b); }
+      { return (*this)(d,b); }
    void setPackedRowVector (unsigned d, unsigned b, T x)
-      { c[d*totalPrec + b] = x; }
+      { c[d*prec + b] = x; }
    void makeZeroRowVector (unsigned d, unsigned b)
       { setPackedRowVector (d,b,0); }
 
@@ -123,14 +111,14 @@ private:
    T mask (unsigned r) const  { return T(1) << r; }
 
    unsigned char getdMask (unsigned d, T ma, unsigned b) const
-      { return (operator()(d,b) & ma) != 0; }
+      { return ((*this)(d,b) & ma) != 0; }
 
    void setd0Mask (unsigned d, T ma, unsigned b)
-      { c[d*totalPrec + b] &= ~ma; }
+      { c[d*prec + b] &= ~ma; }
    void setd1Mask (unsigned d, T ma, unsigned b)
-      { c[d*totalPrec + b] |=  ma; }
+      { c[d*prec + b] |=  ma; }
    void setdiMask (unsigned d, T ma, unsigned b)
-      { c[d*totalPrec + b] ^=  ma; }
+      { c[d*prec + b] ^=  ma; }
    void setdMask (unsigned d, T ma, unsigned b, unsigned char x)
       { if (x) setd1Mask (d, ma, b); else setd0Mask (d, ma, b); }
 
@@ -148,9 +136,7 @@ public:
    // virtual get
 
    virtual unsigned getDigit (unsigned d, unsigned r, unsigned b) const;
-   virtual u64 getVector (unsigned d, unsigned r, unsigned) const;
    virtual void setDigit  (unsigned d, unsigned r, unsigned b, unsigned x);
-   virtual void setVector (unsigned d, unsigned r, unsigned b, u64 x);
 
    virtual u64  vGetPackedRowVector (unsigned d, unsigned b) const;
    virtual void vSetPackedRowVector (unsigned d, unsigned b, u64 x);
@@ -161,7 +147,7 @@ public:
 
    // Manipulations
 
-   void makeEquidistributedCoordinate (unsigned d);
+   void makeHammersley (unsigned d);
    void makeIdentityMatrix (unsigned d);
    void makeZeroMatrix (unsigned d);
    void makeZeroMatrix ();

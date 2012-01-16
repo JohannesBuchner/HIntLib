@@ -6,8 +6,14 @@
 
 # autoconf setup
 
-AC_INIT([HIntLib], 0.0.9, [rudolf.schuerer@sbg.ac.at], [HIntLib])
-SHARED_VERSION_NUMBER=1
+AC_INIT([HIntLib], 0.0.10, [rudolf.schuerer@sbg.ac.at], [HIntLib])
+
+dnl SHARED_VERSION_NUMBER is the libtool library version used in connection
+dnl the -version-info option.
+dnl
+dnl 0.0. 9: 1
+dnl 0.0.10: 2
+SHARED_VERSION_NUMBER=2
 AC_SUBST(SHARED_VERSION_NUMBER)
 AC_CONFIG_SRCDIR([src/HIntLib/integrator.h])
 AC_CONFIG_HEADERS(config.h)
@@ -229,6 +235,7 @@ fi
 # Optional header files: ostream
 
 AC_CHECK_HEADERS([ostream],,,[ ])
+AC_CHECK_HEADERS([istream],,,[ ])
 
 # Do we have MPI?
 
@@ -436,13 +443,15 @@ AC_DEFINE_UNQUOTED(MATH_FUN_STRATEGY,$hl_cv_math_fun_strategy,
 
 # Which lgamma() shall we use?
 
-HL_WHICH_MATH_FUN(lgamma,::std::lgamma ::lgamma ::std::lgammaf ::lgammaf,float)
-HL_WHICH_MATH_FUN(lgamma,::std::lgamma ::lgamma,double)
-if test "x$ac_cv_type_long_double" = xyes; then
-HL_WHICH_MATH_FUN(lgamma,::std::lgamma ::lgamma ::std::lgammal ::lgammal,long double)
-else
-hl_cv_lgamma_for_long_double_num=$hl_cv_lgamma_for_double_num
-fi
+# These tests are not executed, because lgamma() is not used
+
+dnl HL_WHICH_MATH_FUN(lgamma,::std::lgamma ::lgamma ::std::lgammaf ::lgammaf,float)
+dnl HL_WHICH_MATH_FUN(lgamma,::std::lgamma ::lgamma,double)
+dnl if test "x$ac_cv_type_long_double" = xyes; then
+dnl HL_WHICH_MATH_FUN(lgamma,::std::lgamma ::lgamma ::std::lgammal ::lgammal,long double)
+dnl else
+dnl hl_cv_lgamma_for_long_double_num=$hl_cv_lgamma_for_double_num
+dnl fi
 
 # Directories
 
