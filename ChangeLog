@@ -2,6 +2,42 @@
 Change Log
 ==========
 
+0.0.5    November 1, 2003
+
+   wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1
+     31213  105251  776193 total
+
++ Upgrade to GNU autoconf 1.57, GNU automake 1.7.8 and GNU LibTool 1.5
++ LibTool patches to work with ABI 64 an IRIX and Solaris
++ --with-index=X allows to set the data type of Index. The default uses the
+  size of unsigned long int.
++ --with-real=X allows to chose between float, double, and long double for real
+- HIntLib compiles and links on platforms without optimization and inlining
+- Fixed some minor problems with the Intel C++ compiler "icpc"
+
++ New test-suite programs: test_abs, test_partition, test_prng
++ -t switch and clean-up in test_tparameter
++ Many new tests in test_genmatrix
++ Heuristic replaced by proper error analysis in test_rule
+
+/ Name change: Function -> Integrand
+
++ Complete rewrite and extension of tparamter.cpp/tparameter.h
+/ generatormatrix.h split up in ...matrix.h, ...matrix2.h, ...matrixgen.h
+/ GeneratorMatrixGenX -> GeneratorMatrixVecX.
+  GeneratorMatrixGen has a fixed vectorization of 1
++ Many clean-ups and some new functions in GeneratorMatrix*
++ Faure::init() optimized
+
++ Integrator::derivative() gives derivatives
++ Rule2Ionescu
+
+- RefCountingAlgebra: setPointers() was not called in write()
+- RefCountingAlgebra: Allocated memory was not aligned properly
++ Precalculated LookupField (calculated at compile time)
++ characteristic is part of shared data in LookupField
+
+
 0.0.4    June 16, 2003
 
    wc src/*.cpp src/HIntLib/*.h src/HIntLib/*.tcc | tail -1

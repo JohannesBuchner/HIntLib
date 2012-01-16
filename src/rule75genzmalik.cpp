@@ -114,7 +114,8 @@ Index L::Rule75GenzMalik::getNumPoints () const
  *  Do the actual function evaluation
  */
 
-unsigned L::Rule75GenzMalik::evalError (Function &f, const Hypercube &h, EstErr &ee)
+unsigned L::Rule75GenzMalik::evalError
+   (Integrand &f, const Hypercube &h, EstErr &ee)
 {
    // Initialize
 

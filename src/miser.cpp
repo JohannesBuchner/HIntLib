@@ -40,7 +40,7 @@
 #include <HIntLib/mymath.h>
 #include <HIntLib/statistic.h>
 #include <HIntLib/hypercube.h>
-#include <HIntLib/function.h>
+#include <HIntLib/integrand.h>
 #include <HIntLib/pointset.h>
 #include <HIntLib/distribution.h>
 #include <HIntLib/exception.h>
@@ -72,7 +72,7 @@ class MiserImp : public Job
 {
 public:
 
-   MiserImp (Miser &, PointSet*, PointSet*, unsigned dim, Function &f);
+   MiserImp (Miser &, PointSet*, PointSet*, unsigned dim, Integrand &f);
 
    void recur (Hypercube &h, Index numPoints, EstErr &ee);
    void operator() (const real*);
@@ -85,8 +85,8 @@ private:
 
    const unsigned dim;
 
-   Function &f;
-   Array<real> point;
+   Integrand &f;
+   Point point;
    Array<StatisticMinMax<real> > leftStatistic, rightStatistic;
 
    const real* center;
@@ -99,7 +99,7 @@ private:
  */
 
 MiserImp::MiserImp (Miser &i, PointSet* presample, PointSet* sample,
-                    unsigned dim, Function &f)
+                    unsigned dim, Integrand &f)
    : miser(i),
      presamplePointSet (presample), samplePointSet (sample),
      dim(dim), f(f),
@@ -172,8 +172,8 @@ void MiserImp::recur (
           && (   leftStatistic [d].getRange() > 0
               || rightStatistic [d].getRange() > 0))
       {
-         real left  = pow ( leftStatistic [d].getRange(), 2.0 / 3.0);
-         real right = pow (rightStatistic [d].getRange(), 2.0 / 3.0);
+         real left  = pow ( leftStatistic [d].getRange(), real (2.0 / 3.0));
+         real right = pow (rightStatistic [d].getRange(), real (2.0 / 3.0));
          real sum = left + right;
 
          if (m << sum)
@@ -272,7 +272,7 @@ void L::Miser::defaults()
  */
 
 L::Miser::Status L::Miser::integrate (
-   Function &f,
+   Integrand &f,
    const Hypercube &h,
    Index maxEval,
    real reqAbsError, real reqRelError,

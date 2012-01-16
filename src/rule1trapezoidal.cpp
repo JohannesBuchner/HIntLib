@@ -61,7 +61,7 @@ L::Rule1Trapezoidal::Rule1Trapezoidal (unsigned dim)
  *  Do the actual function evaluation
  */
 
-L::real L::Rule1Trapezoidal::eval (Function &f, const Hypercube &h)
+L::real L::Rule1Trapezoidal::eval (Integrand &f, const Hypercube &h)
 {
    return h.getVolume() * evalR_Rfs (f, h.getCenter(), h.getWidth())
                         * oneDivTwoPowDim;

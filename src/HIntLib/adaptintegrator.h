@@ -44,7 +44,7 @@ namespace HIntLib
 
       virtual
       Status integrate (
-         Function &f, const Hypercube &h, Index maxEval,
+         Integrand &f, const Hypercube &h, Index maxEval,
          real reqAbsError, real reqRelError, EstErr &ee);
    };
 }  // namespace HIntLib

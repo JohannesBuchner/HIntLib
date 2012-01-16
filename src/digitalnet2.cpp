@@ -302,7 +302,7 @@ bool L::DigitalNet2PointSetBase::doJobRep
 // integrate()
 
 void L::DigitalNet2PointSet<L::real>::integratePartition
-   (real* point, Function &f, Index num, Index begin, Index end, Stat& stat)
+   (real* point, Integrand &f, Index num, Index begin, Index end, Stat& stat)
 {
    DigitalNet2Gray<BaseType> net (gm, *h, calculateM (num), index, equi, trunc);
    performRandomization (net);
@@ -310,7 +310,7 @@ void L::DigitalNet2PointSet<L::real>::integratePartition
 }
 
 void L::DigitalNet2PointSet<L::real>::integratePartition
-   (real* point, Function &f, Index num, Index begin, Index end, StatVar& stat)
+   (real* point, Integrand &f, Index num, Index begin, Index end, StatVar& stat)
 {
    DigitalNet2Gray<BaseType> net (gm, *h, calculateM (num), index, equi, trunc);
    performRandomization (net);
@@ -400,7 +400,7 @@ bool L::DigitalSeq2PointSetBase::doJobRep
 // integrate()
 
 void L::DigitalSeq2PointSet<L::real>::integratePartition
-   (real* point, Function &f, Index num, Index begin, Index end, Stat& stat)
+   (real* point, Integrand &f, Index num, Index begin, Index end, Stat& stat)
 {
    if (! reset)
    {
@@ -414,7 +414,7 @@ void L::DigitalSeq2PointSet<L::real>::integratePartition
 }
 
 void L::DigitalSeq2PointSet<L::real>::integratePartition
-   (real* point, Function &f, Index num, Index begin, Index end, StatVar& stat)
+   (real* point, Integrand &f, Index num, Index begin, Index end, StatVar& stat)
 {
    if (! reset)
    {

@@ -60,7 +60,6 @@ namespace HIntLib
 class QRNSequenceBase
 {
 public:
-
    QRNSequenceBase (const Hypercube &);
 
    unsigned getDimension() const  { return h.getDimension(); }
@@ -72,9 +71,8 @@ protected:
    Index n;
 
 private:
-
    QRNSequenceBase (const QRNSequenceBase &);   // Do not copy
-                                  // Assignment impossible due to const member
+                   // Assignment impossible due to const member
 };
 
 /**

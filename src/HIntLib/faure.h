@@ -25,7 +25,7 @@
 #pragma interface
 #endif
 
-#include <HIntLib/generatormatrix.h>
+#include <HIntLib/generatormatrixgen.h>
 
 namespace HIntLib
 {
@@ -39,12 +39,12 @@ namespace HIntLib
       Faure (unsigned _dim, unsigned _m, unsigned _prec);
 
       Faure (unsigned _dim, unsigned _base)
-      : HeapAllocatedGeneratorMatrixGen<unsigned char> (_base, 1, _dim)
+      : HeapAllocatedGeneratorMatrixGen<unsigned char> (_base, _dim)
       { init (*this); }
 
       Faure (unsigned _dim, unsigned _m, unsigned _prec, unsigned _base)
          : HeapAllocatedGeneratorMatrixGen<unsigned char>
-            (_base, 1, _dim, _m, _prec)
+            (_base, _dim, _m, _prec)
       { init (*this); }
    };
 

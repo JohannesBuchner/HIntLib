@@ -20,8 +20,12 @@
 
 #include <iostream>
 
+#include <HIntLib/array.h>
+#include <HIntLib/generatormatrix2.h>
+#include <HIntLib/generatormatrixgen.h>
+#include <HIntLib/generatormatrixvec.h>
 #include <HIntLib/sobolmatrix.h>
-#include <HIntLib/niederreitermatrix.h>
+#include <HIntLib/mersennetwister.h>
 
 #include "test.h"
 
@@ -54,37 +58,190 @@ void usage()
    exit (1);
 }
 
-void test (int argc, char**)
+
+typedef MutableGeneratorMatrixGen<unsigned char> MGen;
+typedef MutableGeneratorMatrixVec<unsigned char> MVec;
+typedef MutableGeneratorMatrix2<u64> M2;
+
+typedef HeapAllocatedGeneratorMatrixGen<unsigned char> HMGen;
+typedef HeapAllocatedGeneratorMatrixVec<unsigned char> HMVec;
+typedef HeapAllocatedGeneratorMatrix2<u64> HM2;
+
+typedef GeneratorMatrixGenCopy<unsigned char> CMGen;
+typedef GeneratorMatrixVecCopy<unsigned char> CMVec;
+typedef GeneratorMatrix2Copy<u64> CM2;
+
+MersenneTwister mt;
+
+void initMatrix (GeneratorMatrix &m)
 {
-   if (argc)  usage();
+   mt.init (42);
 
-   NORMAL  cout << "Creating Sobol's matrix" << endl;
-   
-   SobolMatrix orisobol;
-   DEB2  orisobol.dump (cout);
-
-   NORMAL cout << "Truncating it to requested size" << endl;
-
-   GeneratorMatrix2Copy<u64> sobol (orisobol, GMCopy().dim(DIM));
-   DEB1 sobol.dump (cout);
-
-   NORMAL  cout << "Testing: sobol==sobol" << endl;
-
-   if (! (sobol == sobol))
+   for (unsigned d = 0; d < m.getDimension(); ++d)
    {
-      error ("Testing: sobol==sobol    failed!");
+      for (unsigned r = 0; r < m.getM(); ++ r)
+      {
+         for (unsigned b = 0; b < m.getTotalPrec(); ++b)
+         {
+            m.setDigit (d, r, b, mt (m.getBase()));
+         }
+      }
+   }
+}
+
+bool verifyMatrix (GeneratorMatrix &m)
+{
+   mt.init (42);
+
+   for (unsigned d = 0; d < m.getDimension(); ++d)
+   {
+      for (unsigned r = 0; r < m.getM(); ++ r)
+      {
+         for (unsigned b = 0; b < m.getTotalPrec(); ++b)
+         {
+            if (int (m.getDigit (d, r, b)) != mt (m.getBase()))
+            {
+               return false;
+            }
+         }
+      }
    }
 
-   typedef GeneratorMatrixGenCopy8 GMgen;
+   return true;
+}
+
+void testOneMatrix (GeneratorMatrix &m)
+{
+   initMatrix (m);
+
+   if (! verifyMatrix (m))  error ("getDigit()/setDigit() broken!");
+
+   if (! (m == m))  error ("operator==() broken!");
+}
+
+template<class T>
+void testTwoMatrices (GeneratorMatrix& m1, T& m2)
+{
+   initMatrix (m1);
+
+   assign (m1, m2);
+
+   if (! verifyMatrix (m2))
+   {
+      error ("assign() broken!");
+      DEB1
+      {
+         m1.dump (cout);
+         m2.dump (cout);
+      }
+   }
+
+   if (! (m1 == m2))  error ("operator==() broken!");
+
+   for (unsigned i = 0; i < 5; ++i)
+   {
+      unsigned d = mt (m2.getDimension());
+      unsigned r = mt (m2.getM());
+      unsigned b = mt (m2.getTotalPrec());
+      unsigned char ori = m2.getDigit (d,r,b);
+      m2.setDigit (d,r,b, (ori+1) % m2.getBase());
+
+      if (m2 == m1)
+      {
+         error ("operator==() does not detect error");
+      }
+      m2.setDigit (d,r,b, ori);
+   }
+}
+
+void doTests (unsigned base)
+{
+   NORMAL cout << "Allocating matrices" << endl;
+
+   unsigned numMatrices
+      = digitsRepresentable(static_cast<unsigned char>(base)) + 1
+      + (base == 2);
+   DEB1 cout << "  Number of matrices: " << numMatrices << endl;
+
+   Array<GeneratorMatrix*> matrices (numMatrices);
+
+   for (unsigned vec = 0;
+        vec < digitsRepresentable(static_cast<unsigned char>(base)); ++vec)
+   {
+      matrices [vec] = new HMVec (base, vec + 1, DIM);
+   }
+
+   if (base == 2)
+   {
+      matrices [numMatrices - 2] = new HMGen (base, DIM);
+      matrices [numMatrices - 1] = new HM2 (DIM);
+   }
+   else
+   {
+      matrices [numMatrices - 1] = new HMGen (base, DIM);
+   }
+
+   NORMAL cout << "Testing Gen, base=" << base << endl;
+   
+   HMGen mgen (base, DIM);
+   testOneMatrix (mgen);
+
+   for (unsigned i = 0; i < numMatrices; ++i)
+   {
+      DEB1 cout << "  ...in combination with matrix " << i << endl;
+      testTwoMatrices (*matrices[i], mgen);
+      testTwoMatrices (*matrices[i], static_cast<GeneratorMatrix&>(mgen));
+   }
+
+   for (unsigned vec = 1;
+        vec <= digitsRepresentable(static_cast<unsigned char>(base)); ++vec)
+   {
+      NORMAL cout << "Testing Vec, vec=" << vec << ", base=" << base << endl;
+   
+      HMVec mvec (base, vec, DIM);
+      testOneMatrix (mvec);
+
+      for (unsigned i = 0; i < numMatrices; ++i)
+      {
+         DEB1 cout << "  ...in combination with matrix " << i << endl;
+         testTwoMatrices (*matrices[i], mvec);
+         testTwoMatrices (*matrices[i], static_cast<GeneratorMatrix&>(mvec));
+      }
+   }
+
+   if (base == 2)
+   {
+      NORMAL cout << "Testing 2, base=" << base << endl;
+   
+      HM2 m2 (DIM);
+      testOneMatrix (m2);
+
+      for (unsigned i = 0; i < numMatrices; ++i)
+      {
+         DEB1 cout << "  ...in combination with matrix " << i << endl;
+
+         testTwoMatrices (*matrices[i], m2);
+         testTwoMatrices (*matrices[i], static_cast<GeneratorMatrix&>(m2));
+      }
+   }
+}
+
+
+void oldTests ()
+{
+   SobolMatrix sobol;
+   
+   typedef GeneratorMatrixGenCopy8 GMGen;
+   typedef GeneratorMatrixVecCopy8 GMVec;
    typedef GeneratorMatrix2Copy<u32> GM2;
 
    NORMAL  cout << "Creating Gen copy..." << endl;
-   GeneratorMatrixGenCopy8 sobolGen (sobol);
-   DEB1  sobolGen.dump (cout);
+   GMGen sobolGen (sobol);
+   DEB2  sobolGen.dump (cout);
 
    NORMAL  cout << "Creatin base-2 copy..." << endl;
    GeneratorMatrix2Copy<u64> sobol2 (sobolGen);
-   DEB1  sobol2.dump (cout);
+   DEB2  sobol2.dump (cout);
 
    NORMAL  cout << "Testing: Equal in base 2" << endl;
 
@@ -93,7 +250,7 @@ void test (int argc, char**)
       error ("Testing: Equal in base 2      failed!");
    }
 
-   GMgen sobolGenAgain (sobol2);
+   GMGen sobolGenAgain (sobol2);
 
    NORMAL  cout << "Testing: Equal in gen-base" << endl;
 
@@ -103,24 +260,34 @@ void test (int argc, char**)
    }
 
    NORMAL  cout << "Creating 32-bit copy of sobol..." << endl;
-   GM2 sobol32 (sobol);
-   DEB1  sobol32.dump(cout);
+   GM2   sobol32 (sobol);
+   DEB2  sobol32.dump(cout);
 
    // m < prec
 
    GMCopy copy1;
-   copy1.dim(10).m(13).totalPrec(20);
+   copy1.dim(10).m(13).totalPrec(20).vec(5);
 
    NORMAL  cout << "Creating truncated base-2   matrix, m < prec..." << endl;
-   GM2 sobol2truncatedA (sobol32, copy1);
-   DEB1  sobol2truncatedA.dump (cout);
+   GM2   sobol2truncatedA (sobol32, copy1);
+   DEB2  sobol2truncatedA.dump (cout);
    
    NORMAL  cout << "Creating truncated gen-base matrix, m < prec..." << endl;
-   GeneratorMatrixGenCopy8 sobolGenTruncatedA (sobolGen, copy1);
-   DEB1  sobolGenTruncatedA.dump (cout);
+   GMGen sobolGenTruncatedA (sobolGen, copy1);
+   DEB2  sobolGenTruncatedA.dump (cout);
 
-   NORMAL cout << "Comparing both matrices..." << endl;
+   DEB1 cout << "Comparing..." << endl;
    if (! (sobol2truncatedA == sobolGenTruncatedA))
+   {
+      error ("Truncated matrices, m < prec  are not equal!");
+   }
+
+   NORMAL  cout << "Creating truncated vec-base matrix, m < prec..." << endl;
+   GMVec sobolVecTruncatedA (sobolGen, copy1);
+   DEB2  sobolVecTruncatedA.dump (cout);
+
+   DEB1 cout << "Comparing..." << endl;
+   if (! (sobol2truncatedA == sobolVecTruncatedA))
    {
       error ("Truncated matrices, m < prec  are not equal!");
    }
@@ -128,18 +295,28 @@ void test (int argc, char**)
    // m > prec
 
    GMCopy copy2;
-   copy2.dim(10).m(20).totalPrec(13);
+   copy2.dim(10).m(20).totalPrec(13).vec(5);
 
    NORMAL  cout << "Creating truncated base-2   matrix, m > prec..." << endl;
    GM2 sobol2truncatedB (sobol32, copy2);
-   DEB1  sobol2truncatedB.dump (cout);
+   DEB2  sobol2truncatedB.dump (cout);
    
    NORMAL  cout << "Creating truncated gen-base matrix, m > prec..." << endl;
-   GMgen sobolGenTruncatedB (sobolGen, copy2);
-   DEB1  sobolGenTruncatedB.dump (cout);
+   GMGen sobolGenTruncatedB (sobolGen, copy2);
+   DEB2  sobolGenTruncatedB.dump (cout);
 
-   NORMAL  cout << "Comparing both matrices..." << endl;
+   DEB1  cout << "Comparing..." << endl;
    if (! (sobol2truncatedB == sobolGenTruncatedB))
+   {
+      error ("Truncated matrices, m > prec  are not equal!");
+   }
+
+   NORMAL  cout << "Creating truncated vec-base matrix, m > prec..." << endl;
+   GMVec sobolVecTruncatedB (sobolGen, copy2);
+   DEB2  sobolVecTruncatedB.dump (cout);
+
+   DEB1  cout << "Comparing..." << endl;
+   if (! (sobol2truncatedB == sobolVecTruncatedB))
    {
       error ("Truncated matrices, m > prec  are not equal!");
    }
@@ -149,17 +326,28 @@ void test (int argc, char**)
    copy1.equi();
    
    NORMAL
-      cout << "Creating truncated base-2   matrix, m < prec,  equi..." << endl;
+      cout << "Creating truncated base-2   matrix, m < prec, equi..." << endl;
    GM2 sobol2truncatedEquiA (sobol32, copy1);
-   DEB1  sobol2truncatedEquiA.dump (cout);
+   DEB2  sobol2truncatedEquiA.dump (cout);
 
    NORMAL
       cout << "Creating truncated gen-base matrix, m < prec, equi..." << endl;
-   GMgen sobolGenTruncatedEquiA (sobolGen, copy1);
-   DEB1  sobolGenTruncatedEquiA.dump (cout);
+   GMGen sobolGenTruncatedEquiA (sobolGen, copy1);
+   DEB2  sobolGenTruncatedEquiA.dump (cout);
 
-   NORMAL  cout << "Comparing both matrices..." << endl;
+   DEB1  cout << "Comparing..." << endl;
    if (! (sobol2truncatedEquiA == sobolGenTruncatedEquiA))
+   {
+      error ("Truncated matrices, m < prec, equi  are not equal!");
+   }
+
+   NORMAL
+      cout << "Creating truncated vec-base matrix, m < prec, equi..." << endl;
+   GMVec sobolVecTruncatedEquiA (sobolGen, copy1);
+   DEB2  sobolVecTruncatedEquiA.dump (cout);
+
+   DEB1  cout << "Comparing..." << endl;
+   if (! (sobol2truncatedEquiA == sobolVecTruncatedEquiA))
    {
       error ("Truncated matrices, m < prec, equi  are not equal!");
    }
@@ -169,22 +357,33 @@ void test (int argc, char**)
    copy2.equi();
 
    NORMAL
-      cout << "Creating truncated base-2   matrix, m > prec,  equi..." << endl;
-   GM2 sobol2truncatedEquiB (sobol32, copy2);
-   DEB1  sobol2truncatedEquiB.dump (cout);
+      cout << "Creating truncated base-2   matrix, m > prec, equi..." << endl;
+   GM2   sobol2truncatedEquiB (sobol32, copy2);
+   DEB2  sobol2truncatedEquiB.dump (cout);
 
    NORMAL
       cout << "Creating truncated gen-base matrix, m > prec, equi..." << endl;
-   GMgen sobolGenTruncatedEquiB (sobolGen, copy2);
-   DEB1  sobolGenTruncatedEquiB.dump (cout);
+   GMGen sobolGenTruncatedEquiB (sobolGen, copy2);
+   DEB2  sobolGenTruncatedEquiB.dump (cout);
 
-   NORMAL cout << "Comparing both matrices..." << endl;
+   DEB1 cout << "Comparing..." << endl;
    if (! (sobol2truncatedEquiB == sobolGenTruncatedEquiB))
    {
       error ("Truncated matrices, m > prec, equi  are not equal!");
    }
 
-   //dingDigits - dst.getTotalPrec() prepareForGrayCode
+   NORMAL
+      cout << "Creating truncated vec-base matrix, m > prec, equi..." << endl;
+   GMVec sobolVecTruncatedEquiB (sobolGen, copy2);
+   DEB2  sobolVecTruncatedEquiB.dump (cout);
+
+   DEB1 cout << "Comparing..." << endl;
+   if (! (sobol2truncatedEquiB == sobolVecTruncatedEquiB))
+   {
+      error ("Truncated matrices, m > prec, equi  are not equal!");
+   }
+
+   // prepareForGrayCode
 
    NORMAL cout << "Testing prepareForGrayCode() ..." << endl;
 
@@ -205,4 +404,22 @@ void test (int argc, char**)
       error ("restoreFromGrayCode() does not undo prepareForGrayCode()");
    }
 }
+
+
+void test (int argc, char**)
+{
+   if (argc)  usage();
+
+   doTests (2);
+   doTests (3);
+   doTests (4);
+   doTests (5);
+   doTests (7);
+   doTests (9);
+   doTests (11);
+   doTests (13);
+
+   oldTests();
+}
+
 

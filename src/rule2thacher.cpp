@@ -19,7 +19,7 @@
  */
 
 /**
- *  Rule 2 Simplex
+ *  Rule 2 Thacher
  *
  *  Cubature rule of degree 2 with  2*dim+1  points.
  *  All points are inside the hypercube.
@@ -38,7 +38,7 @@
 #include <HIntLib/defaultcubaturerulefactory.h>
 #include <HIntLib/mymath.h>
 #include <HIntLib/exception.h>
-#include <HIntLib/function.h>
+#include <HIntLib/integrand.h>
 
 
 namespace L = HIntLib;
@@ -70,7 +70,7 @@ L::Rule2Thacher::Rule2Thacher (unsigned _dim)
  *  Do the actual function evaluation
  */
 
-L::real L::Rule2Thacher::eval (Function &f, const Hypercube &h)
+L::real L::Rule2Thacher::eval (Integrand &f, const Hypercube &h)
 {
    // Sample all points
 

@@ -41,14 +41,14 @@ namespace L = HIntLib;
  *  constructor
  */
 
-template<class B>
+template<typename B>
 L::GaloisField<B>::GaloisField (unsigned base, unsigned exponent)
    : ModularArithField<PolynomialRing<ModularArithField<B> > >
       (Poly (Field (base)),
        findPoly (base, exponent))
 {}
 
-template<class B>
+template<typename B>
 typename L::GaloisField<B>::T
 L::GaloisField<B>::findPoly (unsigned base, unsigned exponent)
 {

@@ -1,0 +1,25 @@
+#! /bin/sh
+
+echo RUNNING: partition.test
+
+for slots in 1 2 3 4 5 6 7 8 9 10
+do
+   echo $slots
+#  echo -n .
+   for items in 0 1 2 3 4 5 6 7 8 9 10 11
+   do
+      for res in 0 1 2 3 4 5 6 7 8 9 10 11
+      do
+         mul=`expr $res \* $slots`
+         test $res -le $items || continue
+         test $mul -ge $items || continue
+# echo $slots $items $res
+         ./test_partition -s -r $res $slots $items || exit 1
+      done
+   done
+done
+
+# echo
+
+exit 0
+

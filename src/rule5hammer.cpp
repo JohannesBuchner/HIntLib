@@ -103,7 +103,7 @@ real L::Rule5Hammer::getSumAbsWeight() const
  *  Do the actual function evaluation
  */
 
-L::real L::Rule5Hammer::eval (Function &f, const Hypercube &h)
+L::real L::Rule5Hammer::eval (Integrand &f, const Hypercube &h)
 {
    // Calculate lamdas
 

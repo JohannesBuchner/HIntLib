@@ -53,7 +53,7 @@ namespace HIntLib
    public:
       Rule3Cross (unsigned dim);
 
-      virtual real eval (Function &, const Hypercube &);
+      virtual real eval (Integrand &, const Hypercube &);
 
       virtual unsigned getDimension()   const { return dim; }
       virtual Index getNumPoints ()     const { return numR0_0fs(); }

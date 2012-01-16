@@ -63,7 +63,7 @@ L::Rule3Cross::Rule3Cross (unsigned dim)
  *  Do the actual function evaluation
  */
 
-L::real L::Rule3Cross::eval (Function &f, const Hypercube &h)
+L::real L::Rule3Cross::eval (Integrand &f, const Hypercube &h)
 {
    const real* center = h.getCenter();
 

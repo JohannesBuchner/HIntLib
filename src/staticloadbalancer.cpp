@@ -28,32 +28,6 @@
 #pragma implementation
 #endif
 
-#include <HIntLib/mympi.h>
-
 #include <HIntLib/staticloadbalancer.h>
 
-#include <HIntLib/exception.h>
-
-namespace L = HIntLib;
-
-L::MPIStaticLoadBalancer::MPIStaticLoadBalancer(Index n, MPI_Comm comm)
-{
-   MPI_Comm_rank (comm, &rank);
-   MPI_Comm_size (comm, &size);
-
-   Index junkSize = n / size;
-
-   int  missing = n - size * junkSize;   // between 0 and size-1
-
-   if (rank < size - missing)
-   {
-      begin = rank * junkSize;
-      end   = begin + junkSize;
-   }
-   else
-   {
-      begin = rank * junkSize + missing - 1;
-      end   = begin + junkSize + 1;
-   }
-}
 

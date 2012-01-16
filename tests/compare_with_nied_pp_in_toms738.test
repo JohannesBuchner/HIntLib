@@ -1,8 +1,10 @@
 #! /bin/sh
 
-for p in 02 03 05 07 11 13 17 19 23 29 31 37 41 43 47
+echo RUNNING: compare_with_nied_pp_in_toms738.test
+
+for p in 04 08 16 32   09 27   25 49 
 do
-   echo "Checking prime number base $p..."
+   echo "Checking prime power base $p..."
 
    ./test_qrnsequence -p 10 -s -d 12 seq 20${p} 0 10000 > hintlib_nied${p}.txt
 

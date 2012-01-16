@@ -1,5 +1,7 @@
 #! /bin/sh
 
+echo RUNNING: arithmetic.test
+
 ./test_arithmetic -n 4000
 
 exit $?

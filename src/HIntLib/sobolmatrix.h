@@ -37,7 +37,7 @@
   #include <HIntLib/fallback_limits.h>
 #endif
 
-#include <HIntLib/generatormatrix.h>
+#include <HIntLib/generatormatrix2.h>
 
 
 namespace HIntLib

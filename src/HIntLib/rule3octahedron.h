@@ -53,7 +53,7 @@ namespace HIntLib
    public:
       Rule3Octahedron (unsigned dim);
 
-      virtual real eval (Function &, const Hypercube &);
+      virtual real eval (Integrand &, const Hypercube &);
 
       virtual unsigned getDimension()  const  { return dim; }
       virtual Index getNumPoints()     const  { return 2 * dim; }
@@ -70,8 +70,7 @@ namespace HIntLib
 
       // Dimension dependent constants
 
-      Array<real> r; 
-      Array<real> p;
+      Point r, p; 
    };
 
 }  // namespace HIntLib

@@ -48,7 +48,7 @@ public:
       CubatureRuleFactory *fac2)
    : r1 (fac1->create(d)), r2 (fac2->create(d)), fd(d) {}
 
-   virtual unsigned evalError (Function &, const Hypercube &, EstErr &);
+   virtual unsigned evalError (Integrand &, const Hypercube &, EstErr &);
 
    virtual unsigned getDimension()      const  { return fd.getDimension(); }
    virtual Index    getNumPoints()      const;
@@ -77,7 +77,7 @@ public:
       CubatureRuleFactory *fac3)
    : PseudoEmbeddedRule(dim, fac1, fac2), r3 (fac3->create(dim)) {}
 
-   virtual unsigned evalError (Function &f, const Hypercube &, EstErr &);
+   virtual unsigned evalError (Integrand &f, const Hypercube &, EstErr &);
 
    virtual Index getNumPoints() const;
    virtual bool isAllPointsInside() const;

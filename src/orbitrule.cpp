@@ -33,15 +33,18 @@
 namespace L = HIntLib;
 using L::real;
 
-real L::OrbitRule::evalRRR0_0fs (
-   Function &f, const real*c, const real* r)
+real L::OrbitRule::evalRRR0_0fs (Integrand &f, const real*c, const real* r)
 {
    real sum = 0;
  
    for (unsigned i = 0; i != dim - 2; ++i)
    {
+      p[i] = c[i] - r[i];
+
       for (unsigned j = i + 1; j != dim - 1; ++j)
       {
+         p[j] = c[j] - r[j];
+
          for (unsigned k = j + 1; k != dim; ++k)
          {
             // Process 2^3 Points defined by changing the sign of r in
@@ -49,7 +52,7 @@ real L::OrbitRule::evalRRR0_0fs (
             // This is done is a Gray Code ordering, so only one coordinate
             // has to be recalculated for every point
  
-            p[i] = c[i]-r[i]; p[j] = c[j]-r[j]; p[k] = c[k]-r[k]; sum += f(p);
+                                                p[k] = c[k]-r[k]; sum += f(p);
             p[i] = c[i]+r[i];                                     sum += f(p);
                               p[j] = c[j]+r[j];                   sum += f(p);
             p[i] = c[i]-r[i];                                     sum += f(p);
@@ -68,27 +71,29 @@ real L::OrbitRule::evalRRR0_0fs (
    return sum;
 }
 
-real HIntLib::OrbitRule::evalRRRR0_0fs (
-   Function &f, const real*c, const real* r)
+real L::OrbitRule::evalRRRR0_0fs (Integrand &f, const real*c, const real* r)
 {
    real sum = 0;
  
    for (unsigned i = 0; i != dim - 3; ++i)
    {
+      p[i] = c[i] - r[i];
+
       for (unsigned j = i + 1; j != dim - 2; ++j)
       {
+         p[j] = c[j] - r[j];
+
          for (unsigned k = j + 1; k != dim - 1; ++k)
          {
+            p[k] = c[k] - r[k];
+
             for (unsigned l = k + 1; l != dim; ++l)
             {
                // Process 2^4=16 Points defined by changing the sign of r in
                // position i, j, k and l.
-               // This is done is a Gray Code ordering, so only one coordinate
+               // This is done in a Gray Code ordering, so only one coordinate
                // has to be recalculated for each point
 
-               p[i] = c[i] - r[i];
-               p[j] = c[j] - r[j];
-               p[k] = c[k] - r[k];
                p[l] = c[l] - r[l]; sum += f(p);
                p[i] = c[i] + r[i]; sum += f(p); 
                p[j] = c[j] + r[j]; sum += f(p);
@@ -126,7 +131,7 @@ real HIntLib::OrbitRule::evalRRRR0_0fs (
  *  in p.
  */
  
-real L::OrbitRule::evalR_Rfs (Function &f, const real* c, const real* r)
+real L::OrbitRule::evalR_Rfs (Integrand &f, const real* c, const real* r)
 {
    real sum = 0;
  

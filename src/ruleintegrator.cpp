@@ -39,8 +39,8 @@
 namespace L = HIntLib;
 
 L::Integrator::Status L::RuleIntegrator::integrate (
-   Function &f, const Hypercube &h, Index maxEval,
-   real reqAbsError, real reqRelError, EstErr &ee)
+   Integrand &f, const Hypercube &h, Index maxEval,
+   real /* reqAbsError */, real /* reqRelError */, EstErr &ee)
 {
    checkDimension(h, f);
    
@@ -62,7 +62,7 @@ L::Integrator::Status L::RuleIntegrator::integrate (
 }
 
 L::Integrator::Status L::RuleIntegratorErr::integrate (
-   Function &f, const Hypercube &h, Index maxEval,
+   Integrand &f, const Hypercube &h, Index maxEval,
    real reqAbsError, real reqRelError, EstErr &ee)
 {
    checkDimension(h, f);

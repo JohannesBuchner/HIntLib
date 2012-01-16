@@ -37,7 +37,7 @@ namespace HIntLib
 {
 
 class Hypercube;
-class Function;
+class Integrand;
 
 /**
  *  mcIntegration()
@@ -46,7 +46,7 @@ class Function;
 template<class Gen, class Stat>
 inline
 void mcIntegration (
-   real point [], Gen &gen, const Hypercube &h, Function &f,
+   real point [], Gen &gen, const Hypercube &h, Integrand &f,
    typename Stat::CounterType n, Stat &stat)
 {
    UniformCube<Gen> uc (gen, h);
@@ -106,11 +106,11 @@ namespace Private
    class IntegrationCP : public CubePartitioner
    {
    protected:
-      IntegrationCP (Function &f, real* p, Gen& gen)
+      IntegrationCP (Integrand &f, real* p, Gen& gen)
          : f(f), p(p), gen (gen) {}
  
    protected:
-      Function &f;
+      Integrand &f;
       real *p;
       Gen &gen;
  
@@ -126,7 +126,7 @@ namespace Private
    class StratifiedIntegrationCP : public IntegrationCP<Gen,Stat>
    {
    public:
-      StratifiedIntegrationCP (Function &f, real* point, Gen& gen)
+      StratifiedIntegrationCP (Integrand &f, real* point, Gen& gen)
          : IntegrationCP<Gen,Stat> (f, point, gen) {}
  
       void action (const Hypercube &h)
@@ -144,7 +144,7 @@ namespace Private
    class AntitheticIntegrationCP : public IntegrationCP<Gen,Stat>
    {
    public:
-      AntitheticIntegrationCP (Function &f, real* point, Gen& gen)
+      AntitheticIntegrationCP (Integrand &f, real* point, Gen& gen)
          : IntegrationCP<Gen,Stat> (f, point, gen) {}
  
       void action (const Hypercube &h)
@@ -173,7 +173,7 @@ namespace Private
 template<class Gen, class Stat>
 inline
 void stratifiedIntegration (
-   real* point, Gen &gen, const Hypercube &h, Function &f, Index n,
+   real* point, Gen &gen, const Hypercube &h, Integrand &f, Index n,
    Stat &stat)
 {
    Private::StratifiedIntegrationCP<Gen,Stat> cp (f, point, gen);
@@ -189,7 +189,7 @@ void stratifiedIntegration (
 template<class Gen, class Stat>
 inline
 void antitheticIntegration (
-   real* point, Gen &gen, const Hypercube &h, Function &f, Index n,
+   real* point, Gen &gen, const Hypercube &h, Integrand &f, Index n,
    Stat &stat)
 {
    // Use CubePartitioner to perform action() an every sub-cube

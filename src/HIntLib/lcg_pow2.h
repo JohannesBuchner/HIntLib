@@ -84,7 +84,7 @@ namespace HIntLib
  *  e  defines the modulus m = 2^e
  */
 
-template<class T, T a, unsigned e, T c = T(1)>
+template<typename T, T a, unsigned e, T c = T(1)>
 class LCG_Pow2
 {
 private:
@@ -94,10 +94,7 @@ private:
 
    static const T mask;
 
-   // This function is defend nowhere.
-   // It is called for invalid template arguments, causing a compile-time error
-
-   void illegalArgument();
+   void invalid()  { invalidArgument ("LCG_Pow2"); }
 
 public:
  
@@ -141,31 +138,34 @@ public:
 
    // Constructors
  
-   LCG_Pow2 (unsigned start = a / 3, bool force = false);
+   LCG_Pow2 (unsigned start = unsigned (a / 3), bool force = false);
 };
 
-template<class T, T a, unsigned e, T c>
+template<typename T, T a, unsigned e, T c>
 const T LCG_Pow2<T,a,e,c>::mask = ~T() >> (std::numeric_limits<T>::digits - e);
 
-template<class T, T a, unsigned e, T c>
+template<typename T, T a, unsigned e, T c>
 const T LCG_Pow2<T,a,e,c>::MAX  = ~T() >> (std::numeric_limits<T>::digits - e);
 
-template<class T, T a, unsigned e, T c>
+template<typename T, T a, unsigned e, T c>
 const real LCG_Pow2<T,a,e,c>::RANGE = real(mask) + real(1);
 
-template<class T, T a, unsigned e, T c>
+template<typename T, T a, unsigned e, T c>
 const real LCG_Pow2<T,a,e,c>::RESOLUTION = real(1) / RANGE;
 
+/**
+ *  Constructor
+ */
 
-template<class T, T a, unsigned e, T c>
+template<typename T, T a, unsigned e, T c>
 inline
 LCG_Pow2<T,a,e,c>::LCG_Pow2 (unsigned start, bool force)
 {
    // Do a number of sanity checks.  All this is optimized away at compile time
 
-   if (std::numeric_limits<T>::is_signed)  illegalArgument();
-   if (e > unsigned (std::numeric_limits<T>::digits))  illegalArgument();
-   if (a >= ~T() >> (std::numeric_limits<T>::digits - e))  illegalArgument();
+   if (std::numeric_limits<T>::is_signed)  invalid();
+   if (e > unsigned (std::numeric_limits<T>::digits))  invalid();
+   if (a >= ~T() >> (std::numeric_limits<T>::digits - e))  invalid();
 
    if (! force)
    {
@@ -173,23 +173,23 @@ LCG_Pow2<T,a,e,c>::LCG_Pow2 (unsigned start, bool force)
       {
          switch (e)
          {
-         case 0:  illegalArgument(); break;
-         case 1:  if (even(a)) illegalArgument(); break;
-         case 2:  if (a % 4 != 3) illegalArgument(); break;
-         case 3:  if (a%8 != 3 && a%8 != 5 && a%8 != 7) illegalArgument(); break;
-         default: if (a % 8 != 3 && a % 8 != 5) illegalArgument();
+         case 0:  invalid(); break;
+         case 1:  if (even(a)) invalid(); break;
+         case 2:  if (a % 4 != 3) invalid(); break;
+         case 3:  if (a%8 != 3 && a%8 != 5 && a%8 != 7) invalid(); break;
+         default: if (a % 8 != 3 && a % 8 != 5) invalid();
          }
       }
       else if (odd (c))
       {
-         if (a % 4 != 1) illegalArgument();
+         if (a % 4 != 1) invalid();
       }
-      else illegalArgument();
+      else invalid();
    }
 
    // a should not be too large or too small.
 
-   // if ((a < MAX/100) || (MAX-a < MAX/100))  illegalArgument();
+   // if ((a < MAX/100) || (MAX-a < MAX/100))  invalid();
 
    init(start);
 }
@@ -199,7 +199,7 @@ LCG_Pow2<T,a,e,c>::LCG_Pow2 (unsigned start, bool force)
  *  operator()
  */
 
-template<class T, T a, unsigned e, T c>
+template<typename T, T a, unsigned e, T c>
 inline
 T LCG_Pow2<T,a,e,c>::operator() ()
 {
@@ -226,7 +226,7 @@ T LCG_Pow2<T,a,e,c>::operator() ()
  *  Returns a random real from [0,1]
  */
  
-template<class T, T a, unsigned e, T c>
+template<typename T, T a, unsigned e, T c>
 inline
 real LCG_Pow2<T,a,e,c>::getReal()
 {
@@ -249,19 +249,19 @@ real LCG_Pow2<T,a,e,c>::getReal()
  *  At least GCC is able to determine the correct algorithm at compile time.
  */
 
-template<class T, T a, unsigned e, T c>
+template<typename T, T a, unsigned e, T c>
 inline
 int LCG_Pow2<T,a,e,c>::operator() (int upperBound)
 {
+#if 0
    if (int(e) + std::numeric_limits<unsigned>::digits
              <= std::numeric_limits<u64>::digits)
    {
       return int ((u64(operator()()) * upperBound) >> e);
    }
    else
-   {
+#endif
       return int (getReal() * upperBound);
-   }
 }
 
 

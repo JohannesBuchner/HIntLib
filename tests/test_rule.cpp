@@ -23,7 +23,7 @@
  *
  *  Performes various tests with CubatureRule and EmbeddedRule
  *
- *      Ensures correctness for rules
+ *  Ensures correctness for rules
  */
 
 #include <iostream>
@@ -33,7 +33,7 @@
 
 #include <HIntLib/cubaturerule.h>
 #include <HIntLib/make.h>
-#include <HIntLib/testfunction.h>
+#include <HIntLib/testintegrand.h>
 #include <HIntLib/mymath.h>
 #include <HIntLib/mersennetwister.h>
 #include <HIntLib/distribution.h>
@@ -45,38 +45,53 @@ using namespace HIntLib;
 
 MersenneTwister mt;
 
-
 /**
  *  User-tuneable constants
  */
 
-const real ACCEPTABLE_ERROR = 2000.0;
-      Index    MAX_NUM_POINTS = 3000;
-      unsigned NUM_TESTS = 2;
+      Index    MAX_NUM_POINTS = 3000; // do not check rules with more points
+      unsigned NUM_TESTS = 3;         // number of test-polynomials / dimesnion
 const unsigned FIRST_TEST_DIM =  1;
       unsigned  LAST_TEST_DIM = 100;
-
       unsigned FIRST_RULE = 1;
       unsigned  LAST_RULE = 100;
+const unsigned NUM_MON = 130;        // Number of monomials in each polynomial
+const real     MAX_COEFF = 10.0;     // Maximal coefficient in each polynomial
 
+
+/**
+ *  epsilonPower ()
+ *
+ *  Returns  (1+epsilon)^power , with epsilong the accuracy of real.
+ */
+
+inline
+real epsilonPower (unsigned power)
+{
+   return powInt (1.0 + numeric_limits<real>::epsilon(), power);
+}
 
 
 /**
  *  TestPolynomial
  *
- *  A TestFunction, modelling a random multi-variate polynomial with a certain
+ *  A TestIntegrand, modelling a random multi-variate polynomial with a certain
  *  maximal degree.
  */
 
-class TestPolynomial : public TestFunction
+class TestPolynomial : public TestIntegrand
 {
 public:
 
    TestPolynomial (unsigned dim, unsigned degree);
-   ~TestPolynomial ()  { delete [] exponents; }
+
+   real operator() (const real *);
+   real derivative (const real *, unsigned);
 
    real getExactResult (const Hypercube &) const;
-   real operator() (const real *);
+   real getPartialResult (const Hypercube &, unsigned) const;
+   real getErrorOfExactResult (const Hypercube&) const;
+   real getErrorOfEvaluation (const Hypercube&) const;
 
 private:
 
@@ -88,14 +103,11 @@ private:
       Dummy ();
    } dummy;
 
-   // Number of monomials in each polynomial
-
-   static const unsigned NUM_MON = 130;
-
    const unsigned degree;
 
    real coef [NUM_MON];
-   unsigned char *exponents;   // [NUM_MON][dim]
+
+   Array<unsigned char> exponents;  // [NUM_MON][dim]
 
    unsigned char& getExponent (unsigned i, unsigned d)
       { return exponents [d + i * dim]; }
@@ -107,7 +119,6 @@ private:
     */
 
    static const unsigned MAX_DEGREE = 10; // Highest degree in use
-
    static const unsigned NUM_MONOMIALS;   // Size of the following three tables
 
    static const unsigned char monomials [][MAX_DEGREE]; // monomials
@@ -161,7 +172,7 @@ const unsigned TestPolynomial::MAX_DEGREE;
  *  10   1  6 14 23 30 35 38 40 41 42
  *  11   1  6 16 27 37 44 49 52 54 55 56
  *
- *  More details can be found in my script "Kombinatorik" from R.Wolf.
+ *  More details can be found in the lecture notes "Kombinatorik" from R.Wolf.
  */
 
 const unsigned char TestPolynomial::monomials [][MAX_DEGREE] =
@@ -328,11 +339,10 @@ TestPolynomial::Dummy::Dummy ()
 
       for (unsigned j = 0; j < MAX_DEGREE; ++j)
       {
-         if (monomials [i][j])
-         {
-            sum += monomials [i][j];
-            dim = j + 1;
-         }
+         if (! monomials [i][j])  break;
+
+         sum += monomials [i][j];
+         dim = j + 1;
       }
 
       monomialsDim [i] = dim;
@@ -340,26 +350,30 @@ TestPolynomial::Dummy::Dummy ()
    }
 }
 
+
+/**
+ *  Constructor
+ */
+
 TestPolynomial::TestPolynomial (unsigned dim, unsigned degree)
-   : TestFunction (dim), degree (degree),
-     exponents (new unsigned char [NUM_MON * dim])
+   : TestIntegrand (dim), degree (degree), exponents (NUM_MON * dim)
 {
    unsigned int m = 0;
 
    for (unsigned i = 0; i < NUM_MON; ++i)
    {
-      coef [i] = uniform (mt, -10.0, 10.0);  // Choose koefficient from [-10,10]
+      coef [i] = uniform (mt, -MAX_COEFF, MAX_COEFF);
 
       // Copy monomomial
 
-      for (unsigned int j = 0; j < min (dim, MAX_DEGREE); ++j)
+      for (unsigned j = 0; j < min (dim, MAX_DEGREE); ++j)
       {
          getExponent(i, j) = monomials [m][j];
       }
 
       // Fill remaining exponents with 0
 
-      for (unsigned int j = MAX_DEGREE; j < dim; ++j)  getExponent(i, j) = 0;
+      for (unsigned j = MAX_DEGREE; j < dim; ++j)  getExponent(i, j) = 0;
 
       // Shuffle Exponents
 
@@ -375,6 +389,11 @@ TestPolynomial::TestPolynomial (unsigned dim, unsigned degree)
    }
 }
 
+
+/**
+ *  getExactResult()
+ */
+
 real TestPolynomial::getExactResult (const Hypercube &h) const
 {
    real sum = 0.0;
@@ -387,8 +406,12 @@ real TestPolynomial::getExactResult (const Hypercube &h) const
       {
          unsigned e = getExponent (i, d) + 1;
 
-         prod *= (  powInt(h.getUpperBound (d), e)
-                  - powInt(h.getLowerBound (d), e)) / e;
+         if (e == 1)  prod *= h.getDiameter (d);
+         else
+         {
+            prod *= (  powInt(h.getUpperBound (d), e)
+                     - powInt(h.getLowerBound (d), e)) / real (e);
+         }
       }
 
       sum += prod;
@@ -396,6 +419,103 @@ real TestPolynomial::getExactResult (const Hypercube &h) const
 
    return sum;
 }
+
+
+/**
+ *  getPartialResult()
+ *
+ *  Returns the integral, considering only monimials with degree _deg_.
+ */
+
+real TestPolynomial::getPartialResult (const Hypercube &h, unsigned deg) const
+{
+   real sum = 0.0;
+
+   for (unsigned i = 0; i < NUM_MON; ++i)
+   {
+      real prod = coef [i];
+
+      unsigned thisDegree = 0;
+      for (unsigned d = 0; d < dim; ++d)  thisDegree += getExponent (i, d);
+      if (thisDegree != deg)  continue;
+
+      for (unsigned d = 0; d < dim; ++d)
+      {
+         unsigned e = getExponent (i, d) + 1;
+
+         if (e == 1)  prod *= h.getDiameter (d);
+         else
+         {
+            prod *= (  powInt(h.getUpperBound (d), e)
+                     - powInt(h.getLowerBound (d), e)) / e;
+         }
+      }
+
+      sum += prod;
+   }
+
+   return sum;
+}
+
+
+/**
+ *  getErrorOfExactResult ()
+ *
+ *  Returns an upper bound on the rounding error in  getExactResult()
+ */
+
+real TestPolynomial::getErrorOfExactResult (const Hypercube &h) const
+{
+   const real onePlusEpsilon = 1.0 + numeric_limits<real>::epsilon();
+   real sum = 0.0;
+
+   for (unsigned i = 0; i < NUM_MON; ++i)
+   {
+      real realProd = 1.0;
+      real prod     = onePlusEpsilon;
+      real factor = coef [i];
+
+      for (unsigned d = 0; d < dim; ++d)
+      {
+         unsigned e = getExponent (i, d) + 1;
+
+         if (e == 1)
+         {
+            factor *= h.getDiameter(d);
+            prod   *= sqr (onePlusEpsilon);
+         }
+         else
+         {
+            real v1 = powInt(h.getUpperBound (d), e);
+            real v2 = powInt(h.getLowerBound (d), e);
+
+            realProd *= v1 - v2;
+
+            real ePower = epsilonPower (e);
+
+            if (v1 > v2)
+            {
+               v1 *= (v1 > 0.0) ?       ePower : 1.0 / ePower;
+               v2 *= (v2 > 0.0) ? 1.0 / ePower :       ePower;
+            }
+            else
+            {
+               v1 *= (v1 > 0.0) ? 1.0 / ePower :       ePower;
+               v2 *= (v2 > 0.0) ?       ePower : 1.0 / ePower;
+            }
+
+            prod *= v1 - v2;
+            
+            factor /= real (e);
+         }
+      }
+
+      sum += abs (realProd - prod) * abs (factor);
+   }
+
+   return sum;
+}
+
 
 /**
  *  Evaluate polynomail on a given point x
@@ -411,7 +531,8 @@ real TestPolynomial::operator() (const real *x)
 
       for (unsigned d = 0; d < dim; ++d)
       {
-         for (unsigned j = getExponent (i, d); j > 0; --j)  prod *= x [d];
+         const unsigned exponent = getExponent (i,d);
+         if (exponent)  prod *= powInt (x[d], exponent);
       }
 
       sum += prod;
@@ -420,9 +541,137 @@ real TestPolynomial::operator() (const real *x)
    return sum;
 }
 
+
+/**
+ *  getErrorOfEvaluation ()
+ *
+ *  Returns an upper bound the round-off error encountered during a integrand
+ *  evaluation
+ */
+
+real TestPolynomial::getErrorOfEvaluation (const Hypercube &h) const
+{
+   Array<real> maxCoordinate (h.getDimension());
+
+   for (unsigned i = 0; i < h.getDimension(); ++i)
+   {
+      maxCoordinate [i]
+         = max (abs (h.getLowerBound(i)), abs (h.getUpperBound(i)));
+   }
+
+   real sum = 0.0;
+
+   for (unsigned i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
+   {
+      real prod = abs (coef [i]);
+
+      unsigned degreeOfMonomial = 0;
+
+      for (unsigned d = 0; d < dim; ++d)
+      {
+         degreeOfMonomial += getExponent (i, d);
+         prod *= powInt (maxCoordinate [d], getExponent (i, d));
+      }
+
+      sum += prod * (epsilonPower (degreeOfMonomial + 1) - 1.0);
+   }
+
+   return sum;
+}
+
+real TestPolynomial::derivative (const real *x, unsigned a)
+{
+   real sum = 0.0;
+
+   for (unsigned i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
+   {
+      if (getExponent (i, a) == 0)  continue;
+
+      real prod = coef [i];
+
+      for (unsigned d = 0; d < dim; ++d)
+      {
+         if (d == a)
+         {
+            prod = prod * getExponent (i, a)
+                        * powInt (x[d], getExponent (i,a) - 1);
+         }
+         else
+         {
+            prod *= powInt (x[d], getExponent (i, d));
+         }
+      }
+
+      sum += prod;
+   }
+
+   return sum;
+}
+
+#if 0
+real TestPolynomial::derivative (const real *x, unsigned a, unsigned b)
+{
+   real sum = 0.0;
+
+   if (a == b)
+   {
+      for (unsigned i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
+      {
+         if (getExponent (i, a) <= 1)  continue;
+
+         real prod = coef [i];
+
+         for (unsigned d = 0; d < dim; ++d)
+         {
+            if (d == a)
+            {
+               unsigned exponent = getExponent (i, a);
+               prod = exponent * (exponent - 1)
+                    * prod * powInt (x[d], exponent - 2);
+            }
+            else
+            {
+               prod *= powInt (x[d], getExponent (i, d));
+            }
+         }
+
+         sum += prod;
+      }
+   }
+   else   // a != b
+   {
+      for (unsigned i = 0; i < NUM_MON; ++i)   // all monomials in polynomial
+      {
+         if (getExponent (i, a) == 0)  continue;
+         if (getExponent (i, b) == 0)  continue;
+
+         real prod = coef [i];
+
+         for (unsigned d = 0; d < dim; ++d)
+         {
+            if (d == a || d == b)
+            {
+               prod = prod * getExponent (i,d)
+                           * powInt (x[d], getExponent (i,d) - 1);
+            }
+            else
+            {
+               prod *= powInt (x[d], getExponent (i, d));
+            }
+         }
+
+         sum += prod;
+      }
+
+   }
+
+   return sum;
+}
+#endif
+
 ostream& operator<< (ostream& os, const TestPolynomial &p)
 {
-   for (unsigned i = 0; i < TestPolynomial::NUM_MON; ++i)
+   for (unsigned i = 0; i < NUM_MON; ++i)
    {
       os << (p.coef [i] > 0.0 ? " + " : " - ") << abs (p.coef [i]);
 
@@ -449,7 +698,21 @@ ostream& operator<< (ostream& os, const TestPolynomial &p)
 }
 
 
-bool checkDegree (CubatureRule& r, unsigned degree, unsigned numTests)
+/**
+ *  check Degree ()
+ *
+ *  Deterimines, if a given CubatureRule _r_ has at least a certain degree
+ *  _degree_.
+ *
+ *  _numTests_ random polynomials of degree _degree_ are generated and the
+ *  approximation produced by _r_ is compared to the exact result.
+ *
+ *  The main difficulaty is to distinguish between round-off errors and real
+ *  failures in the degree of the CubatureRule.
+ */
+
+bool checkDegree (
+   CubatureRule& r, unsigned degree, unsigned numTests, bool disproof)
 {
    const unsigned dim = r.getDimension ();
 
@@ -459,13 +722,15 @@ bool checkDegree (CubatureRule& r, unsigned degree, unsigned numTests)
    {
       TestPolynomial p (r.getDimension (), degree);
 
-      DEB2  cout << "Using polynomial " << p << endl;
+      DEB3  cout << "Using polynomial " << p << endl;
 
-      EvalCounterFunction f1 (&p);
-      DomainCheckerFunction f (&f1, &h);
+      EvalCounterIntegrand f1 (&p);
+      DomainCheckerIntegrand f (&f1, &h);
 
-      real result = r.eval (f, h);
-      real correct = f.getExactResult (h);
+      const real result = r.eval (f, h);
+      const real correct = f.getExactResult (h);
+
+      // check isAllPointsInside()
 
       if (! f.isAllPointsInside() && r.isAllPointsInside())
       {
@@ -476,6 +741,8 @@ bool checkDegree (CubatureRule& r, unsigned degree, unsigned numTests)
          error ("\nisAllPointsInside() should return true");
       }
 
+      // check getNumPoints()
+      
       if (f1.getCounter () != r.getNumPoints ())
       {
          cout << "\ngetNumPoints() wrong ("
@@ -484,30 +751,55 @@ bool checkDegree (CubatureRule& r, unsigned degree, unsigned numTests)
          error();
       }
 
-// cout << setprecision (15);
-// cout << setw (20) << result << setw (20) << correct << endl;
+      // check Result()
 
-      if (  abs ((result - correct) / max(abs(correct), real(1.0)))
-          >  numeric_limits<real>::epsilon() * ACCEPTABLE_ERROR
-            * (r.getSumAbsWeight () + real (dim)))
+      const real error = abs (result - correct);
+
+      const real expectedExactError = p.getErrorOfExactResult (h);
+      const real expectedApproxError
+         = p.getErrorOfEvaluation (h) * r.getSumAbsWeight() * h.getVolume()
+         * epsilonPower (2 * h.getDimension()) * 2.0;
+
+      const real threshold = expectedExactError + expectedApproxError;
+      const real problem = abs (p.getPartialResult (h, degree));
+
+      DEB2
       {
-         DEB1
-         {
-            cout << "Error factor: "
-                 << abs((result - correct) / max(abs(correct), real(1.0)))
-                    / (numeric_limits<real>::epsilon()
-                        * (r.getSumAbsWeight () + real (dim)))
-                 << " exceeds "
-                 << ACCEPTABLE_ERROR
-                 << endl;
-         }
+         cout << setprecision (9)
+              << "Result: " << setw (13) << result
+              << "  Correct: " << setw (13) << correct
+              << "  error=" << error
+              << "  threshold=" << threshold
+              << "  expExactError=" << expectedExactError
+              << "  expApproxError=" << expectedApproxError
+              << "  problem=" << problem << endl;
+      }
+      
+      if (error > 25.0 * threshold)
+      {
+         DEB1 cout << "Error " << error << " exceeds " << threshold << endl;
+         return false;
+      }
 
+      if (disproof && threshold > problem / 1000.0)
+      {
+         DEB1 cout << "Can not determine degree "
+                      "due to numerical instabilities!" << endl;
+         if (verbose == 0)  cout << '-';
          return false;
       }
    }
 
    return true;
 }
+
+
+/**
+ *  test Rule()
+ *
+ *  Ensures that a given CubatureRule _r_ workes correctly, primarilly by
+ *  calling checkDegree().
+ */
 
 void testRule (CubatureRule& r, unsigned dim)
 {
@@ -534,7 +826,7 @@ void testRule (CubatureRule& r, unsigned dim)
 
    for (unsigned d = 0; d <= degree; ++d)
    {
-      if (checkDegree (r, d, NUM_TESTS))
+      if (checkDegree (r, d, NUM_TESTS, false))
       {
          NORMAL  cout << "Degree " << d << " passed." << endl;
       }
@@ -548,7 +840,7 @@ void testRule (CubatureRule& r, unsigned dim)
 
    if (allright)
    {
-      if (checkDegree (r, degree + 1, 2 * NUM_TESTS + 5))
+      if (checkDegree (r, degree + 1, 2 * NUM_TESTS + 5, true))
       {
          error ("\nDegree seems to be higher");
       }
@@ -558,6 +850,23 @@ void testRule (CubatureRule& r, unsigned dim)
       }
    }
 }
+
+
+/**
+ *  Command line arguments
+ */
+
+/**
+ *  Verbosity levels
+ *
+ *  -sss  -2    Print nothing at all
+ *  -ss   -1    Print only the names of the evaluated rules
+ *  -s     0    Names and dimensions
+ *  normal 1     + Result for each degree
+ *  -v     2     + Error
+ *  -vv    3     + Error statistic for each polynomial
+ *  -vvv   4     + each evaluated polynomial
+ */
 
 const char* options = "n:p:d:r:";
 
@@ -589,6 +898,11 @@ void usage()
 
    exit (1);
 }
+
+
+/**
+ *  Main program
+ */
 
 void test(int argc, char**)
 {

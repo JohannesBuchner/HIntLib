@@ -73,7 +73,7 @@ namespace HIntLib
 
       virtual
       Status integrate (
-         Function &, const Hypercube &, Index maxEval,
+         Integrand &, const Hypercube &, Index maxEval,
          real reqAbsError, real reqRelError, EstErr &ee);
 
    private:

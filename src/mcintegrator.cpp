@@ -36,7 +36,7 @@
 #include <HIntLib/staticloadbalancer.h>
 #include <HIntLib/exception.h>
 #include <HIntLib/pointset.h>
-#include <HIntLib/function.h>
+#include <HIntLib/integrand.h>
 #include <HIntLib/hypercube.h>
 
 #ifdef HINTLIB_PARALLEL
@@ -49,7 +49,7 @@
 namespace L = HIntLib;
 
 L::Integrator::Status L::HINTLIB_NAME(MCIntegrator)::integrate (
-   Function &f, const Hypercube &h, Index n,
+   Integrand &f, const Hypercube &h, Index n,
    real reqAbsError, real reqRelError, EstErr &ee)
 {
    checkDimension(h, f);
@@ -68,7 +68,7 @@ L::Integrator::Status L::HINTLIB_NAME(MCIntegrator)::integrate (
 
    StatisticVar<> stat;
 
-   Array<real> point (h.getDimension());
+   Point point (h.getDimension());
 
    ps->setCube (&h);
    #ifdef HINTLIB_PARALLEL

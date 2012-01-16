@@ -22,8 +22,6 @@
 
 namespace L = HIntLib;
 
-#ifdef HINTLIB_INSTANTIATE_STL
-
 #include <vector>
 #include <queue>
 #include <algorithm>
@@ -34,6 +32,8 @@ namespace L = HIntLib;
 
 namespace std
 {
+// fill<>()
+
 template void fill<>(bool*,          bool*,          const bool&);
 template void fill<>(char*,          char*,          const char&);
 template void fill<>(L::real*,       L::real*,       const L::real&);
@@ -51,6 +51,7 @@ template void fill<>(L::u64*,        L::u64*,        const int&);
 template void fill<>(L::EstErr*,     L::EstErr*,     const L::EstErr&);
 template void fill<>(L::Region**,    L::Region**,    L::Region *const&);
 
+// vector<>
 
 template class vector<unsigned char>;
 template class vector<unsigned short>;
@@ -71,10 +72,13 @@ template void __push_heap<>(L::Region**,int,int,L::Region*,L::RegionErrorLess);
 template void __adjust_heap<>(L::Region**,int,int,L::Region*,L::RegionErrorLess);
 #endif
 
-template istream& getline<>(istream&, string&, char);
-template istream& istream::_M_get_num<>(unsigned int&);
+// Stream related instantiations
 
+template istream& getline<>(istream&, string&, char);
 template ostream& operator<<(ostream&,const string&);
+
+#ifdef HINTLIB_SGI
+template istream& istream::_M_get_num<>(unsigned int&);
 
 template ostream& ostream::_M_put_num<>(long);
 template ostream& ostream::_M_put_num<>(unsigned long);
@@ -83,9 +87,7 @@ template ostream& ostream::_M_put_num<>(unsigned long long);
 #endif
 template ostream& ostream::_M_put_num<>(const void*);
 template ostream& ostream::_M_put_num<>(L::real);
+#endif
 
 }  // namespace std
-
-#endif // defined HINTLIB_INSTANTIATE_STL
-
 

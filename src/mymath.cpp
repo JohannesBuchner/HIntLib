@@ -20,6 +20,10 @@
 
 #ifdef __GNUG__
 #pragma implementation
+
+#ifndef HINTLIB_HAVE_LIMITS
+#pragma implementation "fallback_limits.h"
+#endif
 #endif
 
 #include <HIntLib/mymath.h>
@@ -59,13 +63,19 @@ namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) template X powInt (X, unsigned);
 
-   HINTLIB_INSTANTIATE (real);
-   HINTLIB_INSTANTIATE (int);
-   HINTLIB_INSTANTIATE (unsigned);
-   HINTLIB_INSTANTIATE (unsigned long);
-   HINTLIB_INSTANTIATE (Polynomial2<u32>);
+   HINTLIB_INSTANTIATE (double)
+#if HINTLIB_REAL != 2
+   HINTLIB_INSTANTIATE (real)
+#endif
+   HINTLIB_INSTANTIATE (int)
+   HINTLIB_INSTANTIATE (unsigned)
+   HINTLIB_INSTANTIATE (unsigned long)
+#ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
+   HINTLIB_INSTANTIATE (unsigned long long)
+#endif
+   HINTLIB_INSTANTIATE (Polynomial2<u32>)
 #ifdef HINTLIB_U32_NOT_EQUAL_U64
-   HINTLIB_INSTANTIATE (Polynomial2<u64>);
+   HINTLIB_INSTANTIATE (Polynomial2<u64>)
 #endif
 #undef HINTLIB_INSTANTIATE
 }
@@ -92,11 +102,11 @@ namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) template X powerMod (X, unsigned, X);
 
-   HINTLIB_INSTANTIATE (unsigned);
-   HINTLIB_INSTANTIATE (unsigned long);
-   HINTLIB_INSTANTIATE (Polynomial2<u32>);
+   HINTLIB_INSTANTIATE (unsigned)
+   HINTLIB_INSTANTIATE (unsigned long)
+   HINTLIB_INSTANTIATE (Polynomial2<u32>)
 #ifdef HINTLIB_U32_NOT_EQUAL_U64
-   HINTLIB_INSTANTIATE (Polynomial2<u64>);
+   HINTLIB_INSTANTIATE (Polynomial2<u64>)
 #endif
 #undef HINTLIB_INSTANTIATE
 }
@@ -131,10 +141,10 @@ namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) template int logInt (X, X);
 
-   HINTLIB_INSTANTIATE (unsigned);
-   HINTLIB_INSTANTIATE (unsigned long);
+   HINTLIB_INSTANTIATE (unsigned)
+   HINTLIB_INSTANTIATE (unsigned long)
 #ifdef HINTLIB_HAVE_UNSIGNED_LONG_LONG_INT
-   HINTLIB_INSTANTIATE (unsigned long long);
+   HINTLIB_INSTANTIATE (unsigned long long)
 #endif
 #undef HINTLIB_INSTANTIATE
 }

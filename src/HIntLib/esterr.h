@@ -50,7 +50,7 @@ public:
   EstErr (real newEst, real newErr)
      : est (newEst), err (std::max (newErr, real())) {}
 #ifdef HINTLIB_PARALLEL
-  EstErr (RecvBuffer &b)  {  b >> *this; }
+  EstErr (RecvBuffer &b);
 #endif
  
   real getEstimate() const  { return est; }
@@ -66,8 +66,8 @@ public:
   void scale (real a)  { est *= a; err *= a; }
 
 #ifdef HINTLIB_PARALLEL
-   friend SendBuffer& operator<< (SendBuffer &, const EstErr &);
-   friend RecvBuffer& operator>> (RecvBuffer &, EstErr &); 
+   friend inline SendBuffer& operator<< (SendBuffer &, const EstErr &);
+   friend inline RecvBuffer& operator>> (RecvBuffer &, EstErr &); 
    MPI_Datatype getMPIDatatype () const;
    void initAfterReceive() const {}
 #endif
@@ -136,6 +136,11 @@ inline RecvBuffer& operator>> (RecvBuffer &b, EstErr &ee)
    b.unpack (&ee.est, 2, MPIType<real>::type);
    ee.initAfterReceive();
    return b;
+}
+
+inline EstErr::EstErr (RecvBuffer &b)
+{
+   b >> *this;
 }
 
 #endif // PARALLEL

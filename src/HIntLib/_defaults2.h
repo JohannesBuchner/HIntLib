@@ -16,10 +16,6 @@
  *  By default, double is used.  float or long double can be used altermatively.
  */
 
-#ifndef HINTLIB_REAL
-   #define HINTLIB_REAL 2
-#endif
-
 #if HINTLIB_REAL == 1
   typedef float real;
 #elif HINTLIB_REAL == 2
@@ -91,10 +87,6 @@
  *  If a larger range is required, u64 has to be used instead of u32.
  */
 
-#ifndef HINTLIB_INDEX
-   #define HINTLIB_INDEX 32
-#endif
-
 #if HINTLIB_INDEX == 32
    typedef u32 Index;
 #elif HINTLIB_INDEX == 64
@@ -110,6 +102,10 @@
 
 #ifndef HINTLIB_PRIME_TABLE_SIZE
    #define HINTLIB_PRIME_TABLE_SIZE 5000
+#endif
+
+#ifndef HINTLIB_PRECALCULATED_FIELD_MAX_SIZE
+   #define HINTLIB_PRECALCULATED_FIELD_MAX_SIZE 32
 #endif
 
 }  // namespace HIntLib

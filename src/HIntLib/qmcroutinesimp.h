@@ -74,7 +74,7 @@ public:
    QMCPointSet (Index s = 0) : QMCPointSetBase<Gen> (s) {}
 
    void integratePartition
-      (real* point, Function &f, Index num, Index begin, Index end,
+      (real* point, Integrand &f, Index num, Index begin, Index end,
        PointSet::Stat& stat)
    {
       Gen gen (*h);
@@ -84,7 +84,7 @@ public:
    }
 
    void integratePartition
-      (real* point, Function &f, Index num, Index begin, Index end,
+      (real* point, Integrand &f, Index num, Index begin, Index end,
        PointSet::StatVar& stat)
    {
       Gen gen (*h);
@@ -103,7 +103,7 @@ public:
    QMCPointSet (Index s = 0) : QMCPointSetBase<Gen> (s) {}
 
    void integratePartition
-      (real *point, Function &f, Index num, Index begin, Index end,
+      (real *point, Integrand &f, Index num, Index begin, Index end,
        PointSet::Stat& stat)
    {
       Gen gen (*h);
@@ -111,7 +111,7 @@ public:
    }
 
    void integratePartition
-      (real *point, Function &f, Index num, Index begin, Index end,
+      (real *point, Integrand &f, Index num, Index begin, Index end,
        PointSet::StatVar& stat)
    {
       Gen gen (*h);

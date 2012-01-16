@@ -21,7 +21,7 @@
 #include <iostream>
 #include <exception>
 
-#include <HIntLib/generatormatrix.h>
+#include <HIntLib/generatormatrixgen.h>
 
 using std::cerr;
 using std::endl;

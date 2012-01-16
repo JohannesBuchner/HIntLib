@@ -29,7 +29,7 @@
 #pragma interface
 #endif
 
-#include <HIntLib/generatormatrix.h>
+#include <HIntLib/generatormatrixvec.h>
 #include <HIntLib/qrnsequencebase.h>
 #include <HIntLib/shiftscale.h>
 #include <HIntLib/pointset.h>
@@ -53,7 +53,7 @@ class DigitalNetGen: public QRNSequenceBase, public DigitalNet
 public:
    typedef typename A::type T;
 
-   const GeneratorMatrixGen<T> & getGeneratorMatrix() const  { return c; }
+   const GeneratorMatrixVec<T> & getGeneratorMatrix() const  { return c; }
    Index getOptimalNumber(Index max) const;
 
    void setCube (const Hypercube &);
@@ -65,7 +65,7 @@ protected:
    const typename A::scalar_algebra scalArith;
    const T base;
    const unsigned totalPrec;
-   GeneratorMatrixGenCopy<T> c;
+   GeneratorMatrixVecCopy<T> c;
    const unsigned prec;
    const S vecBase;
    Array<T> x;      // current vector (size dim)
@@ -252,7 +252,7 @@ public:
    : DigitalNet2QMCRoutinesBase(_dm, e, t, i, fast) {}
 
    virtual void integrate (
-      Function &f, const Hypercube &h, Index begin, Index end,
+      Integrand &f, const Hypercube &h, Index begin, Index end,
       Statistic<real,real,Index>& stat);
 };
 
@@ -269,7 +269,7 @@ public:
    : DigitalNet2QMCRoutinesBase(_dm, e, t, i, fast) {}
 
    virtual void integrate (
-      Function &f, const Hypercube &h, Index begin, Index end,
+      Integrand &f, const Hypercube &h, Index begin, Index end,
       Statistic<real,real,Index>& stat);
 };
 
@@ -322,7 +322,7 @@ void HIntLib::DigitalNet2Gray<T>::next (real* point)
 
 template<class Sum>
 void HIntLib::DigitalNet2QMCRoutines<Sum>::integrate (
-   Function &f, const Hypercube &h, Index begin, Index end,
+   Integrand &f, const Hypercube &h, Index begin, Index end,
    Statistic<real,real,Index>& stat)
 {
    if (m < 0)  return;

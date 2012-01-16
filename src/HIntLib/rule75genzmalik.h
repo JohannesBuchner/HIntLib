@@ -46,7 +46,7 @@ namespace HIntLib
 
       Rule75GenzMalik (unsigned dim);
 
-      virtual unsigned evalError (Function &f, const Hypercube &, EstErr &);
+      virtual unsigned evalError (Integrand &f, const Hypercube &, EstErr &);
 
       virtual unsigned getDimension()      const  { return dim; }
       virtual Index    getNumPoints()      const;
@@ -60,7 +60,7 @@ namespace HIntLib
 
       // Arrays for temporary data
 
-      Array<real> widthLamda;
+      Point widthLamda;
 
       // Dimension depending constants
 

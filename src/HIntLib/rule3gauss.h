@@ -49,7 +49,7 @@ namespace HIntLib
    public:
       Rule3Gauss (unsigned dim);
 
-      virtual real eval (Function &, const Hypercube &);
+      virtual real eval (Integrand &, const Hypercube &);
 
       virtual unsigned getDimension()   const { return dim; }
       virtual Index getNumPoints ()     const { return numR_Rfs(); }
@@ -62,7 +62,7 @@ namespace HIntLib
    private:
       // Array for offsets
 
-      Array<real> a;
+      Point a;
       const real oneDivTwoPowDim;
    };
 

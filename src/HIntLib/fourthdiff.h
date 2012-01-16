@@ -27,13 +27,14 @@
 
 #ifdef __GNUG__
 #pragma interface
+// Implementation in regioncollection.cpp
 #endif
 
 #include <algorithm>
 
 #include <HIntLib/array.h>
 #include <HIntLib/mymath.h>
-#include <HIntLib/function.h>
+#include <HIntLib/integrand.h>
 #include <HIntLib/hypercube.h>
 #include <HIntLib/minmaxfinder.h>
 
@@ -58,16 +59,16 @@ public:
    unsigned getDimension() const  { return dim; }
    unsigned getNumPoints() const  { return 4 * dim + 1; }
 
-   unsigned operator() (Function &, const Hypercube &);
-   unsigned operator() (Function &, const real* c, const real* w);
+   unsigned operator() (Integrand &, const Hypercube &);
+   unsigned operator() (Integrand &, const real* c, const real* w);
 
 private:
    unsigned dim;
-   Array<real> p;
+   Point p;
 };
 
 inline
-unsigned FourthDiff::operator() (Function &f, const real* c, const real* w)
+unsigned FourthDiff::operator() (Integrand &f, const real* c, const real* w)
 {
    std::copy (&c[0], &c[dim],  &p[0]);
 
@@ -91,7 +92,7 @@ unsigned FourthDiff::operator() (Function &f, const real* c, const real* w)
 }
 
 inline
-unsigned FourthDiff::operator() (Function &f, const Hypercube &h)
+unsigned FourthDiff::operator() (Integrand &f, const Hypercube &h)
 {
    return operator()(f, h.getCenter(), h.getWidth());
 }

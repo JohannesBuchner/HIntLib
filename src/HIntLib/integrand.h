@@ -19,11 +19,9 @@
  */
 
 /**
- *  Function
+ *  Integrand
  *
  *  A function  R^dim -> R
- *
- *  (C) 2001 by Rudolf Schürer
  *
  *  getDimension()
  *     returns the dimension of the domain of the function
@@ -32,11 +30,12 @@
  *     Evaluates the function at a certain point in R^dim
  */
 
-#ifndef HINTLIB_FUNCTION_H
-#define HINTLIB_FUNCTION_H 1
+#ifndef HINTLIB_INTEGRAND_H
+#define HINTLIB_INTEGRAND_H 1
 
 #ifdef __GNUG__
 #pragma interface
+// implementation in testintegrand.cpp
 #endif
 
 #include <HIntLib/defaults.h>
@@ -45,27 +44,22 @@
 namespace HIntLib
 {
 
-class Hypercube;
-
 /**
- *  Abstract class modeling the concept of a function
+ *  Abstract base class for Integrands
  */
 
-class Function
+class Integrand
 {
 public:
+   explicit Integrand (unsigned dim) : dim (dim) {}
+   virtual ~Integrand () {};
 
-   explicit Function (unsigned dim) : dim (dim) {}; 
-   virtual ~Function () {};
+   virtual real operator() (const real []) = 0;    // evaluate Integrand
+   virtual real derivative (const real [], unsigned);
 
-   // Evaluate function
-
-   virtual real operator() (const real []) = 0;
-
-   unsigned getDimension (void) const  { return dim; }
+   unsigned getDimension () const  { return dim; }
 
 protected:
-
    const unsigned dim;
 };
 

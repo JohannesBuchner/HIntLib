@@ -53,7 +53,7 @@ namespace HIntLib
       Vegas (PointSet* _ps) : ps(_ps), combineResults (false), ALPHA (1.5) {}
       
       Status integrate (
-         Function &f, const Hypercube &h, Index maxEval,
+         Integrand &f, const Hypercube &h, Index maxEval,
          real, real, EstErr &ee);
 
       Vegas& setAlpha (real a)  { ALPHA = a; return *this; }

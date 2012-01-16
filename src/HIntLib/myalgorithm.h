@@ -40,7 +40,7 @@ namespace HIntLib
  *  Used by purge()
  */
 
-template<class T>
+template<typename T>
 // inline
 T* delete_ptr (T* p) { delete p; return 0; }
 
@@ -51,13 +51,47 @@ T* delete_ptr (T* p) { delete p; return 0; }
  *  Calls delete() on each member of the container
  */
 
-template<class In>
+template<typename In>
 inline
 void purge (In first, In last)
 {
    while (first != last)  delete *first++;
 
    // for_each (first, last, delete_ptr);     // does not compile :-((
+}
+
+
+/**
+ *  min (x1,x2,x3)
+ *  max (x1,x3,x3)
+ */
+
+template<typename T>
+inline
+const T& max3 (const T& x1, const T& x2, const T& x3)
+{
+   if (x1 > x2)
+   {
+      return x1 > x3 ? x1 : x3;
+   }
+   else
+   {
+      return x2 > x3 ? x2 : x3;
+   }
+}
+
+template<typename T>
+inline
+const T& min3 (const T& x1, const T& x2, const T& x3)
+{
+   if (x1 < x2)
+   {
+      return x1 < x3 ? x1 : x3;
+   }
+   else
+   {
+      return x2 < x3 ? x2 : x3;
+   }
 }
 
 

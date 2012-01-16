@@ -19,51 +19,48 @@
  */
 
 /**
- *  Adapt
+ *  Rule 2 Thacher
  *
+ *  Cubature rule of degree 2 with  2*dim + 1  points.
+ *  All points are inside the hypercube.
+ *
+ *  It is also presented in
+ *     A. H. Stoud. Approximate Calculation of Multiple Integrals (1971)
+ *  as formula Cn: 2-2
  */
 
-#ifndef HINTLIB_ADAPT_H
-#define HINTLIB_ADAPT_H 1
+#ifndef HINTLIB_RULE_2_IONESCU_H
+#define HINTLIB_RULE_2_IONESCU_H 1
 
 #ifdef __GNUG__
 #pragma interface
 #endif
 
-#include <HIntLib/regioncollection.h>
-#include <HIntLib/region.h>
+#include <HIntLib/cubaturerule.h>
+#include <HIntLib/array.h>
 
 
 namespace HIntLib
 {
+   class CubatureRuleFactory;
 
-/**
- *  splitHypercube()
- *
- *  Splits a Hypercube into _total_ sub-cubes.
- *  Returns sub-cube # _index_
- */
- 
-void splitHypercube (Function &, Hypercube &, unsigned total, unsigned index);
-void splitHypercube (Function &, const Hypercube &, Hypercube* cubes [],
-                     int total);
+   class Rule2Ionescu : public CubatureRule
+   {
+   public:
+      Rule2Ionescu (unsigned dim);
 
+      virtual real eval (Integrand &, const Hypercube &);
 
-/**
- *  storeSubcube()
- */
+      virtual unsigned getDimension()  const  { return 2; }
+      virtual Index getNumPoints()     const  { return 6; }
+      virtual unsigned getDegree()     const  { return 2; }
+      virtual bool isAllPointsInside() const  { return true; }
+      virtual real getSumAbsWeight()   const  { return 1.0; }
 
-inline
-void storeSubcube (
-   RegionCollection &rc, Hypercube h, unsigned total, unsigned index,
-   Function &function, EmbeddedRule &rule)
-{
-   splitHypercube (function, h, total, index);
+      static CubatureRuleFactory* getFactory();
+   };
 
-   rc.push (new Region (h, function, rule));
-}
-
-}
+}  // namespace HIntLib
 
 #endif
 

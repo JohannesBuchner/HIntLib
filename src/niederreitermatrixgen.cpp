@@ -42,7 +42,7 @@ template<class A>
 L::NiederreiterMatrixGen<A>::NiederreiterMatrixGen
    (const A& a, unsigned _dim, unsigned _m, unsigned _prec)
    : HeapAllocatedGeneratorMatrixGen<typename A::type>
-      (a.size(), 1, _dim, _m, _prec)
+      (a.size(), _dim, _m, _prec)
 {
    init (*this, a);
 }
@@ -166,7 +166,7 @@ void L::NiederreiterMatrixGen<A>::init
       for (unsigned r = 0; r < gm.getM(); ++r)
       {
          // cout << " " << v[r+u];
-         gm.setv (d,r,j, v[r+u]);
+         gm.setd (d,r,j, v[r+u]);
       }
       // cout << endl;
 

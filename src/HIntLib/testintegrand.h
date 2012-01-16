@@ -19,35 +19,35 @@
  */
 
 /**
- *  TestFunction
+ *  TestIntegrand
  *
  *  (C) 2001 by Rudolf Schürer
  *
- *  Provides a number of specialized Functions that are used for the evaluation
+ *  Provides a number of specialized Integrands that are used for the evaluation
  *  of integration routines.
  *
- *  TestFunction
+ *  TestIntegrand
  *
  *     Calcualates the exact value of the integral for a given hypercube.
  *     The allows to compare the approximation from the integration routine
  *     with the correct result.
  *
- *  The following classes are all subclasses of TestFunction:
+ *  The following classes are all subclasses of TestIntegrand:
  *
- *  SimpleFunction
+ *  SimpleIntegrand
  *
- *     Allows the cration of a TestFunction based to a C-style function
+ *     Allows the cration of a TestIntegrand based to a C-style function
  *
- *  EvalCounterFunction
+ *  EvalCounterIntegrand
  *
  *     Counts the number of evaluations
  *
- *  DomainCheckerFunction
+ *  DomainCheckerIntegrand
  *
  *     Checks if all calls to operator() use points inside a specified
  *     Hypercube
  *
- *  NodeTrackerFunction
+ *  NodeTrackerIntegrand
  *
  *     Writes all points passed in operator() into a stream
  */ 
@@ -59,46 +59,46 @@
 #pragma interface
 #endif
 
-#include <HIntLib/function.h>
+#include <HIntLib/integrand.h>
 
 namespace HIntLib
 {
 
-class hypercube;
+class Hypercube;
 
 /**
- *  TestFunction
+ *  TestIntegrand
  *
  *  Abstract class that adds the capability of returning the exact result for
  *  the integral over a specified domain.
  */
  
-class TestFunction : public Function
+class TestIntegrand : public Integrand
 {
 public:
-   TestFunction (unsigned dim) : Function (dim) {}
+   TestIntegrand (unsigned dim) : Integrand (dim) {}
 
    virtual real getExactResult (const Hypercube &) const = 0;
 };
 
 
 /**
- *  CStyleTestFunction
+ *  CStyleTestIntegrand
  *
- *  Creats a TestFunction based on a C-type function.
+ *  Creats a TestIntegrand based on a C-type function.
  *
  *  A pointer to the C-type function and the correct result has to be passed
  *  to the constructor.
  */
 
-class CStyleTestFunction : public TestFunction
+class CStyleTestIntegrand : public TestIntegrand
 {
 public:
 
    typedef real F (unsigned, const real*);
 
-   CStyleTestFunction (unsigned dim, F *f, real exactResult)
-      : TestFunction(dim), f(f), exactResult(exactResult) {}
+   CStyleTestIntegrand (unsigned dim, F *f, real exactResult)
+      : TestIntegrand (dim), f(f), exactResult(exactResult) {}
 
    virtual real operator() (const real* p)  { return f (dim, p); }
    virtual real getExactResult (const Hypercube &) const { return exactResult; }
@@ -111,19 +111,21 @@ private:
 
 
 /**
- *  EvalCounterFunction
+ *  EvalCounterIntegrand
  *
  *  Counts the number of calls to operator()
  */
 
-class EvalCounterFunction : public TestFunction
+class EvalCounterIntegrand : public TestIntegrand
 {
 public:
 
-   EvalCounterFunction (TestFunction *f)
-      : TestFunction (f->getDimension()), f (*f), counter (0) {}
+   EvalCounterIntegrand (TestIntegrand *f)
+      : TestIntegrand (f->getDimension()), f (*f), counter (0) {}
 
    virtual real operator() (const real* p)  { ++counter; return f(p); }
+   virtual real derivative (const real* p, unsigned a)
+      { ++counter; return f.derivative (p, a); }
    virtual real getExactResult (const Hypercube &h) const
       { return f.getExactResult (h); }
 
@@ -131,24 +133,25 @@ public:
 
 private:
 
-   TestFunction &f;
+   TestIntegrand &f;
    Index counter;
 };
 
 
 /**
- *  DomainCheckerFunction
+ *  DomainCheckerIntegrand
  *
  *  Checks if all calls to operator() are inside a given Hypercube
  */
 
-class DomainCheckerFunction : public TestFunction
+class DomainCheckerIntegrand : public TestIntegrand
 {
 public:
 
-   DomainCheckerFunction (TestFunction *, const Hypercube *);
+   DomainCheckerIntegrand (TestIntegrand *, const Hypercube *);
 
    virtual real operator() (const real p []);
+   virtual real derivative (const real* p, unsigned);
    virtual real getExactResult (const Hypercube &hh) const
       { return f.getExactResult (hh); }
 
@@ -156,7 +159,7 @@ public:
 
 private:
 
-   TestFunction &f;
+   TestIntegrand &f;
    const Hypercube &h;
    bool allInside;
 };

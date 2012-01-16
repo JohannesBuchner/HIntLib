@@ -324,13 +324,13 @@ bool L::Polynomial2<T>::isPrimitive () const
 template<typename T>
 bool L::Polynomial2<T>::isIrreducible() const
 {
-   if (d < 2)  return false;
+   if (d == 2) return true;   // x
+   if (! (d & 1) || d < 2)  return false;  //  x_n+...+0  or  0 or 1
 
    const unsigned ub = 2 << (degree() / 2);
-   for (unsigned i = 2; i < ub; ++i)
+   for (unsigned i = 3; i < ub; i += 2)
    {
-      P r = *this % P(i);
-      if (r.is0())  return false;
+      if ((*this % P(i)).is0())  return false;
    }
    return true;
 }

@@ -73,7 +73,7 @@ L::Rule3Gauss::Rule3Gauss (unsigned dim)
  *  Do the actual function evaluation
  */
 
-L::real L::Rule3Gauss::eval (Function &f, const Hypercube &h)
+L::real L::Rule3Gauss::eval (Integrand &f, const Hypercube &h)
 {
    const real * width = h.getWidth();
    

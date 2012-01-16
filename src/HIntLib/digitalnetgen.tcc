@@ -28,6 +28,7 @@
 #include <HIntLib/lookupfield.h>
 #include <HIntLib/polynomial2.h>
 #include <HIntLib/onedimvectorspace.h>
+#include <HIntLib/myalgorithm.h>
 
 namespace HIntLib
 {
@@ -45,13 +46,12 @@ DigitalNetGen<A,S>::DigitalNetGen (
   arith (_arith),
   scalArith (arith.getScalarAlgebra()),
   base (_c.getBase()),
-  totalPrec (std::min (std::min(
-        (_trunc == FULL) ? _c.getTotalPrec() : m,  // what we want
-        digitsRepresentable (S(arith.size()))      // what we can get
-           * arith.dimension()),
-        unsigned (ceil(log(2.0) / log(double(arith.size()))
-                       * double(std::numeric_limits<real>::digits - 1)))
-           * arith.dimension()                     // what makes sense
+  totalPrec (min3 (
+     (_trunc == FULL) ? _c.getTotalPrec() : m,  // what we want
+     digitsRepresentable (S(scalArith.size())), // what we can get for this S
+     unsigned (ceil(log(2.0) / log(double(scalArith.size()))
+               * double(std::numeric_limits<real>::digits - 1)))
+                                                // what can be stored in real
      )),
   c (_c, GMCopy().dim(getDimension()).m(m).totalPrec(totalPrec)
                  .equi(equi).vec(arith.dimension())),
@@ -68,6 +68,28 @@ DigitalNetGen<A,S>::DigitalNetGen (
          throw FIXME (__FILE__, __LINE__);
 
    setCube (h);
+
+#if 0
+   c.dump(cerr);
+   c.vectorDump(cerr);
+   cerr << " totalPrec=" << totalPrec
+        << " prec=" << prec
+        << " vecBase=" << vecBase
+        << " base=" << int (base)
+        << " h=" << h
+        << endl
+        << " arith.size()=" << arith.size()
+        << " arith.dimension()=" << arith.dimension()
+        << endl
+        << " scalArith.size()=" << scalArith.size()
+        << endl
+        << " 1 = " << ((_trunc == FULL) ? _c.getTotalPrec() : m)
+        << " 2 = " << digitsRepresentable (S(scalArith.size()))
+        << " 3 = " << unsigned (ceil(log(2.0) / log(double(scalArith.size()))
+                          * double(std::numeric_limits<real>::digits - 1)))
+        << " trivalScale=" << trivialScale << " " << 1/trivialScale
+        << endl;
+#endif
 
    // Initialize xStart vector
 
@@ -103,8 +125,8 @@ DigitalNetGen<A,S>::DigitalNetGen (
 template<class A, typename S>
 void DigitalNetGen<A,S>::setCube (const Hypercube &h)
 {
-  ss.set (h,                          trunc==CENTER ? -1./base : .0,
-     powInt(real(base), totalPrec) - (trunc==CENTER ?  1./base : .0));
+   real shift = trunc==CENTER ? -1./base : .0;
+   ss.set (h, shift, powInt(real(base), totalPrec) + shift);
 }
 
 

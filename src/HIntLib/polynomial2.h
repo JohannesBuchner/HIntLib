@@ -82,10 +82,10 @@ public:
    type  mul   (const type& a, const type& b) const { return a & b; }
    type& mulBy (      type& a, const type& b) const { return a &= b; }
 
-   type power (const type& a, unsigned k) const  { return a; }
+   type power (const type& a, unsigned) const  { return a; }
 
    type recip     (const type& a) const  { return a; }
-   type unitRecip (const type& u) const  { return 1; }
+   type unitRecip (const type&)   const  { return 1; }
 
    void div (const type& a, const type&, type& q, type& r) const
       { q = a; r = 0; }

@@ -141,14 +141,14 @@ public:
    MonteCarloPointSet (unsigned start) : MonteCarloPointSetBase<T>(start) {}
    MonteCarloPointSet () {}
 
-   void integrate (real point [], Function &f, Index n, PointSet::Stat &stat)
+   void integrate (real point [], Integrand &f, Index n, PointSet::Stat &stat)
    {
       Statistic<real, Sum> s;
       mcIntegration (point, mc, *h, f, n, s);
       stat = s;
    }
 
-   void integrate (real point [], Function &f, Index n, PointSet::StatVar &stat)
+   void integrate (real point [], Integrand &f, Index n, PointSet::StatVar &stat)
    {
       StatisticVar<real, Sum> s;
       mcIntegration (point, mc, *h, f, n, s);
@@ -182,14 +182,14 @@ public:
    StratifiedPointSet (unsigned start) : StratifiedPointSetBase<T>(start) {}
    StratifiedPointSet () {}
 
-   void integrate (real point [], Function &f, Index n, PointSet::Stat &stat)
+   void integrate (real point [], Integrand &f, Index n, PointSet::Stat &stat)
    {
       Statistic<real, Sum> s;
       stratifiedIntegration (point, mc, *h, f, n, s);
       stat = s;
    }
 
-   void integrate (real point [], Function &f, Index n, PointSet::StatVar &stat)
+   void integrate (real point [], Integrand &f, Index n, PointSet::StatVar &stat)
    {
       StatisticVar<real, Sum> s;
       stratifiedIntegration (point, mc, *h, f, n, s);
@@ -223,7 +223,7 @@ public:
    AntitheticPointSet () {}
 
    void integrate (
-      real point [], Function &f, Index n, PointSet::Stat &stat)
+      real point [], Integrand &f, Index n, PointSet::Stat &stat)
    {
       Statistic<real, Sum> s;
       antitheticIntegration (point, mc, *h, f, n, s);
@@ -231,7 +231,7 @@ public:
    }
 
    void integrate (
-      real point [], Function &f, Index n, PointSet::StatVar &stat)
+      real point [], Integrand &f, Index n, PointSet::StatVar &stat)
    {
       StatisticVar<real, Sum> s;
       antitheticIntegration (point, mc, *h, f, n, s);
@@ -283,7 +283,7 @@ public:
       : MonteCarloPointSetCreateBase<T> (s) {}
 
    void integrate (
-      real point [], Function &f, Index n, PointSet::StatVar &stat)
+      real point [], Integrand &f, Index n, PointSet::StatVar &stat)
    {
       T m (start);
       StatisticVar<real, Sum> s;
@@ -292,7 +292,7 @@ public:
    }
 
    void integrate (
-      real point [], Function &f, Index n, PointSet::Stat &stat)
+      real point [], Integrand &f, Index n, PointSet::Stat &stat)
    {
       T m (start);
       Statistic<real, Sum> s;
@@ -333,7 +333,7 @@ public:
       : StratifiedPointSetCreateBase<T> (s) {}
 
    void integrate (
-      real point [], Function &f, Index n, PointSet::StatVar &stat)
+      real point [], Integrand &f, Index n, PointSet::StatVar &stat)
    {
       T m (start);
       StatisticVar<real, Sum> s;
@@ -342,7 +342,7 @@ public:
    }
 
    void integrate (
-      real point [], Function &f, Index n, PointSet::Stat &stat)
+      real point [], Integrand &f, Index n, PointSet::Stat &stat)
    {
       T m (start);
       Statistic<real, Sum> s;
@@ -384,7 +384,7 @@ public:
       : AntitheticPointSetCreateBase<T> (s) {}
 
    void integrate (
-      real point [], Function &f, Index n, PointSet::StatVar &stat)
+      real point [], Integrand &f, Index n, PointSet::StatVar &stat)
    {
       T m (start);
       StatisticVar<real, Sum> s;
@@ -393,7 +393,7 @@ public:
    }
 
    void integrate (
-      real point [], Function &f, Index n, PointSet::Stat &stat)
+      real point [], Integrand &f, Index n, PointSet::Stat &stat)
    {
       T m (start);
       Statistic<real, Sum> s;

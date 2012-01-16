@@ -47,7 +47,7 @@
 #include <HIntLib/kahanadd.h>
 #include <HIntLib/hypercube.h>
 #include <HIntLib/shiftscale.h>
-#include <HIntLib/function.h>
+#include <HIntLib/integrand.h>
 #include <HIntLib/exception.h>
 #include <HIntLib/pointset.h>
 
@@ -61,7 +61,7 @@ namespace
    class VegasJob : public Job
    {
    public:
-      VegasJob (const Hypercube &_h, Function &_f, unsigned _numSections);
+      VegasJob (const Hypercube &_h, Integrand &_f, unsigned _numSections);
 
       void operator() (const real* point);
       void reset (real volume);
@@ -83,7 +83,7 @@ namespace
       const unsigned numSections;
       const unsigned dim;
       ShiftScale ss;
-      Function &f;
+      Integrand &f;
       KahanAdd sum, sumSquares;
       real avgWeight;
 
@@ -91,7 +91,7 @@ namespace
       Array<real> _sectionSqrSum;
       Array<Index>_sectionCount;
 //XXX Array<real> _sectionInt;    (numSections * dim);
-      Array<real> point;
+      Point point;
       Array<real> sectionUBCopy;
       Array<real> r;
       Array<unsigned> currentSection;
@@ -102,7 +102,7 @@ namespace
     *  Constructor
     */
 
-   VegasJob::VegasJob (const Hypercube &h, Function &_f, unsigned _numSections)
+   VegasJob::VegasJob (const Hypercube &h, Integrand &_f, unsigned _numSections)
       : ALPHA (1.5),
         numSections (_numSections),
         dim (h.getDimension()),
@@ -256,7 +256,8 @@ namespace
          {
             const real x = std::max (minimum, sectionSqrSum (d,j));
 
-            rSum += r[j] = pow ((1.0 - x/sum) / (log(sum) - log(x)), ALPHA); 
+            rSum +=
+               r[j] = pow ((real(1.0) - x/sum) / (log(sum) - log(x)), ALPHA); 
          } 
 
          // Apply these corrections to the section upper bounds
@@ -316,7 +317,7 @@ namespace
  */
 
 L::Vegas::Status L::Vegas::integrate (
-   Function &f,
+   Integrand &f,
    const Hypercube &h,
    Index maxEval,
    real reqRelError, real reqAbsError,
@@ -375,7 +376,7 @@ cerr << "\n  Sections: " << numSections << "  Iterations: " << numIter << endl
    real sumChi           = 0.0;
    real sumVarianceRecip = 0.0;
 
-   Array<real> point (h.getDimension());
+   Point point (h.getDimension());
    Hypercube sampleSpace (h.getDimension(), 0.0, real(numSections));
    ps->setCube (&sampleSpace);
    VegasJob vegasJob (h, f, numSections);

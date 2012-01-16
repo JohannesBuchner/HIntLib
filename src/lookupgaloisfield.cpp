@@ -36,7 +36,6 @@
 
 namespace L = HIntLib;
 
-
 /**
  *  make Galois Field ()
  */
@@ -67,18 +66,24 @@ template<class T>
 L::LookupGaloisField<T>::LookupGaloisField (unsigned prime, unsigned power)
    : LookupField<T> (powInt (prime, power))
 {
-   makeGaloisField (*this, prime, power);
-   setCharacteristic (prime);
+   if (getRefCount())
+   {
+      makeGaloisField (*this, prime, power);
+      setCharacteristic (prime);
+   }
 }
 
 template<class T>
 L::LookupGaloisField<T>::LookupGaloisField (unsigned size)
    : LookupField<T> (size)
 {
-   unsigned power, c;
-   Prime::factorPrimePower (size, c, power);
-   setCharacteristic (c);
-   makeGaloisField (*this, c, power);
+   if (getRefCount())
+   {
+      unsigned prime, power;
+      Prime::factorPrimePower (size, prime, power);
+      makeGaloisField (*this, prime, power);
+      setCharacteristic (prime);
+   }
 }
 
 
@@ -89,22 +94,34 @@ L::LookupGaloisField<T>::LookupGaloisField (unsigned size)
 template<class T>
 L::LookupGaloisFieldPow2<T>::LookupGaloisFieldPow2
    (unsigned prime, unsigned power)
-   : LookupFieldPow2<T> (powInt (prime, power))
+   : LookupFieldPow2<T> (1 << power)
 {
    if (prime != 2)  throw FIXME (__FILE__, __LINE__);
-   makeGaloisField (*this, prime, power);
-   setCharacteristic (prime);
+   if (getRefCount())
+   {
+      makeGaloisField (*this, prime, power);
+      setCharacteristic (prime);
+   }
 }
 
 template<class T>
 L::LookupGaloisFieldPow2<T>::LookupGaloisFieldPow2 (unsigned size)
    : LookupFieldPow2<T> (size)
 {
-   unsigned power, c;
-   Prime::factorPrimePower (size, c, power);
-   if (c != 2)  throw FIXME (__FILE__, __LINE__);
-   setCharacteristic (c);
-   makeGaloisField (*this, c, power);
+   unsigned prime, power;
+
+   if (getRefCount())
+   {
+      Prime::factorPrimePower (size, prime, power);
+      makeGaloisField (*this, prime, power);
+      setCharacteristic (prime);
+   }
+   else
+   {
+      prime = characteristic();
+   }
+
+   if (prime != 2)  throw FIXME (__FILE__, __LINE__);
 }
 
 
@@ -115,11 +132,14 @@ L::LookupGaloisFieldPow2<T>::LookupGaloisFieldPow2 (unsigned size)
 template<class T>
 L::LookupGaloisFieldPrime<T>::LookupGaloisFieldPrime
    (unsigned prime, unsigned power)
-   : LookupFieldPrime<T> (powInt (prime, power))
+   : LookupFieldPrime<T> (prime)
 {
    if (power != 1)  throw FIXME (__FILE__, __LINE__);
-   makeGaloisField (*this, prime, power);
-   setCharacteristic (prime);
+   if (getRefCount())
+   {
+      makeGaloisField (*this, prime, power);
+      setCharacteristic (prime);
+   }
 }
 
 template<class T>
@@ -127,8 +147,11 @@ L::LookupGaloisFieldPrime<T>::LookupGaloisFieldPrime (unsigned size)
    : LookupFieldPrime<T> (size)
 {
    if (! Prime::test(size))  throw FIXME (__FILE__, __LINE__);
-   setCharacteristic (size);
-   makeGaloisField (*this, size, 1);
+   if (getRefCount())
+   {
+      makeGaloisField (*this, size, 1);
+      setCharacteristic (size);
+   }
 }
 
 
@@ -136,14 +159,17 @@ L::LookupGaloisFieldPrime<T>::LookupGaloisFieldPrime (unsigned size)
  *  copy ()
  */
 
+namespace
+{
+
 template<class T, class A>
-void L::copy (LookupFieldBase<T> & dest, const A src)
+void copyMulTable (L::LookupFieldBase<T> & dest, const A src)
 {
    typedef typename A::type AT;
 
    if (   dest.size() != src.size()
        || ! src.is0 (src.element(0))
-       || ! src.is1 (src.element(1)))  throw LookupFieldCopy();
+       || ! src.is1 (src.element(1)))  throw L::LookupFieldCopy();
 
    for (unsigned i = 0; i < src.size(); ++i)
    {
@@ -163,10 +189,8 @@ void L::copy (LookupFieldBase<T> & dest, const A src)
 }
 
 template<class T, class A>
-void L::copy (LookupField<T> & dest, const A src)
+void copyAddTable (L::LookupField<T> & dest, const A src)
 {
-   copy (static_cast<LookupFieldBase<T>&> (dest), src);
-
    typedef typename A::type AT;
 
    for (unsigned i = 0; i < src.size(); ++i)
@@ -185,15 +209,28 @@ void L::copy (LookupField<T> & dest, const A src)
       }
    }
 }
+}
 
+template<class T, class A>
+void L::copy (LookupField<T> & dest, const A src)
+{
+   copyMulTable (dest, src);
+   copyAddTable (dest, src);
+}
+
+template<class T, class A>
+void L::copy (LookupFieldMulOnly<T> & dest, const A src)
+{
+   copyMulTable (dest, src);
+}
 
 namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) \
    template void copy (LookupField<X> &, const GaloisField<X>); \
    template void copy (LookupField<X> &, const ModularArithField<X>);\
-   template void copy (LookupFieldBase<X> &, const GaloisField<X>); \
-   template void copy (LookupFieldBase<X> &, const ModularArithField<X>);\
+   template void copy (LookupFieldMulOnly<X> &, const GaloisField<X>); \
+   template void copy (LookupFieldMulOnly<X> &, const ModularArithField<X>);\
    template void makeGaloisField(LookupGaloisField<X>&,unsigned,unsigned); \
    template void makeGaloisField(LookupGaloisFieldPow2<X>&,unsigned,unsigned);\
    template void makeGaloisField(LookupGaloisFieldPrime<X>&,unsigned,unsigned);\

@@ -38,7 +38,7 @@
 #include <HIntLib/defaultcubaturerulefactory.h>
 #include <HIntLib/mymath.h>
 #include <HIntLib/exception.h>
-#include <HIntLib/function.h>
+#include <HIntLib/integrand.h>
 
 
 namespace L = HIntLib;
@@ -82,7 +82,7 @@ L::Rule2Simplex::Rule2Simplex (unsigned d)
  *  Do the actual function evaluation
  */
 
-L::real L::Rule2Simplex::eval (Function &f, const Hypercube &h)
+L::real L::Rule2Simplex::eval (Integrand &f, const Hypercube &h)
 {
    // Sample all points
 

@@ -22,11 +22,12 @@
 #pragma implementation
 #endif
 
+#include <algorithm>
+
 #include <HIntLib/faure.h>
 
 #include <HIntLib/modulararithmetic.h>
 #include <HIntLib/prime.h>
-// #include <HIntLib/exception.h>
 
 namespace L = HIntLib;
 
@@ -52,14 +53,14 @@ namespace L = HIntLib;
  */
 
 L::Faure::Faure (unsigned _dim)
-   : HeapAllocatedGeneratorMatrixGen<unsigned char> (Prime::next(_dim), 1, _dim)
+   : HeapAllocatedGeneratorMatrixGen<unsigned char> (Prime::next(_dim), _dim)
 {
    init (*this);
 }
 
 L::Faure::Faure (unsigned _dim, unsigned _m, unsigned _prec)
    : HeapAllocatedGeneratorMatrixGen<unsigned char>
-       (Prime::next (_dim), 1, _dim, _m, _prec)
+       (Prime::next (_dim), _dim, _m, _prec)
 {
    init (*this);
 }
@@ -82,16 +83,15 @@ void L::Faure::init (MutableGeneratorMatrixGen<unsigned char> &gm)
 
    // Create Pascal's Triangle in Matrix d=1
 
-   gm.setv (1, 0, 0, a.one ());
+   for (unsigned r = 0; r < gm.getM(); ++r)  gm.setd (1, r, 0, a.one());
 
-   for (unsigned r = 1; r < gm.getM(); ++r)
+   for (unsigned b = 1; b < gm.getPrec(); ++b)
    {
-      gm.setv (1, r, 0, a.one());
-      if (r < gm.getPrec())  gm.setv (1, r, r, a.one());
+      unsigned char x = a.zero();
 
-      for (unsigned b = 1; b < std::min (r, gm.getPrec()); ++b)
+      for (unsigned r = b; r < gm.getM(); ++r)
       {
-         gm.setv (1, r, b, a.add (gm (1, r-1, b-1), gm (1, r-1, b)));
+         gm.setd (1,r,b, a.addTo (x, gm (1, r-1, b-1)));
       }
    }
    
@@ -103,12 +103,10 @@ void L::Faure::init (MutableGeneratorMatrixGen<unsigned char> &gm)
       {
          for (unsigned b = 0; b < std::min (r, gm.getPrec()); ++b)
          {
-            unsigned char x = gm (1, r, b);
-            for (unsigned i = 0; i < (r-b); ++i)  a.mulBy (x, d);
-            gm.setv (d, r, b, x);
+            gm.setd (d,r,b, a.mul (gm (1,r,b), a.power (d, r-b)));
          }
 
-         if (r < gm.getPrec())  gm.setv (d, r, r, a.one());
+         if (r < gm.getPrec())  gm.setd (d, r, r, a.one());
       }
    }
 }

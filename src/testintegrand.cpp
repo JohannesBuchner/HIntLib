@@ -19,43 +19,58 @@
  */
 
 /**
- *  TestFunction
+ *  TestIntegrand
  *
  *  (C) 2001 by Rudolf Schürer
  */
 
 #ifdef __GNUG__
 #pragma implementation
-#pragma implementation "function.h"
+#pragma implementation "integrand.h"
 #endif
  
-#include <HIntLib/testfunction.h>
+#include <HIntLib/testintegrand.h>
 
 #include <HIntLib/hypercube.h>
 #include <HIntLib/exception.h>
 
 namespace L = HIntLib;
 
-using L::TestFunction;
+using L::TestIntegrand;
 using L::Hypercube;
 using L::real;
 
 /**
- *  DomainCheckerFunction
+ *  Integrand
  */
 
-L::DomainCheckerFunction::DomainCheckerFunction (
-   TestFunction *pf, const Hypercube *ph)
-: TestFunction (pf->getDimension()), f(*pf), h(*ph), allInside(true)
+real L::Integrand::derivative (const real [], unsigned)
+{
+   throw DerivativeNotSupported ();
+}
+
+/**
+ *  DomainCheckerIntegrand
+ */
+
+L::DomainCheckerIntegrand::DomainCheckerIntegrand (
+   TestIntegrand *pf, const Hypercube *ph)
+: TestIntegrand (pf->getDimension()), f(*pf), h(*ph), allInside(true)
 {
    checkDimensionEqual (h.getDimension(), f.getDimension());
 }
 
-real L::DomainCheckerFunction::operator() (const real p [])
+real L::DomainCheckerIntegrand::operator() (const real p [])
 {
-   allInside &= isPointInside (h, p);
+   allInside = allInside && isPointInside (h, p);
 
    return f(p);
 }
 
+real L::DomainCheckerIntegrand::derivative (const real p [], unsigned a)
+{
+   allInside = allInside && isPointInside (h, p);
+
+   return f.derivative (p, a);
+}
 

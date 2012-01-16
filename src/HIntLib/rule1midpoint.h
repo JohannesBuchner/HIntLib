@@ -46,7 +46,7 @@ namespace HIntLib
    public:
       Rule1Midpoint (unsigned d) : dim(d) {}
 
-      virtual real eval (Function &, const Hypercube &);
+      virtual real eval (Integrand &, const Hypercube &);
 
       virtual unsigned getDimension()   const { return dim; }
       virtual Index getNumPoints ()     const { return 1; }

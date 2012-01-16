@@ -51,7 +51,7 @@ namespace HIntLib
    public:
       Rule9Stenger (unsigned dim);
 
-      virtual real eval (Function &, const Hypercube &);
+      virtual real eval (Integrand &, const Hypercube &);
 
       virtual unsigned getDimension()      const  { return dim; }
       virtual Index    getNumPoints()      const;
@@ -65,8 +65,8 @@ namespace HIntLib
 
       // Arrays for temporary data
 
-      Array<real> aU;
-      Array<real> aV;
+      Point aU;
+      Point aV;
 
       // Dimension dependent constants
 

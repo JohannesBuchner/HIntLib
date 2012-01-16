@@ -33,7 +33,7 @@
 #pragma interface
 #endif
 
-#include <HIntLib/generatormatrix.h>
+#include <HIntLib/generatormatrix2.h>
 #include <HIntLib/qrnsequencebase.h>
 #include <HIntLib/shiftscale.h>
 #include <HIntLib/pointset.h>
@@ -306,8 +306,8 @@ public:
       Index i = 0)
    : DigitalNet2PointSetBase(_gm, e, t, i) {}
 
-   void integratePartition (real *, Function &, Index, Index, Index, Stat&);
-   void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
+   void integratePartition (real *, Integrand &, Index, Index, Index, Stat&);
+   void integratePartition (real *, Integrand &, Index, Index, Index, StatVar&);
 };
 
 // Specializatioin for Sum=real
@@ -322,8 +322,8 @@ public:
       Index i = 0)
    : DigitalNet2PointSetBase(gm, e, t, i) {}
 
-   void integratePartition (real *, Function &, Index, Index, Index, Stat&);
-   void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
+   void integratePartition (real *, Integrand &, Index, Index, Index, Stat&);
+   void integratePartition (real *, Integrand &, Index, Index, Index, StatVar&);
 };
 
 } // namespcae HIntLib
@@ -335,7 +335,7 @@ public:
 
 template<class Sum>
 void HIntLib::DigitalNet2PointSet<Sum>::integratePartition
-   (real* point, Function &f, Index num, Index begin, Index end, Stat& stat)
+   (real* point, Integrand &f, Index num, Index begin, Index end, Stat& stat)
 {
    DigitalNet2Gray<BaseType> net
       (gm, *h, calculateM (num), index, equi, trunc);
@@ -348,7 +348,7 @@ void HIntLib::DigitalNet2PointSet<Sum>::integratePartition
 
 template<class Sum>
 void HIntLib::DigitalNet2PointSet<Sum>::integratePartition
-   (real* point, Function &f, Index num, Index begin, Index end, StatVar& stat)
+   (real* point, Integrand &f, Index num, Index begin, Index end, StatVar& stat)
 {
    DigitalNet2Gray<BaseType> net
       (gm, *h, calculateM (num), index, equi, trunc);
@@ -409,8 +409,8 @@ public:
    DigitalSeq2PointSet (const GeneratorMatrix& gm, bool reset)
       : DigitalSeq2PointSetBase(gm, reset) {}
 
-   void integratePartition (real *, Function &, Index, Index, Index, Stat&);
-   void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
+   void integratePartition (real *, Integrand &, Index, Index, Index, Stat&);
+   void integratePartition (real *, Integrand &, Index, Index, Index, StatVar&);
 };
 
 // Specializatioin for Sum=real
@@ -422,8 +422,8 @@ public:
    DigitalSeq2PointSet<real> (const GeneratorMatrix& gm, bool reset)
       : DigitalSeq2PointSetBase(gm, reset) {}
 
-   void integratePartition (real *, Function &, Index, Index, Index, Stat&);
-   void integratePartition (real *, Function &, Index, Index, Index, StatVar&);
+   void integratePartition (real *, Integrand &, Index, Index, Index, Stat&);
+   void integratePartition (real *, Integrand &, Index, Index, Index, StatVar&);
 };
 
 } // namespace HIntLib
@@ -435,7 +435,7 @@ public:
 
 template<class Sum>
 void HIntLib::DigitalSeq2PointSet<Sum>::integratePartition
-   (real* point, Function &f, Index num, Index begin, Index end, Stat& stat)
+   (real* point, Integrand &f, Index num, Index begin, Index end, Stat& stat)
 {
    if (! reset)
    {
@@ -452,7 +452,7 @@ void HIntLib::DigitalSeq2PointSet<Sum>::integratePartition
 
 template<class Sum>
 void HIntLib::DigitalSeq2PointSet<Sum>::integratePartition
-   (real* point, Function &f, Index num, Index begin, Index end, StatVar& stat)
+   (real* point, Integrand &f, Index num, Index begin, Index end, StatVar& stat)
 {
    if (! reset)
    {

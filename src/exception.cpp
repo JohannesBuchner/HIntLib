@@ -315,6 +315,11 @@ void L::GetExactResultNotSupported::makeString() const
    setStringCopy ("getExactResult() not supported!");
 }
 
+void L::DerivativeNotSupported::makeString() const
+{
+   setStringCopy ("derivative() not implemented for this Integrand!");
+}
+
 void L::MCRoutinesCreateNotSupported::makeString() const
 {
    setStringCopy ("MCRoutinesCreate does not support this operation!");
@@ -332,9 +337,29 @@ void L::InternalError::makeString() const
 void L::InvalidType::makeString() const
 {
    ostringstream ss;
-   ss << "Invalid type to instantiate templte " << className << "<>!";
+   ss << "Invalid type to instantiate template " << className << "<>!";
    setString (ms(ss));
 }
+
+
+/**
+ *  invalid Argument ()
+ */
+
+#ifndef HINTLIB_UNREACHABLE_CALLS_REMOVED
+void L::InvalidArgument::makeString() const
+{
+   ostringstream ss;
+   ss << "Invalid argument used in " << name << " (this should have been detected at link-time)!";
+   setString (ms(ss));
+}
+
+void L::invalidArgument (const char* s)
+{
+   throw InvalidArgument (s);
+}
+#endif
+
 
 // RRNGs
 

@@ -35,7 +35,7 @@
 #include <HIntLib/rule1midpoint.h>
 
 #include <HIntLib/defaultcubaturerulefactory.h>
-#include <HIntLib/function.h>
+#include <HIntLib/integrand.h>
 
 namespace L = HIntLib;
 
@@ -44,7 +44,7 @@ namespace L = HIntLib;
  *  in the center.
  */
 
-L::real L::Rule1Midpoint::eval (Function &f, const Hypercube &h)
+L::real L::Rule1Midpoint::eval (Integrand &f, const Hypercube &h)
 {
    return h.getVolume() * f(h.getCenter());
 }

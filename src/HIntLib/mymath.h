@@ -44,6 +44,8 @@
   #include <HIntLib/fallback_limits.h>
 #endif
 
+#include <HIntLib/bitop.h>
+
 
 namespace HIntLib
 {
@@ -237,6 +239,30 @@ template <class T> inline bool approx (T a, double b, double factor)
    return abs(a - b)
         < factor * std::numeric_limits<T>::epsilon() * (abs(a) + abs(b));
 }
+
+
+/**
+ *  choose()
+ *
+ *  Calcultes  "a choose b", i.e.  a! / (b! * (a-b)!).
+ *
+ *  a has to be larger than b.
+ *
+ *  The routines takes  O(min(b, a-b))  steps and uses no intermediate results
+ *  that are larger than the final result.
+ */
+
+template<typename T>
+inline
+T choose (T a, T b)
+{
+   T result = 1;
+   if (2 * b > a)  b = a - b;
+   ++a;
+   for (T i = 1; i <= b; ++i)  result = (result * (a-i)) / i;
+   return result;
+}
+
 
 }  // namespace HIntLib
 

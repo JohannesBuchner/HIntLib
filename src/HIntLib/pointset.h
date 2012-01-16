@@ -33,7 +33,7 @@
 namespace HIntLib
 {
    class Hypercube;
-   class Function;
+   class Integrand;
 
    /**
     *  PRNG
@@ -109,7 +109,7 @@ namespace HIntLib
     *
     *  Abstract concept of a set/sequence of points.
     *
-    *  Allows Function evaluation and Job application to all points.
+    *  Allows Integrand evaluation and Job application to all points.
     */
 
    class PointSet
@@ -123,8 +123,8 @@ namespace HIntLib
       virtual Index getOptimalNumber (Index, const Hypercube &) = 0;
       virtual void setCube (const Hypercube *) = 0;
 
-      virtual void integrate (real *, Function &, Index, Stat&) = 0;
-      virtual void integrate (real *, Function &, Index, StatVar&) = 0;
+      virtual void integrate (real *, Integrand &, Index, Stat&) = 0;
+      virtual void integrate (real *, Integrand &, Index, StatVar&) = 0;
 
       virtual void doJob    (real *,          Job &, Index) = 0;
       virtual bool doJobRep (real *, ReportingJob &, Index) = 0;
@@ -143,13 +143,13 @@ namespace HIntLib
    class PartitionablePointSet : virtual public PointSet
    {
    public:
-      void integrate (real *, Function &, Index, Stat&);
-      void integrate (real *, Function &, Index, StatVar&);
+      void integrate (real *, Integrand &, Index, Stat&);
+      void integrate (real *, Integrand &, Index, StatVar&);
 
       virtual void integratePartition (
-         real *, Function &, Index, Index, Index, Stat&) = 0;
+         real *, Integrand &, Index, Index, Index, Stat&) = 0;
       virtual void integratePartition (
-         real *, Function &, Index, Index, Index, StatVar&) = 0;
+         real *, Integrand &, Index, Index, Index, StatVar&) = 0;
 
       void doJob (real *, Job &, Index);
 

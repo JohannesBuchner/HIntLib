@@ -47,7 +47,7 @@ namespace HIntLib
 
       virtual
       Status integrate (
-         Function &, const Hypercube &, Index maxEval, real, real, EstErr &);
+         Integrand &, const Hypercube &, Index maxEval, real, real, EstErr &);
    };
 
    class CompRuleIntegratorErr : public EmbeddedRuleBasedIntegrator
@@ -57,7 +57,7 @@ namespace HIntLib
          : EmbeddedRuleBasedIntegrator(fac) {}
 
       Status integrate (
-         Function &, const Hypercube &, Index maxEval,
+         Integrand &, const Hypercube &, Index maxEval,
          real reqAbsError, real reqRelError, EstErr &ee);
    };
 }  // namespace HIntLib

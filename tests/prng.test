@@ -1,6 +1,6 @@
 #! /bin/sh
 
-./test_rule -s -s
+./test_prng -s
 
 exit $?
 

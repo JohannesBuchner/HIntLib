@@ -184,16 +184,16 @@ L::ModularArithField<A>::characteristic () const
 namespace HIntLib
 {
 #define HINTLIB_INSTANTIATE(X) \
-   template ModularArithField<X>::type \
-            ModularArithField<X>::recip (const type&) const; \
-   template unsigned ModularArithField<X>::characteristic() const; \
-   template std::ostream& operator<< (std::ostream&, const ModularArith<X>&); \
-   template void ModularArith<X>::print (std::ostream&, const type&) const; \
-   template void ModularArith<X>::printShort(std::ostream&, const type&) const;\
-   template void ModularArith<X>::printSuffix (std::ostream&) const;
+   template ModularArithField<X >::type \
+            ModularArithField<X >::recip (const type&) const; \
+   template unsigned ModularArithField<X >::characteristic() const; \
+   template std::ostream& operator<< (std::ostream&, const ModularArith<X >&); \
+   template void ModularArith<X >::print (std::ostream&, const type&) const; \
+   template void ModularArith<X >::printShort(std::ostream&,const type&) const;\
+   template void ModularArith<X >::printSuffix (std::ostream&) const;
 
-   HINTLIB_INSTANTIATE (PolynomialRing<ModularArithField<unsigned char> >);
-   HINTLIB_INSTANTIATE (PolynomialRing<ModularArithField<unsigned short> >);
+   HINTLIB_INSTANTIATE (PolynomialRing<ModularArithField<unsigned char> >)
+   HINTLIB_INSTANTIATE (PolynomialRing<ModularArithField<unsigned short> >)
 #undef HINTLIB_INSTANTIATE
 
 }

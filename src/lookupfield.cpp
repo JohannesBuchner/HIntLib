@@ -22,10 +22,10 @@
 #pragma implementation
 #endif
 
-#include <HIntLib/defaults.h>
-
 #include <algorithm>
 #include <iomanip>
+
+#include <HIntLib/array.h>
 
 #ifdef HINTLIB_HAVE_OSTREM
   #include <ostream>
@@ -43,7 +43,6 @@
 
 #include <HIntLib/exception.h>
 #include <HIntLib/bitop.h>
-#include <HIntLib/array.h>
 
 namespace L = HIntLib;
 
@@ -51,27 +50,26 @@ using std::setw;
 
 /******************  Ref Counting Algebra  ***********************************/
 
+inline unsigned* allocateMemory (size_t memory)
+{
+   unsigned* p = new unsigned [(memory - 1) / sizeof(unsigned) + 2];
+   *p = 1;
+   return p;
+}
+
 /**
  *  Constructor
  */
 
 L::RefCountingAlgebra::RefCountingAlgebra (size_t memory)
-{
-   ref = reinterpret_cast<RefCount*> (new char[sizeof (RefCount) + memory]);
-   ref->count = 1;
-   ref->size = memory;
-}
+   : refCount (allocateMemory (memory)),
+     size (memory)
+{}
 
-
-/**
- *  clear()
- */
-
-void L::RefCountingAlgebra::clear()
-{
-   write();
-   std::fill (charPtr(), charPtr() + ref->size, char (0));
-}
+L::RefCountingAlgebra::RefCountingAlgebra (size_t memory, unsigned* data)
+   : refCount (data ? data : allocateMemory (memory)),
+     size (memory)
+{}
 
 
 /**
@@ -81,10 +79,11 @@ void L::RefCountingAlgebra::clear()
 L::RefCountingAlgebra &
 L::RefCountingAlgebra::operator= (const RefCountingAlgebra &r)
 {
-   if (ref != r.ref)
+   if (refCount != r.refCount)
    {
       destroy();
-      ref = r.ref;
+      refCount = r.refCount;
+      setPointers();
       copy();
    }
    return *this;
@@ -97,18 +96,26 @@ L::RefCountingAlgebra::operator= (const RefCountingAlgebra &r)
 
 void L::RefCountingAlgebra::write ()
 {
-   if (ref->count >= 2)
-   {
-      --ref->count;
+   if (*refCount == 1)  return;    // if nobody else uses it, we are fine
 
-      size_t size = ref->size;
-      const char* oldData = charPtr();
-      ref = reinterpret_cast<RefCount*> (new char[sizeof (RefCount) + size]);
-      ref->count = 1;
-      ref->size = size;
+   if (*refCount >= 2)  --*refCount;
 
-      std::copy (oldData, oldData + size, charPtr());
-   }
+   const char* oldData = charPtr();
+   refCount = allocateMemory (size);
+   setPointers();
+
+   std::copy (oldData, oldData + size, charPtr());
+}
+
+
+/**
+ *  clear()
+ */
+
+void L::RefCountingAlgebra::clear()
+{
+   write();
+   std::fill (charPtr(), charPtr() + size, char (0));
 }
 
 
@@ -118,11 +125,8 @@ void L::RefCountingAlgebra::write ()
 
 void L::RefCountingAlgebra::destroy ()
 {
-   if (ref->count == 0)  return;
-   if (! --ref->count)
-   {
-      delete[] reinterpret_cast<char*> (ref);
-   }
+   if (*refCount == 0)  return;
+   if (! --*refCount)  delete[] refCount;
 }
 
 
@@ -132,8 +136,9 @@ void L::RefCountingAlgebra::destroy ()
 
 bool L::RefCountingAlgebra::operator== (const RefCountingAlgebra &r) const
 {
-   return ref->size == r.ref->size
-       && std::equal (charPtr(), charPtr() + ref->size, r.charPtr());
+   return refCount == r.refCount
+       || (   size == r.size
+           && std::equal (charPtr(), charPtr() + size, r.charPtr()));
 }
 
 
@@ -220,7 +225,6 @@ L::LookupFieldBB::operator= (const LookupFieldBB &r)
 {
    RefCountingAlgebra::operator=(r);
    s = r.s;
-   c = r.c;
    return *this;
 }
 
@@ -233,8 +237,57 @@ bool L::LookupFieldBB::operator== (const LookupFieldBB &r) const
    return size() == r.size() && RefCountingAlgebra::operator== (r);
 }
 
+/**
+ *  setCharacteristic()
+ */
+
+void L::LookupFieldBB::setCharacteristic (unsigned c)
+{
+   write();
+   *static_cast<unsigned*> (getDataPtr()) = c;
+}
+
 
 /******************  Lookup Field Base  **************************************/
+
+
+namespace HIntLib
+{
+   namespace Priv
+   {
+      extern
+      const unsigned* lookupFields [HINTLIB_PRECALCULATED_FIELD_MAX_SIZE + 1];
+   }
+}
+
+namespace
+{
+   template<typename T>
+   inline unsigned* getPrecalculatedFieldData (unsigned size)
+   {
+      return 0;
+   }
+
+   template<>
+   inline unsigned* getPrecalculatedFieldData<unsigned char> (unsigned size)
+   {
+      return size <= HINTLIB_PRECALCULATED_FIELD_MAX_SIZE
+          ? const_cast<unsigned*> (HIntLib::Priv::lookupFields[size]) : 0;
+   }
+}
+
+
+/**
+ *  privSetPointers()
+ */
+
+template<typename T>
+void L::LookupFieldBase<T>::privSetPointers ()
+{
+   mulTable = reinterpret_cast<T*> (static_cast<unsigned*> (getDataPtr()) + 1);
+   recTable = mulTable + sqr(size());
+}
+
 
 /**
  *  Constructor
@@ -242,14 +295,18 @@ bool L::LookupFieldBB::operator== (const LookupFieldBB &r) const
 
 template<typename T>
 L::LookupFieldBase<T>::LookupFieldBase (unsigned _s, unsigned numData)
-   : LookupFieldBB (_s, numData * sizeof (T))
+   : LookupFieldBB (_s, numData * sizeof (T) + sizeof (unsigned),
+                    getPrecalculatedFieldData<T> (_s))
 {
    if (     std::numeric_limits<T>::is_signed
        || ! std::numeric_limits<T>::is_integer)
    {
       throw InvalidType ("LookupField");
    }
+
+   privSetPointers();
 } 
+
 
 /**
  *  dump()
@@ -325,29 +382,26 @@ void L::LookupFieldBase<T>::setRecip (T a, T r)
 }
 
 
-/******************  Lookup Field /2  ****************************************/
+/******************  Lookup Field /Pow2 /Prime *******************************/
 
 
 /**
- *  setPointers()
+ *  privSetPointers()
  */
 
 template<typename T>
-void L::LookupField<T>::setPointers ()
+void L::LookupField<T>::privSetPointers ()
 {
-   mulTable = static_cast<T*> (getDataPtr());
-   recTable = mulTable + sqr(size());
    addTable = recTable + size();
    negTable = addTable + sqr(size());
 }
 
 template<typename T>
-void L::LookupFieldMulOnly<T>::setPointers ()
+void L::LookupField<T>::setPointers ()
 {
-   mulTable = static_cast<T*> (getDataPtr());
-   recTable = mulTable + sqr(size());
+   LookupFieldBase<T>::setPointers();
+   privSetPointers();
 }
-
 
 /**
  *  Constructor
@@ -357,16 +411,8 @@ template<typename T>
 L::LookupField<T>::LookupField (unsigned _s)
    : LookupFieldBase<T> (_s, 2 * _s * (_s + 1))
 {
-   setPointers();
+   privSetPointers();
 }
-
-template<typename T>
-L::LookupFieldMulOnly<T>::LookupFieldMulOnly (unsigned _s)
-   : LookupFieldBase<T> (_s,  _s * (_s + 1))
-{
-   setPointers();
-}
-
 
 /**
  *  times()
@@ -665,7 +711,6 @@ L::LookupVectorSpace<T,C>::operator= (const LookupVectorSpace<T,C> &r)
    LookupVectorSpaceBB::operator=(r);
    algebra  = r.algebra;
    shift    = r.shift;
-   setPointers();
    return *this;
 }
 
@@ -677,7 +722,6 @@ L::LookupVectorSpacePow2<T,C>::operator= (const LookupVectorSpacePow2<T,C> &r)
    algebra = r.algebra;
    shift   = r.shift;
    mask    = r.mask;
-   setPointers();
    return *this;
 }
 
@@ -936,16 +980,16 @@ namespace HIntLib
    template X    LookupFieldBase<X>::power (X, unsigned) const; \
    template void LookupFieldBase<X>::setMul (X, X, X); \
    template void LookupFieldBase<X>::setRecip (X, X); \
+   template void LookupFieldBase<X>::privSetPointers (); \
    template void LookupField<X>::setPointers (); \
-   template void LookupFieldMulOnly<X>::setPointers (); \
+   template void LookupField<X>::privSetPointers (); \
    template LookupField<X>::LookupField (unsigned); \
-   template LookupFieldMulOnly<X>::LookupFieldMulOnly (unsigned); \
    template X    LookupField<X>::times (X, unsigned) const; \
    template void LookupField<X>::dump (std::ostream &) const; \
    template void LookupField<X>::setAdd (X, X, X); \
    template void LookupField<X>::setNeg (X, X); \
 
-   HINTLIB_INSTANTIATE (unsigned char);
+   HINTLIB_INSTANTIATE (unsigned char)
 #undef HINTLIB_INSTANTIATE
 
 #define HINTLIB_INSTANTIATE(X,Y) \
@@ -976,7 +1020,7 @@ namespace HIntLib
    template void LookupVectorSpace<X,Y>::printShort (std::ostream&,X) const; \
    template void LookupVectorSpacePow2<X,Y>::printShort (std::ostream&,X) const;
 
-   HINTLIB_INSTANTIATE (unsigned char, unsigned char);
+   HINTLIB_INSTANTIATE (unsigned char, unsigned char)
 #undef HINTLIB_INSTANTIATE
 
 #define HINTLIB_INSTANTIATE(X) \

@@ -126,8 +126,8 @@
 /* define if IEEE magic works */
 #undef IEEE_MAGIC_WORKS
 
-/* Define if templates from the STL have to be instantiated manually. */
-#undef INSTANTIATE_STL
+/* Size of Index data type. */
+#undef INDEX
 
 /* Name of package */
 #undef PACKAGE
@@ -146,6 +146,9 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Type of real data type. */
+#undef REAL
 
 /* Define if we are compiling with the SGI C++ compiler CC. */
 #undef SGI
@@ -167,6 +170,9 @@
 
 /* define if streams support local */
 #undef STREAMS_SUPPORT_LOCAL
+
+/* define if unreachable calls are removed by the optimizer */
+#undef UNREACHABLE_CALLS_REMOVED
 
 /* Version number of package */
 #undef VERSION

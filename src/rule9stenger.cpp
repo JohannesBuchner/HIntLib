@@ -56,11 +56,14 @@ L::Rule9Stenger::Rule9Stenger (unsigned dim)
    : OrbitRule (dim), aU (dim), aV (dim)
 {
    // Check for valid dimension
-   //   numRRRR0_0fs() becomes invalid for dim>216
 
    checkDimensionNotZero (dim);
    checkDimensionGeq<4> (dim);
-   checkDimensionLeq<216> (dim);
+#if HINTLIB_INDEX == 32
+   checkDimensionLeq<239> (dim);
+#else
+   checkDimensionLeq<60989> (dim);
+#endif
 
    real u2 = 5.0 / 9.0 + sqrt (40.0 / 567.0);
    real v2 = 5.0 / 9.0 - sqrt (40.0 / 567.0);
@@ -163,7 +166,7 @@ real L::Rule9Stenger::getSumAbsWeight() const
  *  Do the actual function evaluation
  */
 
-real L::Rule9Stenger::eval (Function &f, const Hypercube &h)
+real L::Rule9Stenger::eval (Integrand &f, const Hypercube &h)
 {
    // Calculate offsets from the center for points U and V
 

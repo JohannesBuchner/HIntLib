@@ -21,7 +21,7 @@
 /**
  *  integrator.h
  *
- *  Abstract base class for objects that can integrate a given Function over
+ *  Abstract base class for objects that can integrate a given Integrand over
  *  a certain Hypercube
  */
 
@@ -38,7 +38,7 @@
 namespace HIntLib
 {
 
-class Function;
+class Integrand;
 class Hypercube;
 
 
@@ -57,9 +57,9 @@ public:
       ABS_ERROR_REACHED,  // Estimated error <= reqAbsError
       REL_ERROR_REACHED,  // Estimated error <= reqRelError
       MAX_EVAL_REACHED,   // #integ evaluations reached
-      ERROR,              // Non of these, but some result was returned
+      ERROR               // Non of these, but some result was returned
    #ifdef HINTLIB_PARALLEL
-      WRONG_NODE,         // In parallel mode, only node 0 returns a result
+     ,WRONG_NODE          // In parallel mode, only node 0 returns a result
    #endif
    };
 
@@ -70,7 +70,7 @@ public:
 
    // calcualte integral
 
-   real operator() (Function &f, const Hypercube &h,
+   real operator() (Integrand &f, const Hypercube &h,
                     Index maxEval,
                     real reqAbsError, real reqRelError)
    {
@@ -85,7 +85,7 @@ public:
 
    virtual
    Status integrate (
-      Function &, const Hypercube &, Index maxEval,
+      Integrand &, const Hypercube &, Index maxEval,
       real reqAbsError, real reqRelError, EstErr &ee) = 0;
 
    void randomize (unsigned _seed)  { seed = _seed; }
@@ -95,7 +95,7 @@ protected:
    static
    Status checkRequestedError (const EstErr &, real reqAbsErr, real reqRelErr);
 
-   static void checkDimension (const Hypercube &, const Function &);
+   static void checkDimension (const Hypercube &, const Integrand &);
 
    unsigned getSeed ()  { return seed; }
 

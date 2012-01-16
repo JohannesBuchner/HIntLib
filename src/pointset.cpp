@@ -37,13 +37,13 @@
 namespace L = HIntLib;
 
 void L::PartitionablePointSet::integrate (
-   real *point, Function &f, Index num, Stat &stat)
+   real *point, Integrand &f, Index num, Stat &stat)
 {
    integratePartition (point, f, num, 0, num, stat);
 }
 
 void L::PartitionablePointSet::integrate (
-   real *point, Function &f, Index num, StatVar &stat)
+   real *point, Integrand &f, Index num, StatVar &stat)
 {
    integratePartition (point, f, num, 0, num, stat);
 }

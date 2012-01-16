@@ -23,6 +23,7 @@
 
 #ifdef __GNUG__
 #pragma interface
+// Implementation in rulebasedintegrator.cpp
 #endif
 
 #include <HIntLib/cubaturerule.h>
@@ -32,7 +33,7 @@
 namespace HIntLib
 {
 
-class Function;
+class Integrand;
 
 /**
  *  Embedded Rule
@@ -46,15 +47,15 @@ public:
    // Evaluates the rule on a given hyper-rectangle for a given function.
    // Estimates the integral and an error estimate
 
-   virtual unsigned evalError (Function &, const Hypercube &, EstErr &ee) = 0;
+   virtual unsigned evalError (Integrand &, const Hypercube &, EstErr &ee) = 0;
 
    // Discard error from evalError() to get plain eval() done 
 
-   virtual real eval (Function &, const Hypercube &);
+   virtual real eval (Integrand &, const Hypercube &);
 };
 
 inline
-real EmbeddedRule::eval (Function &f, const Hypercube &h)
+real EmbeddedRule::eval (Integrand &f, const Hypercube &h)
 {
    EstErr ee;
    evalError (f, h, ee);

@@ -47,14 +47,16 @@ namespace HIntLib
    public:
       AdaptIntegratorLocalList (
          const EmbeddedRuleFactory *,
+         MPI_Comm = MPI_COMM_WORLD,
          unsigned frequency = 5000, unsigned maxDimension = 0);
 
       virtual
       Status integrate (
-         Function &f, const Hypercube &h, Index maxEval,
+         Integrand &f, const Hypercube &h, Index maxEval,
          real reqAbsError, real reqRelError, EstErr &ee);
 
    private:
+      MPI_Comm comm;
       enum TAGS {ERROR_CMP, REGIONS};
 
       unsigned frequency;

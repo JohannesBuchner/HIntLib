@@ -53,7 +53,7 @@ namespace HIntLib
    public:
       Rule5Stroud (unsigned dim);
 
-      virtual real eval (Function &, const Hypercube &);
+      virtual real eval (Integrand &, const Hypercube &);
 
       virtual unsigned getDimension()      const  { return dim; }
       virtual Index    getNumPoints()      const;
@@ -66,12 +66,12 @@ namespace HIntLib
    private:
       // Arrays for temporary data
 
-      Array<real> aR;
-      Array<real> aMinusR;
-      Array<real> aS;
-      Array<real> aMinusS;
-      Array<real> aT;
-      Array<real> aMinusT;
+      Point aR;
+      Point aMinusR;
+      Point aS;
+      Point aMinusS;
+      Point aT;
+      Point aMinusT;
 
       // Dimension dependent constants
 

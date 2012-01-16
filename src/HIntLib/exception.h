@@ -37,6 +37,11 @@
 
 namespace HIntLib
 {
+   // This function is defend nowhere.
+   // It is called for invalid template arguments, causing a link-time error
+
+   void invalidArgument (const char*);
+
    // Every exception defined here is derived from Exception
 
    class Exception : public std::exception
@@ -334,6 +339,11 @@ namespace HIntLib
       virtual void makeString() const;
    }; 
 
+   class DerivativeNotSupported : public NotSupportedException
+   {
+      virtual void makeString() const;
+   };
+
    class MCRoutinesCreateNotSupported : public NotSupportedException
    {
       virtual void makeString() const;
@@ -365,6 +375,17 @@ namespace HIntLib
    private:
       const char* className;
    };
+
+#ifndef HINTLIB_UNREACHABLE_CALLS_REMOVED
+   class InvalidArgument : public Exception
+   {
+      virtual void makeString() const;
+   public:
+      InvalidArgument (const char* _s) : name (_s)  {}
+   private:
+      const char* name;
+   };
+#endif
 
    // PRNG
 

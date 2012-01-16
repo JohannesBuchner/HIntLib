@@ -50,7 +50,7 @@ namespace HIntLib
    public:
       Rule1Trapezoidal (unsigned dim);
 
-      virtual real eval (Function &, const Hypercube &);
+      virtual real eval (Integrand &, const Hypercube &);
 
       virtual unsigned getDimension()   const { return dim; }
       virtual Index getNumPoints ()     const { return numR_Rfs(); }
@@ -61,7 +61,7 @@ namespace HIntLib
       static CubatureRuleFactory* getFactory();
  
    private:
-      Array<real> a;
+      Point a;
       const real oneDivTwoPowDim;
    };
 

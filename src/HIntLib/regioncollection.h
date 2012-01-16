@@ -39,7 +39,7 @@ namespace HIntLib
 {
 
 class EmbeddedRule;
-class Function;
+class Integrand;
 
 class RegionCollection
    : private std::priority_queue<Region*, std::vector<Region*>,
@@ -70,7 +70,7 @@ public:
    Region*   pop ();
    using Q::top;
 
-   void refine (Function &, EmbeddedRule &);
+   void refine (Integrand &, EmbeddedRule &);
 
    void killQueueAndUpdateResult ();
 };
@@ -96,13 +96,40 @@ Region* RegionCollection::pop ()
 }
 
 inline
-void RegionCollection::refine (Function &f, EmbeddedRule &rule)
+void RegionCollection::refine (Integrand &f, EmbeddedRule &rule)
 {
    Region *r = pop();   // Get worst region
  
    push (new Region (*r, f, rule));  // Split Region
    push (r);
 }
+
+
+/**
+ *  splitHypercube()
+ *
+ *  Splits a Hypercube into _total_ sub-cubes.
+ *  Returns sub-cube # _index_
+ */
+ 
+void splitHypercube (Integrand &, Hypercube &, unsigned total, unsigned index);
+void splitHypercube (Integrand &, const Hypercube &, Hypercube* cubes [],
+                     int total);
+
+/**
+ *  storeSubcube()
+ */
+
+inline
+void storeSubcube (
+   RegionCollection &rc, Hypercube h, unsigned total, unsigned index,
+   Integrand &function, EmbeddedRule &rule)
+{
+   splitHypercube (function, h, total, index);
+
+   rc.push (new Region (h, function, rule));
+}
+
 
 }  // namespace HIntLib
 

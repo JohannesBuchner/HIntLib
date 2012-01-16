@@ -1,0 +1,8 @@
+#! /bin/sh
+
+echo RUNNING: rule.test
+
+./test_rule -s -s -d 60
+
+exit $?
+

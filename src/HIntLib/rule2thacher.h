@@ -49,7 +49,7 @@ namespace HIntLib
    public:
       Rule2Thacher (unsigned dim);
 
-      virtual real eval (Function &, const Hypercube &);
+      virtual real eval (Integrand &, const Hypercube &);
 
       virtual unsigned getDimension()  const  { return dim; }
       virtual Index getNumPoints()     const  { return 2 * dim + 1; }
@@ -61,7 +61,7 @@ namespace HIntLib
 
    private:
       const unsigned dim;
-      Array<real> p;
+      Point p;
 
       static real r, r2;
    };

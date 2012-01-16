@@ -29,7 +29,7 @@
  *  values can be used as multiplier:
  *
  *  Once  q = m / a
- *   are  r = m % a have been calculated, r must be less than q.
+ *   and  r = m % a have been calculated, r must be less than q.
  *
  *  The maximum period length (p-1) is obtained, iff
  *    i)  x_0  relative primt to p, i.e. x_0 is not 0
@@ -53,6 +53,8 @@
   #include <HIntLib/fallback_limits.h>
 #endif
 
+#include <HIntLib/exception.h>
+
 
 namespace HIntLib
 {
@@ -63,7 +65,7 @@ namespace HIntLib
  *  m  modulus (prime)
  */
 
-template<class T, T a, T m>
+template<typename T, T a, T m>
 class LCG_Prime
 {
 private:
@@ -72,10 +74,7 @@ private:
    static const T q = m / a;
    static const T r = m % a;
 
-   // This function is defend nowhere.
-   // It is called for invalid template arguments, causing a compile-time error
-
-   void invalidArgument();
+   void invalid ()  { invalidArgument ("LCG_Prime"); }
 
 public:
  
@@ -114,17 +113,17 @@ public:
  
    // Initialize Generator
 
-   void init (unsigned start)  { state = start + 1; }
+   void init (unsigned start)  { state = T(start) + 1; }
 
    // Constructors
  
    LCG_Prime (unsigned start = m - a);
 };
 
-template<class T, T a, T m>
+template<typename T, T a, T m>
 const real LCG_Prime<T,a,m>::RANGE = real(m);
 
-template<class T, T a, T m>
+template<typename T, T a, T m>
 const real LCG_Prime<T,a,m>::RESOLUTION = real(1) / RANGE;
 
 
@@ -132,12 +131,12 @@ const real LCG_Prime<T,a,m>::RESOLUTION = real(1) / RANGE;
  *  LCG_Prime()
  */
 
-template<class T, T a, T m>
+template<typename T, T a, T m>
 inline
 LCG_Prime<T,a,m>::LCG_Prime (unsigned start)
 {
-   if (! std::numeric_limits<T>::is_signed)  invalidArgument();
-   if (a == 0 || a >= m || r >= q)  invalidArgument();
+   if (! std::numeric_limits<T>::is_signed)  invalid();
+   if (a == 0 || a >= m || r >= q)  invalid();
 
    // There is no easy way for checking if m is prime, nor for making sure that
    // a is a primitive element (mod p)
@@ -150,7 +149,7 @@ LCG_Prime<T,a,m>::LCG_Prime (unsigned start)
  * operator()
  */
 
-template<class T, T a, T m>
+template<typename T, T a, T m>
 inline
 T LCG_Prime<T,a,m>::operator() ()
 {
@@ -164,7 +163,7 @@ T LCG_Prime<T,a,m>::operator() ()
  *  getReal()
  */
 
-template<class T, T a, T m>
+template<typename T, T a, T m>
 inline
 real LCG_Prime<T,a,m>::getReal()
 {
@@ -183,19 +182,19 @@ real LCG_Prime<T,a,m>::getReal()
  *  At least GCC is able to determine the correct algorithm at compile time.
  */
 
-template<class T, T a, T m>
+template<typename T, T a, T m>
 inline
 int LCG_Prime<T,a,m>::operator() (int upperBound)
 {
+#if 0
    if (   std::numeric_limits<T>::digits + std::numeric_limits<unsigned>::digits
        <= std::numeric_limits<u64>::digits)
    {
       return int ((u64(operator()()) * upperBound) / m);
    }
    else
-   {
+#endif
       return int (getReal() * upperBound);
-   }
 }
 
 
@@ -205,7 +204,7 @@ int LCG_Prime<T,a,m>::operator() (int upperBound)
  *  Combines two LCG_Prime generators to one large generator
  */
 
-template<class T, T a1, T m1, T a2, T m2>
+template<typename T, T a1, T m1, T a2, T m2>
 class LCG_Combined
 {
 private:
@@ -214,11 +213,6 @@ private:
    typedef LCG_Prime<T,a2,m2> LCG2;
    LCG1 lcg1;
    LCG2 lcg2;
-
-   // This function is defend nowhere.
-   // It is called for invalid template arguments, causing a compile-time error
-
-   void invalidArgument();
 
 public:
  
@@ -267,10 +261,10 @@ public:
 };
 
 
-template<class T, T a1, T m1, T a2, T m2>
+template<typename T, T a1, T m1, T a2, T m2>
 const real LCG_Combined<T,a1,m1,a2,m2>::RANGE = real(M);
 
-template<class T, T a1, T m1, T a2, T m2>
+template<typename T, T a1, T m1, T a2, T m2>
 const real LCG_Combined<T,a1,m1,a2,m2>::RESOLUTION = real(1) / RANGE;
 
 
@@ -278,11 +272,11 @@ const real LCG_Combined<T,a1,m1,a2,m2>::RESOLUTION = real(1) / RANGE;
  *  LCG_Combined()
  */
 
-template<class T, T a1, T m1, T a2, T m2>
+template<typename T, T a1, T m1, T a2, T m2>
 inline
 LCG_Combined<T,a1,m1,a2,m2>::LCG_Combined (unsigned start)
 {
-   if (m1 == m2)  invalidArgument();
+   if (m1 == m2)  invalidArgument ("LCG_Combined");
    init (start);
 }
 
@@ -291,12 +285,11 @@ LCG_Combined<T,a1,m1,a2,m2>::LCG_Combined (unsigned start)
  * operator()
  */
 
-template<class T, T a1, T m1, T a2, T m2>
+template<typename T, T a1, T m1, T a2, T m2>
 inline
 T LCG_Combined<T,a1,m1,a2,m2>::operator() ()
 {
-   // T x = lcg1.operator()() - lcg2.operator()();
-   T x = lcg2.operator()();
+   T x = lcg1.operator()() - lcg2.operator()();
    return (x > 0) ? x : x + MAX;
 }
 
@@ -305,7 +298,7 @@ T LCG_Combined<T,a1,m1,a2,m2>::operator() ()
  *  getReal()
  */
 
-template<class T, T a1, T m1, T a2, T m2>
+template<typename T, T a1, T m1, T a2, T m2>
 inline
 real LCG_Combined<T,a1,m1,a2,m2>::getReal()
 {
@@ -324,7 +317,7 @@ real LCG_Combined<T,a1,m1,a2,m2>::getReal()
  *  At least GCC is able to determine the correct algorithm at compile time.
  */
 
-template<class T, T a1, T m1, T a2, T m2>
+template<typename T, T a1, T m1, T a2, T m2>
 inline
 int LCG_Combined<T,a1,m1,a2,m2>::operator() (int upperBound)
 {
@@ -353,7 +346,7 @@ int LCG_Combined<T,a1,m1,a2,m2>::operator() (int upperBound)
 // Line 19 in TACP
 // DO NOT USE !!!
 
-typedef LCG_Prime<long, 7*7*7*7*7, (1ul << 31) - 1> LCG_Prime_ISML;
+typedef LCG_Prime<long, 7*7*7*7*7, (1ul << 31) - 1> LCG_Prime_IMSL;
 
 // The best multiplier for m=(2^31)-1 allowing this implementation technique
 // Line 20 in TACP

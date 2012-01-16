@@ -106,7 +106,7 @@ namespace HIntLib
    template X::type genGcd (X const &, X::type, X::type, X::type &); \
    template X::type genGcd (X const &, X::type, X::type, X::type &, X::type &);
 
-   HINTLIB_INSTANTIATE (HIntLib::IntegerRing<int>);
+   HINTLIB_INSTANTIATE (HIntLib::IntegerRing<int>)
    HINTLIB_INSTANTIATE (HIntLib::PolynomialRing<HIntLib::ModularArithField<unsigned char> >)
    HINTLIB_INSTANTIATE (HIntLib::PolynomialRing<HIntLib::ModularArithField<unsigned short> >)
 #undef HINTLIB_INSTANTIATE

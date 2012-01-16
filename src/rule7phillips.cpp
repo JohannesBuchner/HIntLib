@@ -82,6 +82,9 @@ L::Rule7Phillips::Rule7Phillips (unsigned dim)
                          - 2.0 * (weightB1 + weightB2)))
 {
    checkDimensionNotZero (dim);
+#if HINTLIB_INDEX == 32
+   checkDimensionLeq<1477> (dim);
+#endif
 
    if (dim < 5 && dim != 2)  throw InvalidDimension (dim);
 
@@ -114,7 +117,7 @@ real L::Rule7Phillips::getSumAbsWeight() const
  *  Do the actual function evaluation
  */
 
-real L::Rule7Phillips::eval (Function &f, const Hypercube &h)
+real L::Rule7Phillips::eval (Integrand &f, const Hypercube &h)
 {
    // Calculate offsets from the center for points A and B
 

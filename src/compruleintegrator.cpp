@@ -53,13 +53,13 @@ namespace {
    class MyCubePartitioner : public CubePartitioner
    {
    public:
-      MyCubePartitioner (Function &f, CubatureRule &rule)
+      MyCubePartitioner (Integrand &f, CubatureRule &rule)
          : f (f), rule (rule), estimate (0.0) {}
 
       virtual void action (const Hypercube &h);
 
    private:
-      Function &f;
+      Integrand &f;
       CubatureRule &rule;
 
    public:
@@ -75,7 +75,7 @@ namespace {
 
 
 Integrator::Status L::CompRuleIntegrator::integrate (
-   Function &f, const Hypercube &h, Index maxEval, real, real, EstErr &ee)
+   Integrand &f, const Hypercube &h, Index maxEval, real, real, EstErr &ee)
 {
    checkDimension(h, f);
 
@@ -130,13 +130,13 @@ namespace {
    class MyErrCubePartitioner : public CubePartitioner
    {
    public:
-      MyErrCubePartitioner (Function &f, EmbeddedRule &rule)
+      MyErrCubePartitioner (Integrand &f, EmbeddedRule &rule)
          : f (f), rule (rule), estimate (0.0), error (0.0) {}
  
       virtual void action (const Hypercube &h);
  
    private:
-      Function &f;
+      Integrand &f;
       EmbeddedRule &rule;
  
    public:
@@ -156,7 +156,7 @@ namespace {
 } // namespace
 
 Integrator::Status L::CompRuleIntegratorErr::integrate (
-   Function &f, const Hypercube &h, Index maxEval,
+   Integrand &f, const Hypercube &h, Index maxEval,
    real reqAbsError, real reqRelError, EstErr &ee)
 {
    checkDimension(h, f);

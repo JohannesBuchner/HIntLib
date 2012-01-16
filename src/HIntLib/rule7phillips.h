@@ -54,7 +54,7 @@ namespace HIntLib
    public:
       Rule7Phillips (unsigned dim);
 
-      virtual real eval (Function &, const Hypercube &);
+      virtual real eval (Integrand &, const Hypercube &);
 
       virtual unsigned getDimension()       const  { return dim; }
       virtual Index    getNumPoints ()      const;
@@ -68,7 +68,7 @@ namespace HIntLib
 
       // Arrays for temporary data
 
-      Array<real> aCD;
+      Point aCD;
 
       // Dimension dependent constants
 

@@ -53,7 +53,7 @@ namespace HIntLib
    public:
       Rule5Hammer (unsigned dim);
 
-      virtual real eval (Function &f, const Hypercube &);
+      virtual real eval (Integrand &f, const Hypercube &);
 
       virtual unsigned getDimension()       const  { return dim; }
       virtual Index    getNumPoints ()      const;
@@ -64,7 +64,7 @@ namespace HIntLib
       static CubatureRuleFactory* getFactory();
 
    private:
-      Array<real> lamda;
+      Point lamda;
 
       // Dimension dependent constants
 

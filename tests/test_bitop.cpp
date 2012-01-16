@@ -216,7 +216,7 @@ void test_ls1 (T x)
 
 template<class T>
 inline
-void test (const T &dummy)
+void test (const T &)
 {
    if (numeric_limits<T>::digits < 20)
    {

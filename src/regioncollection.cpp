@@ -21,10 +21,13 @@
 
 #ifdef __GNUG__
 #pragma implementation
+#pragma implementation "fourthdiff.h"
 #endif
 
 #include <HIntLib/regioncollection.h>
 
+#include <HIntLib/fourthdiff.h>
+#include <HIntLib/bitop.h>
 #include <HIntLib/myalgorithm.h>
 
 namespace L = HIntLib;
@@ -45,5 +48,59 @@ void L::RegionCollection::killQueueAndUpdateResult (void)
 L::RegionCollection::~RegionCollection (void)
 {
    purge (c.begin(), c.end());
+}
+
+
+/**
+ *  splitHypercube()
+ *
+ *  Splits a Hypercube into _total_ sub-cubes.
+ *  Returns sub-cube # _index_
+ */
+ 
+void L::splitHypercube (Integrand &f, Hypercube &h,
+                     unsigned total, unsigned index)
+{
+   FourthDiff fd (h.getDimension ());
+ 
+   for (unsigned int level = 0; ; ++level)
+   {
+      int mask1 = 1 << level;               //  ..00100..00
+      int mask2 = (mask1 * 2) - 1;          //  ..00111..11
+ 
+      if (((index ^ mask1) & mask2) >= total) break;
+ 
+      unsigned int split = fd (f, h);
+ 
+      if (index & mask1)
+         h.cutRight (split);
+      else
+         h.cutLeft (split);
+   }
+}
+ 
+void L::splitHypercube (Integrand &f, const Hypercube &h, Hypercube* cubes [],
+                        int total)
+{
+   cubes [0] = new Hypercube (h);
+ 
+   FourthDiff fd (h.getDimension ());
+ 
+   int levels = ms1 (total - 1);
+ 
+   for (int level = 0; level <= levels; ++level)
+   {
+      int mask = 1u << level;
+ 
+      for (int i = 0; i < mask; i++)
+      {
+         if (level != levels || i + mask < total)
+         {
+            unsigned split = fd (f, *cubes [i]);
+ 
+            cubes [i + mask] = new Hypercube (*cubes [i], split);
+         }
+      }
+   }
 }
 

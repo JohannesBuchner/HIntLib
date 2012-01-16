@@ -35,6 +35,8 @@
 #pragma interface
 #endif
 
+#include <HIntLib/defaults.h>
+
 #include <stddef.h>
 #include <algorithm>
 
@@ -71,12 +73,12 @@ public:
          reference operator[] (int n)       { return array [n-offset]; }
    const_reference operator[] (int n) const { return array [n-offset]; }
 
-         reference front (void)       { return *array; }
-   const_reference front (void) const { return *array; }
+         reference front()       { return *array; }
+   const_reference front() const { return *array; }
 
-   operator pointer ()             { return array; }
-   operator const_pointer () const { return array; }
-   operator const_pointer ()       { return array; }
+   operator pointer()             { return array; }
+   operator const_pointer() const { return array; }
+   operator const_pointer()       { return array; }
 
    // Constructor
 
@@ -101,10 +103,14 @@ private:
    Array& operator= (const Array&);
 };
 
+typedef Array<real> Point;
+
+} // namespace HIntLib
+
 
 template<class T, int offset>
 inline
-Array<T, offset>::Array (size_type n, const value_type& val)
+HIntLib::Array<T, offset>::Array (size_type n, const value_type& val)
 {
    array = new T [n];
    std::fill (array, array+n, val);
@@ -112,7 +118,7 @@ Array<T, offset>::Array (size_type n, const value_type& val)
 
 template<class T, int offset>
 inline
-Array<T, offset>::Array (const_pointer a, size_type n)
+HIntLib::Array<T, offset>::Array (const_pointer a, size_type n)
 {
    array = new T [n];
    std::copy (a, a+n, array);
@@ -120,7 +126,7 @@ Array<T, offset>::Array (const_pointer a, size_type n)
 
 template<class T, int offset>
 inline
-void Array<T, offset>::assign (const_pointer a, size_type n)
+void HIntLib::Array<T, offset>::assign (const_pointer a, size_type n)
 {
    const T* oldArray = array;
 
@@ -129,8 +135,6 @@ void Array<T, offset>::assign (const_pointer a, size_type n)
 
    delete[] oldArray;
 }                                                                               
-
-} // namespace HIntLib
 
 #endif
 

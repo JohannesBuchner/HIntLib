@@ -24,7 +24,7 @@
 #include <stdlib.h>
 
 #include <HIntLib/make.h>
-#include <HIntLib/generatormatrix.h>
+#include <HIntLib/tparameter.h>
 #include <HIntLib/array.h>
 #include <HIntLib/myalgorithm.h>
 
@@ -33,11 +33,16 @@
 using namespace std;
 using namespace HIntLib;
 
-const char* options = "erbm:d:";
+// Option processing
+
+const char* options = "erbm:d:t";
 
 bool ADD_EQUI = false;
 bool RESTRICTED = false;
 bool NO_BOUNDS = false;
+bool PRINT_THICKNESS = false;
+const unsigned MIN_M = 1;
+const unsigned MIN_S = 1;
 unsigned MAX_S = 55 + 1;
 unsigned MAX_M = 25 + 1;
 
@@ -50,6 +55,7 @@ bool opt(int c, const char* s)
    case 'b':  NO_BOUNDS = true; return true;
    case 'm':  MAX_M = atoi (s) + 1; return true;
    case 'd':  MAX_S = atoi (s) + 1; return true;
+   case 't':  PRINT_THICKNESS = true; return true;
    }
 
    return false;
@@ -67,11 +73,107 @@ void usage()
       "  -b     Do tests without optimized bounds\n"
       "  -m n   Maximum m (default = 25)\n"
       "  -d n   Maximum dimension (default = 55)\n"
-
+      "  -t     Print thickness instead of t-parameter\n"
       "\n";
 
    exit (1);
 }
+
+
+// Other global names
+
+typedef GeneratorMatrixGen<unsigned char> Matrix;
+typedef GeneratorMatrixGenCopy<unsigned char> MatrixCopy;
+
+
+/**
+ *  determineT ()
+ */
+
+void determineT (
+      unsigned s, unsigned m, const Matrix& matrix, int* t_matrix,
+      const Matrix* lowDimMatrix)
+{
+   int ub = m;  // trivial upper bound
+
+   // t can only increase by one compared to m-1
+   // With some thought, you see that it also works for the
+   // equidistributed case.
+
+   if (t_matrix [(m-1) * MAX_S + s] >= 0) ub = t_matrix [(m-1) * MAX_S + s] + 1;
+
+   int lb = 0;  // trivial lower bound
+   TOption opts = DEFAULT;
+
+   // Do we know t for a lower-dimensional sub-matrix?
+
+   if (lowDimMatrix)
+   {
+      GMCopy copy; copy.dim(s-1).m(m).totalPrec(m).equi(ADD_EQUI);
+      MatrixCopy g1 (*lowDimMatrix, copy);
+      MatrixCopy g2 (matrix,        copy);
+      if (g1 == g2)
+      {
+         // t cannot decrease compared to s-1
+
+         lb = std::max (lb, t_matrix [m * MAX_S + (s-1)]);
+         opts = LOWER_DIM_OK;
+      }
+   }
+
+   GMCopy copy;
+   copy.dim(s).m(m).totalPrec(m).equi(ADD_EQUI);
+
+   GeneratorMatrixGenCopy<unsigned char> g (matrix, copy);
+
+   int t = t_matrix [m * MAX_S + s] = tParameter (g, lb, ub, opts);
+
+   if (NO_BOUNDS)
+   {
+      if (t != tParameter (g, 0, m))  error ("Bound optimization broken!");
+   }
+
+   // check if restricted results make sense
+
+   if (RESTRICTED)
+   {
+      Array<int> t_restricted (MAX_M + 1);
+
+      for (unsigned i = 0; i <= m; ++i)
+      {
+          t_restricted [i] = tParameterRestricted (g, 0, m, i, DEFAULT);
+      }
+
+      if (t_restricted[0] != 0)  error ("t_res(0) != 0");
+      if (t_restricted[m] != t)  error ("t_res(m) != t");
+      for (unsigned i = 0; i < m; ++i)
+      {
+         if (t_restricted[i] > t_restricted[i+1])
+         {
+            error ("t_res(i) > t_res(i+1)");
+         }
+      }
+
+      NORMAL
+      {
+         cout << setw(3) << s << setw(3) << m << setw(4) << t;
+         for (unsigned i = 0; i <= m; ++i)
+         {
+            cout << setw(3) << t_restricted[i];
+         }
+         cout << endl;
+      }
+   }
+   else
+   {
+      NORMAL  cout << setw(3) << (PRINT_THICKNESS ? m - t : t) << flush;
+   }
+}
+
+
+/**
+ *  Main program
+ */
 
 void test (int argc, char** argv)
 {
@@ -79,15 +181,8 @@ void test (int argc, char** argv)
 
    int matrix = atoi (argv[0]);
 
-   const unsigned MIN_M = 1;
-   const unsigned MIN_S = 1;
-
-   typedef GeneratorMatrixGen<unsigned char> Matrix;
-   typedef GeneratorMatrixGenCopy<unsigned char> MatrixCopy;
-
    Array<Matrix*> matrices (MAX_S, 0);    // The fullsized matrix for each s
    Array<int> t_matrix (MAX_S * MAX_M, -1);
-   Array<int> t_restricted (MAX_M + 1);
 
    NORMAL cout << Make::getGeneratorMatrixGenName (matrix) << "\n\n";
    NORMAL if (! RESTRICTED)  cout << "   s=";
@@ -116,130 +211,11 @@ void test (int argc, char** argv)
 
       for (unsigned s = MIN_S; s < MAX_S; ++s)
       {
-         if (matrices [s] && matrices[s]->getM() >= m)
+         Matrix* matrix = matrices [s];
+
+         if (matrix && matrix->getM() >= m && matrix->getTotalPrec() >= m)
          {
-            int ub = m;  // trivial upper bound
-
-            // t can only increase by one compared to m-1
-            // With some thought, you see that it also works for the
-            // equidistributed case.
-
-            if (t_matrix [(m-1) * MAX_S + s] >= 0)
-            {
-               ub = t_matrix [(m-1) * MAX_S + s] + 1;
-            }
-
-            int lb = 0;  // trivial lower bound
-            bool dimOpt = false;
-
-            // Do we know t for a lower-dimensional sub-matrix?
-
-            if (matrices [s-1])
-            {
-               GMCopy copy; copy.dim(s-1).m(m).totalPrec(m).equi(ADD_EQUI);
-               MatrixCopy g1 (*matrices[s-1], copy);
-               MatrixCopy g2 (*matrices[s],   copy);
-               if (g1 == g2)
-               {
-                  // t cannot decrease compared to s-1
-
-                  lb = std::max (lb, t_matrix [m * MAX_S + (s-1)]);
-                  dimOpt = true;
-               }
-            }
-
-            int t;
-            int tt = 0;
-
-            // Use the optimal implementaion depending on b and m
-
-            GMCopy copy; copy.dim(s).m(m).totalPrec(m).equi(ADD_EQUI);
-
-            if (matrices[s]->getBase() > 2)
-            {
-               GeneratorMatrixGenCopy<unsigned char> g (*matrices[s], copy);
-               t = t_parameter (g, lb, ub, dimOpt);
-
-               if (NO_BOUNDS)  tt = t_parameter (g, 0, m);
-
-               if (RESTRICTED)
-               {
-                  for (unsigned i = 0; i <= m; ++i)
-                  {
-                     t_restricted [i] = t_parameter2 (g, 0, m, i);
-                  }
-               }
-            }
-            else if (m <= unsigned (std::numeric_limits<u32>::digits))
-            {
-               GeneratorMatrix2Copy<u32> g (*matrices[s], copy);
-               t = t_parameter (g, lb, ub, dimOpt);
-
-               if (NO_BOUNDS)  tt = t_parameter (g, 0, m);
-
-               if (RESTRICTED)
-               {
-                  for (unsigned i = 0; i <= m; ++i)
-                  {
-                     t_restricted [i] = t_parameter2 (g, 0, m, i);
-                  }
-               }
-            }
-            else
-            {
-               GeneratorMatrix2Copy<u64> g (*matrices[s], copy);
-               t = t_parameter (g, lb, ub, dimOpt);
-
-               if (NO_BOUNDS)  tt = t_parameter (g, 0, m);
-
-               if (RESTRICTED)
-               {
-                  for (unsigned i = 0; i <= m; ++i)
-                  {
-                     t_restricted [i] = t_parameter2 (g, 0, m, i);
-                  }
-               }
-            }
-
-            t_matrix [m * MAX_S + s] = t;
-
-            if (NO_BOUNDS)
-            {
-               if (t != tt)  error ("Bound optimzation broken!");
-            }
-
-            // check if restricted results make sense
-
-            if (RESTRICTED)
-            {
-               if (t_restricted[0] != 0)  error ("t_res(0) != 0");
-               if (t_restricted[m] != t)  error ("t_res(m) != t");
-               for (unsigned i = 0; i < m; ++i)
-               {
-                  if (t_restricted[i] > t_restricted[i+1])
-                  {
-                     error ("t_res(i) > t_res(i+1)");
-                  }
-               }
-            }
-
-            NORMAL
-            {
-               if (! RESTRICTED)
-               {
-                  cout << setw(3) << t << flush;
-               }
-               else
-               {
-                  cout << setw(3) << s << setw(3) << m << setw(4) << t;
-                  for (unsigned i = 0; i <= m; ++i)
-                  {
-                     cout << setw(3) << t_restricted[i];
-                  }
-                  cout << endl;
-
-               }
-            }
+            determineT (s, m, *matrix, t_matrix, matrices[s-1]);
          }
          else
          {

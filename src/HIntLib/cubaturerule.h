@@ -23,6 +23,7 @@
 
 #ifdef __GNUG__
 #pragma interface
+// Implementation in rulebasedintegrator.cpp
 #endif
 
 #include <HIntLib/defaults.h>
@@ -31,7 +32,7 @@
 
 namespace HIntLib
 {
-   class Function;
+   class Integrand;
 
 /**
  *  Cubature Rule
@@ -49,7 +50,7 @@ public:
    // Evaluates the rule on a given hyper-rectangle for a given function.
    // Estimates the integral and an error estimate
 
-   virtual real eval (Function &, const Hypercube &) = 0;
+   virtual real eval (Integrand &, const Hypercube &) = 0;
 
    // Here are some simple methods to query (static) information about a
    // certain rule
@@ -84,7 +85,7 @@ private:
  *  clone()
  *     Returns a copy of the factory (also allocated on free store).
  *
- *  Factories can not be copied or assigned.
+ *  Factories cannot be copied or assigned.
  */
 
 class CubatureRuleFactory

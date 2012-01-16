@@ -38,7 +38,7 @@ namespace HIntLib
  *  Galois Field
  */
 
-template <class B>
+template <typename B>
 class GaloisField
  : public ModularArithField<PolynomialRing<ModularArithField<B> > >
 {

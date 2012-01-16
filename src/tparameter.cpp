@@ -18,15 +18,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-
-#include <HIntLib/generatormatrix.h>
+#include <HIntLib/tparameter.h>
+#include <HIntLib/generatormatrix2.h>
 #include <HIntLib/array.h>
 #include <HIntLib/myalgorithm.h>
-#include <HIntLib/exception.h>
 #include <HIntLib/mymath.h>
+#include <HIntLib/exception.h>
 #include <HIntLib/lookupfield.h>
-
-#include <iomanip>
 
 namespace L = HIntLib;
 
@@ -36,6 +34,7 @@ using std::max;
 namespace
 {
 
+#if 0
 /**
  *  rank()
  *
@@ -86,7 +85,10 @@ unsigned rank (Bi first, Bi last, unsigned columns)
 
       // subtract pivot from all remaining rows
       
-      while (++i != last)  if (*i & mask)  *i ^= pivot;
+      while (++i != last)
+      {
+         if (*i & mask)  *i ^= pivot;
+      }
 
       // continue with smaller matrix
       
@@ -97,17 +99,19 @@ unsigned rank (Bi first, Bi last, unsigned columns)
    
    return rank;
 }
+#endif
+
+
+/*********************  linearly Independent ()  *****************************/
 
 
 /**
  *  linearlyIndependent()
  *
- *  Checks if a packed matrix over GF(2) has full row-rank.
+ *  Checks if the given set of vectors over GF2 (packed into the bits of a
+ *  word) are linearly independent.
  *
- *  rank must be larger that (last-first) -3 !!!
- *
- *  Each vector hold _columns_ elements from {0,1}, which have to be stored in
- *  the lower order bits.
+ *  The empty set is independent.
  */
 
 template<class Bi>
@@ -118,7 +122,7 @@ bool isLinearlyIndependent (Bi first, Bi last)
    switch (last - first)
    {
    case 0: return true;
-   case 1: return *first != 0;
+   case 1: return first[0];
    case 2: return first[0] && first[1] && (first[0] ^ first[1]);
    case 3: return first[0] && first[1] && first[2] &&
                   (first[0] ^ first[1]) &&
@@ -135,6 +139,7 @@ bool isLinearlyIndependent (Bi first, Bi last)
       
       Bi i = first;
           
+      if (!*i)  return false;
       while ((*i & mask) == 0)  // if the coefficient == 0, we have to go on
       {
          if (++i == last)    // if we run out of rows, try a differnt column
@@ -152,13 +157,18 @@ bool isLinearlyIndependent (Bi first, Bi last)
 
       // subtract pivot from all remaining rows
       
-      while (++i != last)  if (*i & mask)  *i ^= pivot;
+      while (++i != last)
+      {
+         if (*i & mask)  if (! (*i ^= pivot)) return false;
+      }
 
       // continue with smaller matrix
       
       mask <<= 1;
       ++first;
    }
+
+   // exactly four vectors are left
 
    return first[0] && first[1] && first[2] && first[3] &&
          (first[0] ^ first[1]) &&
@@ -178,12 +188,10 @@ bool isLinearlyIndependent (Bi first, Bi last)
 /**
  *  linearlyIndependent()
  *
- *  Checks if a packed matrix over GF(2) has full row-rank.
+ *  Determins of the set of _numRows_ vectors with _numCols_ entries from _A_
+ *  is linearly independent.
  *
- *  rank must be larger that (last-first) -3 !!!
- *
- *  Each vector hold _columns_ elements from {0,1}, which have to be stored in
- *  the lower order bits.
+ *  The vectors are accessed useing _m_ [vector * _numcols + coord]
  */
 
 template<class A>
@@ -195,7 +203,7 @@ bool isLinearlyIndependent (
    unsigned col = 0;
    unsigned row = 0;
    
-   while (row < numRows && col < numCols)  // Any rows left?
+   while (row < numRows && col < numCols)  // Any rows/columns left?
    {
 #if 0
       // print
@@ -221,11 +229,7 @@ bool isLinearlyIndependent (
          {
             i = row;
 
-            if (++col == numCols)
-            {
-               // cout << "x"<< endl;
-               return false;  // try next column
-            }
+            if (++col == numCols)  return false;
          }
       }
 
@@ -261,258 +265,615 @@ bool isLinearlyIndependent (
       ++col;
       ++row;
    }
-   // cout << ((row==numRows) ? "ok" : "sorry") << endl;
 
    return row == numRows;
 }
 
 
-#if 0
+/***********  TCalc2  ********************************************************/
+
+
 /**
- *  isLinearlyIndependent()
+ * TCalc2
  *
- *  determines if vectors over GF(2) are linearly independent by building all
- *  possible linear combinations.
+ * Contains the infrastructure for calculating the t-parameter in base b=2.
  *
- *  This is O(2^n), whit n denoting the number of vectors!
- *
- *  Use rank() instead!
+ * This class is not multithreading-save.
  */
 
-template<class Bi>
-bool isLinearlyIndependent (Bi first, Bi last)
+template<typename T>
+class TCalc2
 {
-   typedef typename std::iterator_traits<Bi>::value_type T;
+public:
+   TCalc2 (const L::GeneratorMatrixGen<unsigned char> &, unsigned prec);
+   // TCalc2 (const L::GeneratorMatrix2<T> &, unsigned prec);
+   ~TCalc2 ();
 
-   T x (0);
+   bool check (int thickness, bool dimOpt);
+   bool checkTO (int thickness, bool dimOpt);
+   bool checkRestricted (int thickness, int maxRows);
+   bool checkRestrictedRO (int thickness, int maxRows);
+   bool checkRestrictedTO (int thickness, int maxRows);
 
-   for (T i = 0; i < (T(1) << (last-first)) - 1; ++i)
+private:
+   void init (const L::GeneratorMatrix &);
+
+   const unsigned totalPrec;
+   const int dim;
+
+   T* c;
+   int* partition;
+
+   static const unsigned MAX_C_SIZE = 5000;
+   static const unsigned MAX_PARTITION_SIZE = 200;
+
+   static T selection [std::numeric_limits<T>::digits];
+   static T staticC [MAX_C_SIZE];
+   static int staticPartition [MAX_PARTITION_SIZE];
+};
+
+
+/**
+ *  static data
+ */
+
+template<typename T> T   TCalc2<T>::selection [];
+template<typename T> T   TCalc2<T>::staticC [];
+template<typename T> int TCalc2<T>::staticPartition [];
+
+/**
+ *  init ()
+ */
+
+template<typename T>
+void TCalc2<T>::init (const L::GeneratorMatrix &gm)
+{
+   if (gm.getTotalPrec() < totalPrec)  throw L::FIXME (__FILE__, __LINE__);
+
+   c = (totalPrec * dim > MAX_C_SIZE) ? new T [totalPrec * dim] : staticC;
+
+   partition = (dim > int (MAX_PARTITION_SIZE))
+        ?  new int [dim] : staticPartition;
+}
+
+template<typename T>
+TCalc2<T>::~TCalc2 ()
+{
+   if (c != staticC)  delete[] c;
+   if (partition != staticPartition)  delete[] partition;
+}
+
+/**
+ *  Constructor
+ */
+
+#if 0
+template<typename T>
+TCalc2<T>::TCalc2 (const L::GeneratorMatrix2<T> &gm, unsigned prec)
+   : totalPrec (prec),
+     dim (gm.getDimension())
+{
+   init (gm);
+
+   // Copy Generator Matrix into c-array (containing tranposed matrices)
+
+   for (int d = 0; d < dim; ++d)
    {
-      x ^= first[L::ls0(i)];
+      for (unsigned b = 0; b < totalPrec; ++b)
+      {
+         T x = 0;
 
-      if (! x)  return false;
+         for (unsigned r = 0; r < gm.getM(); ++r)  x = (x << 1) | gm(d,r,b);
+
+         c [d * totalPrec + b] = x;
+      }
    }
+}
+#endif
+
+template<typename T>
+TCalc2<T>::TCalc2 (
+   const L::GeneratorMatrixGen<unsigned char> &gm, unsigned prec)
+   : totalPrec (prec),
+     dim (gm.getDimension())
+{
+   init (gm);
+
+   // Copy Generator Matrix into c-array (containing tranposed matrices)
+
+   for (int d = 0; d < dim; ++d)
+   {
+      for (unsigned b = 0; b < totalPrec; ++b)
+      {
+         T x = 0;
+
+         for (unsigned r = 0; r < gm.getM(); ++r)  x = (x << 1) | gm(d,r,b);
+
+         c [d * totalPrec + b] = x;
+      }
+   }
+}
+
+/**
+ *  check()
+ *
+ *  Checks if (at least) a certain thickness is present.
+ *
+ *  If _dimOpt_ is true, only partitions containing a vector from the last
+ *  matrix are checked.
+ */
+
+template<typename T>
+bool TCalc2<T>::check (int thickness, bool dimOpt)
+{
+   // choose these _thickness_ vectors from c
+      
+   L::initial_partition (&partition[0], &partition[dim], thickness);
+
+   // if we have checkt a low-dimensional submatrix already, at least one
+   // vector has to come from the new dimension
+
+   if (dimOpt)
+   {
+      partition [dim-1] = 1;
+      --partition [0];
+   }
+
+   do
+   {
+      // copy the selected vectors
+
+      unsigned l = 0;
+
+      for (int d = 0; d < dim; ++d)
+      {
+         for (int i = 0; i < partition[d]; ++i)
+         {
+            selection[l++] = c [d * totalPrec + i];
+         }
+      }
+
+      if (! isLinearlyIndependent (&selection[0], &selection[l]))
+      {
+         return false;
+      }
+   }
+   while (L::next_partition (&partition[0], &partition[dim]));
 
    return true;
 }
-#endif
-
-}  // namespace
 
 
-/***********  Base 2  ********************************************************/
+/**
+ *  checkTO ()
+ *
+ *  Checks if (at least) a certain thickness is present.
+ *
+ *  The check is performed under the assumption that a thickness of
+ *  _thickness_-1 is present.
+ *
+ *  If _dimOpt_ is true, only partitions containing a vector from the last
+ *  matrix are checked.
+ */
 
-
-template<class T>
-int L::t_parameter (
-   const L::GeneratorMatrix2<T> &gm, int lb, int ub, bool dimOpt)
+template<typename T>
+bool TCalc2<T>::checkTO (int thickness, bool dimOpt)
 {
-   const unsigned DIM = gm.getDimension();
-   const int M   = gm.getM();
+   // choose these _thickness_ vectors from c
+      
+   L::initial_partition (&partition[0], &partition[dim], thickness);
 
-   // theoretical lower bound:
-   //
-   // ceil (log_b (b*s - s + 1)) - 2 =
-   //   ceil (log_b (s + 1)) - 2 =
-   //   floor (log_b (s)) - 1 =
-   //   ms1 (s) - 1
+   // if we have checkt a low-dimensional submatrix already, at least one
+   // vector has to come from the new dimension
 
-   lb = max (lb,
-        max (0,
-        max (M - int (gm.getTotalPrec()),
-             min (M - 1, ms1 (DIM) - 1))));
-   ub = min (ub, M);
-
-   if (lb > ub)  throw InternalError (__FILE__, __LINE__);
-   if (lb == ub)  return lb;
-
-   Array<T> c (M * DIM);
-   Array<T> selection (M-lb);
-   Array<int> partition (DIM);
-
-   // Copy Generator Matrix into c-array (containing tranposed matrices)
-
-   for (unsigned d = 0; d < DIM; ++d)
+   if (dimOpt)
    {
-      for (int b = 0; b < M; ++b)
-      {
-         T x = 0;
-
-         for (int r = 0; r < M; ++r)  x = (x << 1) + gm(d,r,b);
-
-         c [d * M + b] = x;
-      }
+      partition [dim-1] = 1;
+      --partition [0];
    }
 
-   // try to select 1, 2, 3, ... M vectors (modulo ub/lb)
-   
-   for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
+   do
    {
-      // choose these _numVectors_ vectors from c
-      
-      initial_partition (&partition[0], &partition[DIM], numVectors);
+      // copy the selected vectors
+      // the last vectors for each dimension MUST be part of the linear
+      // combination. We add them up and put them into selection[0].
 
-      // if we have checkt a low-dimensional submatrix already, at least one
-      // vector has to come from the new dimension
+      selection [0] = 0;
+      unsigned l = 1;
 
-      if (dimOpt)
+      for (int d = 0; d < dim; ++d)
       {
-         ++partition [DIM-1];
-         --partition [0];
-      }
-
-      do
-      {
-#if 0
-         cout << "Partition: ";
-         for (unsigned i = 0; i < DIM; ++i)  cout << partition[i] << " ";
-         cout << endl;
-#endif
-
-         // copy the selected vectors
-         // the last vectors for each dimension MUST be part of the linear
-         // combination. We add them up and put them into selection[0].
-
-         selection [0] = 0;
-         unsigned l = 1;
-
-         for (unsigned d = 0; d < DIM; ++d)
+         if (partition[d] > 0)
          {
-            if (partition[d] > 0)
-            {
-               selection [0] ^= c [d * M + partition[d]-1];
+            selection [0] ^= c [d * totalPrec + partition[d]-1];
 
-               for (int i = 0; i < partition[d]-1; ++i)
-               {
-                  selection[l++] = c [d * M + i];
-               }
+            for (int i = 0; i < partition[d]-1; ++i)
+            {
+               selection[l++] = c [d * totalPrec + i];
             }
          }
-
-#if 0
-         cout << "Selected vectors: ";
-         for (unsigned i = 0; i < l; ++i) cout << selection [i] << " ";
-         cout << endl;
-#endif
-#if 0
-         unsigned r = rank(&selection[0], &selection[l], M);
-         if (r != l)  return M - numVectors + 1;
-#else
-
-         if (! isLinearlyIndependent (&selection[0], &selection[l]))
-         {
-            return M - numVectors + 1;
-         }
-#endif
       }
-      while (next_partition (&partition[0], &partition[DIM]));
-   }
 
-   return lb;
+      if (! isLinearlyIndependent (&selection[0], &selection[l]))
+      {
+         return false;
+      }
+   }
+   while (L::next_partition (&partition[0], &partition[dim]));
+
+   return true;
 }
 
 
-template<class T>
-int L::t_parameter2 (
-   const L::GeneratorMatrix2<T> &gm, int lb, int ub, int maxRows)
+/**
+ *  checkRestrictedT0
+ *
+ *  Checks if (at least) a certain thickness is present.  Only partitions with
+ *  at most _maxRows_ per matrix are considered.
+ *
+ *  The check is performed under the assumption that a thickness of
+ *  _thickness_-1 is present.
+ *
+ *  If _dimOpt_ is true, only partitions containing a vector from the last
+ *  matrix are checked.
+ */
+
+template<typename T>
+bool TCalc2<T>::checkRestrictedTO (int thickness, int maxRows)
 {
-   const int DIM = gm.getDimension();
-   const int M   = gm.getM();
+   if (thickness > maxRows * dim)  return true;
 
-   if (maxRows > int (gm.getTotalPrec()))
-   {
-      throw InternalError (__FILE__, __LINE__);
-   }
-
-   lb = max (lb, 0);
-   ub = min (ub, M);
-
-   if (lb > ub)  throw InternalError (__FILE__, __LINE__);
-   if (lb == ub)  return lb;
-
-   Array<T> c (M * DIM);
-   Array<T> selection (M-lb);
-   Array<int> partition (DIM);
-
-   // Copy Generator Matrix into c-array (containing tranposed matrices)
-
-   for (int d = 0; d < DIM; ++d)
-   {
-      for (int b = 0; b < M; ++b)
-      {
-         T x = 0;
-
-         for (int r = 0; r < M; ++r)  x = (x << 1) + gm(d,r,b);
-
-         c [d * M + b] = x;
-      }
-   }
-
-   // try to select 1, 2, 3, ... M vectors (modulo ub/lb)
+   // choose these _numVectors_ vectors from c
    
-   for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
+   L::initial_partition (&partition[0], &partition[dim], maxRows, thickness);
+
+   do
    {
-      if (numVectors > maxRows * DIM)  break;
+      // copy the selected vectors
+      // the last vectors for each dimension MUST be part of the linear
+      // combination. We add them up and put them into selection[0].
 
-      // choose these _numVectors_ vectors from c
-      
-      initial_partition (&partition[0], &partition[DIM], maxRows, numVectors);
+      selection [0] = 0;
+      unsigned l = 1;
 
-#if 0
-      // if we have checkt a low-dimensional submatrix already, at least one
-      // vector has to come from the new dimension
-
-      if (dimOpt)
+      for (int d = 0; d < dim; ++d)
       {
-         ++partition [DIM-1];
-         --partition [0];
-      }
-#endif
-
-      do
-      {
-         // copy the selected vectors
-         // the last vectors for each dimension MUST be part of the linear
-         // combination. We add them up and put them into selection[0].
-
-         selection [0] = 0;
-         unsigned l = 1;
-
-         for (int d = 0; d < DIM; ++d)
+         if (partition[d] > 0)
          {
-            if (partition[d] > 0)
-            {
-               selection [0] ^= c [d * M + partition[d]-1];
+            selection [0] ^= c [d * totalPrec + partition[d]-1];
 
-               for (int i = 0; i < partition[d]-1; ++i)
-               {
-                  selection[l++] = c [d * M + i];
-               }
+            for (int i = 0; i < partition[d]-1; ++i)
+            {
+               selection[l++] = c [d * totalPrec + i];
             }
          }
+      }
 
-         if (! isLinearlyIndependent (&selection[0], &selection[l]))
+      if (! isLinearlyIndependent (&selection[0], &selection[l]))
+      {
+         return false;
+      }
+   }
+   while (L::next_partition (&partition[0], &partition[dim], maxRows));
+
+   return true;
+}
+
+/**
+ *  check()
+ *
+ *  Checks if (at least) a certain thickness is present. Only partitions with
+ *  at least _maxRows_ per matrix considered.
+ *
+ *  If _dimOpt_ is true, only partitions containing a vector from the last
+ *  matrix are checked.
+ */
+
+template<typename T>
+bool TCalc2<T>::checkRestricted (int thickness, int maxRows)
+{
+   if (thickness > maxRows * dim)  return true;;
+
+   // choose these _numVectors_ vectors from c
+   
+   L::initial_partition (&partition[0], &partition[dim], maxRows, thickness);
+
+   do
+   {
+      // copy the selected vectors
+
+      unsigned l = 0;
+
+      for (int d = 0; d < dim; ++d)
+      {
+         for (int i = 0; i < partition[d]; ++i)
          {
-            return M - numVectors + 1;
+            selection [l++] = c [d * totalPrec + i];
          }
       }
-      while (next_partition (&partition[0], &partition[DIM], maxRows));
-   }
 
-   return lb;
+      if (! isLinearlyIndependent (&selection[0], &selection[l]))
+      {
+         return false;
+      }
+   }
+   while (L::next_partition (&partition[0], &partition[dim], maxRows));
+
+   return true;
+}
+
+/**
+ *  check()
+ *
+ *  Checks if (at least) a certain thickness is present. Only partitions with
+ *  at most _maxRows_ per matrix considered.
+ *
+ *  The check is performed under the assumption that the thickness is present
+ *  considerung at most _maxRows_-1 per matrix. 
+ *
+ *  If _dimOpt_ is true, only partitions containing a vector from the last
+ *  matrix are checked.
+ */
+
+template<typename T>
+bool TCalc2<T>::checkRestrictedRO (int thickness, int maxRows)
+{
+   if (thickness > maxRows * dim)  return true;;
+
+   // choose these _numVectors_ vectors from c
+   
+   L::initial_partition (&partition[0], &partition[dim], maxRows, thickness);
+
+   do
+   {
+      // copy the selected vectors
+
+      unsigned l = 0;
+      bool fullColumn = false;
+
+      for (int d = 0; d < dim; ++d)
+      {
+         if (partition[d] == maxRows)  fullColumn = true;
+
+         for (int i = 0; i < partition[d]; ++i)
+         {
+            selection [l++] = c [d * totalPrec + i];
+         }
+      }
+
+      if (! fullColumn)  continue;
+
+      if (! isLinearlyIndependent (&selection[0], &selection[l]))
+      {
+         return false;
+      }
+   }
+   while (L::next_partition (&partition[0], &partition[dim], maxRows));
+
+   return true;
 }
 
 
-/***********  General Case  **************************************************/
+/***********  T Calc Gen  ****************************************************/
 
 
-template<class T>
-int L::t_parameter (
-   const L::GeneratorMatrixGen<T> &gm, int lb, int ub, bool dimOpt)
+class TCalcGen
 {
-   if (gm.getVectorization() != 1)  throw FIXME (__FILE__, __LINE__);
+public:
+   TCalcGen (const L::GeneratorMatrixGen<unsigned char> &);
 
+   bool check (int thickness, bool dimOpt);
+   bool checkRestricted (int thickness, int maxRows);
+   bool checkRestrictedRO (int thickness, int maxRows);
+
+private:
+   const L::GeneratorMatrixGen<unsigned char> & gm;
+   L::Array<unsigned char> selection;
+   L::Array<int> partition;
+   L::LookupGaloisField<unsigned char> field;
+};
+
+TCalcGen::TCalcGen (const L::GeneratorMatrixGen<unsigned char> &_gm)
+   : gm (_gm),
+     selection (L::sqr (_gm.getM())),
+     partition (_gm.getDimension()),
+     field (_gm.getBase())
+{}
+
+bool TCalcGen::check (int thickness, bool dimOpt)
+{
+   const int M   = gm.getM();
    const int DIM = gm.getDimension();
+      
+   L::initial_partition (&partition[0], &partition[DIM], thickness);
+
+   // if we have checked a low-dimensional submatrix already, at least one
+   // vector must come from the new dimension
+
+   if (dimOpt)
+   {
+      ++partition [DIM-1];
+      --partition [0];
+   }
+
+   do
+   {
+      // copy the selected vectors
+      // the last vectors for each dimension MUST be part of the linear
+      // combination. We add them up and put them into selection[0].
+
+      unsigned l = 0;
+
+      for (int d = 0; d < DIM; ++d)
+      {
+         for (int i = 0; i < partition[d]; ++i)
+         {
+            for (int j = 0; j < M; ++j)
+            {
+               selection [l * M + j] = gm (d, j, i);
+            }
+            ++l;
+         }
+      }
+
+      if (! isLinearlyIndependent (field, &selection[0], M, l))  return false;
+   }
+   while (L::next_partition (&partition[0], &partition[DIM]));
+
+   return true;
+}
+
+bool TCalcGen::checkRestricted (int thickness, int maxRows)
+{
+   const int M   = gm.getM();
+   const int DIM = gm.getDimension();
+   
+   if (thickness > maxRows * DIM)  return true;
+
+   L::initial_partition (&partition[0], &partition[DIM], maxRows, thickness);
+
+   do
+   {
+      // copy the selected vectors
+      // the last vectors for each dimension MUST be part of the linear
+      // combination. We add them up and put them into selection[0].
+
+      unsigned l = 0;
+
+      for (int d = 0; d < DIM; ++d)
+      {
+         for (int i = 0; i < partition[d]; ++i)
+         {
+            for (int j = 0; j < M; ++j)
+            {
+               selection [l * M + j] = gm (d, j, i);
+            }
+            ++l;
+         }
+      }
+
+      if (! isLinearlyIndependent (field, &selection[0], M, l))  return false;
+   }
+   while (L::next_partition (&partition[0], &partition[DIM], maxRows));
+
+   return true;
+}
+
+bool TCalcGen::checkRestrictedRO (int thickness, int maxRows)
+{
+   const int M   = gm.getM();
+   const int DIM = gm.getDimension();
+   
+   if (thickness > maxRows * DIM)  return true;
+
+   L::initial_partition (&partition[0], &partition[DIM], maxRows, thickness);
+
+   do
+   {
+      // copy the selected vectors
+      // the last vectors for each dimension MUST be part of the linear
+      // combination. We add them up and put them into selection[0].
+
+      unsigned l = 0;
+      bool fullColumn = false;
+
+      for (int d = 0; d < DIM; ++d)
+      {
+         if (partition[d] == maxRows)  fullColumn = true;
+
+         for (int i = 0; i < partition[d]; ++i)
+         {
+            for (int j = 0; j < M; ++j)
+            {
+               selection [l * M + j] = gm (d, j, i);
+            }
+            ++l;
+         }
+      }
+
+      if (! fullColumn)  continue;
+
+      if (! isLinearlyIndependent (field, &selection[0], M, l))  return false;
+   }
+   while (L::next_partition (&partition[0], &partition[DIM], maxRows));
+
+   return true;
+}
+
+   inline
+   bool use32bit (const L::GeneratorMatrixGen<unsigned char> &gm)
+   {
+      return gm.getBase() == 2
+          && int(gm.getM()) <= std::numeric_limits<L::u32>::digits;
+   }
+
+}  // anonymous namespace
+
+
+/*****************  Public routines  *****************************************/
+
+
+bool L::confirmT (
+   const L::GeneratorMatrixGen<unsigned char> &gm, int t, TOption opts)
+{
+   if (opts & LOWER_RESTRICTION_OK)  throw FIXME (__FILE__, __LINE__);
+
+   if (t < 0 || t > int (gm.getM()))  throw FIXME (__FILE__, __LINE__);
+   if (gm.getM() - t > gm.getTotalPrec())  return false;
+
+   if (use32bit (gm))
+   {
+      TCalc2<u32> calc (gm, gm.getM() - t);
+
+      if (opts & LARGER_T_OK)
+         return calc.check (gm.getM() - t, opts & LOWER_DIM_OK);
+      else
+         return calc.checkTO (gm.getM() - t, opts & LOWER_DIM_OK);
+   }
+   else
+   {
+      TCalcGen calc (gm);
+      return calc.check (gm.getM() - t, opts & LOWER_DIM_OK);
+   }
+}
+
+bool L::confirmTRestricted (
+   const L::GeneratorMatrixGen<unsigned char> &gm, int t, int maxRows,
+   TOption opts)
+{
+   // missing: LARGER_T_OK, LOWER_DIM_OK
+
+   if (t < 0 || t > int (gm.getM()))  throw FIXME (__FILE__, __LINE__);
+   if (maxRows > int (gm.getTotalPrec()))  throw FIXME (__FILE__, __LINE__);
+
+   if (use32bit (gm))
+   {
+      TCalc2<u32> calc (gm, std::min (unsigned (maxRows), gm.getM() - t));
+
+      if (opts & LOWER_RESTRICTION_OK)
+         return calc.checkRestrictedRO (gm.getM() - t, maxRows);
+      else
+         return calc.checkRestricted   (gm.getM() - t, maxRows);
+   }
+   else
+   {
+      TCalcGen calc (gm);
+
+      if (opts & LOWER_RESTRICTION_OK)
+         return calc.checkRestrictedRO (gm.getM() - t, maxRows);
+      else
+         return calc.checkRestricted   (gm.getM() - t, maxRows);
+   }
+}
+
+int L::tParameter (
+   const L::GeneratorMatrixGen<unsigned char> &gm, int lb, int ub, TOption opts)
+{
+   if (opts & (LOWER_RESTRICTION_OK | LARGER_T_OK))
+   {
+      throw FIXME (__FILE__, __LINE__);
+   }
+
    const int M   = gm.getM();
 
    // theoretical lower bound:
@@ -525,72 +886,48 @@ int L::t_parameter (
         max (0,
         max (M - int (gm.getTotalPrec()),
              min (M - 1,
-                  int (logInt ((gm.getBase()-1) * DIM, gm.getBase()) - 1)))));
+                  int (L::logInt ((gm.getBase()-1) * gm.getDimension(),
+                                  gm.getBase()) - 1)))));
    ub = min (ub, M);
 
    if (lb > ub)  throw InternalError (__FILE__, __LINE__);
    if (lb == ub)  return lb;
 
-   Array<T> selection ((M-lb) * M);
-   Array<int> partition (DIM);
-   LookupGaloisField<unsigned char> field (gm.getBase());
-
-   // try to select 1, 2, 3, ... M vectors (modulo ub/lb)
-   
-   for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
+   if (use32bit (gm))
    {
-      // choose these _numVectors_ vectors from c
-      
-      initial_partition (&partition[0], &partition[DIM], numVectors);
-
-      // if we have checked a low-dimensional submatrix already, at least one
-      // vector must come from the new dimension
-
-      if (dimOpt)
+      TCalc2<u32> calc (gm, M - lb);
+   
+      for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
       {
-         ++partition [DIM-1];
-         --partition [0];
-      }
-
-      do
-      {
-         // copy the selected vectors
-         // the last vectors for each dimension MUST be part of the linear
-         // combination. We add them up and put them into selection[0].
-
-         unsigned l = 0;
-
-         for (int d = 0; d < DIM; ++d)
-         {
-            for (int i = 0; i < partition[d]; ++i)
-            {
-               for (int j = 0; j < M; ++j)
-               {
-                  selection [l * M + j] = gm (d, j, i);
-               }
-               ++l;
-            }
-         }
-
-         if (! isLinearlyIndependent (field, &selection[0], M, l))
+         if (! calc.checkTO (numVectors, opts & LOWER_DIM_OK))
          {
             return M - numVectors + 1;
          }
       }
-      while (next_partition (&partition[0], &partition[DIM]));
+   }
+   else
+   {
+      TCalcGen calc (gm);
+   
+      for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
+      {
+         if (! calc.check (numVectors, opts & LOWER_DIM_OK))
+         {
+            return M - numVectors + 1;
+         }
+      }
    }
 
    return lb;
 }
 
-template<class T>
-int L::t_parameter2 (
-   const L::GeneratorMatrixGen<T> &gm, int lb, int ub, int maxRows)
+int L::tParameterRestricted (
+   const L::GeneratorMatrixGen<unsigned char> &gm,
+   int lb, int ub, int maxRows, TOption opts)
 {
-   if (gm.getVectorization() != 1)  throw FIXME (__FILE__, __LINE__);
+   if (opts)  throw FIXME (__FILE__, __LINE__);
 
-   const int DIM = gm.getDimension();
-   const int M   = gm.getM();
+   const int M = gm.getM();
 
    if (maxRows > int (gm.getTotalPrec()))
    {
@@ -603,77 +940,32 @@ int L::t_parameter2 (
    if (lb > ub)  throw InternalError (__FILE__, __LINE__);
    if (lb == ub)  return lb;
 
-   Array<T> selection ((M-lb) * M);
-   Array<int> partition (DIM);
-   LookupGaloisField<unsigned char> field (gm.getBase());
-
-   // try to select 1, 2, 3, ... M vectors (modulo ub/lb)
-   
-   for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
+   if (use32bit (gm))
    {
-      // choose these _numVectors_ vectors from c
-      
-      if (numVectors > maxRows * DIM)  break;
-
-      initial_partition (&partition[0], &partition[DIM], maxRows, numVectors);
-
-#if 0
-      // if we have checked a low-dimensional submatrix already, at least one
-      // vector must come from the new dimension
-
-      if (dimOpt)
+      TCalc2<u32> calc (gm, std::min (maxRows, M - lb));
+   
+      for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
       {
-         ++partition [DIM-1];
-         --partition [0];
-      }
-#endif
-
-      do
-      {
-         // copy the selected vectors
-         // the last vectors for each dimension MUST be part of the linear
-         // combination. We add them up and put them into selection[0].
-
-         unsigned l = 0;
-
-         for (int d = 0; d < DIM; ++d)
-         {
-            for (int i = 0; i < partition[d]; ++i)
-            {
-               for (int j = 0; j < M; ++j)
-               {
-                  selection [l * M + j] = gm (d, j, i);
-               }
-               ++l;
-            }
-         }
-
-         if (! isLinearlyIndependent (field, &selection[0], M, l))
+         if (! calc.checkRestrictedTO (numVectors, maxRows))
          {
             return M - numVectors + 1;
          }
       }
-      while (next_partition (&partition[0], &partition[DIM], maxRows));
+   }
+   else
+   {
+      TCalcGen calc (gm);
+   
+      for (int numVectors = M - ub + 1; numVectors <= M - lb; ++numVectors)
+      {
+         if (! calc.checkRestricted (numVectors, maxRows))
+         {
+            return M - numVectors + 1;
+         }
+      }
    }
 
    return lb;
 }
 
-namespace HIntLib
-{
-#define HINTLIB_INSTANTIATE(X) \
-   template int t_parameter<> (const GeneratorMatrix2<X> &, int, int, bool); \
-   template int t_parameter2<>(const GeneratorMatrix2<X> &, int, int, int);
-
-   HINTLIB_INSTANTIATE (u32)
-   HINTLIB_INSTANTIATE (u64)
-#undef HINTLIB_INSTANTIATE
-
-#define HINTLIB_INSTANTIATE(X) \
-   template int t_parameter<> (const GeneratorMatrixGen<X> &, int, int, bool); \
-   template int t_parameter2<>(const GeneratorMatrixGen<X> &, int, int, int);
-
-   HINTLIB_INSTANTIATE (unsigned char)
-#undef HINTLIB_INSTANTIATE
-}
 

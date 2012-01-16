@@ -38,9 +38,7 @@
 #include <HIntLib/regioncollection.h>
 #include <HIntLib/embeddedrule.h>
 #include <HIntLib/buffer.h>
-#include <HIntLib/adapt.h>
 #include <HIntLib/exception.h>
-#include <HIntLib/bitop.h>
 
 
 namespace L = HIntLib;
@@ -48,13 +46,16 @@ namespace L = HIntLib;
 
 L::AdaptIntegratorLocalList::AdaptIntegratorLocalList (
    const EmbeddedRuleFactory *fac,
+   MPI_Comm _comm,
    unsigned aFrequency, unsigned maxDimension)
-: EmbeddedRuleBasedIntegrator (fac), frequency (aFrequency)
+: EmbeddedRuleBasedIntegrator (fac),
+  comm (_comm),
+  frequency (aFrequency)
 {
    // Determine number of nodes and own rank
 
-   MPI_Comm_rank (MPI_COMM_WORLD, &rank);
-   MPI_Comm_size (MPI_COMM_WORLD, &nodes);
+   MPI_Comm_rank (comm, &rank);
+   MPI_Comm_size (comm, &nodes);
 
    // Determine topology
  
@@ -195,7 +196,7 @@ void L::AdaptIntegratorLocalList::doExchange2 (
    MPI_Sendrecv (
       &sendBuffer,    2, MPIType<real>::type, succ [dir], ERROR_CMP,
       &receiveBuffer, 2, MPIType<real>::type, pred [dir], ERROR_CMP,
-      MPI_COMM_WORLD, &status);
+      comm, &status);
 
    if (sendBuffer.errorTotal == receiveBuffer.errorTotal)  return;
 
@@ -208,7 +209,7 @@ void L::AdaptIntegratorLocalList::doExchange2 (
 
       // Create output buffer
  
-      SendBuffer buffer (MPI_COMM_WORLD);
+      SendBuffer buffer (comm);
  
       // Pack regions into Buffer
  
@@ -237,7 +238,7 @@ void L::AdaptIntegratorLocalList::doExchange2 (
 
       // Receive data regions and store them in Region Collection
 
-      RecvBuffer buffer (MPI_COMM_WORLD, succ [dir], REGIONS);
+      RecvBuffer buffer (comm, succ [dir], REGIONS);
  
       while (! buffer.empty ())  rc.push (new Region (dim, buffer));
    }
@@ -259,12 +260,12 @@ void L::AdaptIntegratorLocalList::doExchange (
       MPI_Sendrecv (
          &error,      1, MPIType<real>::type, succ [dir], ERROR_CMP,
          &otherError, 1, MPIType<real>::type, pred [dir], ERROR_CMP,
-         MPI_COMM_WORLD, &status);
+         comm, &status);
    }
 
    // Create output buffer and pack regions into it
  
-   SendBuffer outBuffer (MPI_COMM_WORLD);
+   SendBuffer outBuffer (comm);
 
    while (   rc.size () >= 2
           && otherError + 2 * rc.getTopError () < rc.getError ())
@@ -281,7 +282,7 @@ void L::AdaptIntegratorLocalList::doExchange (
 
    // Exchange Regions
  
-   RecvBuffer inBuffer (MPI_COMM_WORLD);
+   RecvBuffer inBuffer (comm);
  
    bufferSendRecv (outBuffer, pred [dir], REGIONS,
                    inBuffer,  succ [dir], REGIONS);
@@ -293,7 +294,7 @@ void L::AdaptIntegratorLocalList::doExchange (
 
 
 void L::AdaptIntegratorLocalList::doExchangeOld (
-   RegionCollection &rc, unsigned dir, unsigned dim)
+   RegionCollection &rc, unsigned dir, unsigned /* dim */)
 {
    MPI_Status status;
 
@@ -310,7 +311,7 @@ void L::AdaptIntegratorLocalList::doExchangeOld (
    MPI_Sendrecv (
       MPI_BOTTOM, 1, oldType, succ [dir], REGIONS,
       MPI_BOTTOM, 1, newType, pred [dir], REGIONS,
-      MPI_COMM_WORLD, &status);
+      comm, &status);
  
    p->initAfterReceive ();
  
@@ -322,7 +323,7 @@ void L::AdaptIntegratorLocalList::doExchangeOld (
 
 
 L::Integrator::Status L::AdaptIntegratorLocalList::integrate (
-   Function &f, const Hypercube &h, Index maxEvaluations,
+   Integrand &f, const Hypercube &h, Index maxEvaluations,
    real reqAbsError, real reqRelError, EstErr &finalEE) 
 {
    checkDimension(h, f);
@@ -400,8 +401,7 @@ L::Integrator::Status L::AdaptIntegratorLocalList::integrate (
 
    EstErr ee = rc.getEstErr ();
 
-   MPI_Reduce (&ee, &finalEE, 2, MPIType<real>::type, MPI_SUM, 0,
-               MPI_COMM_WORLD);
+   MPI_Reduce (&ee, &finalEE, 2, MPIType<real>::type, MPI_SUM, 0, comm);
 
    // Only node 0 returns a result
 

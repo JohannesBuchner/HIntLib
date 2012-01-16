@@ -44,6 +44,7 @@
 
 #ifdef __GNUG__
 #pragma interface
+// Implementation in mymath.cpp
 #endif
 
 #include <float.h>

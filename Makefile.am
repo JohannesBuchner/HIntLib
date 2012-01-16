@@ -3,3 +3,4 @@
 # SUBDIRS = libtest src share tests development
 SUBDIRS = libtest src share tests
 
+EXTRA_DIST = manual.pdf

@@ -35,7 +35,7 @@
   #include <HIntLib/fallback_sstream.h>
 #endif
 
-#include <HIntLib/generatormatrix.h>
+#include <HIntLib/generatormatrixgen.h>
 #include <HIntLib/prime.h>
 #include <HIntLib/exception.h>
 
@@ -357,9 +357,9 @@ L::loadLibSeq (std::istream &str)
 
                m = v.size();
                gm = new HeapAllocatedGeneratorMatrixGen<unsigned char>
-                              (base, 1, dim, m, prec);
+                              (base, dim, m, prec);
 
-               for (unsigned r = 0; r < m; ++r)  gm->setv (d, r, b, v[r]);
+               for (unsigned r = 0; r < m; ++r)  gm->setd (d, r, b, v[r]);
             }
             else
             {
@@ -368,7 +368,7 @@ L::loadLibSeq (std::istream &str)
                   t.expectNumber ();
                   unsigned x = t.getNumber();
                   if (x >= base)  t.throwException ("Entry larger than base");
-                  gm->setv (d, r, b, x);
+                  gm->setd (d, r, b, x);
                }
                t.expectName (keyEndLine);
             }
@@ -469,7 +469,7 @@ L::loadBinary (std::istream &str)
    if (! str)  throw FIXME (__FILE__, __LINE__);
 
    HeapAllocatedGeneratorMatrixGen<unsigned char>* gm =
-      new HeapAllocatedGeneratorMatrixGen<unsigned char>(base, 1, dim, m, prec);
+      new HeapAllocatedGeneratorMatrixGen<unsigned char>(base, dim, m, prec);
 
    char check = 0;
    
@@ -480,7 +480,7 @@ L::loadBinary (std::istream &str)
          for (unsigned r = 0; r < gm->getM(); ++r)
          {
             char digit = str.get ();
-            gm->setv (d, r, b, digit);
+            gm->setd (d, r, b, digit);
             check ^= digit;
          }
       }
@@ -520,7 +520,7 @@ void L::GeneratorMatrix::binaryDump (std::ostream &o) const
 
    o << binaryMagic;
    o.put (getBase());
-   o.put (getDimension() & char (-1));
+   o.put (getDimension() & ~char(0));
    o.put (getDimension() >> numeric_limits<char>::digits);
    o.put (getM());
    o.put (getPrec());

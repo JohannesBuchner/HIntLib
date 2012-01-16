@@ -31,12 +31,12 @@
 
 #include <HIntLib/exception.h>
 #include <HIntLib/hypercube.h>
-#include <HIntLib/function.h>
+#include <HIntLib/integrand.h>
 
 
 namespace L = HIntLib;
 
-void L::Integrator::checkDimension (const Hypercube &h, const Function &f)
+void L::Integrator::checkDimension (const Hypercube &h, const Integrand &f)
 {
    L::checkDimensionEqual (h.getDimension(), f.getDimension());
 }

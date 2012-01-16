@@ -35,42 +35,60 @@ namespace HIntLib
 {
 
 /**
+ *  Class Diagram
+ *
+ *  RefCountingAlgebra
+ *  |
+ *  \--LookupFieldBB
+ *     |
+ *     \--LookupFieldBase<T>
+ *        |
+ *        |--LookupField<T>
+ *        |
+ *        \--LookupFieldMulOnly<T>
+ *           |
+ *           |--LookupFieldPow2
+ *           \--LookupFieldPrime
+ */
+
+/**
  *  Ref Counting Algebra
  */
 
 class RefCountingAlgebra
 {
 private:
-   struct RefCount
-   {
-      size_t size;
-      unsigned count;
-   };
+   unsigned* refCount;
+   size_t size;
 
-   RefCount* ref;
-
-   void copy()  { if (ref->count)  ++ref->count; }
+   void copy()  { if (*refCount)  ++*refCount; }
    void destroy();
-   char* charPtr() const  { return reinterpret_cast<char*> (ref + 1); }
+   char* charPtr() const  { return reinterpret_cast<char*> (refCount + 1); }
 
 protected:
    explicit RefCountingAlgebra (size_t memory);
-   RefCountingAlgebra (const RefCountingAlgebra &f) : ref (f.ref)  { copy(); }
+            RefCountingAlgebra (size_t memory, unsigned* data);
+   RefCountingAlgebra (const RefCountingAlgebra &f)
+      : refCount (f.refCount), size (f.size)  { copy(); }
+
    RefCountingAlgebra & operator= (const RefCountingAlgebra &);
 
    bool operator== (const RefCountingAlgebra &)  const;
 
    void write();
+   virtual void setPointers() = 0;
 
-   unsigned getRefCount() const  { return ref->count; }
-   void* getDataPtr() const  { return reinterpret_cast<void*> (ref + 1); }
+   unsigned getRefCount() const  { return *refCount; }
+   void* getDataPtr() const  { return reinterpret_cast<void*> (refCount + 1); }
 
 public:
-   ~RefCountingAlgebra()  { destroy(); }
+   virtual ~RefCountingAlgebra()  { destroy(); }
 
    void clear ();
 };
 
+
+/*****************************************************************************/
 
 /**
  *  Printing in namespace Priv
@@ -93,24 +111,26 @@ class LookupFieldBB : public RefCountingAlgebra
 {
 public:
    unsigned size() const  { return s; }
-   unsigned characteristic() const  { return c; }
+   unsigned characteristic() const
+      { return *static_cast<unsigned*> (getDataPtr()); }
+   void setCharacteristic(unsigned);
 
    void printSuffix (std::ostream &o) const  { Priv::printSuffix (o, s); }
 
 protected:
-   LookupFieldBB (unsigned _s, unsigned memory)
-      : RefCountingAlgebra (memory), s(_s), c(_s) {}
+   LookupFieldBB (unsigned _s, size_t memory)
+      : RefCountingAlgebra (memory), s (_s)  { setCharacteristic (s); }
+   LookupFieldBB (unsigned _s, size_t memory, unsigned* data)
+      : RefCountingAlgebra (memory, data), s (_s)  {}
    LookupFieldBB (const LookupFieldBB &f)
-      : RefCountingAlgebra (f), s (f.s), c (f.c) {}
+      : RefCountingAlgebra (f), s (f.s)  {}
+
    LookupFieldBB& operator=(const LookupFieldBB&);
    
    bool operator== (const LookupFieldBB &)  const;
 
-   void setCharacteristic(unsigned _c)  { c = _c; }
-
 private:
    unsigned s;
-   unsigned c;
 };
 
 inline std::ostream& operator<< (std::ostream &o, const LookupFieldBB &f)
@@ -125,12 +145,20 @@ template <typename T>
 class LookupFieldBase : public LookupFieldBB,
                         public TrivialFieldMembers<T>
 {
+private:
+   void privSetPointers();
+
 protected:
    T* mulTable;
    T* recTable;
 
    LookupFieldBase (unsigned _s, unsigned numData);
-   LookupFieldBase (const LookupFieldBase<T> &r) : LookupFieldBB (r) {}
+   LookupFieldBase (const LookupFieldBase<T> &r) : LookupFieldBB (r)
+      { privSetPointers(); }
+   LookupFieldBase & operator= (const LookupFieldBase<T> &r)
+      { LookupFieldBB::operator=(r); privSetPointers(); return *this; }
+
+   void setPointers()  { privSetPointers(); }
 
 public:
    typedef field_tag algebra_category;
@@ -187,14 +215,17 @@ private:
    T* addTable;
    T* negTable;
 
+   void privSetPointers();
+
+protected:
    void setPointers();
 
 public:
    explicit LookupField (unsigned);
    LookupField (const LookupField<T> &r) : LookupFieldBase<T> (r)
-      { setPointers(); }
+      { privSetPointers(); }
    LookupField & operator= (const LookupField<T> &r)
-      { LookupFieldBB::operator=(r); setPointers(); return *this; }
+      { LookupFieldBase<T>::operator=(r); privSetPointers(); return *this; }
 
    bool is0 (T a) const  { return a == T(0); }
    T zero() const  { return T(0); }
@@ -226,16 +257,11 @@ public:
 template <typename T>
 class LookupFieldMulOnly : public LookupFieldBase<T>
 {
-private:
-   void setPointers();
-
 protected:
-   explicit LookupFieldMulOnly (unsigned);
-   LookupFieldMulOnly (const LookupFieldMulOnly<T> &r) : LookupFieldBase<T>(r)
-      { setPointers(); }
-
-   LookupFieldMulOnly & operator= (const LookupFieldMulOnly<T> &r)
-      { LookupFieldBB::operator=(r); setPointers(); return *this; }
+   explicit LookupFieldMulOnly (unsigned _s)
+      : LookupFieldBase<T> (_s,  _s * (_s + 1)) {}
+   LookupFieldMulOnly (const LookupFieldMulOnly<T> &r)
+      : LookupFieldBase<T> (r) {}
 };
 
 
@@ -252,7 +278,7 @@ public:
    LookupFieldPow2 (const LookupFieldPow2<T> &r) : LookupFieldMulOnly<T>(r) {}
 
    LookupFieldPow2 & operator= (const LookupFieldPow2<T> &r)
-      { LookupFieldMulOnly<T>::operator=(r); return *this; }
+      { LookupFieldBase<T>::operator=(r); return *this; }
 };
 
 
@@ -268,6 +294,9 @@ public:
 
    explicit LookupFieldPrime (unsigned _s) : LookupFieldMulOnly<T> (_s) {}
    LookupFieldPrime (const LookupFieldPow2<T> &r) : LookupFieldMulOnly<T> (r) {}
+
+   LookupFieldPrime & operator= (const LookupFieldPrime<T> &r)
+      { LookupFieldBase<T>::operator=(r); return *this; }
 
    T zero () const  { return T(0); }
    bool is0(const T& a) const  { return !a; }
@@ -328,7 +357,7 @@ public:
  */
 
 template<typename T, class A>
-void copy (LookupFieldBase<T> & dest, const A src);
+void copy (LookupFieldMulOnly<T> & dest, const A src);
 template<typename T, class A>
 void copy (LookupField<T> & dest, const A src);
 

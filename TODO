@@ -4,3 +4,6 @@ Make configure.ac determine the correct values for
         - NO_EXCEPTIONS
         - HAVE_REAL_INFINITY
 
+
+DOCUMENTATION
+

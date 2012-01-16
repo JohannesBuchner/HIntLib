@@ -139,7 +139,7 @@ GM64* L::Make::generatorMatrix2 (int n, unsigned dim)
       {
          for (unsigned r = 0; r < m->getM(); ++r)
             for (unsigned b = 0; b < m->getPrec(); ++b)
-               m->set(d, r, b, mt->equidist (2));
+               m->setd(d, r, b, mt->equidist (2));
       }
       return m;
    }
@@ -189,9 +189,6 @@ GMGen8* L::Make::generatorMatrixGen (int n, unsigned dim)
     *        xx base of Niederreiter Matrix
     */
 
-   GMCopy copy;
-   copy.dim(dim);
-
    if (n == 0)
    {
       return new Faure (dim);
@@ -199,12 +196,15 @@ GMGen8* L::Make::generatorMatrixGen (int n, unsigned dim)
    if (n == 1)
    {
       if (dim > gm64[0]->getDimension())  throw InvalidDimension(dim);
+
+      GMCopy copy;
+      copy.dim(dim);
       return new GeneratorMatrixGenCopy<unsigned char> (*gm64 [0], copy);
    }
    if (n == 6)
    {
       if (dim == 0)
-         return new HeapAllocatedGeneratorMatrixGen<unsigned char> (2, 1, 0);
+         return new HeapAllocatedGeneratorMatrixGen<unsigned char> (2, 0);
 
       return loadNiederreiterXing (dim < 4 ? 4 : dim);
    }
@@ -212,16 +212,14 @@ GMGen8* L::Make::generatorMatrixGen (int n, unsigned dim)
    {
       unsigned prime, power;
 
-      try
+      if (Prime::isPrimePower (n, prime, power))
       {
-         Prime::factorPrimePower (n, prime, power);
+         return new NiederreiterMatrixPP (dim, prime, power);
       }
-      catch (NotAPrimePower &e)
+      else 
       {
          throw GeneratorMatrixDoesNotExist (n);
       }
-
-      return new NiederreiterMatrixPP (dim, prime, power);
    }
 
    throw GeneratorMatrixDoesNotExist (n);

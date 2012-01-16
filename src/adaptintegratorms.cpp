@@ -37,7 +37,6 @@
 #include <HIntLib/embeddedrule.h>
 #include <HIntLib/regioncollection.h>
 #include <HIntLib/buffer.h>
-#include <HIntLib/adapt.h>
 #include <HIntLib/array.h>
 #include <HIntLib/exception_MPI.h>
 #include <HIntLib/bitop.h>
@@ -86,12 +85,13 @@ void L::AdaptIntegratorMS::sendTerminationSignal ()
 
 inline
 void L::AdaptIntegratorMS::sendTopRegionToSlave (
-      RegionCollection &rc, int w, EstErr* localEE, unsigned n)
+      RegionCollection &rc, int w, EstErr* localEE,
+      RegionCollection::size_type n)
 {
    // PA::send (PA::SS, 0, w);
    SendBuffer buffer (comm);
 
-   for (unsigned i = 0; i < n; ++i)
+   for (RegionCollection::size_type i = 0; i < n; ++i)
    {
       Region *r = rc.top();
 
@@ -108,7 +108,7 @@ void L::AdaptIntegratorMS::sendTopRegionToSlave (
 }
 
 void L::AdaptIntegratorMS::sendTopRegionToAllSlaves (
-       RegionCollection &rc, EstErr* localEE, unsigned n)
+       RegionCollection &rc, EstErr* localEE, RegionCollection::size_type n)
 {
    Array<Region*> regions (n * numWorkers());
 
@@ -187,7 +187,7 @@ void L::AdaptIntegratorMS::recvRegionsFromAllSlaves (
  */
 
 Integrator::Status L::AdaptIntegratorMSAsync::master (
-   Function &f, const Hypercube &h, EmbeddedRule &rule,
+   const Hypercube &h,
    real reqAbsError, real reqRelError, EstErr &ee, Index maxIter)
 {
    const unsigned dim = h.getDimension ();
@@ -265,7 +265,7 @@ Integrator::Status L::AdaptIntegratorMSAsync::master (
  */
 
 Integrator::Status L::AdaptIntegratorMSInter::master (
-   Function &f, const Hypercube &h, EmbeddedRule &rule,
+   const Hypercube &h,
    real reqAbsError, real reqRelError, EstErr &ee, Index maxIter)
 {
    const unsigned dim = h.getDimension ();
@@ -341,7 +341,7 @@ Integrator::Status L::AdaptIntegratorMSInter::master (
  */
 
 Integrator::Status L::AdaptIntegratorMSSync::master (
-   Function &f, const Hypercube &h, EmbeddedRule &rule,
+   const Hypercube &h,
    real reqAbsError, real reqRelError, EstErr &ee, Index maxIter)
 { 
    const unsigned dim = h.getDimension ();
@@ -389,7 +389,7 @@ Integrator::Status L::AdaptIntegratorMSSync::master (
 
 inline
 void L::AdaptIntegratorMS::slave (
-   Function &f, const Hypercube &h, EmbeddedRule& rule, unsigned interval)
+   Integrand &f, const Hypercube &h, EmbeddedRule& rule, unsigned interval)
 {
    // PA::calc (PA::CS, rank);
    // Create Region Collection and push initial hypercube
@@ -466,7 +466,7 @@ void L::AdaptIntegratorMS::slave (
 
 
 Integrator::Status L::AdaptIntegratorMS::integrate (
-   Function &f, const Hypercube &h, Index maxEvaluations,
+   Integrand &f, const Hypercube &h, Index maxEvaluations,
    real reqAbsError, real reqRelError, EstErr &ee) 
 {
     checkDimension (h, f);
@@ -529,7 +529,7 @@ Integrator::Status L::AdaptIntegratorMS::integrate (
 
    if (rank == 0)
    {
-      return master (f, h, *rule, reqAbsError, reqRelError, ee, maxIter);
+      return master (h, reqAbsError, reqRelError, ee, maxIter);
    }
    else
    {

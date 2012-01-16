@@ -86,14 +86,14 @@ namespace HIntLib
    template bool IntegerRing<X>::isPrime(X) const; \
    template bool IntegerRing<X>::isComposit(X) const;
 
-   HINTLIB_INSTANTIATE(int);
+   HINTLIB_INSTANTIATE(int)
 #undef HINTLIB_INSTANTIATE
 
 #define HINTLIB_INSTANTIATE(X) \
    template X RealField<X>::element(unsigned) const; \
    template unsigned RealField<X>::index(X) const; \
 
-   HINTLIB_INSTANTIATE(real);
+   HINTLIB_INSTANTIATE(real)
 #undef HINTLIB_INSTANTIATE
 }
 

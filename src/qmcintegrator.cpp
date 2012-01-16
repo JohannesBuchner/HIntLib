@@ -37,7 +37,7 @@
 #include <HIntLib/pointset.h>
 #include <HIntLib/exception.h>
 #include <HIntLib/statistic.h>
-#include <HIntLib/function.h>
+#include <HIntLib/integrand.h>
 #include <HIntLib/hypercube.h>
 
 
@@ -50,7 +50,7 @@
 namespace L = HIntLib;
 
 L::Integrator::Status L::NAME(QMCIntegrator)::integrate (
-   Function &f,
+   Integrand &f,
    const Hypercube &h,
    Index n,
    real, real,
@@ -74,7 +74,7 @@ L::Integrator::Status L::NAME(QMCIntegrator)::integrate (
    ps->randomize (getSeed());
    n = ps->getOptimalNumber (n, h);
    Statistic<> stat;
-   Array<real> point (h.getDimension());
+   Point point (h.getDimension());
 
    #ifdef HINTLIB_PARALLEL
       StaticLoadBalancer slb (n);

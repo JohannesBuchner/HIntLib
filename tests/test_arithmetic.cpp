@@ -88,7 +88,12 @@ void doTest (const R &r, const typename R::type& a, ring_tag)
       typename R::type x = a;
       for (unsigned l = 1; l < SS; ++l)
       {
-         DEB3 { r.printShort (cout, r.power (a, l)); cout << '/'; }
+         DEB3
+         {
+            r.printShort (cout, r.power (a, l));
+            DEB4  { cout << '='; r.printShort (cout, x); }
+            cout << '/';
+         }
          if (x != r.power (a, l))  error ("a*...*a != power (a,k)");
          try
          {
@@ -259,7 +264,7 @@ void doTest
  *  Euclidean Ring
  */
 
-static unsigned lastNorm = 0;
+unsigned lastNorm = 0;
 
 template<class R>
 void doTest (const R &r, const typename R::type& a, euclidean_tag)
@@ -672,9 +677,9 @@ void doTest
 
 template<class V>
 void doTest
-   (const V& v, const typename V::type& a,
-                const typename V::type& b,
-                const typename V::type& c, vectorspace_tag)
+   (const V&, const typename V::type&,
+              const typename V::type&,
+              const typename V::type&, vectorspace_tag)
 {}
 
 /*************  Test procedure for groups  ***********************************/

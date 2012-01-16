@@ -4,73 +4,65 @@
 # Header
 ###############################################################################
 
-AC_INIT(HIntLib, 0.0.4, [rudolf.schuerer@sbg.ac.at] )
-AM_INIT_AUTOMAKE(HIntLib, 0.0.4)
-AM_CONFIG_HEADER(config.h)
+# autoconf setup
+
+AC_INIT([HIntLib], 0.0.5, [rudolf.schuerer@sbg.ac.at], [HIntLib])
+AC_CONFIG_SRCDIR([src/HIntLib/integrator.h])
+AC_CONFIG_HEADERS(config.h)
+AC_CONFIG_FILES([Makefile src/Makefile src/HIntLib/Makefile share/Makefile tests/Makefile tests/toms659/Makefile tests/toms738/Makefile libtest/Makefile])
+AC_LANG(C++)
+
+# automake setup
+
+AC_MSG_NOTICE([Initializing automake:])
+AM_INIT_AUTOMAKE
 
 # Information on the package
 
-AC_CONFIG_SRCDIR([src/HIntLib/integrator.h])
-AC_CONFIG_FILES([Makefile src/Makefile src/HIntLib/Makefile share/Makefile tests/Makefile tests/toms659/Makefile tests/toms738/Makefile libtest/Makefile])
-AC_LANG(C++)
+AC_CANONICAL_HOST
 
 ###############################################################################
 # Checks for programs
 ###############################################################################
 
-# C++ Compiler
+# C++ compiler
 
+AC_MSG_NOTICE([Initializing C++ compiler:])
 AC_PROG_CXX
 
 # Fortran Compiler
 
-fortran_check_progs=
-fortran_check_dirs=
+AC_MSG_NOTICE([Initializing Fortran compiler:])
+HL_PROG_F77_REALLY_WORKS
 
-AC_PROG_F77
-
-if test ! -z "${F77}"; then
-   AC_MSG_CHECKING([whether ${F77} really works])
-   AC_LANG_PUSH(Fortran 77)
-   AC_TRY_COMPILE(,[
-      INTEGER I
-      I = 1
-],
-      [fortran_check_progs="compare_with_halton_in_toms659 compare_with_faure_in_toms659 compare_with_sobol_in_toms659 compare_with_nied_2_in_toms738 compare_with_nied_prime_in_toms738 compare_with_nied_pp_in_toms738"
-      fortran_check_dirs="toms659 toms738"]
-      AC_MSG_RESULT(yes), AC_MSG_RESULT(no))
-   AC_LANG_POP(Fortran 77)
-fi 
-
-if test -z "$fortran_check_dirs"; then
-   AC_MSG_WARN([Fortran Compiler does not work. Some tests in the test-suit will be skipped!])
+AM_CONDITIONAL(HAVE_FORTRAN,test "x${hl_cv_prog_f77_really_works}" = xyes)
+if test "x${hl_cv_prog_f77_really_works}" = xno; then
+  AC_MSG_WARN([Fortran Compiler does not work. Some tests in the test-suit will be skipped!])
 fi
 
-AC_SUBST(fortran_check_progs)
-AC_SUBST(fortran_check_dirs)
+# C compiler
+# Wo do not need a C compiler for building HIntLib.  However, LibTool requires
+# it for some reason, so we can check for it right here anyway.
+
+AC_MSG_NOTICE([Initializing C compiler:])
+AC_PROG_CC
+
+# LibTool
+
+AC_MSG_NOTICE([Initializing LibTool:])
+AC_DISABLE_STATIC
+AC_PROG_LIBTOOL
 
 # Other programs
 
-AC_PROG_LN_S
-AC_PROG_INSTALL
-
-AM_PROG_LIBTOOL
-if test -z "${GCC}"; then
-AC_MSG_NOTICE([Patching libtool])
-   sed -e 's/^with_gcc=$/with_gcc=no/' libtool > libtool.temp &&
-   mv libtool.temp libtool
-fi
-
+AC_MSG_NOTICE([Checking for other programs])
 AC_CHECK_PROG(HAVE_TAIL,tail,yes)
 AC_CHECK_PROG(HAVE_SORT,sort,yes)
 
+AM_CONDITIONAL(HAVE_TAIL_SORT,test "x$HAVE_TAIL" = xyes -a "x$HAVE_SORT" = xyes)
 if test x"$HAVE_TAIL" != xyes -o x"$HAVE_SORT" != xyes; then
    AC_MSG_WARN([Either tail or sort is missing. Some programs in the test-suite will be skipped!])
-   diff_check_progs=
-else
-   diff_check_progs=qrnsequence
 fi
-AC_SUBST(diff_check_progs)
 
 
 ###############################################################################
@@ -83,6 +75,7 @@ AC_ARG_ENABLE([MPI], AC_HELP_STRING([--disable-MPI], [do not use MPI]),,)
 
 if test "X${MPI_HEADER_PATH}" != "X"; then
   CXXFLAGS="${CXXFLAGS} -I${MPI_HEADER_PATH}"
+  CFLAGS="${CFLAGS} -I${MPI_HEADER_PATH}"
   AC_MSG_NOTICE([Adding compiler flag -I${MPI_HEADER_PATH}])
 fi
 
@@ -91,19 +84,25 @@ fi
 AC_MSG_CHECKING([whether we are using the SGI C++ compiler CC])
 AH_TEMPLATE([SGI],
             [Define if we are compiling with the SGI C++ compiler CC.])
-AH_TEMPLATE([INSTANTIATE_STL],
-       [Define if templates from the STL have to be instantiated manually.])
+
+STL_OBJECT=
 
 case $host/$CXX in
 *-sgi-irix*/CC | *-sgi-irix*/CC\ * )
    AC_MSG_RESULT(yes)
-   CXXFLAGS="${CXXFLAGS} -LANG:std"
+   CXXFLAGS="${CXXFLAGS} -LANG:std -no_prelink -ptused -FE:eliminate_duplicate_inline_copies -FE:template_in_elf_section"
+   AC_MSG_NOTICE([Adding compiler flags -LANG:std -no_prelink -ptused])
+   if test "$LD" = "CC"; then
+      AC_MSG_NOTICE([Adding linker flag -no_prelink])
+      LDFLAGS="${LDFLAGS} -no_prelink -FE:eliminate_duplicate_inline_copies -FE:template_in_elf_section"
+   fi
    AC_DEFINE(SGI)
-   AC_DEFINE(INSTANTIATE_STL)
-   AC_MSG_NOTICE([Adding compiler flag -LANG:std])
+# STL_OBJECT=stl.lo
    ;;
 *) AC_MSG_RESULT(no) ;;
 esac
+
+AC_SUBST(STL_OBJECT)
 
 # Cygwin stuff
 
@@ -121,18 +120,35 @@ esac
 
 AC_SUBST(NOUNDEFINED)
 
-# Check for GNU g++ and ad compiler options
+# Turn on compiler warnings
+
+AC_MSG_CHECKING([compiler flags to turn on warnings])
 
 if test "$GXX" = yes; then
-   AC_MSG_NOTICE([Adding compiler flags for the GNU C++ compiler g++])
-   GNUFLAGS="-ffor-scope  -fstrict-aliasing -Wall -W -Wno-unused -Wctor-dtor-privacy -Wnon-virtual-dtor -Wreorder -Woverloaded-virtual -Wsign-promo"
-fi
-AC_SUBST(GNUFLAGS)
-
+   COMPILERWARNINGS="-ffor-scope -Wall -W -Wno-unused -Wctor-dtor-privacy -Wnon-virtual-dtor -Wreorder -Woverloaded-virtual -Wsign-promo"
 # A number of GCC-options we do NOT use for various reasons
 # -malign-double    # breaks ifstream!!!
 # -Wold-style-cast  # Produces many warnings in the STL
 # -fast-math        # Problems with NaN handling in EstErr::getRelErr()
+
+else
+  case $host/$CXX in
+*-sgi-irix*/CC | *-sgi-irix*/CC\ * )
+   COMPILERWARNINGS="-fullwarn -woff 3649,3625,1424,1468,1209,3626,1375,1210,1174,1506"
+   ;;
+*-linux-*/icpc | *-linux-*/icpc\ * )
+   # COMPILERWARNINGS="-w1"
+   # COMPILERWARNINGS="-w2 -Wall -wd981,383,810,530,279,488"
+   COMPILERWARNINGS="-w2 -Wall -wd981,383,810,530,279,488,1418,1419"
+   ;;
+*)
+   COMPILERWARNINGS=""
+   ;;
+esac
+fi
+
+AC_MSG_RESULT($COMPILERWARNINGS)
+AC_SUBST(COMPILERWARNINGS)
 
 ###############################################################################
 # Checks for libraries.
@@ -152,7 +168,7 @@ AC_CHECK_HEADERS([stddef.h stdlib.h string.h \
                   iomanip iosfwd iostream],,
    AC_MSG_WARN([Headerfile missig. Compilation will probably fail!!!]), [ ])
 
-# Check for cmath of math.h
+# Check for cmath or math.h
 
 AC_CHECK_HEADERS([cmath],,
   AC_CHECK_HEADERS([math.h],,
@@ -178,7 +194,7 @@ AC_CHECK_HEADERS([ostream],,,[ ])
 AC_CHECK_HEADERS([sstream],,
   AC_CHECK_HEADERS([streambuf],,
     AC_CHECK_HEADERS([streambuf.h],,
-      AC_MSG_WARN([Headerfile mising:  We need either sstream or streambuf of streambu.h!!!])
+      AC_MSG_WARN([Headerfile mising:  We need either sstream or streambuf or streambuf.h!!!])
     ,[ ])
   ,[ ])
 ,[ ])
@@ -215,12 +231,78 @@ AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(unsigned long int)
 AC_CHECK_SIZEOF(unsigned long long int)
 
+# --with-index=XXX
+
+hl_index=auto
+
+AC_ARG_WITH([index],
+  AC_HELP_STRING([--with-index=XX],
+     [determines the type of Index. Valid values are 32 (use u32), 64 (use u64), or auto (use u64 if unsigned long is at least 64 bits wide) [[auto]]]),
+  AC_MSG_CHECKING([with-index argument])
+  hl_index="$withval"
+  AC_MSG_RESULT($hl_index)
+,)
+
+if test x"$hl_index" = x32; then
+  AC_MSG_NOTICE([Index is set to u32.])
+else
+if test x"$hl_index" = x64; then
+  AC_MSG_NOTICE([Index is set to u64.])
+else
+if test x"$hl_index" = xauto; then
+  if test $ac_cv_sizeof_unsigned_long_int -ge 8 ; then
+    hl_index=64
+    AC_MSG_NOTICE([Index is set to u64 automatically.])
+  else
+    hl_index=32
+    AC_MSG_NOTICE([Index is set to u32 automatically.])
+  fi
+else
+   AC_MSG_ERROR([invalid argument --with-index=$hl_index])
+fi
+fi
+fi
+   
+AC_DEFINE_UNQUOTED(INDEX,$hl_index,[Size of Index data type.])
+
+# --with-real=XXX
+
+hl_real=2
+
+AC_ARG_WITH([real],
+  AC_HELP_STRING([--with-real=XX],
+     [determines the type of real. Valid values are float, double, or long (uses long double) [[double]]]),
+  AC_MSG_CHECKING([with-real argument])
+
+  if test x"$withval" = xfloat; then
+    AC_MSG_RESULT(float)
+    hl_real=1
+  else
+  if test x"$withval" = xdouble; then
+    AC_MSG_RESULT(double)
+    hl_real=2
+  else
+  if test x"$withval" = xlong; then
+    AC_MSG_RESULT(long double)
+    hl_real=3
+  else
+    AC_MSG_RESULT($withval)
+    AC_MSG_ERROR([invalid argument --with-real=$withval])
+  fi
+  fi
+  fi
+,)
+
+AC_DEFINE_UNQUOTED(REAL,$hl_real,[Type of real data type.])
+
 ###############################################################################
-# Do compile time  checks
+# Do compile time checks
 ###############################################################################
 
 HL_STREAMS_SUPPORT_LOCAL
 HL_FLT_ROUNDS_CONST
+
+HL_UNREACHABLE_CALLS_REMOVED
 
 ###############################################################################
 # Do runtime checks
@@ -232,8 +314,6 @@ HL_ABS_AVAILABLE(std,std)
 HL_ABS_AVAILABLE(,global)
 
 AC_CHECK_FUNCS([floor pow sqrt])
-
-AC_PROG_MAKE_SET
 
 AC_DEFINE_UNQUOTED(DATADIR,"${prefix}/share/${PACKAGE}",[The directory which holds our data files])
 AC_OUTPUT

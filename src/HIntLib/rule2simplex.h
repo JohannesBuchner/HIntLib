@@ -49,7 +49,7 @@ namespace HIntLib
    public:
       Rule2Simplex (unsigned dim);
 
-      virtual real eval (Function &, const Hypercube &);
+      virtual real eval (Integrand &, const Hypercube &);
 
       virtual unsigned getDimension()  const  { return dim; }
       virtual Index getNumPoints()     const  { return dim + 1; }
@@ -66,8 +66,7 @@ namespace HIntLib
       // Dimension dependent constants
 
       real oneOverDimPlusOne;
-      Array<real> r; 
-      Array<real> p;
+      Point r, p; 
    };
 
 }  // namespace HIntLib

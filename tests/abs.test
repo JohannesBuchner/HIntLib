@@ -1,0 +1,6 @@
+#! /bin/sh
+
+./test_abs -s
+
+exit $?
+

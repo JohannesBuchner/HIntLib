@@ -43,7 +43,7 @@ namespace HIntLib
 class Region
 {
 private:
-   void eval (Function &f, EmbeddedRule &rule)
+   void eval (Integrand &f, EmbeddedRule &rule)
       { splitDim = rule.evalError (f, h, ee); }
 
 public:
@@ -59,12 +59,12 @@ public:
 
    // Create new Region
 
-   Region (const Hypercube &h, Function &f, EmbeddedRule &rule)
+   Region (const Hypercube &h, Integrand &f, EmbeddedRule &rule)
       : h (h), numOfSplits (0) { eval (f, rule); }
 
    // Split an old Region
 
-   Region (Region &, Function &, EmbeddedRule &);
+   Region (Region &, Integrand &, EmbeddedRule &);
 
    // get functions
 

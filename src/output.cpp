@@ -18,7 +18,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#if defined __GNUG__ && ! defined HINTLIB_PARALLEL
+#ifdef __GNUG__
 #pragma implementation
 #endif
 
@@ -36,7 +36,6 @@
   #include <HIntLib/fallback_sstream.h>
 #endif
 
-#include <HIntLib/region.h>
 #include <HIntLib/integerring.h>
 #include <HIntLib/modulararithmetic.h>
 
@@ -49,69 +48,6 @@ using std::ostream;
  *  This file contains  operator<< (ostrem&, const X &)  implementations
  *  for various types.
  */
-
-
-/**
- *  EstErr
- */
-
-ostream& L::operator<< (ostream &o, const EstErr &ee)
-{
-   std::ostringstream ss;
-   ss.flags (o.flags());
-   ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-   ss.imbue (o.getloc());
-#endif
-
-   ss << ee.getEstimate () << "(+/-" << ee.getError () << ')';
- 
-   return o << ss.str().c_str();
-}
-
-
-/**
- *  Hypercube
- */
-
-ostream & L::operator<< (ostream &o, const Hypercube &h)
-{
-   std::ostringstream ss;
-   ss.flags (o.flags());
-   ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-   ss.imbue (o.getloc());
-#endif
-
-   ss << '[' << h.getLowerBound (0) << ',' << h.getUpperBound (0) << ']';
-
-   for (unsigned i = 1; i < h.getDimension (); ++i)
-   {
-      ss << "x[" << h.getLowerBound (i) << ',' << h.getUpperBound (i) << ']';
-   }
-
-   return o << ss.str().c_str();
-}
-
-
-/**
- *  Region
- */
-
-ostream & L::operator<< (ostream &o, const Region &r)
-{
-   std::ostringstream ss;
-   ss.flags (o.flags());
-   ss.precision (o.precision());
-#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
-   ss.imbue (o.getloc());
-#endif
-
-   ss << r.getHypercube () << ' ' << r.getEstErr();
-
-   return o << ss.str().c_str();
-}
-
 
 /**
  *  ZRing

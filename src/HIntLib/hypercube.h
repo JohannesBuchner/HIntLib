@@ -89,11 +89,6 @@ public:
 
    Hypercube& operator= (const Hypercube&);
 
-   // Comparision
-
-   bool operator== (const Hypercube &) const;
-   bool operator!= (const Hypercube &h) const  { return ! (*this == h); }
-
 #ifdef HINTLIB_PARALLEL
    Hypercube (unsigned dim,
               int source, int tag, MPI_Comm comm, MPI_Status *status);
@@ -102,7 +97,7 @@ public:
    void isend (int dest, int tag, MPI_Comm comm) const;
    int recv (int source, int tag, MPI_Comm comm, MPI_Status *status); 
 
-   MPI_Datatype getMPIDatatype (void) const;
+   MPI_Datatype getMPIDatatype () const;
 
    void initAfterReceive ();
 
@@ -149,20 +144,30 @@ private:
 };
 
 
-// A number of tests
+// Comparing two cubes
+
+bool operator== (const Hypercube &, const Hypercube &);
+inline
+bool operator!= (const Hypercube &h1, const Hypercube &h2)
+{
+   return ! (h1 == h2);
+}
+
+// Some other tests
 
 bool isUnitCube    (const Hypercube &);
 bool isPointInside (const Hypercube &, const real[]);
 Hypercube::Location
      whereIsPoint  (const Hypercube &, const real[]);
 
+
 // Printing a hypercube
 
-std::ostream& operator<< (std::ostream & o, const Hypercube &h);
+std::ostream& operator<< (std::ostream &, const Hypercube &);
 
 // build union of two cubes
 
-bool unite (Hypercube &h, const Hypercube &hh);
+bool unite (Hypercube &, const Hypercube &);
 
 void throwDimensionMismatch(unsigned dim1, unsigned dim2);
 inline
@@ -178,7 +183,7 @@ void checkDimensionEqual (const Hypercube &h1, const Hypercube &h2)
 /****** Implementation ***************/
 
 inline
-void Hypercube::calcVolume (void)
+void Hypercube::calcVolume ()
 {
    real v = 1.0;
 

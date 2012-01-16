@@ -27,19 +27,90 @@
 #pragma implementation "esterr.h"
 #endif
 
+#include <HIntLib/defaults.h>
+
+#ifdef HINTLIB_HAVE_OSTREAM
+  #include <ostream>
+#else
+  #include <iostream>
+#endif
+
+#ifdef HINTLIB_HAVE_SSTREAM
+  #include <sstream>
+#else
+  #include <HIntLib/fallback_sstream.h>
+#endif
+
 #include <HIntLib/region.h>
 
 namespace L = HIntLib;
+using std::ostream;
 
 /**
  *  Print the data of a region
  */
 
-L::Region::Region (Region &r, Function &f, EmbeddedRule &rule)
+L::Region::Region (Region &r, Integrand &f, EmbeddedRule &rule)
   : h (r.h, r.splitDim),
     numOfSplits (++r.numOfSplits)
 {
      eval (f, rule);
    r.eval (f, rule);
 }
+
+
+/**
+ *  operator<< ()
+ *
+ *  for Hypercube, Region, and EstErr
+ */
+
+ostream& L::operator<< (ostream &o, const EstErr &ee)
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << ee.getEstimate () << "(+/-" << ee.getError () << ')';
+ 
+   return o << ss.str().c_str();
+}
+
+ostream & L::operator<< (ostream &o, const Region &r)
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << r.getHypercube () << ' ' << r.getEstErr();
+
+   return o << ss.str().c_str();
+}
+
+ostream & L::operator<< (ostream &o, const Hypercube &h)
+{
+   std::ostringstream ss;
+   ss.flags (o.flags());
+   ss.precision (o.precision());
+#ifdef HINTLIB_STREAMS_SUPPORT_LOCAL
+   ss.imbue (o.getloc());
+#endif
+
+   ss << '[' << h.getLowerBound (0) << ',' << h.getUpperBound (0) << ']';
+
+   for (unsigned i = 1; i < h.getDimension (); ++i)
+   {
+      ss << "x[" << h.getLowerBound (i) << ',' << h.getUpperBound (i) << ']';
+   }
+
+   return o << ss.str().c_str();
+}
+
+
 

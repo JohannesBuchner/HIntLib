@@ -80,7 +80,7 @@ real L::Rule3Tyler::getSumAbsWeight() const
  *  Do the actual function evaluation
  */
 
-real L::Rule3Tyler::eval (Function &f, const Hypercube &h)
+real L::Rule3Tyler::eval (Integrand &f, const Hypercube &h)
 {
    const real* center = h.getCenter();
 

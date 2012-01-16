@@ -80,7 +80,7 @@ real L::PseudoEmbeddedRule::getSumAbsWeight() const
  *  evalError()
  */
 
-unsigned L::PseudoEmbeddedRule::evalError (Function &f,
+unsigned L::PseudoEmbeddedRule::evalError (Integrand &f,
    const Hypercube &h, EstErr &ee)
 {
    real result1 = r1->eval(f, h);
@@ -93,7 +93,7 @@ unsigned L::PseudoEmbeddedRule::evalError (Function &f,
 }
 
 
-unsigned L::PseudoDoubleEmbeddedRule::evalError (Function &f,
+unsigned L::PseudoDoubleEmbeddedRule::evalError (Integrand &f,
    const Hypercube &h, EstErr &ee)
 {
    unsigned split = PseudoEmbeddedRule::evalError (f, h, ee);

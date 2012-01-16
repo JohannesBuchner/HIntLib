@@ -81,14 +81,14 @@ L::Rule5Stroud::Rule5Stroud (unsigned dim)
   b2 ((50.0 - 25.0 * dim) / 168.0),
   b4 ((10.0 -  5.0 * dim) /  48.0)
 {
+   checkDimensionNotZero (dim);
+   checkDimensionGeq<2> (dim);
+
    #if HINTLIB_STATIC_WORKS == 0
       r = sqrt ( 7.0                / 15.0);
       s = sqrt ((7.0 + sqrt (24.0)) / 15.0);
       t = sqrt ((7.0 - sqrt (24.0)) / 15.0);
    #endif
-
-   checkDimensionNotZero (dim);
-   checkDimensionGeq<2> (dim);
 }
 
 
@@ -115,7 +115,7 @@ real L::Rule5Stroud::getSumAbsWeight() const
  *  Do the actual function evaluation
  */
 
-L::real L::Rule5Stroud::eval (Function &f, const Hypercube &h)
+L::real L::Rule5Stroud::eval (Integrand &f, const Hypercube &h)
 {
    // Calculate center and width of the rectange. Adjust volume accordingly
 

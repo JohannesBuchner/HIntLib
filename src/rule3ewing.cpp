@@ -60,7 +60,7 @@ L::Rule3Ewing::Rule3Ewing (unsigned dim)
  *  Do the actual function evaluation
  */
 
-L::real L::Rule3Ewing::eval (Function &f, const Hypercube &h)
+L::real L::Rule3Ewing::eval (Integrand &f, const Hypercube &h)
 {
    const real* center = h.getCenter();
 

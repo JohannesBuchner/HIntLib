@@ -36,12 +36,12 @@
 #endif
 
 #include <HIntLib/rulebasedintegrator.h>
+#include <HIntLib/regioncollection.h>
 
 namespace HIntLib
 {
 
    class EmbeddedRuleFactory;
-   class RegionCollection;
 
 class AdaptIntegratorMS : public EmbeddedRuleBasedIntegrator
 {
@@ -49,7 +49,7 @@ public:
 
    virtual
    Status integrate (
-      Function &f, const Hypercube &h, Index maxEval,
+      Integrand &f, const Hypercube &h, Index maxEval,
       real reqAbsError, real reqRelError, EstErr &ee);
 
    Index getFrequency() const  { return frequency; }
@@ -62,16 +62,17 @@ protected:
    unsigned numWorkers (void) const;
 
    void slave (
-      Function &, const Hypercube &, EmbeddedRule &, unsigned interval);
+      Integrand &, const Hypercube &, EmbeddedRule &, unsigned interval);
 
-   virtual Status master (Function &, const Hypercube &, EmbeddedRule &,
+   virtual Status master (const Hypercube &,
       real reqAbsError, real reqRelError, EstErr &ee, Index maxIter) = 0;
 
    void sendTerminationSignal ();
    void sendTopRegionToSlave (
-         RegionCollection &, int worker, EstErr*, unsigned n = 1);
+         RegionCollection &, int worker, EstErr*,
+         RegionCollection::size_type n = 1);
    void sendTopRegionToAllSlaves (
-         RegionCollection &, EstErr*, unsigned n = 1);
+         RegionCollection &, EstErr*, RegionCollection::size_type n = 1);
    int recvRegionsFromSlave (RegionCollection &, int worker, unsigned dim,
                              EstErr* localEE);
    void recvRegionsFromAllSlaves (RegionCollection &, unsigned dim,
@@ -85,7 +86,7 @@ protected:
    int rank;
    int nodes;
 
-   unsigned interval;
+   Index interval;
    unsigned numSentBack;
 };
 
@@ -97,7 +98,7 @@ public:
       : AdaptIntegratorMS (rf, comm)  {}
 
 protected:
-   virtual Status master (Function &, const Hypercube &, EmbeddedRule &,
+   virtual Status master (const Hypercube &,
       real reqAbsError, real reqRelError, EstErr &ee, Index maxIter);
 };
 
@@ -109,7 +110,7 @@ public:
       : AdaptIntegratorMS (rf, comm)  {}
 
 protected:
-   virtual Status master (Function &, const Hypercube &, EmbeddedRule &,
+   virtual Status master (const Hypercube &,
       real reqAbsError, real reqRelError, EstErr &ee, Index maxIter);
 };
 
@@ -121,7 +122,7 @@ public:
       : AdaptIntegratorMS (rf, comm)  {}
 
 protected:
-   virtual Status master (Function &, const Hypercube &, EmbeddedRule &,
+   virtual Status master (const Hypercube &,
       real reqAbsError, real reqRelError, EstErr &ee, Index maxIter);
 };
 

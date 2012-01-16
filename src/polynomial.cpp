@@ -595,20 +595,21 @@ L::PolynomialRingBase<A,L::field_tag>::rem (const type& u, const type& v) const
 template<class A>
 bool L::PolynomialRingBase<A,L::field_tag>::isPrime (const type& p) const
 {
-   if (p.degree() <= 0)  return false;
-   if (p.degree() == 1)  return true;
+   if (p.degree() == 1)  return true;       //  bx+a  is always prime
+   if (p.degree() <= 0 || a.is0(p[0]))  return false;  // 0, a  or ...+0
 
    if (! a.size())  throw InternalError (__FILE__, __LINE__);
 
-   for (unsigned i = a.size(); ; ++i)
+   // check all possible divisors starting with  x+1.
+   // No need to check x, because we got rid of this case already.
+   // if  q  is a divisor, so is  k q.  Thus we only check divisors with ...+1.
+
+   for (unsigned i = a.size() + 1; ; i += a.size())   // x+1, 2x+1,...
    {
       type q = element (i);
-
       if (2 * q.degree() > p.degree())  return true;
 
-      type x, r;
-      div (p, q, x, r);
-      if (is0(r))  return false;
+      if (is0 (rem (p, q)))  return false;
    }
 }
 
@@ -642,32 +643,32 @@ namespace HIntLib
    // Instantiate PolynomialRingBB<>
 
 #define HINTLIB_INSTANTIATE(X) \
-   template PolynomialRingBB<X>::type \
-            PolynomialRingBB<X>::one() const; \
-   template bool PolynomialRingBB<X>::is1 (const type&) const; \
-   template bool PolynomialRingBB<X>::isMonic (const type&) const; \
-   template PolynomialRingBB<X>::type \
-            PolynomialRingBB<X>::element(unsigned) const; \
-   template unsigned PolynomialRingBB<X>::index (const type&) const; \
-   template PolynomialRingBB<X>::type& \
-            PolynomialRingBB<X>::negate (type&) const; \
-   template PolynomialRingBB<X>::type \
-            PolynomialRingBB<X>::neg (const type&) const; \
-   template PolynomialRingBB<X>::type \
-            PolynomialRingBB<X>::add (const type&, const type&) const; \
-   template PolynomialRingBB<X>::type \
-            PolynomialRingBB<X>::mul (const type&, const type&) const; \
-   template PolynomialRingBB<X>::type \
-            PolynomialRingBB<X>::times (const type&, unsigned) const; \
+   template PolynomialRingBB<X >::type \
+            PolynomialRingBB<X >::one() const; \
+   template bool PolynomialRingBB<X >::is1 (const type&) const; \
+   template bool PolynomialRingBB<X >::isMonic (const type&) const; \
+   template PolynomialRingBB<X >::type \
+            PolynomialRingBB<X >::element(unsigned) const; \
+   template unsigned PolynomialRingBB<X >::index (const type&) const; \
+   template PolynomialRingBB<X >::type& \
+            PolynomialRingBB<X >::negate (type&) const; \
+   template PolynomialRingBB<X >::type \
+            PolynomialRingBB<X >::neg (const type&) const; \
+   template PolynomialRingBB<X >::type \
+            PolynomialRingBB<X >::add (const type&, const type&) const; \
+   template PolynomialRingBB<X >::type \
+            PolynomialRingBB<X >::mul (const type&, const type&) const; \
+   template PolynomialRingBB<X >::type \
+            PolynomialRingBB<X >::times (const type&, unsigned) const; \
    template X::type \
-            PolynomialRingBB<X>::evaluate \
+            PolynomialRingBB<X >::evaluate \
                 (const type&, const coeff_type&) const; \
    template std::ostream& \
-      operator<< (std::ostream &, const PolynomialRingBB<X> &); \
+      operator<< (std::ostream &, const PolynomialRingBB<X > &); \
    template void \
-            PolynomialRingBB<X>::print (std::ostream &, const type&) const; \
+            PolynomialRingBB<X >::print (std::ostream &, const type&) const; \
    template void \
-            PolynomialRingBB<X>::printShort (std::ostream &, const type&) const;
+            PolynomialRingBB<X >::printShort(std::ostream &, const type&) const;
 
    HINTLIB_INSTANTIATE (IntegerRing<int>)
    HINTLIB_INSTANTIATE (GF2)

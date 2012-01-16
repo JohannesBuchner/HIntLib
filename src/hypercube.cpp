@@ -98,22 +98,6 @@ L::Hypercube& L::Hypercube::operator= (const Hypercube &h)
 }
 
 
-/**
- *  Comparison
- */
-
-bool L::Hypercube::operator== (const Hypercube &h) const
-{
-   for (unsigned i = 0; i < dim; ++i)
-   {
-      if (! approx (getCenter(i), h.getCenter(i))
-       || ! approx (getWidth (i), h.getWidth (i)))  return false;
-   }
-
-   return true;
-}
-
-
 /*****************************************************************************
  *  Functions working with Hypercubes
  *****************************************************************************/
@@ -190,6 +174,24 @@ bool L::unite (Hypercube &h, const Hypercube &hh)
   {
      return false;
   }
+}
+
+
+/**
+ *  Comparison
+ */
+
+bool L::operator== (const Hypercube &h1, const Hypercube &h2)
+{
+   if (h1.getDimension() != h2.getDimension())  return false;
+
+   for (unsigned i = 0; i < h1.getDimension(); ++i)
+   {
+      if (! approx (h1.getCenter(i), h2.getCenter(i))
+       || ! approx (h1.getWidth (i), h2.getWidth (i)))  return false;
+   }
+
+   return true;
 }
 
 

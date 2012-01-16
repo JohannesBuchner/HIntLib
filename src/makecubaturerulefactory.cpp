@@ -26,6 +26,7 @@
 #include <HIntLib/rule1trapezoidal.h>
 #include <HIntLib/rule2simplex.h>
 #include <HIntLib/rule2thacher.h>
+#include <HIntLib/rule2ionescu.h>
 #include <HIntLib/rule3octahedron.h>
 #include <HIntLib/rule3cross.h>
 #include <HIntLib/rule3tyler.h>
@@ -57,6 +58,7 @@ const RuleRecord factories [] =
    { 12, "1-Trapezoidal", L::Rule1Trapezoidal::getFactory },
    { 21, "2-Simplex",     L::Rule2Simplex::getFactory },
    { 22, "2-Thacher",     L::Rule2Thacher::getFactory },
+   { 23, "2-Ionescu",     L::Rule2Ionescu::getFactory },
    { 31, "3-Octahedron",  L::Rule3Octahedron::getFactory },
    { 32, "3-Cross",       L::Rule3Cross::getFactory },
    { 33, "3-Tyler",       L::Rule3Tyler::getFactory },

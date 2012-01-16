@@ -1,5 +1,7 @@
 #! /bin/sh
 
+echo RUNNING: qrnsequence.test
+
 points=4096
 dim=20
 p=10

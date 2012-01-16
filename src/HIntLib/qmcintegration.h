@@ -29,7 +29,7 @@
 
 #include <HIntLib/hypercube.h>
 #include <HIntLib/statistic.h>
-#include <HIntLib/function.h>
+#include <HIntLib/integrand.h>
 #include <HIntLib/pointset.h>
 
 
@@ -39,7 +39,7 @@ namespace HIntLib
    template<class Gen, class Stat>
    inline
    void qmcIntegration (
-      real point [], Gen &gen, Function &f,
+      real point [], Gen &gen, Integrand &f,
       Index begin, Index end, Stat &stat)
    {
       if (begin < end)

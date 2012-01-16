@@ -25,11 +25,12 @@ CLEANFILES = $(filesbin)
 noinst_PROGRAMS = convert_matrix
 convert_matrix_SOURCES = convert_matrix.cpp
 
-INCLUDES = -I$(top_srcdir)/src -I$(top_builddir)/src @GNUFLAGS@
+AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)/src
+AM_CXXFLAGS = @COMPILERWARNINGS@
 LDADD = ../src/libhintlib.la -lm
 
 clean-local:
-	rm -rf ii_files
+	-rm -rf ii_files
 
 SUFFIXES = .cmx .bin
 
@@ -37,5 +38,8 @@ $(filesbin): convert_matrix@EXEEXT@
 
 .cmx.bin:
 	@echo Converting $< to $@ ...
-	./convert_matrix@EXEEXT@ $< $@
+	./convert_matrix@EXEEXT@ $< $@  ||  { rm -f $@ ; exit 1 ; }
+
+../src/libhintlib.la:
+	cd ../src && $(MAKE) libhintlib.la
 

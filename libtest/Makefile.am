@@ -11,13 +11,12 @@ libhintlibtest_la_LDFLAGS = @NOUNDEFINED@
 noinst_PROGRAMS = main
 main_SOURCES = main.cpp
 
-INCLUDES =  @GNUFLAGS@
-# LDFLAGS= @SGIFLAGS@
+AM_CXXFLAGS = @COMPILERWARNINGS@
 LDADD = libhintlibtest.la
 
 result.h: main@EXEEXT@ create
 	$(srcdir)/create
 
 clean-local:
-	rm -rf ii_files .libs .deps result.h
+	rm -rf ii_files result.h
 

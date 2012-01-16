@@ -45,16 +45,16 @@ DigitalNet::DigitalNet (unsigned base, unsigned _m)
    template void DigitalNetGenGray<X, Index>::updateX (); \
    template void DigitalNetGenCyclicGray<X, Index>::updateX ();
 
-HINTLIB_INSTANTIATE (OneDimVectorSpace<ModularArithField<unsigned char> >);
-HINTLIB_INSTANTIATE (OneDimVectorSpace<LookupField<unsigned char> >);
-HINTLIB_INSTANTIATE (OneDimVectorSpace<LookupFieldPow2<unsigned char> >);
-HINTLIB_INSTANTIATE (OneDimVectorSpace<LookupFieldPrime<unsigned char> >);
-HINTLIB_INSTANTIATE (OneDimVectorSpace<GF2>);
-HINTLIB_INSTANTIATE (GF2VectorSpace<u32>);
+HINTLIB_INSTANTIATE (OneDimVectorSpace<ModularArithField<unsigned char> >)
+HINTLIB_INSTANTIATE (OneDimVectorSpace<LookupField<unsigned char> >)
+HINTLIB_INSTANTIATE (OneDimVectorSpace<LookupFieldPow2<unsigned char> >)
+HINTLIB_INSTANTIATE (OneDimVectorSpace<LookupFieldPrime<unsigned char> >)
+HINTLIB_INSTANTIATE (OneDimVectorSpace<GF2>)
+HINTLIB_INSTANTIATE (GF2VectorSpace<u32>)
 typedef LookupVectorSpace    <unsigned char,unsigned char> X1;
 typedef LookupVectorSpacePow2<unsigned char,unsigned char> X2;
-HINTLIB_INSTANTIATE (X1);
-HINTLIB_INSTANTIATE (X2);
+HINTLIB_INSTANTIATE (X1)
+HINTLIB_INSTANTIATE (X2)
 
 #undef HINTLIB_INSTANTIATE
 }
